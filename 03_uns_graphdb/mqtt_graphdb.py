@@ -1,7 +1,6 @@
 import random
 import time
-from neo4j import GraphDatabase
-import json
+
 import paho.mqtt.client as mqtt_client
 
 
@@ -30,12 +29,12 @@ def on_connect(client, userdata, flags, rc):
 			"}" 
 		)
 	#subscribe to the topic only if connection was successful
-	historian_client.subscribe(topic, qos)
+	graphdb_client.subscribe(topic, qos)
 	# TODO Error handling
-	print( f"Successfully connect {historian_client} to MQTT Broker at {broker}:{port}")
+	print( f"Successfully connect {graphdb_client} to MQTT Broker at {broker}:{port}")
 
 def on_subscribe(client: mqtt_client):
-	print( f"Successfully connect {historian_client} to Topic {topic} with QOS {qos} ")
+	print( f"Successfully connect {graphdb_client} to Topic {topic} with QOS {qos} ")
 
 
 def on_message(client, userdata, msg):
@@ -43,18 +42,18 @@ def on_message(client, userdata, msg):
 
 
 # create historian mqtt client
-historian_client = mqtt_client.Client()
+graphdb_client = mqtt_client.Client()
 
 # Assign event callbacks
-historian_client.on_connect = on_connect
-historian_client.on_subscribe = on_subscribe
-historian_client.on_message = on_message
+graphdb_client.on_connect = on_connect
+graphdb_client.on_subscribe = on_subscribe
+graphdb_client.on_message = on_message
 
 # Connect
-historian_client.connect(broker, int(port), int(keep_alive))
+graphdb_client.connect(broker, int(port), int(keep_alive))
 
 # Continue the network loop
-historian_client.loop_forever()
+graphdb_client.loop_forever()
 
 
 class UNSCurrentView:
