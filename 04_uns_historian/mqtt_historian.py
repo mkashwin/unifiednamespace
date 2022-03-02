@@ -2,9 +2,11 @@ import random
 import time
 import logger 
 import paho.mqtt.client as mqtt_client
+import datetime
 
 
-#read these values from the configuration file 
+
+# ToDo  read these values from the configuration file 
 broker = ''
 port = ''
 topic = "#"
@@ -43,6 +45,7 @@ def on_message(client, userdata, msg):
 			f"message: {msg},"
 			"}" 
 	)
+	timestamp = datetime.datetime.now()
 
 
 # create historian mqtt client
