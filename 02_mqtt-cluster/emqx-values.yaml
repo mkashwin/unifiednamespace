@@ -1,0 +1,82 @@
+## https://github.com/emqx/emqx/blob/master/deploy/charts/emqx/values.yaml
+## Declare variables to be passed into your templates.
+
+## It is recommended to have odd number of nodes in a cluster, otherwise the emqx cluster cannot be automatically healed in case of net-split.
+replicaCount: 3
+image:
+  repository: emqx/emqx-edge
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  # pullSecrets:
+  # - myRegistryKeySecretName
+
+
+# The name of a secret in the same kubernetes namespace which contains values to
+# be added to the environment (must be manually created)
+# This can be useful for passwords and logins, etc.
+
+# envFromSecret: "emqx-secrets"
+
+## Forces the recreation of pods during helm upgrades. This can be useful to update configuration values even if the container image did not change.
+recreatePods: false
+
+# Pod deployment policy
+# value: OrderedReady | Parallel
+# To redeploy a chart with existing PVC(s), the value must be set to Parallel to avoid deadlock
+podManagementPolicy: Parallel
+
+persistence:
+  enabled: true
+  size: 100Mi
+  ## If defined, volume.beta.kubernetes.io/storage-class: <storageClass>
+  ## Default: volume.alpha.kubernetes.io/storage-class: default
+  storageClass: "openebs-jiva-csi-default"
+  accessMode: ReadWriteOnce
+  ## Existing PersistentVolumeClaims
+  ## The value is evaluated as a template
+  ## So, for example, the name can depend on .Release or .Chart
+  # existingClaim: "emqx-pvc"
+
+service:
+  ## Service type
+  ##
+  type: LoadBalancer
+  ## Port for MQTT
+  ##
+  mqtt: 1883
+  ## Port for MQTT(SSL)
+  ##
+  mqttssl: 8883
+  ## Port for mgmt API
+  ##
+  mgmt: 8081
+  ## Port for WebSocket/HTTP
+  ##
+  ws: 8083
+  ## Port for WSS/HTTPS
+  ##
+  wss: 8084
+  ## Port for dashboard
+  ##
+  dashboard: 18083
+  ## Port for dashboard HTTPS
+  ##
+  # dashboardtls: 18084
+  ## Specify the nodePort(s) value for the LoadBalancer and NodePort service types.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ## ports between 30000-32767
+  ##
+  nodePorts:
+    mqtt: 31883
+    mqttssl: 31884
+    mgmt: 32081
+    ws: 30083
+    wss: 30084
+    dashboard: 32083
+    # dashboardtls: 32084
+  ## Set the LoadBalancer service type to internal only.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+  ##
