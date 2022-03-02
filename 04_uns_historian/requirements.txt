@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 psycopg2-binary>=2.9.3
 pytz>=2021.3
 paho-mqtt>=1.6.1
 logger
-=======
-requests
-psycopg2-binary>=2.9.3
-pytz>=2021.3
->>>>>>> fe3de5e83b85279eb6c5b2d65cb23b5e97cabd14
+dynaconf
+

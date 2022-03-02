@@ -1,0 +1,15 @@
+mqtt:
+  broker_url: 'mqtt://198.168.220.3'
+  port: 1883
+  topic : "#"
+  qos: 1
+  keep_alive: 60
+  dynaconf_merge: true
+
+
+graphdb:
+  url: '198.168.220.8'
+  port: 7874
+  node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"]
+  dynaconf_merge: true
+   
