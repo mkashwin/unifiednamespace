@@ -5,15 +5,15 @@ This projecg aims to create an open sourced option for setting up a unified name
 
 ## Technology Choices
 The following section lists the various options and technology choices that I evaluated and the reasoning for choosing them.
-This should hopefully also give you possible alternatives to consider if you choose to implement and extend this for your needs
-
+This should hopefully also give you possible alternatives to consider if you choose to implement and extend this for your needs.
+The opinions below are my personal ones with no influnce from the companies that built them
 
 ### Clustering at the Edge with Kubernetes
 To run the MQTT broker on the Edge, a cluster is *** not *** a prerequisite.  If you do not have a business need for a high availability MQTT cluster, runnning just a single instance ( probably dockerized ) would be a lot more easier.
 
 Even for a clustered setup most of the MQTT brokers do provide an option for clustering however running this cluster on K8s provides significant benefits for scaling, auto healing etc. 
 
-I evaluated the following K8s options because it needs to be a extremely light weight and high performant distribution to be able to run on the edge ( constraint enviornments)
+I evaluated the following K8s options because it needs to be a extremely light weight and high performant distribution to be able to run on the edge ( constraint enviornments). Any of these is a perfectly good choice depending on your context.
 1. [MicroK8s](https://microk8s.io/)
 1. [K3s](https://k3s.io/)
 
@@ -31,19 +31,30 @@ I finally choose to go ahead with ***MicroK8s*** because
 However microk8s did show up some limitations as well as bugs. Details of these are in the [k8scluster](./01_k8scluster/Readme.md). The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albiet in a different manner.
 
 
-Some key limitations to list
+Some key limitations to bear in mind
 * I faced some stability issues while trying to run this lower raspberry pi (pi3)
 * microk8s is not available for every linux distribution. 
 
 
 
-### MQTT Broker
-The backbone of the 
 
+### MQTT Broker
+The backbone of the ***Unified Name Space*** is the MQTT broker.
+I evaluated and read the user guides of the following brokers (opensource versions only). All three also provide commercial / enterprise versions which is recommended for more robust setup and professional support
+1. [EMQX](https://www.emqx.io/)
+2. [VERNEMQ](https://vernemq.com/)
+3. [HIVEMQ](https://www.hivemq.com)
+
+While HIVEMQ has the best documentation and community support I decided try out EMQX for the following reasons
+* EMQX is written in erlang which has a lower footprint than java (HIVEMQ). They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enteprise or cloud deployment
+* All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages
+* All three deploy very easily on K8s and all three have community (free) as well as commercial offering 
+
+**Important Note:** The community edition of these brokers do not provide all functionalies. e.g. EMQX community doesnt allow plugins to be triggered on message delivery (this is an enterprise feature)
 
 ### GraphDB
 
 ### Historian
 
-### MQTT Client to subscribe and write to the above data bases
+### Plugin / MQTT Client to subscribe and write to the above data bases
 
