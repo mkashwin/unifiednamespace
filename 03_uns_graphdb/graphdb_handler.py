@@ -1,6 +1,9 @@
 from neo4j import GraphDatabase
 from config import settings
 import json
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 class UNSCurrentView:
     def __init__(self, uri, user, password):
