@@ -8,7 +8,7 @@ e.g. the ERP system which is publishing to the Enterprise node can have a relati
 
 The Graph DB is not a store for historical data, this decision is done for performance purposes. For that refer to the [historian](./../04_uns_historian/Readme.md)
 
-The GraphDB is also deployed both at the factory level and enterpise level. 
+The GraphDB is also deployed both at the factory level and enterprise level. 
 Devices can query the GraphDB if they need merged data. If they just need the latest message published it would be more efficient to subscribe to the topic ( assuming that MQTT messages are published with retain flag as true)
 
 We need setup 2 instances of this connector
