@@ -1,7 +1,24 @@
 # Unified Name Space
 This project aims to create an open sourced option for setting up a unified name space for IIOT transformation.
 
-## What is the Unified Name Space
+My objective is to build an open source, free to use UNS solution for the community which can be enhanced and adapted by other enthusiasts. 
+
+All components used in this solution are community versions and I do not own any rights on them . Most of them also provide a commercial / enterprise version which may also be considered to have better tool support
+
+
+## What is the Unified Name Space?
+A unified namespace is a ***software solution*** that acts as a ***centralized repository*** of data, information, and context where any application or device can consume or publish data needed for a specific action via an ***event driven*** and ***loosely coupled architecture***. ​
+
+This is a critical concept to allow scalability by preventing point to point connectivity.
+![Credit Walter Reynolds -- IIOT University](./images/UNS.png)
+References:​
+**References / Further Reading**
+1. [Video explaining UNS](https://youtu.be/PB_9HIgSCWc)
+1. [UNS Q&A by Walter Reynolds](https://youtu.be/IiUZTSGjCQI)
+1. [Event driven architecture on Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)​
+1. [Advantages of Event Driven Architecture](https://developer.ibm.com/articles/advantages-of-an-event-driven-architecture/)
+
+## Architecture 
 
 ## Technology Choices
 The following section lists the various options and technology choices that I evaluated and the reasoning for choosing them.
@@ -36,7 +53,9 @@ Some key limitations to bear in mind
 * microk8s is not available for every linux distribution. 
 
 
-### MQTT Broker
+
+
+### **MQTT Broker**
 The backbone of the ***Unified Name Space*** is the MQTT broker.
 I evaluated and read the user guides of the following brokers (open source versions only). All three also provide commercial / enterprise versions which is recommended for more robust setup and professional support
 1. [EMQX](https://www.emqx.io/)
@@ -45,16 +64,19 @@ I evaluated and read the user guides of the following brokers (open source versi
 
 While HIVEMQ has the best documentation and community support I decided try out EMQX for the following reasons
 * EMQX is written in erlang which has a lower footprint than java (HIVEMQ). They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment
-* All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages
+* All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages. Also EMQX seems to be supporting the ability to create plugins in y
 * All three deploy very easily on K8s and all three have community (free) as well as commercial offering 
+* All three support **MQTT 5** which is critical for manufacturers and **Sparkplug B** support
 
-**Important Note:** The community edition of these brokers do not provide all functionality. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature)
+>**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database
 
-Details for setting up and configuring your EMQX clusters is available at [02_mqtt-cluster](./02_mqtt-cluster/Readme.md).
 
-### GraphDB
+### **GraphDB**
+I choose to go with [Neo4J](https://neo4j.com/) simply because it was the only graphDB I was aware of as well as the fact that it runs seamlessly on Kubernetes 
 
-### Historian
+> **Note:** The clustering feature of neo4j on K8s is an enterprise feature and not available in the community version
+
+### **Historian**
 
 ### Plugin / MQTT Client to subscribe and write to the above data bases
 
