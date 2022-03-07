@@ -11,7 +11,7 @@ A unified namespace is a ***software solution*** that acts as a ***centralized r
 
 This is a critical concept to allow scalability by preventing point to point connectivity.
 ![Credit Walter Reynolds -- IIOT University](./images/UNS.png)
-References:​
+
 **References / Further Reading**
 1. [Video explaining UNS](https://youtu.be/PB_9HIgSCWc)
 1. [UNS Q&A by Walter Reynolds](https://youtu.be/IiUZTSGjCQI)
