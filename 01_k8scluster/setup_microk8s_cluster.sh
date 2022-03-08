@@ -3,8 +3,8 @@
 ## Ensure that both the config.conf must  be correctly updated and uploaded to each of the nodes
 ## This script should be involked only after <code>pre_setup_nodes.sh</code> has been executed on all the nodes
 
-echo "Warning! This script should be involked only after pre_setup_nodes.sh  has been executed on all the nodes"
-
+echo "Warning! This script should be involked only after pre_setup_nodes.sh has been executed on all the nodes"
+echo "This script needs to be executed only once on any one of the designated master node of the K8s cluster "
 
 # Setting the default values before loading the conf file.
 COUNT_WORKERS=0

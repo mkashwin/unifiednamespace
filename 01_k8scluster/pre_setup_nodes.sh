@@ -8,7 +8,7 @@ COUNT_WORKERS=0
 DEFAULT_NETWORK_LINK="enp0s3"
 IS_THIS_MASTER=false
 MASTER_COUNT=0
-FAILUREDOMAIN=
+FAILUREDOMAIN=40
 
 source ./config.conf
 # Obtain the current IP of this node
@@ -26,14 +26,14 @@ do
     declare NODE_NAME="NODE_${i}_NAME"
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
     declare NODE_USER="NODE_${i}_USERNAME"
-    declare NODE_FAILUREDOMAIN="NODE_${i}_FAILUREDOMAIN"
 
     ## Need to update /etc/hosts with internal IP of the other nodes
     if [$LOCAL_IP = ${!NODE_IP}]
     then
-        echo "Skip putting this entry in hosts" 
+        # Skip putting this entry in /etc/hosts 
+        # check is this node is to be a master
         IS_THIS_MASTER=${!NODE_ISMASTER}
-        FAILUREDOMAIN=${!NODE_FAILUREDOMAIN}
+        FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
     else
         sudo cat $(echo ${!NODE_IP} ${!NODE_NAME}) >> /etc/hosts
     fi
@@ -42,6 +42,13 @@ do
         MASTER_COUNT++ 
     fi
 done
+## grant the user sudo priviledges
+if [ ! -f /tmp/foo.txt ]; then
+    sudo echo "$USER ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
+    sudo chown root:root /etc/sudoers.d/$USER
+    sudo chmod o-r,a-w /etc/sudoers.d/$USER
+    su - $USER
+fi
 
 ## Basic installations and upgrade of the system
 sudo apt-get update -y 
