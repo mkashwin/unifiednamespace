@@ -10,7 +10,8 @@ echo "This script needs to be executed only once on any one of the designated ma
 COUNT_WORKERS=0
 DEFAULT_NETWORK_LINK="enp0s3"
 MASTER_COUNT=0
-
+#This entry is inline wiht microK8s documentation to be done on each master node for high availability
+FAILUREDOMAIN=40
 
 source ./config.conf
 # Obtain the current IP of this node
@@ -18,7 +19,17 @@ LOCAL_IP=$(ip address show dev ${DEFAULT_NETWORK_LINK} | grep 'inet ' | awk -F '
 ## Needed due to a bug in core-dns
 CLUSTER_DNS=$(kubectl get svc kube-dns --namespace=kube-system | grep kube-dns | awk -F ' ' '{print $3}') 
 
-## Loop through the configurations of nodes
+IS_THIS_MASTER=false
+## Loop through to ensure that this node is actually a master node ( as per config.conf)
+for ((i=0; i<$COUNT_NODES; i++ )); 
+do
+    declare NODE_IP="NODE_${i}_IP"
+    declare NODE_ISMASTER="NODE_${i}_ISMASTER"
+    if [ "$LOCAL_IP" = "${!NODE_IP}" ] then 
+        IS_THIS_MASTER=${!NODE_ISMASTER}
+    fi
+done
+
 for ((i=0; i<$COUNT_NODES; i++ )); 
 do
     declare NODE_IP="NODE_${i}_IP"
@@ -28,7 +39,11 @@ do
     declare NODE_${i}_HAS_JOINED_K8S=false
     if [ "$LOCAL_IP" = "${!NODE_IP}" ] && [ "${!NODE_ISMASTER}" = true ] ; then
         echo "This is the same node as the master" 
-    else 
+        echo "failure-domain=${FAILUREDOMAIN}" >> /var/snap/microk8s/current/args/ha-conf
+        FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
+        IS_THIS_MASTER=true
+
+    elif if [ "$IS_THIS_MASTER" = true ] ; then 
         ADD_NODE_CMD=$(microk8s add-node | grep $LOCAL_IP | awk '(NR>1)' )  
 
         if [ "${!NODE_ISMASTER}" = true ] ; then
@@ -37,10 +52,13 @@ do
                 ${ADD_NODE_CMD};
                 microk8s stop;
                 echo --node-ip=${!NODE_IP} >> /var/snap/microk8s/current/args/kubelet;
+                echo 'failure-domain=${FAILUREDOMAIN}' >> /var/snap/microk8s/current/args/ha-conf
                 microk8s start;
                 sudo microk8s.config > ~/.kube/config
                 sudo chown -f -R ${!NODE_USER} ~/.kube
             "
+            FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
+            NODE_${i}_HAS_JOINED_K8S=true
         else
         ## FIXME how do I pass the password securely / via certs
             ssh -t ${!NODE_USER}@${!NODE_IP} bash -c"
@@ -50,7 +68,8 @@ do
                 echo --cluster-domain=cluster.local>> /var/snap/microk8s/current/args/kubelet ;
                 echo --cluster-dns=${CLUSTER_DNS}>> /var/snap/microk8s/current/args/kubelet ;
                 microk8s start;
-            "            
+            "
+            NODE_${i}_HAS_JOINED_K8S=true            
         fi
     fi
 

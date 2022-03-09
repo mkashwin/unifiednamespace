@@ -8,7 +8,6 @@ COUNT_WORKERS=0
 DEFAULT_NETWORK_LINK="enp0s3"
 IS_THIS_MASTER=false
 MASTER_COUNT=0
-FAILUREDOMAIN=40
 
 source ./config.conf
 # Obtain the current IP of this node
@@ -29,7 +28,6 @@ do
         # Skip putting this entry in /etc/hosts 
         # check is this node is to be a master
         IS_THIS_MASTER=${!NODE_ISMASTER}
-        FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
     else
         echo ${!NODE_IP} ${!NODE_NAME} | sudo tee -a /etc/hosts
     fi
@@ -80,10 +78,6 @@ sudo chown root:$USER /var/snap/microk8s/current/args/kubectl
 if [ "$IS_THIS_MASTER" = true ] ; then
 ## Configurations specific to the masters
     echo "configuring the master node " $(hostname)
-    if [ MASTER_COUNT > 0 ] ;  then 
-        # change domain for HA config only if more than one master are setup and this is a master node
-        echo "failure-domain=${FAILUREDOMAIN}" >> /var/snap/microk8s/current/args/ha-conf
-    fi
 fi
 touch ~/.bash_aliases
 # drop the microk8s prefix and just use *kubectl to issue commands to Kubernetes, create an alias by running the command: 
@@ -101,4 +95,5 @@ sudo microk8s status --wait-ready
 newgrp microk8s
 
 echo "Session needs to be reloaded for changes to take effect"
-echo "PLease Log off and Login again. Alternatively execute 'su - $USER'"
+echo "Please Log off and Login again. Alternatively execute 'su - $USER'"
+echo "Check status of microK8s with the command 'microk8s status' and if it is running you may proceed with executing  setup_k8s_cluster.sh on any one master node"
