@@ -19,7 +19,6 @@ LOCAL_IP=$(ip address show dev ${DEFAULT_NETWORK_LINK} | grep 'inet ' | awk -F '
 CLUSTER_DNS=$(kubectl get svc kube-dns --namespace=kube-system | grep kube-dns | awk -F ' ' '{print $3}') 
 
 ## Loop through the configurations of nodes
-
 for ((i=0; i<$COUNT_NODES; i++ )); 
 do
     declare NODE_IP="NODE_${i}_IP"
@@ -27,18 +26,20 @@ do
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
     declare NODE_USER="NODE_${i}_USERNAME"
     declare NODE_${i}_HAS_JOINED_K8S=false
-    if [$LOCAL_IP = ${!NODE_IP}] && [ "${!NODE_ISMASTER}" = true ] ; then
+    if [ "$LOCAL_IP" = "${!NODE_IP}" ] && [ "${!NODE_ISMASTER}" = true ] ; then
         echo "This is the same node as the master" 
     else 
         ADD_NODE_CMD=$(microk8s add-node | grep $LOCAL_IP | awk '(NR>1)' )  
 
-        if [ ${!NODE_ISMASTER} = true ] ; then
+        if [ "${!NODE_ISMASTER}" = true ] ; then
         ## FIXME how do I pass the password securely / via certs
             ssh -t ${!NODE_USER}@${!NODE_IP} bash -c"
                 ${ADD_NODE_CMD};
                 microk8s stop;
                 echo --node-ip=${!NODE_IP} >> /var/snap/microk8s/current/args/kubelet;
                 microk8s start;
+                sudo microk8s.config > ~/.kube/config
+                sudo chown -f -R ${!NODE_USER} ~/.kube
             "
         else
         ## FIXME how do I pass the password securely / via certs

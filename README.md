@@ -18,14 +18,16 @@ This is a critical concept to allow scalability by preventing point to point con
 1. [Event driven architecture on Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)​
 1. [Advantages of Event Driven Architecture](https://developer.ibm.com/articles/advantages-of-an-event-driven-architecture/)
 
-## Architecture 
+---
+## **Architecture**
 
-## Technology Choices
+---
+## **Technology Choices**
 The following section lists the various options and technology choices that I evaluated and the reasoning for choosing them.
 This should hopefully also give you possible alternatives to consider if you choose to implement and extend this for your needs.
 The opinions below are my personal ones with no influence from the companies that built them
 
-### Clustering at the Edge with Kubernetes
+### **Clustering at the Edge with Kubernetes**
 To run the MQTT broker on the Edge, a cluster is *** not *** a prerequisite.  If you do not have a business need for a high availability MQTT cluster, running just a single instance ( probably within a docker) would be a lot more easier.
 
 Even for a clustered setup most of the MQTT brokers do provide an option for clustering however running this cluster on K8s provides significant benefits for scaling, auto healing etc. 
@@ -41,6 +43,7 @@ I finally choose to go ahead with ***MicroK8s*** because
 * The inbuilt addons and the ease of enabling them without wading through YAML files
 * The default CNI provided for the cluster is Calico which claimed to be more performant
 * Setting up a High Availability cluster is extremely easy by adding multiple master nodes
+
 > **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place
 
 * Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting. As a K8s noob this really helped.
@@ -51,10 +54,7 @@ However microk8s did show up some limitations as well as bugs. Details of these 
 Some key limitations to bear in mind
 * I faced some stability issues while trying to run this lower raspberry pi (pi3)
 * microk8s is not available for every linux distribution. 
-
-
-
-
+---
 ### **MQTT Broker**
 The backbone of the ***Unified Name Space*** is the MQTT broker.
 I evaluated and read the user guides of the following brokers (open source versions only). All three also provide commercial / enterprise versions which is recommended for more robust setup and professional support
@@ -70,7 +70,7 @@ While HIVEMQ has the best documentation and community support I decided try out 
 
 >**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database
 
-
+---
 ### **GraphDB**
 I choose to go with [Neo4J](https://neo4j.com/) simply because it was the only graphDB I was aware of as well as the fact that it runs seamlessly on Kubernetes 
 
@@ -78,5 +78,5 @@ I choose to go with [Neo4J](https://neo4j.com/) simply because it was the only g
 
 ### **Historian**
 
-### Plugin / MQTT Client to subscribe and write to the above data bases
+### **Plugin / MQTT Client to subscribe and write to the above data bases**
 
