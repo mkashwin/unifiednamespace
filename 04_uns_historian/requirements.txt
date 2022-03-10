@@ -1,3 +1,4 @@
+wheel
 psycopg2-binary>=2.9.3
 pytz>=2021.3
 paho-mqtt>=1.6.1

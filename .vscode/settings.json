@@ -6,5 +6,6 @@
         "microk8s",
         "IIOT",
         "k8scluster"
-    ]
+    ],
+    "python.formatting.provider": "yapf"
 }
