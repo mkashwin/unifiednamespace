@@ -8,5 +8,10 @@
         "microk8s",
         "VERNEMQ"
     ],
-    "python.formatting.provider": "yapf"
+    "python.formatting.provider": "yapf",
+    "python.testing.pytestArgs": [
+        "03_uns_graphdb"
+    ],
+    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": true
 }
