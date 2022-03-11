@@ -1,11 +1,12 @@
 {
     "cSpell.words": [
         "EMQX",
+        "graphdb",
         "HIVEMQ",
-        "VERNEMQ",
-        "microk8s",
         "IIOT",
-        "k8scluster"
+        "k8scluster",
+        "microk8s",
+        "VERNEMQ"
     ],
     "python.formatting.provider": "yapf"
 }

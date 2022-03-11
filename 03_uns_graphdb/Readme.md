@@ -15,7 +15,47 @@ We need setup 2 instances of this connector
 1. ***(Mandatory)*** Setup the application to point to the enterprise instance / cloud instance . This instance will be used by the to link data across all factories and enterprise application. It is important to have the connector listen to Topic '#" while connecting to the enterprise/cloud  MQTT cluster instance.
 1. ***(Optional)*** Setup the application to point to the factory instance. This instance will be used by the application to provide a snapshot of the merged data to the factory devices. For the factory cluster it would make sense to listen to the  level 4 topic i.e. `+/+/+/#`
 
+## Deploying and running Neo4j
+There are a number of ways to deploy and run your Neo4j instance. 
+I chose to run this as a docker instance to ease the setup and portability. 
 
+**[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**
+Quick command reference 
+```bash
+docker run \
+    --name  uns_graphdb \           # <container_name> . Needed 
+    -p7474:7474 -p7687:7687 \       # Ports of operation 
+    -d \                            # Runs the container detached 
+    -v $HOME/neo4j/data:/data \
+    -v $HOME/neo4j/logs:/logs \
+    -v $HOME/neo4j/import:/var/lib/neo4j/import \
+    -v $HOME/neo4j/plugins:/plugins \
+    --env NEO4J_AUTH= neo4j/uns_neo4j_password \ #**<username/**<password>** 
+    neo4j:latest
+```
+**The key parameters you must update for your environment are :**
+* \<container_name\> : is a name you give to identify your container
+* \<username\> : is the username needed to connect to the DB. Needs to be updated in [./.secrets.yaml](#key-configurations-to-provide)
+* \<password\> : is the password needed to connect to the DB. Needs to be updated in [./.secrets.yaml](#key-configurations-to-provide) 
+
+Depending on your context you may need to change the other properties like port, directories etc. 
+Once the docker container is deployed you can work on 
+```bash
+docker start  uns_graphdb #<container_name>
+docker stop  uns_graphdb #<container_name>
+```
+
+## Key Configurations to provide
+This application has two configuration file 
+1. [settings.yaml](./settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as Neo4j db.
+    The key configurations to update are
+    - mqtt.url
+    - graphdb.url
+    
+1. [.secret.yaml](./.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster and the GraphDB
+    This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**
+
+## Running the python script
 
 ## Logic for persisting MQTT messages to the Graph DB
 The GraphDB will always store the latest value of all attributes but allows merging of MQTT messages also.
@@ -55,7 +95,13 @@ will result in a node in the GraphDB
 ```
 ## Tag extraction from message
 TBD.
+[ ] Need to discuss and update the logic of tag extraction especially for PLC other IIoT devices
 
-## Limitations 
-1. Currently the application does not support further nested topics 
-2. Need to figure out how to define the relationships between the tags other than parent relationship
+## Limitations / workarounds 
+1. Neo4j does not support nested attributes. If your message contains nested data the current logic will flatten the JSON object. 
+   See the function [_flatten_json_for_Neo4J()](./graphdb_handler.py#_flatten_json_for_Neo4J)
+1. If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name
+1. Current code & configurations have not considered securing the database and encrypted connections
+1. Current code & configurations have not considered securing the MQTT broker authentication and encrypted connections
+1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
+1. Add and improve automated test coverage

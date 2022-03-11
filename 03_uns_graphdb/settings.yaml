@@ -8,7 +8,7 @@ mqtt:
 
 graphdb:
   url: 'bolt://localhost:7687'
-  database: ''
+#  database: ''
   node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"]
   dynaconf_merge: true
    
