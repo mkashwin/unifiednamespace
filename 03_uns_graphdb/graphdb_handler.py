@@ -76,14 +76,14 @@ class GraphDBHandler:
             LOGGER.debug(node)
 
             jsonStr = None
-            if (count == len(nodes)):
+            if (count == len(nodes)-1 ):
                 ## Save the message only for the leaf node
                 jsonStr = message
 
             if (count < len(_NODE_TYPES)):
                 response = GraphDBHandler._saveNode(session, node,
                                                     _NODE_TYPES[count],
-                                                    jsonStr)
+                                                    jsonStr, lastnode)
             else:
                 response = GraphDBHandler._saveNode(
                     session, node,
@@ -116,7 +116,7 @@ class GraphDBHandler:
         parent  : str
             The name of the parent node to which a relationship will be established. Defaults to None(for root nodes)     
         """
-        attributes = r'{ }'
+        attributes:dict = { }
         LOGGER.debug(
             f"Saving node:{nodename} of type:{nodetype} and message:{message} with parent:{parent}"
         )
@@ -126,43 +126,49 @@ class GraphDBHandler:
         if (message is not None):
             attributes = GraphDBHandler._flatten_json_for_Neo4J(
                 json.loads(message))
-
+        # CQL doesn't allow  the node label as a parameter
+        # using a statement with parameters is a safer option against SQL injection     
+        query = None 
         if (parent is not None):
             LOGGER.debug(f"\"{nodename}\" is a child node of \"{parent}\"")
+            query = f"""MATCH (parent {{ node_name: $parent}})
+                MERGE (node:{nodetype} {{ node_name: $nodename }})
+                ON CREATE 
+                     SET node._created = timestamp() 
+                ON MATCH
+                     SET node._modified = timestamp() 
+                SET node += $attributes
+                MERGE (parent) -[r:PARENT_OF]-> (node) 
+                RETURN node, parent
+                """
+            ## Create the node with parent relationship
             node = session.run(
-                "MATCH (parent { node_name: $parent})"
-                "MERGE (node: $nodetype { node_name: $nodename }) "
-                "ON CREATE"
-                "     SET node._created = timestamp()"
-                "ON MATCH"
-                "     SET node._modified = timestamp()"
-                "SET node += $attributes"
-                "MERGE (parent) -[r:PARENT_OF]-> (node)"
-                "RETURN node",
-                parent=parent,
-                nodename=nodename,
-                nodetype=nodetype,
-                attributes=attributes)
+                query,
+                parent = parent, 
+                nodename = nodename,
+                attributes = attributes)
+
         else:
             LOGGER.debug(f"\"{nodename}\" is a root node")
+            query = f"""MERGE (node:{nodetype} {{ node_name: $nodename }})
+                ON CREATE 
+                     SET node._created = timestamp() 
+                ON MATCH
+                     SET node._modified = timestamp() 
+                SET node += $attributes 
+                RETURN node
+                """
             ## Create the node with no parent relationship
             node = session.run(
-                "MERGE (node: $nodetype { node_name: $nodename }) "
-                "ON CREATE "
-                "     SET node._created = timestamp() "
-                "ON MATCH"
-                "     SET node._modified = timestamp() "
-                "SET node += $attributes "
-                "RETURN node ",
-                nodetype=nodetype,
+                query,
                 nodename=nodename,
                 attributes=attributes)
         return node
 
     @staticmethod
-    def _flatten_json_for_Neo4J(mqtt_msg: dict) -> str:
+    def _flatten_json_for_Neo4J(mqtt_msg: dict) -> dict:
         """
-        Utility methos to convert a nested JSON into a flat structure
+        Utility methods to convert a nested JSON into a flat structure
         Keys for lists will be of the form <key>_<count>
         Keys for dicts will be of the form <parent key>_<child key>
         if any attribute is named "node_name" it will be replaced by "NODE_NAME"
@@ -190,14 +196,4 @@ class GraphDBHandler:
                 output[name[:-1]] = json_object
 
         flatten(mqtt_msg)
-        string_output = "{"
-        for key, value in output.items():
-            LOGGER.debug(key, value)
-            if (key in _IGNORED_ATTRIBUTES):
-                LOGGER.INFO(
-                    f"Skipping to persist value for key: {key}, as it is on the ignore list"
-                )
-            else:
-                string_output += f" {key} : \"{value}\" ,"
-        string_output = string_output[:-1] + " }"
-        return string_output
+        return output
