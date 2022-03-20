@@ -94,27 +94,27 @@ class UNS_MQTT_Listener(mqtt_client.Client):
 
         super().__init__(client_id, clean_session, userdata, protocol,
                          transport, reconnect_on_failure)
-        if ((tls is not None) and (tls["ca_certs"] is not None)):
-            ca_certs = tls["ca_certs"],
-            certfile = tls["certfile"],
-            keyfile = tls["keyfile"],
+        if ((tls is not None) and (tls.get("ca_certs") is not None)):
+            ca_certs = tls.get("ca_certs")
+            certfile = tls.get("certfile")
+            keyfile = tls.get("keyfile")
             cert_reqs = None
-            if (tls["cert_reqs"] is None):
+            if (tls.get("cert_reqs") is None): # key not present
                 cert_reqs = ssl.CERT_NONE
-            elif (tls.cert_reqs):
+            elif (tls.get("cert_reqs")):    # Value is true
                 cert_reqs = ssl.CERT_REQUIRED
             else:
                 cert_reqs = ssl.CERT_OPTIONAL
 
-            ciphers = tls["ciphers"]
-            keyfile_password = tls["keyfile_password"]
+            ciphers = tls.get("ciphers")
+            keyfile_password = tls.get("keyfile_password")
 
             LOGGER.debug(f"""Connection with MQTT Broker is over SSL
-                'ca_certs':{tls.ca_certs},
-                'certfile':{tls.certfile},
-                'keyfile':{tls.keyfile},
-                'cert_reqs':{tls.cert_reqs},
-                'ciphers':{tls.ciphers}               
+                'ca_certs':{tls.get('ca_certs')},
+                'certfile':{tls.get('certfile')},
+                'keyfile':{tls.get('keyfile')},
+                'cert_reqs':{tls.get('cert_reqs')},
+                'ciphers':{tls.get('ciphers')}               
             """)
             #Force ssl.PROTOCOL_TLSv1_2
             if (path.exists(ca_certs)):
@@ -125,7 +125,7 @@ class UNS_MQTT_Listener(mqtt_client.Client):
                                 tls_version=ssl.PROTOCOL_TLSv1_2,
                                 ciphers=ciphers,
                                 keyfile_password=keyfile_password)
-                if (tls["insecure_cert"]):
+                if (tls.get("insecure_cert")):
                     super().tls_insecure_set(True)
                     cert_reqs = ssl.CERT_NONE
             else:
@@ -154,7 +154,7 @@ class UNS_MQTT_Listener(mqtt_client.Client):
                          keepalive=keepalive,
                          properties=properties)
         except Exception as ex:
-            LOGGER.error("Unable to connect to MQTT broker", ex)
+            LOGGER.error("Unable to connect to MQTT broker: %s", ex)
             exit(1)
        
        
@@ -175,7 +175,7 @@ class UNS_MQTT_Listener(mqtt_client.Client):
                 f"Successfully connect {self} to MQTT Broker"
             )
         else:
-            LOGGER.error("Bad connection. Returned code=", rc)
+            LOGGER.error(f"Bad connection. Returned code=%s",rc)
             client.bad_connection_flag = True
 
     def on_subscribe(self,
