@@ -10,8 +10,15 @@
     ],
     "python.formatting.provider": "yapf",
     "python.testing.pytestArgs": [
-        "03_uns_graphdb"
+        "./02_mqtt-cluster/test",
+        "./03_uns_graphdb/test",
+        "./04_uns_historian/test"
     ],
-    "python.testing.unittestEnabled": true,
-    "python.testing.pytestEnabled": true
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "./02_mqtt-cluster/src",
+        "./03_uns_graphdb/src",
+        "./04_uns_historian/src"
+    ]
 }
