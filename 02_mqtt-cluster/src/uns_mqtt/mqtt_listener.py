@@ -18,6 +18,9 @@ class UNS_MQTT_Listener(mqtt_client.Client):
     The call only needs to implement the callback function on_message
     
     """
+    MQTTv5 = mqtt_client.MQTTv5
+    MQTTv311 = mqtt_client.MQTTv311
+    MQTTv31 = mqtt_client.MQTTv31
 
     def __init__(self,
                  client_id: str,
@@ -25,10 +28,7 @@ class UNS_MQTT_Listener(mqtt_client.Client):
                  userdata: dict = None,
                  protocol: int = mqtt_client.MQTTv5,
                  transport: str = "tcp",
-                 reconnect_on_failure: bool = True,
-                 username: str = None,
-                 password: str = None,
-                 tls: dict = None):
+                 reconnect_on_failure: bool = True):
         """
         Creates an instance of an MQTT client
         Parameters
@@ -51,7 +51,45 @@ class UNS_MQTT_Listener(mqtt_client.Client):
         transport: sets the transport mechanism as either "websockets" or  "tcp" to use raw TCP.
 
         topic : the fully qualified topic to listen to. Supports wild cards # , + 
+      
+        """
+        LOGGER.debug(f"""{{'client_id': '{client_id}',
+                 'clean_session': {clean_session},
+                 'userdata': {userdata},
+                 'protocol'{protocol}, 
+                 'transport':'{transport}',
+                 'reconnect_on_failure':{reconnect_on_failure}
+                 }}""")
 
+        if (protocol not in (mqtt_client.MQTTv5, mqtt_client.MQTTv311,
+                             mqtt_client.MQTTv31)):
+            raise ValueError(f"Unknown MQTT Protocol Id:{protocol}")
+        # Need these values in the connect operation
+        self.protocol = protocol
+        self.clean_session = clean_session
+
+        if (protocol == mqtt_client.MQTTv5):
+            # if MQTT version is v5.0 the ignore cleansession in the constructor
+            clean_session = None
+
+        super().__init__(client_id, clean_session, userdata, protocol,
+                         transport, reconnect_on_failure)
+
+    def run(self,
+            host,
+            port=1883,
+            username: str = None,
+            password: str = None,
+            tls: dict = None,
+            keepalive=60,
+            topic="#",
+            qos=2):
+        """
+        Main method to invoke after creating and instance of UNS_MQTT_Listener
+        After this function invoke loop_forever() or loop start()
+    
+        Parameters
+        ----------           
         username & password: credentials to connect to the  broker
 
         tls: Dict containing the following attributed needed for an SSL connection  
@@ -71,84 +109,56 @@ class UNS_MQTT_Listener(mqtt_client.Client):
 
             "insecure_cert" - Boolean to allow self signed certificates. When true, hostname matching will be skipped
 
-        Must be called before connect() or connect_async().        
-        """
-        LOGGER.debug(f"""{{'client_id': '{client_id}',
-                 'clean_session': {clean_session},
-                 'userdata': {userdata},
-                 'protocol'{protocol}, 
-                 'transport':'{transport}',
-                 'reconnect_on_failure':{reconnect_on_failure},
-                 'username':'{username}'
-                 }}""")
-
-        if (protocol not in (mqtt_client.MQTTv5, mqtt_client.MQTTv311, mqtt_client.MQTTv31) ):
-            raise ValueError(f"Unknown MQTT Protocol Id:{protocol}")
-        # Need these values in the connect operation
-        self.protocol = protocol
-        self.clean_session = clean_session
-
-        if (protocol == mqtt_client.MQTTv5):
-            # if MQTT version is v5.0 the ignore cleansession in the constructor
-            clean_session = None
-
-        super().__init__(client_id, clean_session, userdata, protocol,
-                         transport, reconnect_on_failure)
-        if ((tls is not None) and (tls.get("ca_certs") is not None)):
-            ca_certs = tls.get("ca_certs")
-            certfile = tls.get("certfile")
-            keyfile = tls.get("keyfile")
-            cert_reqs = None
-            if (tls.get("cert_reqs") is None): # key not present
-                cert_reqs = ssl.CERT_NONE
-            elif (tls.get("cert_reqs")):    # Value is true
-                cert_reqs = ssl.CERT_REQUIRED
-            else:
-                cert_reqs = ssl.CERT_OPTIONAL
-
-            ciphers = tls.get("ciphers")
-            keyfile_password = tls.get("keyfile_password")
-
-            LOGGER.debug(f"""Connection with MQTT Broker is over SSL
-                'ca_certs':{tls.get('ca_certs')},
-                'certfile':{tls.get('certfile')},
-                'keyfile':{tls.get('keyfile')},
-                'cert_reqs':{tls.get('cert_reqs')},
-                'ciphers':{tls.get('ciphers')}               
-            """)
-            #Force ssl.PROTOCOL_TLSv1_2
-            if (path.exists(ca_certs)):
-                super().tls_set(ca_certs=ca_certs,
-                                certfile=certfile,
-                                keyfile=keyfile,
-                                cert_reqs=cert_reqs,
-                                tls_version=ssl.PROTOCOL_TLSv1_2,
-                                ciphers=ciphers,
-                                keyfile_password=keyfile_password)
-                if (tls.get("insecure_cert")):
-                    super().tls_insecure_set(True)
-                    cert_reqs = ssl.CERT_NONE
-            else:
-                raise FileNotFoundError(
-                    f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
-                )
-
-        #Set username & password only if it was specified
-        if (username is not None):
-            super().username_pw_set(username, password)
-
-    def run(self, host, port=1883, keepalive=60, topic="#", qos=2):
-        """
-        Main method to invoke after creating and instance of UNS_MQTT_Listener
-        After this function invoke loop_forever() or loop start()
         """
         try:
-            self.topic=topic
-            self.qos=qos
-            
+            self.topic = topic
+            self.qos = qos
+
             properties = None
             if (self.protocol == mqtt_client.MQTTv5):
                 properties = Properties(PacketTypes.CONNECT)
+            if ((tls is not None) and (tls.get("ca_certs") is not None)):
+                ca_certs = tls.get("ca_certs")
+                certfile = tls.get("certfile")
+                keyfile = tls.get("keyfile")
+                cert_reqs = None
+                if (tls.get("cert_reqs") is None):  # key not present
+                    cert_reqs = ssl.CERT_NONE
+                elif (tls.get("cert_reqs")):  # Value is true
+                    cert_reqs = ssl.CERT_REQUIRED
+                else:
+                    cert_reqs = ssl.CERT_OPTIONAL
+
+                ciphers = tls.get("ciphers")
+                keyfile_password = tls.get("keyfile_password")
+
+                LOGGER.debug(f"""Connection with MQTT Broker is over SSL
+                    'ca_certs':{tls.get('ca_certs')},
+                    'certfile':{tls.get('certfile')},
+                    'keyfile':{tls.get('keyfile')},
+                    'cert_reqs':{tls.get('cert_reqs')},
+                    'ciphers':{tls.get('ciphers')}               
+                """)
+                #Force ssl.PROTOCOL_TLSv1_2
+                if (path.exists(ca_certs)):
+                    super().tls_set(ca_certs=ca_certs,
+                                    certfile=certfile,
+                                    keyfile=keyfile,
+                                    cert_reqs=cert_reqs,
+                                    tls_version=ssl.PROTOCOL_TLSv1_2,
+                                    ciphers=ciphers,
+                                    keyfile_password=keyfile_password)
+                    if (tls.get("insecure_cert")):
+                        super().tls_insecure_set(True)
+                        cert_reqs = ssl.CERT_NONE
+                else:
+                    raise FileNotFoundError(
+                        f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
+                    )
+
+            #Set username & password only if it was specified
+            if (username is not None):
+                super().username_pw_set(username, password)
             self.connect(host=host,
                          port=port,
                          keepalive=keepalive,
@@ -156,8 +166,6 @@ class UNS_MQTT_Listener(mqtt_client.Client):
         except Exception as ex:
             LOGGER.error("Unable to connect to MQTT broker: %s", ex)
             exit(1)
-       
-       
 
     ## call back methods
     def on_connect(self, client, userdata, flags, rc, properties=None):
@@ -169,13 +177,14 @@ class UNS_MQTT_Listener(mqtt_client.Client):
             LOGGER.debug("Connection established. Returned code=", rc)
             # subscribe to the topic only if connection was successful
             client.connected_flag = True
-            self.subscribe(self.topic, self.qos, options=None, properties=properties)
+            self.subscribe(self.topic,
+                           self.qos,
+                           options=None,
+                           properties=properties)
 
-            LOGGER.info(
-                f"Successfully connect {self} to MQTT Broker"
-            )
+            LOGGER.info(f"Successfully connect {self} to MQTT Broker")
         else:
-            LOGGER.error(f"Bad connection. Returned code=%s",rc)
+            LOGGER.error(f"Bad connection. Returned code=%s", rc)
             client.bad_connection_flag = True
 
     def on_subscribe(self,

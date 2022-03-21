@@ -24,7 +24,7 @@ microk8s helm3 install uns-emqx-edge emqx/emqx  --namespace factory1   --set ima
 Normally you would could to use the cloud service MQTT server. I choose to 
 
 ```bash
-# Install the full version of EMQX which for the Enterprise
+# Install the central cluster  EMQX brokers at  the Corporate instance/ Cloud
 microk8s helm3 install uns-emqx-corp emqx/emqx  \
             --namespace enterprise \
             --set persistence.enabled=true \
@@ -36,3 +36,10 @@ microk8s helm3 install uns-emqx-corp emqx/emqx  \
 ```
 
 ## Configure MQTT bridge between Edge Cluster and Enterprise/
+TBD
+
+## Known Limitations / workarounds
+1. MQTTv3.1 appears not to be supported by EMQX. While testing client code using `paho.mqtt.client` against [broker.emqx.io](https://www.emqx.com/en/mqtt/public-mqtt5-broker) observed that the connection was not happening and neither the `on_connect()` nor the `on_connect_fail()` callbacks were invoked.
+Since most clients would be either MQTTv3.1.1 or MQTTv5.0 this should not be a problem
+
+2. The plugins to intercept messages from EMQx ( which is probably the more efficient mechanism) in order to persist them are available only in the enterprise version and not in the community edition. As a workaround, I created an MQTT client which subscribes to `#` and allows subsequent processing.
