@@ -12,7 +12,7 @@ cmd_subfolder = os.path.realpath(
             'src')))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-from uns_mqtt.mqtt_listener import UNS_MQTT_Listener
+from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
 EMQX_CERT_FILE = os.path.join(
@@ -29,8 +29,8 @@ DEFAULT_TOPIC = "test/uns/#"  # used to reduce load on the hosted broker
 KEEP_ALIVE = 60
 
 
-@pytest.mark.parametrize("protocol", [(UNS_MQTT_Listener.MQTTv5),
-                                      (UNS_MQTT_Listener.MQTTv311)])
+@pytest.mark.parametrize("protocol", [(Uns_MQTT_ClientWrapper.MQTTv5),
+                                      (Uns_MQTT_ClientWrapper.MQTTv311)])
 #                                     (UNS_MQTT_Listener.MQTTv31)])
 ## There appears to be a bug for MQTTv31. The call backs are not occuring
 @pytest.mark.parametrize("transport,port,tls", [("tcp", 1883, None),
@@ -49,7 +49,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
-    uns_client = UNS_MQTT_Listener(f"test_01_{protocol}",
+    uns_client = Uns_MQTT_ClientWrapper(f"test_01_{protocol}",
                                    clean_session=clean_session,
                                    protocol=protocol,
                                    transport=transport,
@@ -94,9 +94,9 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 
 
 ###############################################################################
-@pytest.mark.parametrize("protocol", [(UNS_MQTT_Listener.MQTTv5),
-                                      (UNS_MQTT_Listener.MQTTv311),
-                                      (UNS_MQTT_Listener.MQTTv31)])
+@pytest.mark.parametrize("protocol", [(Uns_MQTT_ClientWrapper.MQTTv5),
+                                      (Uns_MQTT_ClientWrapper.MQTTv311),
+                                      (Uns_MQTT_ClientWrapper.MQTTv31)])
 ## There appears to be a bug for MQTTv31. The call backs are not occuring
 @pytest.mark.parametrize("transport,port,tls",
                          [("tcp", 1884, None), ("websockets", 8090, None),
@@ -116,7 +116,7 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
     """
     Test all the parameters ( including username password against Mosquitto's hosted broker)
     """
-    uns_client = UNS_MQTT_Listener(f"test_01_{protocol}_",
+    uns_client = Uns_MQTT_ClientWrapper(f"test_01_{protocol}_",
                                    clean_session=clean_session,
                                    protocol=protocol,
                                    transport=transport,

@@ -12,7 +12,7 @@ from paho.mqtt.packettypes import PacketTypes
 LOGGER = logging.getLogger(__name__)
 
 
-class UNS_MQTT_Listener(mqtt_client.Client):
+class Uns_MQTT_ClientWrapper(mqtt_client.Client):
     """
     Wrapper over te paho.mqtt.client to implement most commont MQTT related functionality
     The call only needs to implement the callback function on_message
