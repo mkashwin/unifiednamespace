@@ -1,7 +1,6 @@
 mqtt:
   host: "broker.emqx.io" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
   port: 1883 # Default value 1883 if not specified
-  isSSL : False
   topic : "test/uns/#" # Default Topic is a wild card #. if required can be tuned to listen subset 
   qos: 1 # Default value is 1. Recommend 1 or 2. Do not use 0
   keep_alive: 60
@@ -15,8 +14,8 @@ mqtt:
 graphdb:
   url: 'bolt://localhost:7687'
 #  database: ''
-  node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"]
-  ignored_attributes : []
+  node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
+  ignored_attributes : {} # attributes in the message to ignore
 
 dynaconf_merge: true
    
