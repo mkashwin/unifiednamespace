@@ -13,14 +13,14 @@ class GraphDBHandler:
             self.driver = neo4j.GraphDatabase.driver(uri,
                                                      auth=(user, password))
         except Exception as ex:
-            LOGGER.error("Failed to create the driver:", ex)
+            LOGGER.error("Failed to create the driver: %s", str(ex),stack_info=True, exc_info=True)
 
     def close(self):
         if self.driver is not None:
             try:
                 self.driver.close()
             except Exception as ex:
-                LOGGER.error("Failed to close the driver:", ex)
+                LOGGER.error("Failed to close the driver:%s", str(ex),stack_info=True, exc_info=True)
 
     def persistMQTTmsg(self,
                        topic: str,

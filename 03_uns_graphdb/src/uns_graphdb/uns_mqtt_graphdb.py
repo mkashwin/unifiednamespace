@@ -125,7 +125,7 @@ class Uns_MQTT_GraphDb:
             ## disconnect from db
             graph_db_handler.close()
         except Exception as ex:
-            LOGGER.error("Error persisting the message to the Graph DB", ex)
+            LOGGER.error("Error persisting the message to the Graph DB: %s", str(ex),stack_info=True, exc_info=True)
         finally :
             if(graph_db_handler is not None):
                 graph_db_handler.close()
@@ -137,7 +137,7 @@ def main():
         uns_mqtt_graphdb = Uns_MQTT_GraphDb()
         uns_mqtt_graphdb.uns_client.loop_forever()
     finally :
-        uns_mqtt_graphdb.disconnect()
+        uns_mqtt_graphdb.uns_client.disconnect()
 
 
 if __name__ == '__main__':

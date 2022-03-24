@@ -56,18 +56,20 @@ This application has two configuration file
     This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**
 
 ## Running the python script
-This function is executed by the following command
-```python
-TBD
+This function is executed by the following command with the current folder as `03_uns_graphdb`
+```bash
+# install virtual env
+python3 -m pip install --user virtualenv
+python3 -m venv env_graphdb
+source env_graphdb/bin/activate
+python3 ./src/uns_graphdb/graphdb_handler.py
 ```
 
 ### Running tests
 The set of test for this module is executed by
 ```python
-TBD
+pytest test/
 ```
-
-
 
 ## Logic for persisting MQTT messages to the Graph DB
 The GraphDB will always store the latest value of all attributes but allows merging of MQTT messages also.
