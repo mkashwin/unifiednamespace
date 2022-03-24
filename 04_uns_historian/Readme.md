@@ -82,6 +82,7 @@ TBD
 ## The Logic for persisting the message into the historian
 The historian will be persisting all the MQTT messages in the raw format directly after extracting the timestamp from the message
 The message format is expected to be in JSON and should have an attribute `timestamp`
+The attribute key name is configurable in [settings.yaml](./settings.yaml)
 If this attribute is missing the application will use the current time 
 ```python
 datetime.datetime.now()

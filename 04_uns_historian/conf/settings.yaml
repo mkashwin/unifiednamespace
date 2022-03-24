@@ -8,15 +8,18 @@ mqtt:
   version : 5 # Default is MQTTv5. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31)
  #clean_session: false # specify this only if the protocol is not MQTTv5
   transport : "tcp"  # Default is tcp. Valid values are: websockets, tcp
-
-
+  ignored_attributes : {'+': "timestamp"} # dict of topic , list of attributes which are to be ignored from persistance.
+                          # e.g. {'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],
+                          #       'topic2/+' : ["A", "A.B.C"],
+                          #        'topic3/#' : ["x", "Y"]} 
+  timestamp_attribute : "timestamp" # the attribute name which should contain the timestamp of the message's publishing
 
 historian:
   hostname: 'localhost'
 # port: 5432  
   database: 'uns_historian'
   table: 'unifiednamespace'
-  ignored_attributes : {}
+
 
 dynaconf_merge: true
    

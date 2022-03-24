@@ -60,8 +60,7 @@ class HistorianHandler:
                        client_id:str, 
                        topic: str,
                        timestamp,
-                       message: str,
-                       ignored_attributes: dict = None):
+                       message: str):
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -73,20 +72,18 @@ class HistorianHandler:
             The timestamp of the message received 
         message: str 
             The MQTT message. String is expected to be JSON formatted
-        ignored_attributes: dict topic:attribute or topic:list(attribute)
-            mapping of topic to attributes which should not be persisted
         """
         if timestamp is None:
-            time = datetime.datetime.now()
+            _timestamp = datetime.datetime.now()
         else :
-            time = datetime.date.fromtimestamp(timestamp)
+            _timestamp = datetime.date.fromtimestamp(timestamp)
 
         sql_request = f"""INSERT INTO {self.table} ( time, topic, client_id, mqtt_msg )
                         VALUES (%s,%s,%s,%s)
                         RETURNING *;"""
         if (self.tsdb_cursor is not None):
             try:
-                self.tsdb_cursor.execute(sql_request,(time, topic, client_id, message))
+                self.tsdb_cursor.execute(sql_request,(_timestamp, topic, client_id, message))
             except Exception as ex:
                 LOGGER.error("Error persisting message to the database %s", str(ex),stack_info=True, exc_info=True)            
         else :
