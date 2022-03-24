@@ -164,8 +164,11 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                          keepalive=keepalive,
                          properties=properties)
         except Exception as ex:
-            LOGGER.error("Unable to connect to MQTT broker: %s", ex)
-            exit(1)
+            LOGGER.error("Unable to connect to MQTT broker: %s",
+                         str(ex),
+                         stack_info=True,
+                         exc_info=True)
+            raise ConnectionError(ex)
 
     ## call back methods
     def on_connect(self, client, userdata, flags, rc, properties=None):
