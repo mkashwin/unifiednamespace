@@ -82,7 +82,7 @@ I evaluated and read the user guides of the following brokers (open source versi
 
 While HIVEMQ has the best documentation and community support I decided try out EMQX for the following reasons
 * EMQX is written in erlang which has a lower footprint than java (HIVEMQ). They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment.
-H
+
 ***Having said that, any of the above three would be perfectly good selections because***
 * All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages. Also EMQX seems to be supporting the ability to create plugins in multiple languages
 * All three deploy very easily on K8s and all three have community (free) as well as commercial offering 
@@ -95,6 +95,7 @@ H
 >**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database.
 However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases) provided here for better performance.
 
+Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
 ---
 ### **GraphDB**
 Normally I configured the MQTT publishers  to publish messages with retain flag so that consumers are able to get the latest message even if they weren't connected with broker at the time of publishing.
@@ -103,10 +104,10 @@ However I realized that,  in order to merge messages, or provide the capability 
 
 This provide the flexibility of defining relationships , simple way representing your object hierarchy as well as support merging of attributes
 
-I choose to go with [Neo4J](https://neo4j.com/) simply because it was the only graphDB I was aware of as well as the fact that it runs seamlessly on Kubernetes.
+I choose to go with **[Neo4J](https://neo4j.com/)** simply because it was the only graphDB I was aware of as well as the fact that it runs seamlessly on Kubernetes.
 The GraphDB also allows for extremely fine grained access control across the nodes, specific sections of the tree as well as limit access to specific properties. Refer [Neo4j - Access Control](https://neo4j.com/docs/operations-manual/current/authentication-authorization/access-control/)
 
-> **Important Note:** The clustering feature of neo4j on K8s is an enterprise feature and [not available in the community version](https://community.neo4j.com/t/neo4j-community-edition-on-kubernetes/4955)
+> **Important Note:** Thhttps://docs.timescale.com/timescaledb/latest/how-to-guides/schema-management/json/e clustering feature of neo4j on K8s is an enterprise feature and [not available in the community version](https://community.neo4j.com/t/neo4j-community-edition-on-kubernetes/4955)
 
 ### **Historian**
 The other critical component of the ***Unified Name Space*** is the historian. This allows to keep a full history of all messages, entities and artifacts generated. 
@@ -114,12 +115,12 @@ Since the graph databases are not suited for historian data (there were a couple
 
 I evaluated and read the user guides of the following historians
 1. [InfluxDb](https://www.influxdata.com/) combined with Timescale
-1. []TimescaleDB](https://www.timescale.com/) combined with [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)
+1. [TimescaleDB](https://www.timescale.com/) combined with [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)
 
-Both of these are excellent and have significant user adoption. InfluxDb combined with Telegraph provide a strong low code approach to the integration. Telegraf however did not have a plugin for Neo4j and InfluxDb does not support K8s.
+Both of these are excellent options and have significant user adoption. InfluxDb combined with Telegraph provide a strong low code approach to the integration. Telegraf however did not have a plugin for Neo4j and InfluxDb does not support K8s. Given the stronger stability of postgres (on which TimescaleDB is built) as well as support for [JSON] (https://docs.timescale.com/timescaledb/latest/how-to-guides/schema-management/json/) I decided to go ahead with **[TimescaleDB](https://www.timescale.com/)**
 
-For production systems you might want to consider the cloud versions of the historians ([InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/) o[TimescaleDB](https://www.timescale.com/products#timescale-cloud)) for lower maintenance and higher scalability
+For production systems you might want to consider the cloud versions of the historians ([InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/) or [TimescaleDB](https://www.timescale.com/products#timescale-cloud)) for lower maintenance and higher scalability
 
 
 ### **Plugin / MQTT Client to subscribe and write to the above data bases**
-
+Since I did not have the enterprise version and
