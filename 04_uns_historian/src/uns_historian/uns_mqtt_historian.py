@@ -73,7 +73,7 @@ class Uns_Mqtt_Historian:
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
         self.topic: str = settings.get("mqtt.topic", "#")
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
-        self.mqtt_ignored_attributes: str = settings.get(
+        self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
         if (self.mqtt_host is None):
@@ -126,12 +126,12 @@ class Uns_Mqtt_Historian:
         
         try:
             _message = msg.payload.decode("utf-8")
-            self.filter_ignored_attributes(_message,self.mqtt_ignored_attributes) 
+            self.filter_ignored_attributes(msg.topic,_message,self.mqtt_ignored_attributes) 
             ## save message
             self.uns_historian_handler.persistMQTTmsg(
                 client_id = getattr(client,"_client_id"),
                 topic=msg.topic,
-                timestamp=getattr(msg, self.mqtt_timestamp_key, time.time()),
+                timestamp=getattr(_message, self.mqtt_timestamp_key, time.time()),
                 message= _message
                 )
         except Exception as ex:

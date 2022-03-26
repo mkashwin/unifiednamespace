@@ -1,11 +1,10 @@
-from curses.ascii import FF
 import datetime
-import time
-from config import settings
-
-import json
-import psycopg2
 import logging
+import time
+
+import psycopg2
+
+from config import settings
 
 #Logger
 LOGGER = logging.getLogger(__name__)
@@ -118,20 +117,27 @@ class HistorianHandler:
         sql_cmd = f"""INSERT INTO {self.table} ( time, topic, client_id, mqtt_msg )
                         VALUES (%s,%s,%s,%s)
                         RETURNING *;"""
-        executeSQLcmd()
 
         def executeSQLcmd(retry: int = 0 ) :
-            with self.getcursor() as (cursor, ex):
-                if(ex) :
-                    #handle exception
-                    LOGGER.error("Error persisting message to the database. Error: %s", str(ex),stack_info=True, exc_info=True)
-                    if (retry >= MAX_RETRIES):
-                        raise ex
-                    else :
-                        retry +=1
-                        ##Close the stale connection.
-                        self.close()
-                        time.sleep(SLEEP_BTW_ATTEMPT)
-                        executeSQLcmd(retry)
+            """
+            inline method to enable retry
+            """
+            try:
+                with self.getcursor() as cursor:
+                    cursor.execute(sql_cmd,(_timestamp, topic, client_id, message)) 
+            except (psycopg2.DataError, psycopg2.OperationalError) as ex:
+                #handle exception
+                LOGGER.error("Error persisting message to the database. Error: %s", str(ex),stack_info=True, exc_info=True)
+                if (retry >= MAX_RETRIES):
+                    raise ex
                 else :
-                    cursor.execute(sql_cmd,(_timestamp, topic, client_id, message))                  
+                    retry +=1
+                    ##Close the stale connection.
+                    self.close()
+                    time.sleep(SLEEP_BTW_ATTEMPT)
+                    executeSQLcmd(retry)
+
+        #############################################################################
+        executeSQLcmd()
+
+                 
