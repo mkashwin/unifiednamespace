@@ -1,11 +1,10 @@
 import inspect
 import random
 import logging
+import re
 import time
 import os
 import sys
-from config import settings
-from historian_handler import HistorianHandler
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
@@ -15,6 +14,8 @@ cmd_subfolder = os.path.realpath(
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
+from config import settings
+from historian_handler import HistorianHandler
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 LOGGER = logging.getLogger(__name__)
@@ -140,19 +141,27 @@ class Uns_Mqtt_Historian:
                 stack_info=True,
                 exc_info=True)
             raise ex
+    
+    def on_disconnect(self, client, userdata, rc, properties=None):
+        # Close the database connection when the MQTT broker gets disconnected
+        if self.uns_historian_handler is not None:
+            self.uns_historian_handler.close()
+            self.uns_historian_handler = None
+        if (rc != 0):
+            LOGGER.error("Unexpected disconnection.:%s",str(rc),stack_info=True,exc_info=True)    
+     
     @staticmethod
     def filter_ignored_attributes(topic:str, mqtt_message:dict, mqtt_ignored_attributes):
         """
-        Based on the configured attributes to ignore in the mqtt message
+        removed the attributes configured to be ignored in the mqtt message and topic
         """
         if (mqtt_ignored_attributes is not None) :
             message = mqtt_message
             for topic_key in mqtt_ignored_attributes :
-                # Match Topic in ignored list with current topic
-                # convert ignored_topic into get ex with # and + support
-                # TODO
+                # Match Topic in ignored list with current topic and fetch associated ignored attributes
+
                 ignored_topic = topic_key
-                if (ignored_topic == topic) :
+                if (Uns_Mqtt_Historian.isTopicMatching(ignored_topic,topic)) :
                     # This could be either a single string or a list of strings
                     ignored_attr_list = mqtt_ignored_attributes.get(ignored_topic,[])
 
@@ -165,34 +174,54 @@ class Uns_Mqtt_Historian:
                     elif(type(ignored_attr_list) is list): 
                         for ignored_attr in ignored_attr_list :
                             Uns_Mqtt_Historian.del_key_from_dict(message, ignored_attr.split("."))
+
     @staticmethod
-    def del_key_from_dict(message:dict, ignored_attr:list):
+    def isTopicMatching(topicWithWildcard :str, topic:str) -> bool:
+        """
+        Checks if the actual topic matches with a wild card expression 
+        e.g. "a/b" matches with "a/+" and "a/#"
+             "a/b/c" matches wit "a/#" but not with "a/+"   
+        """
+        if(topicWithWildcard is not None):
+            regexList = topicWithWildcard.split('/')
+            ## Using Regex to do matching
+            # replace all occurrences of "+" wildcard with [^/]* -> any set of charecters except "/"
+            # replace all occurrences of "#" wildcard with (.)*  -> any set of charecters including "/"
+            regexExp = ""
+            for value in regexList:
+                if (value == "+"):
+                    regexExp += "[^/]*"
+                elif (value == "#") :
+                    regexExp += "(.)*"
+                else :
+                    regexExp += value + "/"
+            return bool(re.fullmatch(regexExp, topic))
+        return False
+
+
+    
+    @staticmethod
+    def del_key_from_dict(message:dict, ignored_attr:list) -> dict:
+        msg_cursor = message
         count = 0
         for key in ignored_attr:
-            if(not hasattr(message,key)):
-                                # If a key is not found break the loop as we cant proceed further to search for child nodes
+            if(msg_cursor.get(key) is None):
+                # If a key is not found break the loop as we cant proceed further to search for child nodes
                 LOGGER.warn("Unable to find attribute %s in %s. Skipping !!!",key,message)
                 break
                             
                 #descent into the nested key
             if(count == len(ignored_attr)-1 ) :
                 #we are at leaf node hence can delete the key & value
-                LOGGER.info("%s deleted and will not be persisted",message[key],key)
-                del message[key]
+                LOGGER.info("%s deleted and will not be persisted",msg_cursor[key],key)
+                del msg_cursor[key]
             else :
-                message = message[key]
-            if (type(message) is not dict):
+                msg_cursor = msg_cursor[key]
+            if (type(msg_cursor) is not dict):
                 LOGGER.warn("key: %s should return a dict but fount:%s. Cant proceed hence skipping !!!",key,message)
                 break
             count+=1
-        
-    def on_disconnect(self, client, userdata, rc, properties=None):
-        # Close the database connection when the MQTT broker gets disconnected
-        if self.uns_historian_handler is not None:
-            self.uns_historian_handler.close()
-            self.uns_historian_handler = None
-        if (rc != 0):
-            LOGGER.error("Unexpected disconnection.:%s",str(rc),stack_info=True,exc_info=True)
+        return message
 
 def main():
     try:
