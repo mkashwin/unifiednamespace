@@ -12,6 +12,7 @@ cmd_subfolder = os.path.realpath(
             'src')))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
+    sys.path.insert(1, os.path.join(cmd_subfolder,"uns_mqtt"))
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
