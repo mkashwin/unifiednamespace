@@ -4,7 +4,7 @@ This project aims to create an open sourced option for setting up a unified name
 My objective is to build an open source, free to use UNS solution for the community which can be enhanced and adapted by other enthusiasts. 
 
 All components used in this solution are community versions and I do not own any rights on them . Most of them also provide a commercial / enterprise version which may also be considered to have better tool support
-
+I also used this as an opportunity to learn Python.
 
 ## What is the Unified Name Space?
 A unified namespace is a ***software solution*** that acts as a ***centralized repository*** of data, information, and context where any application or device can consume or publish data needed for a specific action via an ***event driven*** and ***loosely coupled architecture***. ​
@@ -34,10 +34,10 @@ The overall architecture and the deployment setup is as follows
 1. K8s Cluster on the cloud / enterprise  - Enterprise 
     * K8s Cluster of the enterprise 
     * MQTT Broker installed on K8s
-    * TimescaleDB installed on ??
+    * TimescaleDB installed and running on docker
     * Graph DB installed and running on docker
 
-
+**TBD. Add diagram(s)**
 
 ---
 ## **Technology Choices**
@@ -62,7 +62,7 @@ I finally choose to go ahead with ***MicroK8s*** because
 * The default CNI provided for the cluster is Calico which claimed to be more performant
 * Setting up a High Availability cluster is extremely easy by adding multiple master nodes
 
-> **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place
+> **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place.
 
 * Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting. As a K8s noob this really helped.
 
@@ -107,7 +107,7 @@ This provide the flexibility of defining relationships , simple way representing
 I choose to go with **[Neo4J](https://neo4j.com/)** simply because it was the only graphDB I was aware of as well as the fact that it runs seamlessly on Kubernetes.
 The GraphDB also allows for extremely fine grained access control across the nodes, specific sections of the tree as well as limit access to specific properties. Refer [Neo4j - Access Control](https://neo4j.com/docs/operations-manual/current/authentication-authorization/access-control/)
 
-> **Important Note:** Thhttps://docs.timescale.com/timescaledb/latest/how-to-guides/schema-management/json/e clustering feature of neo4j on K8s is an enterprise feature and [not available in the community version](https://community.neo4j.com/t/neo4j-community-edition-on-kubernetes/4955)
+> **Important Note:** The clustering feature of neo4j on K8s is an enterprise feature and [not available in the community version](https://community.neo4j.com/t/neo4j-community-edition-on-kubernetes/4955)
 
 ### **Historian**
 The other critical component of the ***Unified Name Space*** is the historian. This allows to keep a full history of all messages, entities and artifacts generated. 
@@ -122,5 +122,11 @@ Both of these are excellent options and have significant user adoption. InfluxDb
 For production systems you might want to consider the cloud versions of the historians ([InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/) or [TimescaleDB](https://www.timescale.com/products#timescale-cloud)) for lower maintenance and higher scalability
 
 
-### **Plugin / MQTT Client to subscribe and write to the above data bases**
-Since I did not have the enterprise version and
+### **Plugin / MQTT Client to subscribe and write to the above databases**
+Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solition. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
+
+I choose to wite the client in Python even thought Python is not as performance as C or Rust primarily because
+* In the OT space most professionals  ( in my experience) were more familiar coding with Python than C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
+* Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able
+* to rewrite the applicationin their choice of language
+* I wanted to learn Python
