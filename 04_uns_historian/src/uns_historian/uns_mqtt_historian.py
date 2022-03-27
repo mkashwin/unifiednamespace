@@ -151,12 +151,12 @@ class Uns_Mqtt_Historian:
             LOGGER.error("Unexpected disconnection.:%s",str(rc),stack_info=True,exc_info=True)    
      
     @staticmethod
-    def filter_ignored_attributes(topic:str, mqtt_message:dict, mqtt_ignored_attributes):
+    def filter_ignored_attributes(topic:str, mqtt_message:dict, mqtt_ignored_attributes) -> dict:
         """
         removed the attributes configured to be ignored in the mqtt message and topic
         """
         if (mqtt_ignored_attributes is not None) :
-            message = mqtt_message
+            resulting_message = mqtt_message
             for topic_key in mqtt_ignored_attributes :
                 # Match Topic in ignored list with current topic and fetch associated ignored attributes
 
@@ -169,11 +169,12 @@ class Uns_Mqtt_Historian:
                     # if the attribute is a single key.  
                     # But this could be a nested key e.g. parent_key.child_key so split that into a list 
                     if(type(ignored_attr_list) is str):
-                        Uns_Mqtt_Historian.del_key_from_dict(message, ignored_attr_list.split("."))
+                        Uns_Mqtt_Historian.del_key_from_dict(resulting_message, ignored_attr_list.split("."))
                     # if the attribute is a list of keys  
                     elif(type(ignored_attr_list) is list): 
                         for ignored_attr in ignored_attr_list :
-                            Uns_Mqtt_Historian.del_key_from_dict(message, ignored_attr.split("."))
+                            Uns_Mqtt_Historian.del_key_from_dict(resulting_message, ignored_attr.split("."))
+            return resulting_message
 
     @staticmethod
     def isTopicMatching(topicWithWildcard :str, topic:str) -> bool:
@@ -195,6 +196,8 @@ class Uns_Mqtt_Historian:
                     regexExp += "(.)*"
                 else :
                     regexExp += value + "/"
+            if(len(regexExp)>1 and regexExp[-1] == "/"):
+                regexExp = regexExp[:-1]
             return bool(re.fullmatch(regexExp, topic))
         return False
 
