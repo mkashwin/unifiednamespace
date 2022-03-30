@@ -1,7 +1,6 @@
 import inspect
 import random
 import logging
-import re
 import time
 import os
 import sys
@@ -123,17 +122,18 @@ class Uns_Mqtt_Historian:
                      f"Userdata: {userdata},"
                      f"Message: {msg},"
                      "}")
-        
+
         try:
-            _message = msg.payload.decode("utf-8")
-            self.filter_ignored_attributes(msg.topic,_message,self.mqtt_ignored_attributes) 
+            _message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
+                msg.topic, msg.payload.decode("utf-8"),
+                self.mqtt_ignored_attributes)
             ## save message
             self.uns_historian_handler.persistMQTTmsg(
-                client_id = getattr(client,"_client_id"),
+                client_id=getattr(client, "_client_id"),
                 topic=msg.topic,
-                timestamp=getattr(_message, self.mqtt_timestamp_key, time.time()),
-                message= _message
-                )
+                timestamp=getattr(_message, self.mqtt_timestamp_key,
+                                  time.time()),
+                message=_message)
         except Exception as ex:
             LOGGER.error(
                 "Error persisting the message to the Historian DB: %s",
@@ -141,90 +141,14 @@ class Uns_Mqtt_Historian:
                 stack_info=True,
                 exc_info=True)
             raise ex
-    
+
     def on_disconnect(self, client, userdata, rc, properties=None):
         # Close the database connection when the MQTT broker gets disconnected
         if self.uns_historian_handler is not None:
             self.uns_historian_handler.close()
             self.uns_historian_handler = None
         if (rc != 0):
-            LOGGER.error("Unexpected disconnection.:%s",str(rc),stack_info=True,exc_info=True)    
-     
-    @staticmethod
-    def filter_ignored_attributes(topic:str, mqtt_message:dict, mqtt_ignored_attributes) -> dict:
-        """
-        removed the attributes configured to be ignored in the mqtt message and topic
-        """
-        if (mqtt_ignored_attributes is not None) :
-            resulting_message = mqtt_message
-            for topic_key in mqtt_ignored_attributes :
-                # Match Topic in ignored list with current topic and fetch associated ignored attributes
-
-                ignored_topic = topic_key
-                if (Uns_Mqtt_Historian.isTopicMatching(ignored_topic,topic)) :
-                    # This could be either a single string or a list of strings
-                    ignored_attr_list = mqtt_ignored_attributes.get(ignored_topic,[])
-
-                    ignored_attr = None
-                    # if the attribute is a single key.  
-                    # But this could be a nested key e.g. parent_key.child_key so split that into a list 
-                    if(type(ignored_attr_list) is str):
-                        Uns_Mqtt_Historian.del_key_from_dict(resulting_message, ignored_attr_list.split("."))
-                    # if the attribute is a list of keys  
-                    elif(type(ignored_attr_list) is list): 
-                        for ignored_attr in ignored_attr_list :
-                            Uns_Mqtt_Historian.del_key_from_dict(resulting_message, ignored_attr.split("."))
-            return resulting_message
-
-    @staticmethod
-    def isTopicMatching(topicWithWildcard :str, topic:str) -> bool:
-        """
-        Checks if the actual topic matches with a wild card expression 
-        e.g. "a/b" matches with "a/+" and "a/#"
-             "a/b/c" matches wit "a/#" but not with "a/+"   
-        """
-        if(topicWithWildcard is not None):
-            regexList = topicWithWildcard.split('/')
-            ## Using Regex to do matching
-            # replace all occurrences of "+" wildcard with [^/]* -> any set of charecters except "/"
-            # replace all occurrences of "#" wildcard with (.)*  -> any set of charecters including "/"
-            regexExp = ""
-            for value in regexList:
-                if (value == "+"):
-                    regexExp += "[^/]*"
-                elif (value == "#") :
-                    regexExp += "(.)*"
-                else :
-                    regexExp += value + "/"
-            if(len(regexExp)>1 and regexExp[-1] == "/"):
-                regexExp = regexExp[:-1]
-            return bool(re.fullmatch(regexExp, topic))
-        return False
-
-
-    
-    @staticmethod
-    def del_key_from_dict(message:dict, ignored_attr:list) -> dict:
-        msg_cursor = message
-        count = 0
-        for key in ignored_attr:
-            if(msg_cursor.get(key) is None):
-                # If a key is not found break the loop as we cant proceed further to search for child nodes
-                LOGGER.warn("Unable to find attribute %s in %s. Skipping !!!",key,message)
-                break
-                            
-                #descent into the nested key
-            if(count == len(ignored_attr)-1 ) :
-                #we are at leaf node hence can delete the key & value
-                LOGGER.info("%s deleted and will not be persisted",msg_cursor[key],key)
-                del msg_cursor[key]
-            else :
-                msg_cursor = msg_cursor[key]
-            if (type(msg_cursor) is not dict):
-                LOGGER.warn("key: %s should return a dict but fount:%s. Cant proceed hence skipping !!!",key,message)
-                break
-            count+=1
-        return message
+            LOGGER.error("Unexpected disconnection.:%s",str(rc),stack_info=True,exc_info=True)
 
 def main():
     try:

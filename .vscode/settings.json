@@ -6,6 +6,7 @@
         "IIOT",
         "k8scluster",
         "microk8s",
+        "paho",
         "VERNEMQ"
     ],
     "python.formatting.provider": "yapf",
