@@ -1,4 +1,5 @@
 import inspect
+import json
 import random
 import logging
 import time
@@ -23,6 +24,9 @@ LOGGER = logging.getLogger(__name__)
 class Uns_MQTT_GraphDb:
 
     def __init__(self):
+        self.graph_db_handler = None
+        self.uns_client:Uns_MQTT_ClientWrapper = None
+
         self.load_mqtt_configs()
         self.load_graphdb_config()
         self.uns_client:Uns_MQTT_ClientWrapper = Uns_MQTT_ClientWrapper(
@@ -35,6 +39,14 @@ class Uns_MQTT_GraphDb:
         )
 
         self.uns_client.on_message = self.on_message
+        self.uns_client.on_disconnect = self.on_disconnect
+
+        ## Connect to the database
+        self.graph_db_handler = GraphDBHandler(uri=self.graphdb_url,
+                                      user=self.graphdb_user,
+                                      password=self.graphdb_password,
+                                      database=self.graphdb_database,
+                                      node_types=self.graphdb_node_types)
 
         self.uns_client.run(host=self.mqtt_host,
                             port=self.mqtt_port,
@@ -44,13 +56,11 @@ class Uns_MQTT_GraphDb:
                             keepalive=self.mqtt_keepalive,
                             topic=self.topic,
                             qos=self.mqtt_qos)
-
-
+    #end of init###############################################################
 
     def load_mqtt_configs(self):
         # generate client ID with pub prefix randomly
-        self.client_id = f'graphdb- { time.time()}-{random.randint(0, 1000)}'
-
+        self.client_id = f'graphdb-{time.time()}-{random.randint(0, 1000)}'
 
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
@@ -60,7 +70,6 @@ class Uns_MQTT_GraphDb:
             "mqtt.reconnect_on_failure", True)
         self.clean_session: bool = settings.get("mqtt.clean_session", None)
 
-
         self.mqtt_host: str = settings.mqtt["host"]
         self.mqtt_port: int = settings.get("mqtt.port", 1883)
         self.mqtt_username: str = settings.mqtt["username"]
@@ -68,11 +77,14 @@ class Uns_MQTT_GraphDb:
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
         self.topic: str = settings.get("mqtt.topic", "#")
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
-
+        self.mqtt_ignored_attributes: dict = settings.get(
+            "mqtt.ignored_attributes", None)
+        self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
         if (self.mqtt_host is None):
             raise ValueError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
+    ###########################################################################
 
     def load_graphdb_config(self):
         """ 
@@ -101,6 +113,7 @@ class Uns_MQTT_GraphDb:
                 "GraphDB Username & Password not provided."
                 "Update keys 'graphdb.username' and 'graphdb.password' in '../../conf/.secrets.yaml'"
             )
+    ###########################################################################
 
     def on_message(self, client, userdata, msg):
         LOGGER.debug("{"
@@ -108,37 +121,50 @@ class Uns_MQTT_GraphDb:
                      f"Userdata: {userdata},"
                      f"Message: {msg},"
                      "}")
-
         try:
-            ## Connect to the database
-            graph_db_handler = GraphDBHandler(self.graphdb_url,
-                                              self.graphdb_user,
-                                              self.graphdb_password)
 
+            filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
+                msg.topic, json.loads(msg.payload.decode("utf-8")),
+                self.mqtt_ignored_attributes)
             ## save message
-            graph_db_handler.persistMQTTmsg(msg.topic,
-                                            msg.payload.decode("utf-8"),
-                                            self.graphdb_database,
-                                            self.graphdb_node_types,
-                                            self.graphdb_ignored_attributes
+            self.graph_db_handler.persistMQTTmsg(topic=msg.topic,
+                                            message=filtered_message,
+                                            timestamp=getattr(filtered_message,
+                                                        self.mqtt_timestamp_key,time.time())
                                             )
-            ## disconnect from db
-            graph_db_handler.close()
         except Exception as ex:
-            LOGGER.error("Error persisting the message to the Graph DB: %s", str(ex),stack_info=True, exc_info=True)
-        finally :
-            if(graph_db_handler is not None):
-                graph_db_handler.close()
+            LOGGER.error("Error persisting the message to the Graph DB: %s",
+                         str(ex),
+                         stack_info=True,
+                         exc_info=True)
+            raise ex
+    #end of on_message#########################################################
 
+    def on_disconnect(self, client, userdata, rc, properties=None):
+        # Close the database connection when the MQTT broker gets disconnected
+        if self.graph_db_handler is not None:
+            self.graph_db_handler.close()
+            self.graph_db_handler = None
+        if (rc != 0):
+            LOGGER.error("Unexpected disconnection.:%s",
+                         str(rc),
+                         stack_info=True,
+                         exc_info=True)
+    #end of on_disconnect######################################################
 
-
+#end of class #################################################################
 def main():
+    uns_mqtt_graphdb = None
     try :
         uns_mqtt_graphdb = Uns_MQTT_GraphDb()
         uns_mqtt_graphdb.uns_client.loop_forever()
     finally :
-        uns_mqtt_graphdb.uns_client.disconnect()
+        if(uns_mqtt_graphdb is not None):
+            uns_mqtt_graphdb.uns_client.disconnect()
 
-
+        if ( (uns_mqtt_graphdb is not None) 
+                    and (uns_mqtt_graphdb.graph_db_handler is not None)):
+            uns_mqtt_graphdb.graph_db_handler.close()
+#end of main()#################################################################
 if __name__ == '__main__':
     main()
