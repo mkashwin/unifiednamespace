@@ -60,7 +60,7 @@ class Uns_Mqtt_Historian:
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
             "mqtt.version", Uns_MQTT_ClientWrapper.MQTTv5)
-        self.mqtt_qos: int = settings.get("mqtt.qos", 1)
+        self.mqtt_qos: int = settings.get("mqtt.qos", 2)
         self.reconnect_on_failure: bool = settings.get(
             "mqtt.reconnect_on_failure", True)
         self.clean_session: bool = settings.get("mqtt.clean_session", None)
@@ -124,16 +124,16 @@ class Uns_Mqtt_Historian:
                      "}")
 
         try:
-            _message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
+            filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
                 msg.topic, msg.payload.decode("utf-8"),
                 self.mqtt_ignored_attributes)
             ## save message
             self.uns_historian_handler.persistMQTTmsg(
                 client_id=getattr(client, "_client_id"),
                 topic=msg.topic,
-                timestamp=getattr(_message, self.mqtt_timestamp_key,
+                timestamp=getattr(filtered_message, self.mqtt_timestamp_key,
                                   time.time()),
-                message=_message)
+                message=filtered_message)
         except Exception as ex:
             LOGGER.error(
                 "Error persisting the message to the Historian DB: %s",
