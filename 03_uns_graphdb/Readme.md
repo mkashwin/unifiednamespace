@@ -6,7 +6,7 @@ We will be publishing messages as per the ISA-95 part 2 specifications
 We choose a graph database in this case because it allows us to define and maintain relationships and connections across our enterprise as well as merge messages to the same topic.
 e.g. the ERP system which is publishing to the Enterprise node can have a relationship with a device allowing us to easily correlate identifiers across the various systems.
 
-The Graph DB is not a store for historical data, this decision is done for performance purposes. For that refer to the [historian](./../04_uns_historian/Readme.md)
+The Graph DB is not a store for historical data, this decision is done for performance purposes and the ability to define relationships easily across the entities. For the historian capability refer to the [historian](./../04_uns_historian/Readme.md) module.
 
 The GraphDB is also deployed both at the factory level and enterprise level. 
 Devices can query the GraphDB if they need merged data. If they just need the latest message published it would be more efficient to subscribe to the topic ( assuming that MQTT messages are published with retain flag as true)
@@ -20,6 +20,7 @@ There are a number of ways to deploy and run your Neo4j instance.
 I chose to run this as a docker instance to ease the setup and portability. 
 
 **[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**
+
 Quick command reference 
 ```bash
 docker run \
@@ -47,13 +48,41 @@ docker stop  uns_graphdb #<container_name>
 
 ## Key Configurations to provide
 This application has two configuration file 
-1. [settings.yaml](./settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as Neo4j db.
-    The key configurations to update are
-    - mqtt.url
-    - graphdb.url
+1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as Neo4j db.
+    **key** | **sub key** | **description**  | ***default value*** |
+    ------ | ------ | ------ | ------
+    **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
+    mqtt | port | Port of the mqtt broker (int) | *1883*
+    mqtt | topic | Topic to be subscribed to. Recommend subscribing to a level + # e.g. "erp/#" | *"#"* 
+    mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
+    mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
+    mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
+    mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
+    mqtt | transp ort | Valid values are "websockets", "tcp" | *"tcp"*
+    mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  *None* 
+    mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
+    **graphdb** | **url**\* | Mandatory. The db connection URL string for your Neo4j instance| *None*
+    graphdb | database | the data base name to write to. if not provided default db ('') will be used | *''*
+    graphdb | node_types | List based on ISA-95 part 2 the nested depth. Nodes will by tagged with the node type depending on their depth | ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] 
+    **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
     
-1. [.secret.yaml](./.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster and the GraphDB
-    This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**
+1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the credentials to connect to the MQTT cluster and the GraphDB. This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**.
+
+    **key** | **sub key** | **sub key** | **description**  | ***default value*** |
+    :------ | :------ | :------ | :------ | :------
+   mqtt | username | | The user id needed to authenticate with the MQTT broker | *None*
+   mqtt | password | | The password needed to authenticate with the MQTT broker | *None*
+   mqtt | tls | |Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes | *None*
+   mqtt | tls | ca_certs | fully qualified path to the ca cert file. Mandatory for an SSL connection | *None* 
+   mqtt | tls | certfile | fully qualified path to the cert file | *None*
+   mqtt | tls | keyfile | fully qualified path to the keyfile for the cert| *None*
+   mqtt | tls | cert_reqs | Boolean. If note provided then  ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | *None*
+   mqtt | tls | ciphers | Specify which encryption ciphers are allowed for this connection | *None*
+   mqtt | tls | keyfile_password | Password used to encrypt your certfile and keyfile | *None*
+   mqtt | tls | insecure_cert | Boolean. Skips hostname checking required for self signed certificates.  | *True*
+   **graphdb** | **username**\* | | The user id  needed to authenticate with GraphDB | *None*
+   **graphdb** | **password**\* | | The password needed to authenticate with GraphDB | *None*
+   **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 
 ## Running the python script
 This function is executed by the following command with the current folder as `03_uns_graphdb`
@@ -96,26 +125,22 @@ Topic : **erp/**
 
 *message 1:* 
 ```json 
-    {timestamp: 202203011130, id1: "identifier"} 
+    {value1: 202203011130, id1: "identifier"} 
 ```
 *message 2:* 
 ```json 
-    {timestamp: 202203011145, sensor1: 100} 
+    {value1: 202203011145, sensor1: 100} 
 ```
 
 will result in a node in the GraphDB
 ```json
-(erp:enterprise : { id1: "identifier", sensor1: 100, timestamp: 202203011145})
+(erp:enterprise : { id1: "identifier", sensor1: 100, value1: 202203011145})
 ```
-## Tag extraction from message
-TBD.
-[ ] Need to discuss and update the logic of tag extraction especially for PLC other IIoT devices
 
 ## Limitations / workarounds 
 1. Neo4j does not support nested attributes. If your message contains nested data the current logic will flatten the JSON object. 
-   See the function [_flatten_json_for_Neo4J()](./graphdb_handler.py#_flatten_json_for_Neo4J)
+   See the function [_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
 1. If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name
 1. Current code & configurations have not considered securing the database and encrypted connections
-1. Current code & configurations have not considered securing the MQTT broker authentication and encrypted connections
 1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
 1. Add and improve automated test coverage

@@ -51,15 +51,43 @@ docker stop  uns_timescaledb #<container_name>
 ```
 ## Key Configurations to provide
 This application has two configuration file. 
-1. [settings.yaml](./settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as timescale db. 
-    The key configurations to update are
-    - mqtt.url
-    - historian.url
-Defaults for the other parameters are in the file with comments.
+1. [settings.yaml](./settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as timescale db
+    **key** | **sub key** | **description**  | ***default value*** |
+    ------ | ------ | ------ | ------
+    **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
+    mqtt | port | Port of the mqtt broker (int) | *1883*
+    mqtt | topic | Topic to be subscribed to. Recommend subscribing to a level + # e.g. "erp/#" | *"#"* 
+    mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
+    mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
+    mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
+    mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
+    mqtt | transp ort | Valid values are "websockets", "tcp" | *"tcp"*
+    mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  None 
+    mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
+    **historian** | **hostname**\* | Mandatory. The db hostname of your TimescaleDB  instance| *None*
+    historian | port |  The port for the instance of your TimescaleDB  instance| *5432*
+    **historian**  | **database**\*  | Mandatory. The database name to write to. See [db script](./sql_scripts/01_setup_db.sql) | *None*
+    **historian** | **table**\*| Mandatory. The hypertable where the time-series of messages is stored. See [db script](./sql_scripts/02_setup_hypertable.sql)| *None* 
+    **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
 
 1. [.secret.yaml](./.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster and the timescaledb
     This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**
-
+    **key** | **sub key** | **sub key** | **description**  | ***default value*** |
+    :------ | :------ | :------ | :------ | :------
+   mqtt | username | | The user id needed to authenticate with the MQTT broker | *None*
+   mqtt | password | | The password needed to authenticate with the MQTT broker | *None*
+   mqtt | tls | |Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes | *None*
+   mqtt | tls | ca_certs | fully qualified path to the ca cert file. Mandatory for an SSL connection | *None* 
+   mqtt | tls | certfile | fully qualified path to the cert file | *None*
+   mqtt | tls | keyfile | fully qualified path to the keyfile for the cert| *None*
+   mqtt | tls | cert_reqs | Boolean. If note provided then  ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | *None*
+   mqtt | tls | ciphers | Specify which encryption ciphers are allowed for this connection | *None*
+   mqtt | tls | keyfile_password | Password used to encrypt your certfile and keyfile | *None*
+   mqtt | tls | insecure_cert | Boolean. Skips hostname checking required for self signed certificates.  | *True*
+   **historian** | **username**\* | | The user id  needed to authenticate with TimescaleDB | *None*
+   **historian** | **password**\* | | The password needed to authenticate with TimescaleDB | *None*
+   historian | sslmode | | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full | *None*
+   **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 ## Running the python script
 This function is executed by the following command with the current folder as `03_uns_graphdb`
 ```bash
@@ -85,15 +113,10 @@ The message format is expected to be in JSON and should have an attribute `times
 The attribute key name is configurable in [settings.yaml](./settings.yaml)
 If this attribute is missing the application will use the current time 
 ```python
-datetime.datetime.now()
+time.time()
 ```
 
 
-
-### Tag extraction from message
-TBD.
-
-
-
 ## Limitations 
-1. In the current design and architecture, the connection to the data base is created for every message and then closed. There is no connection pooling. Need to evaluate the performance impact of that as well as consider alternative designs
+1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
+1. Add and improve automated test coverage 
