@@ -19,7 +19,7 @@ mqtt:
 graphdb:
   url: 'bolt://localhost:7687'
 #  database: ''
-  node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
+  node_types: ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE") # Based on ISA-95 part 2 the nested depth
   ignored_attributes : {} # attributes in the message to ignore
 
 dynaconf_merge: true

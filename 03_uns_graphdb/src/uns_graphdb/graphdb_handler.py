@@ -15,9 +15,7 @@ class GraphDBHandler:
                  user: str,
                  password: str,
                  database: str = neo4j.DEFAULT_DATABASE,
-                 node_types: list = [
-                     "ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"
-                 ],
+                 node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"),
                  MAX_RETRIES: int = 5,
                  SLEEP_BTW_ATTEMPT: float = 10):
         """
@@ -29,9 +27,9 @@ class GraphDBHandler:
             password for the db user 
         database : str = neo4j.DEFAULT_DATABASE
             The Neo4j database in which this data should be persisted 
-        node_types : list [str]  
+        node_types : tuple [str]  
             Configuration for Node Labels to be used for the topics based on topic hierarchy
-            Default value is ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"]
+            Default value is ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")
         
         MAX_RETRIES: int
                 Must be a positive integer. Default value is 5. Number of attempts after a failed database connection to retry connecting 
@@ -182,11 +180,11 @@ class GraphDBHandler:
 
     # static method starts
     @staticmethod
-    def getNodeName(current_depth: int, node_type_list: list) -> str:
-        if (current_depth < len(node_type_list)):
-            return node_type_list[current_depth]
+    def getNodeName(current_depth: int, node_types: tuple) -> str:
+        if (current_depth < len(node_types)):
+            return node_types[current_depth]
         else:
-            return f"{node_type_list[-1]}_depth_{current_depth - len(node_type_list)+ 1}"
+            return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
 
     ## static method ends
 
