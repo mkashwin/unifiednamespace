@@ -3,10 +3,12 @@
         "EMQX",
         "graphdb",
         "HIVEMQ",
+        "hypertable",
         "IIOT",
         "k8scluster",
         "microk8s",
         "paho",
+        "venv",
         "VERNEMQ"
     ],
     "python.formatting.provider": "yapf",
