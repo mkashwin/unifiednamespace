@@ -100,7 +100,7 @@ class Uns_MQTT_GraphDb:
         #
         self.graphdb_node_types = settings.get(
             "graphdb.node_types",
-            ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"])
+            ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
         self.graphdb_ignored_attributes: str = settings.get(
             "graphdb.ignored_attributes", None)
         if (self.graphdb_url is None):
