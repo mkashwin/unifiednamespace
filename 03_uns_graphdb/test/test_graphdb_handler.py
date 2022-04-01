@@ -82,3 +82,23 @@ def test_flatten_json_for_Neo4J(nested_dict:dict, expectedResult:dict):
             Json/dict to flatten:{nested_dict}, 
             Expected Result:{expectedResult},
             Actual Result: {result}"""
+
+
+@pytest.mark.parametrize("current_depth, expectedResult", [
+    (0, "ENTERPRISE"),
+    (1, "FACILITY"),
+    (2, "AREA"),
+    (3, "LINE"),
+    (4, "DEVICE"),
+    (5, "DEVICE_depth_1"),
+    (6, "DEVICE_depth_2"),
+    (9, "DEVICE_depth_5"),
+])
+def test_getNodeName(current_depth:int, expectedResult ):
+    node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")
+    result = GraphDBHandler.getNodeName(current_depth, node_types)
+    assert result == expectedResult , f""" 
+            Get Node name for Depth:{current_depth}, 
+            From Node Types : {node_types}
+            Expected Result:{expectedResult},
+            Actual Result: {result}"""
