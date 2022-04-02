@@ -10,27 +10,32 @@ I chose to run this as a docker instance to ease the setup and portability.
 
 **[Detail Guide](https://docs.timescale.com/install/latest/installation-docker/#install-self-hosted-timescaledb-from-a-pre-built-container)**
 
+>**Important Note:** Remember to update the passwords being passed to the docker run command for the postgres user (i.e. `-e POSTGRES_PASSWORD=<postgres user pwd>`)
 Quick command reference 
 ```bash
 sudo apt install postgresql-client-common postgresql-client-12 postgresql-doc-12
 docker run \
-    --name uns_timescaledb \ 
-    -p 5432:5432 \ # Ports of operation 
+    --name uns_timescaledb  \
+    -p 5432:5432  \
     -v $HOME/timescaledb/data:/var/lib/postgresql/data \
-    -d \  # Runs the container detached     
-    -e POSTGRES_PASSWORD=uns_historian \ #<super user password>. REMEMBER to update the password
+    -d \
+    -e POSTGRES_PASSWORD=uns_historian \
     timescale/timescaledb:latest-pg14
-
+# =--name : name given to your container
+# -p : provide ports of operation 
+# -v : volume to persist data 
+#- d : run the container detached
+#-e POSTGRES_PASSWORD=uns_historian \ #<super user password>. REMEMBER to update the password
 
 # Create the db and enable the timescaledb extension
 psql -U postgres -h localhost -f './sql_scripts/01_setup_db.sql'
 
 #create DBA
-docker exec -ti uns_timescaledb bash -c "su -u postgres -c 'createuser --createdb --createrole --login -e uns_dba -P'" 
+docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --createdb --createrole --login -e uns_dba -P'" 
 # Manually enter the password for the dba
 
 #create application user (to be used in the configuration by the application)
-docker exec -ti uns_timescaledb bash -c "su -u postgres -c 'createuser --login -e uns_dbuser -P'"
+docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --login -e uns_dbuser -P'"
 #Manually enter the password for application user
 
 # create the hypertable with the application user 
@@ -38,13 +43,12 @@ psql -U uns_dbuser  -h localhost -d uns_historian -f './sql_scripts/02_setup_hyp
 
 ```
 **The key parameters you must update for your environment are :**
-* \<container_name\> : is a name you give to identify your container
-* \<postgres password\> : password for the super user. 
+* \<postgres password\> : password for the super user which is passed to the docker command  `-e POSTGRES_PASSWORD=`
 * \<dba password\> : password for the DBA will be needed for db mgmt. activities
-* \<application user password\> : is the password needed to connect to the DB. Needs to be updated in [./.secrets.yaml](#key-configurations-to-provide) 
+* \<application user password\> : is the password needed to connect to the DB. Needs to also be updated in [./.secrets.yaml](#key-configurations-to-provide) 
 
-Depending on your context you may need to change the other properties like port, directories etc. 
-Once the docker container is deployed you can work on 
+Depending on your context you may need to change the other properties like container name, port, directories etc. 
+Once the docker container is deployed you can start / stop it by the commands
 ```bash
 docker start  uns_timescaledb #<container_name>
 docker stop  uns_timescaledb #<container_name>
