@@ -21,14 +21,16 @@ This is a critical concept to allow scalability by preventing point to point con
 ---
 ## **Architecture**
 The overall architecture and the deployment setup is as follows
-1. Factory1
+1. K8s Cluster on the edge - Factory1
     * K8s Cluster on the edge
     * MQTT edge installed on K8s
+    * Bridge between Factory1 and the Enterprise MQTT clusters
     * Graph DB installed and running on docker
 
 1. K8s Cluster on the edge - Factory2
     * K8s Cluster on the edge
     * MQTT edge installed on K8s
+    * Bridge between Factory1 and the Enterprise MQTT clusters
     * Graph DB installed and running on docker
 
 1. K8s Cluster on the cloud / enterprise  - Enterprise 
@@ -92,8 +94,8 @@ While HIVEMQ has the best documentation and community support I decided try out 
 * Both [HiveMQ](hivemq.com/mqtt-cloud-broker/) and [EMQX](https://www.emqx.com/en/cloud) provide fully managed cloud services which might be interesting offer to explore for your cloud / enterprise MQTT Cluster
 
 #### <a id="broker_plugin"></a>
->**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database.
-However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases) provided here for better performance.
+>**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#/<enterprise>"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database.
+However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases) provided here for better performance. But for most scenarios, an MQTT client should suffice.
 
 Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
 ---
