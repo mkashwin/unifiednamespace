@@ -64,7 +64,7 @@ I finally choose to go ahead with ***MicroK8s*** because
 * The default CNI provided for the cluster is Calico which claimed to be more performant
 * Setting up a High Availability cluster is extremely easy by adding multiple master nodes
 
-> **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place.
+   > **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place.
 
 * Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting. As a K8s noob this really helped.
 
@@ -90,13 +90,12 @@ While HIVEMQ has the best documentation and community support I decided try out 
 * All three deploy very easily on K8s and all three have community (free) as well as commercial offering 
 * All three support **MQTT 5** which is critical for manufacturers and **Sparkplug B** support
 * All three support MQTT bridging allowing copying data between edge to cloud instances
-#### <a id="cloud_mqtt"></a>
 * Both [HiveMQ](hivemq.com/mqtt-cloud-broker/) and [EMQX](https://www.emqx.com/en/cloud) provide fully managed cloud services which might be interesting offer to explore for your cloud / enterprise MQTT Cluster
 
-#### <a id="broker_plugin"></a>
+#### <a id="broker_plugin"> </a>
 >**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#/<enterprise>"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database.
 However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases) provided here for better performance. But for most scenarios, an MQTT client should suffice.
-
+>
 Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
 ---
 ### **GraphDB**
@@ -119,7 +118,7 @@ I evaluated and read the user guides of the following historians
 1. [InfluxDb](https://www.influxdata.com/) combined with Timescale
 1. [TimescaleDB](https://www.timescale.com/) combined with [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)
 
-Both of these are excellent options and have significant user adoption. InfluxDb combined with Telegraph provide a strong low code approach to the integration. Telegraf however did not have a plugin for Neo4j and InfluxDb does not support K8s. Given the stronger stability of postgres (on which TimescaleDB is built) as well as support for [JSON] (https://docs.timescale.com/timescaledb/latest/how-to-guides/schema-management/json/) I decided to go ahead with **[TimescaleDB](https://www.timescale.com/)**
+Both of these are excellent options and have significant user adoption. InfluxDb combined with Telegraph provide a strong low code approach to the integration. Telegraf however did not have a plugin for Neo4j and InfluxDb does not support K8s. Given the stronger stability of postgres (on which TimescaleDB is built) as well as support for [JSON](https://docs.timescale.com/timescaledb/latest/how-to-guides/schema-management/json/) I decided to go ahead with **[TimescaleDB](https://www.timescale.com/)**
 
 For production systems you might want to consider the cloud versions of the historians ([InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/) or [TimescaleDB](https://www.timescale.com/products#timescale-cloud)) for lower maintenance and higher scalability
 
@@ -127,8 +126,7 @@ For production systems you might want to consider the cloud versions of the hist
 ### **Plugin / MQTT Client to subscribe and write to the above databases**
 Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solition. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
 
-I choose to wite the client in Python even thought Python is not as performance as C or Rust primarily because
-* In the OT space most professionals  ( in my experience) were more familiar coding with Python than C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
-* Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able
-* to rewrite the applicationin their choice of language
+I choose to wite the client in Python even thought Python is not as performance as Go, C or Rust primarily because
+* In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
+* Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
 * I wanted to learn Python
