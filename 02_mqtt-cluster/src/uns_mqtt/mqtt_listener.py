@@ -205,8 +205,9 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         """
         removed the attributes configured to be ignored in the mqtt message and topic
         """
+        resulting_message = mqtt_message
         if (mqtt_ignored_attributes is not None) :
-            resulting_message = mqtt_message
+            
             for topic_key in mqtt_ignored_attributes :
                 # Match Topic in ignored list with current topic and fetch associated ignored attributes
 
@@ -221,10 +222,10 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                     if(type(ignored_attr_list) is str):
                         Uns_MQTT_ClientWrapper.del_key_from_dict(resulting_message, ignored_attr_list.split("."))
                     # if the attribute is a list of keys
-                    elif(type(ignored_attr_list) is list):
+                    elif(type(ignored_attr_list) is list or type(ignored_attr_list) is tuple):
                         for ignored_attr in ignored_attr_list :
                             Uns_MQTT_ClientWrapper.del_key_from_dict(resulting_message, ignored_attr.split("."))
-            return resulting_message
+        return resulting_message
 
     @staticmethod
     def isTopicMatching(topicWithWildcard :str, topic:str) -> bool:
