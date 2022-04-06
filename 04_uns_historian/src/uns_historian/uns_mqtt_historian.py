@@ -13,7 +13,7 @@ cmd_subfolder = os.path.realpath(
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
-from config import settings
+from historian_config import settings
 from historian_handler import HistorianHandler
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 

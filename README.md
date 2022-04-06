@@ -95,9 +95,9 @@ While HIVEMQ has the best documentation and community support I decided try out 
 #### <a id="broker_plugin"> </a>
 >**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#/<enterprise>"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database.
 However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases) provided here for better performance. But for most scenarios, an MQTT client should suffice.
->
+
 Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
----
+
 ### **GraphDB**
 Normally I configured the MQTT publishers  to publish messages with retain flag so that consumers are able to get the latest message even if they weren't connected with broker at the time of publishing.
 
@@ -124,7 +124,7 @@ For production systems you might want to consider the cloud versions of the hist
 
 
 ### **Plugin / MQTT Client to subscribe and write to the above databases**
-Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solition. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
+Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
 
 I choose to wite the client in Python even thought Python is not as performance as Go, C or Rust primarily because
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool

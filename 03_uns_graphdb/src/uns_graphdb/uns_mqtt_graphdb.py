@@ -5,7 +5,7 @@ import logging
 import time
 import os
 import sys
-from config import settings
+from graphdb_config import settings
 from graphdb_handler import GraphDBHandler
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
@@ -101,8 +101,7 @@ class Uns_MQTT_GraphDb:
         self.graphdb_node_types = settings.get(
             "graphdb.node_types",
             ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
-        self.graphdb_ignored_attributes: str = settings.get(
-            "graphdb.ignored_attributes", None)
+
         if (self.graphdb_url is None):
             raise ValueError(
                 "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'"

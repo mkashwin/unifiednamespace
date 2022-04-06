@@ -24,15 +24,20 @@ I chose to run this as a docker instance to ease the setup and portability.
 Quick command reference 
 ```bash
 docker run \
-    --name  uns_graphdb \           # <container_name> . Needed 
-    -p7474:7474 -p7687:7687 \       # Ports of operation 
-    -d \                            # Runs the container detached 
+    --name  uns_graphdb \
+    -p7474:7474 -p7687:7687 \
+    -d \
     -v $HOME/neo4j/data:/data \
     -v $HOME/neo4j/logs:/logs \
     -v $HOME/neo4j/import:/var/lib/neo4j/import \
     -v $HOME/neo4j/plugins:/plugins \
-    --env NEO4J_AUTH= neo4j/uns_neo4j_password \ #**<username/**<password>** 
+    --env NEO4J_AUTH=neo4j/uns_neo4j_password \
     neo4j:latest
+# --name : <container_name> . Needed 
+# -p : # Ports of operation 
+# -v : volume to persist data,logs, import file directory and plugins
+#- d : run the container detached
+# --env NEO4J_AUTH=#<username/<password> 
 ```
 **The key parameters you must update for your environment are :**
 * \<container_name\> : is a name you give to identify your container

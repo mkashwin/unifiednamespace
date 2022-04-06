@@ -1,6 +1,5 @@
 import time
 import neo4j
-import json
 import logging
 from neo4j import exceptions
 
@@ -264,7 +263,7 @@ class GraphDBHandler:
                 #iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
                     flatten(json_object[items], name + items + '_')
-            elif (type(json_object) is list):
+            elif (type(json_object) is list or type(json_object) is tuple):
                 i = 0
                 #iterate through the list. recursively call the flattening function for each item
                 for items in json_object:
