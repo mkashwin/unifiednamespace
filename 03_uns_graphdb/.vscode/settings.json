@@ -1,7 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "src",
-        "../02_mqtt-cluster/src"
+        "../02_mqtt-cluster/src",
+        "./src/uns_graphdb"
     ],
     "python.testing.pytestArgs": [
         "test"

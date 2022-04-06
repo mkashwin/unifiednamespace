@@ -8,6 +8,7 @@
         "k8scluster",
         "microk8s",
         "paho",
+        "timescaledb",
         "venv",
         "VERNEMQ"
     ],
@@ -21,7 +22,10 @@
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
         "./02_mqtt-cluster/src",
+        "./02_mqtt-cluster/src/uns_mqtt",
         "./03_uns_graphdb/src",
-        "./04_uns_historian/src"
+        "./03_uns_graphdb/src/uns_graphdb",
+        "./04_uns_historian/src",
+        "./04_uns_historian/src/uns_historian"
     ]
 }
