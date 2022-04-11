@@ -39,7 +39,7 @@ The overall architecture and the deployment setup is as follows
     * TimescaleDB installed and running on docker
     * Graph DB installed and running on docker
 
-**TBD. Add diagram(s)**
+![Logical Architecture for implementing UNS](./images/UNS-Architecture.png)
 
 ---
 ## **Technology Choices**
@@ -68,7 +68,7 @@ I finally choose to go ahead with ***MicroK8s*** because
 
 * Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting. As a K8s noob this really helped.
 
-However microk8s did show up some limitations as well as bugs. Details of these are in [01_k8scluster](./01_k8scluster/Readme.md). The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albeit in a different manner.
+However microk8s did show up some limitations as well as bugs. Details of these are in **[01_k8scluster](./01_k8scluster/Readme.md)**. The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albeit in a different manner.
 
 
 Some key limitations to bear in mind
@@ -84,6 +84,7 @@ I evaluated and read the user guides of the following brokers (open source versi
 
 While HIVEMQ has the best documentation and community support I decided try out EMQX for the following reasons
 * EMQX is written in erlang which has a lower footprint than java (HIVEMQ). They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment.
+The details of setting up the MQTT cluster are provided in **[02_mqtt-cluster](./02_mqtt-cluster/Readme.md)**. The link provides 
 
 ***Having said that, any of the above three would be perfectly good selections because***
 * All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages. Also EMQX seems to be supporting the ability to create plugins in multiple languages
