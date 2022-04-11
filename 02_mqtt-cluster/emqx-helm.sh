@@ -8,7 +8,7 @@ microk8s helm3 search repo emqx
 # kubectl apply -f ./02_emqx-storageclass.yaml
 # kubectl apply -f ./03_emqx-emx-pvc.yaml
 
-kubectl patch storageclass openebs-jiva-csi-default -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+# kubectl patch storageclass openebs-jiva-csi-default -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 # kubectl apply -f ./emqx-pvc.yaml
 
 ##EMQX
@@ -19,12 +19,16 @@ kubectl patch storageclass openebs-jiva-csi-default -p '{"metadata": {"annotatio
 
 ##EMQXEdge
 # microk8s helm3 install uns-emqx-edge emqx/emqx -f ./emqx-values.yaml  --namespace factory1
-microk8s helm3 install uns-emqx-edge emqx/emqx  --namespace factory1   --set image.repository=emqx/emqx-edge --set service.type=LoadBalancer --create-namespace --wait
-microk8s helm3 install uns-emqx-edge2 emqx/emqx --namespace factory2   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-jiva-csi-default --set service.type=LoadBalancer --create-namespace --wait
-microk8s helm3 install uns-emqx-corp emqx/emqx  --namespace enterprise --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-jiva-csi-default --set service.type=LoadBalancer --create-namespace --wait
+microk8s helm3 upgrade --install uns-emqx-edge emqx/emqx  --namespace factory1   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-hostpath --set service.type=LoadBalancer --create-namespace --wait
+microk8s helm3 upgrade --install uns-emqx-edge2 emqx/emqx --namespace factory2   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-hostpath --set service.type=LoadBalancer --create-namespace --wait
+microk8s helm3 upgrade --install uns-emqx-corp emqx/emqx  --namespace enterprise --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-hostpath --set service.type=LoadBalancer --create-namespace --wait
 
-microk8s kubectl get pods
-# kubectl -n <namespace> exec -it <pod name> -- bash
+microk8s kubectl get pods -A
+# kubectl -n <namespace> exec -it <pod name> -- bash -c "emqx_ctl plugins reload emqx_bridge_mqtt"
+
+kubectl -n factory1 exec -it uns-emqx-edge-0 -- bash -c "emqx_ctl plugins reload emqx_bridge_mqtt"
+kubectl -n factory2 exec -it uns-emqx-edge-0 -- bash -c "emqx_ctl plugins reload emqx_bridge_mqtt"
+kubectl -n enterprise exec -it uns-emqx-edge-0 -- bash -c "emqx_ctl plugins reload emqx_bridge_mqtt"
 
 ##Delete the MQTT Cluster
 #microk8s helm3 uninstall uns-emqx-edge --namespace factory1
