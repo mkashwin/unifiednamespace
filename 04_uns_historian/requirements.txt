@@ -4,4 +4,3 @@ pytz>=2021.3
 paho-mqtt>=1.6.1
 logger
 dynaconf
-pytest

@@ -93,15 +93,18 @@ This application has two configuration file
 This function is executed by the following command with the current folder as `03_uns_graphdb`
 ```bash
 # install virtual env
-python3 -m pip install --user virtualenv
-python3 -m venv env_graphdb
+python -m pip install --user virtualenv
+python -m venv env_graphdb
 source env_graphdb/bin/activate
-python3 ./src/uns_graphdb/graphdb_handler.py
+python -m pip install  -r requirements.txt
+python ./src/uns_graphdb/graphdb_handler.py
 ```
 
 ### Running tests
 The set of test for this module is executed by
 ```python
+source env_graphdb/bin/activate
+python -m pip install  -r requirements_dev.txt
 pytest test/
 ```
 

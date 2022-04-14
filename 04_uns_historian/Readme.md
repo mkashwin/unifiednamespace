@@ -96,16 +96,18 @@ This application has two configuration file.
 This function is executed by the following command with the current folder as `03_uns_graphdb`
 ```bash
 # install virtual env
-python3 -m pip install --user virtualenv
-python3 -m venv env_historian
+python -m pip install --user virtualenv
+python -m venv env_historian
 source env_historian/bin/activate
-pip3 install -r requirements.txt
-python3 ./src/uns_historian/uns_mqtt_historian.py
+python -m pip install  -r requirements.txt
+python ./src/uns_historian/uns_mqtt_historian.py
 ```
 
 ### Running tests
 The set of test for this module is executed by
 ```python
+source env_historian/bin/activate
+python -m pip install  -r requirements_dev.txt
 pytest test/
 TBD
 ```
