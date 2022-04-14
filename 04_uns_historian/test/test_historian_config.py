@@ -22,7 +22,7 @@ is_configs_provided: bool = (os.path.exists(
             os.getenv("UNS_historian.username")))
 
 
-@pytest.mark.xfail(is_configs_provided,
+@pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
     #run these tests only if both configuration files exists or mandatory environment vars are set
@@ -102,7 +102,7 @@ def test_mqtt_config():
     ), f"Configuration 'mqtt.timestamp_attribute':{timestamp_attribute} is not a valid JSON key"
 
 
-@pytest.mark.xfail(is_configs_provided,
+@pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_timescale_db_configs():
     #run these tests only if both configuration files exists or mandatory environment vars are set
