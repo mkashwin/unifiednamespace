@@ -96,6 +96,7 @@ This function is executed by the following command with the current folder as `0
 python -m pip install --user virtualenv
 python -m venv env_graphdb
 source env_graphdb/bin/activate
+python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt
 python ./src/uns_graphdb/graphdb_handler.py
 ```
@@ -152,3 +153,5 @@ will result in a node in the GraphDB
 1. Current code & configurations have not considered securing the database and encrypted connections
 1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
 1. Add and improve automated test coverage
+1. Enhancing ACLs on the nodes for the various nodes to secure access
+1. Securing the neo4j database 

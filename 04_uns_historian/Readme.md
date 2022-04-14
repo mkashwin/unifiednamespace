@@ -99,6 +99,7 @@ This function is executed by the following command with the current folder as `0
 python -m pip install --user virtualenv
 python -m venv env_historian
 source env_historian/bin/activate
+python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt
 python ./src/uns_historian/uns_mqtt_historian.py
 ```

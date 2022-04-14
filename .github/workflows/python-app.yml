@@ -41,4 +41,6 @@ jobs:
         flake8 ./02_mqtt-cluster/src ./03_uns_graphdb/src ./04_uns_historian/src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics 
     - name: Test with pytest
       run: |
-        pytest
+        pytest ./02_mqtt-cluster/test/
+        pytest ./03_uns_graphdb/test/
+        pytest ./04_uns_historian/test/
