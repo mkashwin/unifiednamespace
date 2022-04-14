@@ -16,14 +16,16 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(1, os.path.join(cmd_subfolder, "uns_graphdb"))
 from graphdb_config import settings
 
-is_configs_provided: bool = (os.path.exists("../conf/.secrets.yaml") and
-                             os.path.exists("../conf/.secrets.yaml")) or (bool(
-                                 os.getenv("UNS_graphdb.username")))
+is_configs_provided: bool = (os.path.exists(
+    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
+        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
+            os.getenv("UNS_graphdb.username")))
 
 
-@pytest.mark.xfail(is_configs_provided,
+@pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
+    #run these tests only if both configuration files exists or mandatory environment vars are set
     mqtt_transport: str = settings.get("mqtt.transport")
     assert mqtt_transport in (
         None, "tcp",
@@ -57,7 +59,6 @@ def test_mqtt_config():
     assert type(
         port
     ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{port} must be between 1024 to 49151"
-
     """     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
@@ -101,9 +102,11 @@ def test_mqtt_config():
         len(timestamp_attribute) > 0
     ), f"Configuration 'mqtt.timestamp_attribute':{timestamp_attribute} is not a valid JSON key"
 
-@pytest.mark.xfail(is_configs_provided,
+
+@pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_graph_db_configs():
+     #run these tests only if both configuration files exists or mandatory environment vars are set
     graphdb_url: str = settings.graphdb["url"]
     REGEX_FOR_NEO4J = "(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*"
     assert bool(

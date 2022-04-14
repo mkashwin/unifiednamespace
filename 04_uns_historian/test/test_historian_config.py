@@ -16,14 +16,16 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(1, os.path.join(cmd_subfolder, "uns_historian"))
 from historian_config import settings
 
-is_configs_provided: bool = (os.path.exists("../conf/.secrets.yaml") and
-                             os.path.exists("../conf/.secrets.yaml")) or (
-                            bool(os.getenv("UNS_historian.username")))
+is_configs_provided: bool = (os.path.exists(
+    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
+        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
+            os.getenv("UNS_historian.username")))
+
 
 @pytest.mark.xfail(is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
-    #run these tests only if both configuration files exists
+    #run these tests only if both configuration files exists or mandatory environment vars are set
     mqtt_transport: str = settings.get("mqtt.transport")
     assert mqtt_transport in (
         None, "tcp",
@@ -57,7 +59,6 @@ def test_mqtt_config():
     assert type(
         port
     ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{port} must be between 1024 to 49151"
-
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
@@ -104,6 +105,7 @@ def test_mqtt_config():
 @pytest.mark.xfail(is_configs_provided,
                    reason="Configurations have not been provided")
 def test_timescale_db_configs():
+    #run these tests only if both configuration files exists or mandatory environment vars are set
     hostname: str = settings.historian["hostname"]
     port: int = settings.get(
         "historian.port",
@@ -148,7 +150,6 @@ def test_timescale_db_configs():
         and len(historian_table) > 0
     ), f"""Invalid database name configured at key: 'historian.table' value:{historian_table}.
          Cannot be None or empty string"""
-
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
