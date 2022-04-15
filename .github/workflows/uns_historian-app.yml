@@ -5,12 +5,14 @@ name: UNS Historian MQTT Client
 
 on:
   push:
-    branches: [ "*" ]
+    branches:
+      - "**"     
     paths:
       - "./02_mqtt-cluster/**"
       - "./04_uns_historian/**"
   pull_request:
-    branches: [ "*" ]
+    branches: 
+      - "**"     
     paths:
       - "./02_mqtt-cluster/**"
       - "./04_uns_historian/**"      
@@ -41,6 +43,7 @@ jobs:
         flake8 ./04_uns_historian/src --count --select=E9,F63,F7,F82 --show-source --statistics 
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 ./04_uns_historian/src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics 
+    
     - name: Test with pytest
       run: |
         pytest ./04_uns_historian/test/

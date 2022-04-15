@@ -1,5 +1,5 @@
 # Unified Name Space
-[![All  Applications](https://github.com/mkashwin/unifiednamespace/actions/workflows/python-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/python-app.yml)
+[![UNS Project](https://github.com/mkashwin/unifiednamespace/actions/workflows/python-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/python-app.yml)
 This project aims to create an open sourced option for setting up a unified name space for IIOT transformation.
 
 My objective is to build an open source, free to use UNS solution for the community which can be enhanced and adapted by other enthusiasts. 
