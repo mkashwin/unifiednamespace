@@ -5,15 +5,17 @@ name: UNS Historian MQTT Client
 
 on:
   push:
-    branches: [ "*" ]
+    branches: 
+      - "**"
     paths:
-      - "./02_mqtt-cluster/**"
-      - "./04_uns_historian/**"
+      - "02_mqtt-cluster/**"
+      - "04_uns_historian/**"
   pull_request:
-    branches: [ "*" ]
+    branches: 
+      - "**"
     paths:
-      - "./02_mqtt-cluster/**"
-      - "./04_uns_historian/**"      
+      - "02_mqtt-cluster/**"
+      - "04_uns_historian/**"      
 permissions:
   contents: read
 
