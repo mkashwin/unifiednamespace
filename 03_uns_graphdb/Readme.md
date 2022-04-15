@@ -1,4 +1,5 @@
 # Application to store messages to graphDB 
+[![MQTT Client for Graphdb](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_graphdb-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_graphdb-app.yml)
 
 We will be publishing messages as per the ISA-95 part 2 specifications
 > \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
