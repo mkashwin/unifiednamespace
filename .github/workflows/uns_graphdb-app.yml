@@ -5,17 +5,17 @@ name: UNS Graph DB MQTT Client
 
 on:
   push:
+    branches:  
+      - "**" 
+    paths:
+      - "02_mqtt-cluster/**"
+      - "03_uns_graphdb/**"
+  pull_request:
     branches: 
       - "**"
     paths:
-      - "./02_mqtt-cluster/**"
-      - "./03_uns_graphdb/**"
-  pull_request:
-    branches: 
-      - "**"    
-    paths:
-      - "./02_mqtt-cluster/**"
-      - "./03_uns_graphdb/**"      
+      - "02_mqtt-cluster/**"
+      - "03_uns_graphdb/**"      
 permissions:
   contents: read
 
