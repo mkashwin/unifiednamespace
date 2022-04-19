@@ -7,6 +7,7 @@ This module has two scripts in `bash` and configuration file.
 
 ## ***Following are the steps to setup the cluster*** 
 1. Update the configuration file `config.conf` with the details of the nodes/virtual machines. 
+
    **IMPORTANT:** Ensure that that configurations are updated to your context   
    The key configurations are
     ```bash
@@ -95,4 +96,5 @@ There are quite some options and considerations while setting up MetalLB. This s
 ## **Limitations / Enhancements being considered for a later release / contributions**
 * [ ] Consider converting this from shell script to Ansible 
 * [ ] Unit testing of the code
+* [x] There were some CoreDNS [issues](https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/#known-issues) in the worker node. I fixed the issue in the script by manual entries in `/var/snap/microk8s/current/args/kubelet` file of all nodes. See [`setup_microk8s_cluster.sh`](./setup_microk8s_cluster.sh#L67)
 * [x] MetalLB: How to configure network routing. See [References](#metallb)

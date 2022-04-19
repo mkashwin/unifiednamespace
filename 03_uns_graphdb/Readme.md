@@ -1,5 +1,6 @@
-# Application to store messages to graphDB 
 [![MQTT Client for Graphdb](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_graphdb-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_graphdb-app.yml)
+
+# Application to store messages to graphDB 
 
 We will be publishing messages as per the ISA-95 part 2 specifications
 > \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
@@ -7,14 +8,14 @@ We will be publishing messages as per the ISA-95 part 2 specifications
 We choose a graph database in this case because it allows us to define and maintain relationships and connections across our enterprise as well as merge messages to the same topic.
 e.g. the ERP system which is publishing to the Enterprise node can have a relationship with a device allowing us to easily correlate identifiers across the various systems.
 
-The Graph DB is not a store for historical data, this decision is done for performance purposes and the ability to define relationships easily across the entities. For the historian capability refer to the [historian](./../04_uns_historian/Readme.md) module.
+The GraphDB is not a store for historical data, this decision is done for performance purposes and the ability to define relationships easily across the entities. For the historian capability refer to the [historian](./../04_uns_historian/Readme.md) module.
 
 The GraphDB is also deployed both at the factory level and enterprise level. 
-Devices can query the GraphDB if they need merged data. If they just need the latest message published it would be more efficient to subscribe to the topic ( assuming that MQTT messages are published with retain flag as true)
+Devices can query the GraphDB if they need merged data. If they just need the latest message published it would be more efficient to subscribe to the topic ( assuming that MQTT messages are published with retain flag as true).
 
 We need setup 2 instances of this connector
-1. ***(Mandatory)*** Setup the application to point to the enterprise instance / cloud instance . This instance will be used by the to link data across all factories and enterprise application. It is important to have the connector listen to Topic '#" while connecting to the enterprise/cloud  MQTT cluster instance.
-1. ***(Optional)*** Setup the application to point to the factory instance. This instance will be used by the application to provide a snapshot of the merged data to the factory devices. For the factory cluster it would make sense to listen to the  level 4 topic i.e. `+/+/+/#`
+1. ***(Mandatory)*** Setup the application to point to the enterprise instance / cloud instance . This instance will be used by the to link data across all factories and enterprise application. It is important to have the connector listen to Topic '**#**' or the first level '**\<enterprise\>/#**'  while connecting to the enterprise/cloud  MQTT cluster instance.
+1. ***(Optional)*** Setup the application to point to the factory instance. This instance will be used by the application to provide a snapshot of the merged data to the factory devices. For the factory cluster it would make sense to listen to the lower topic i.e. `+/+/+/#` or `+/+/#` 
 
 ## Deploying and running Neo4j
 There are a number of ways to deploy and run your Neo4j instance. 

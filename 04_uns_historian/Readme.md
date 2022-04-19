@@ -1,5 +1,6 @@
-# Application to store messages to Historian 
 [![MQTT Client for Historian](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_historian-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_historian-app.yml)
+
+# Application to store messages to Historian 
 It makes sense to have the historian connect only to the corporate / cloud instance since the factory doesn't necessarily need the history of all messages. The historian should  subscribe to '**#**' or the first level **\<enterprise\>/#**' topic wildcard. However if it is needed for your specific scenario you can easily deploy a historian at the factory level.
 If you need to scale and reduce the load on broker multiple instanced of this client can be deployed with separate topic wild cards
 > Ensure that each instance is subscribing to it's unique topic and not causing any overlaps

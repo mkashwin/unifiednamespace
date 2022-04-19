@@ -8,9 +8,15 @@ microk8s helm3 repo update
 microk8s helm3 search repo emqx
 
 # This command needs to be executed to have persistence available to the MQTT instances
-kubectl patch storageclass openebs-jiva-csi-default -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+# Select the storage class available to your cluster openebs-hostpath, openebs-jiva-csi-default etc.
+kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
-
+> **Important Note:** Validate that you have the correct persistance storage class
+> By default when you install the openebs module for microk8s, you should get  "openebs-hostpath"
+> ```bash
+> # command to view the available strorage classes.
+> kubectl get sc
+> ```
 ## MQTT Cluster for the edge
 Using `helm` install the MQTT Cluster on the edge. I choose to have each cluster in it's own namespace
 ```bash
@@ -41,12 +47,7 @@ microk8s helm3 install uns-emqx-corp emqx/emqx  \
             --create-namespace \
             --wait
 ```
-> **Important Note:** validate that you have the correct persistance storage class
-> By default when you install the openebs module for microk8s, you should get  "openebs-hostpath"
-> ```bash
-> # command to view the available strorage classes.
-> kubectl get sc
-> ```
+
 ## Configure MQTT bridge between Edge Cluster and Enterprise
 The guide for setting up the MQTT bride via the dashboard is provided [here]
 (https://www.emqx.io/docs/en/latest/rule/bridge_emqx.html)
@@ -86,3 +87,5 @@ For further securing options, like ACL, additional authentication methods etc. E
 1. The plugins to intercept messages from EMQx ( which is probably the more efficient mechanism) in order to persist them are available only in the enterprise version and not in the community edition. As a workaround, I created an MQTT client which subscribes to `#` and allows subsequent processing.
 
 1. Currently the configuration of the MQTT bridge is a manual step via the EMQX dashboard. Need to automate this via code
+
+1. Need to study and understand which storage class is better suited for this use-case of UNS
