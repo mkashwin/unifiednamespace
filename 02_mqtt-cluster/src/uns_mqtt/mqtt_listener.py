@@ -132,20 +132,14 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                 ciphers = tls.get("ciphers")
                 keyfile_password = tls.get("keyfile_password")
 
-                LOGGER.debug(f"""Connection with MQTT Broker is over SSL
-                    'ca_certs':{tls.get('ca_certs')},
-                    'certfile':{tls.get('certfile')},
-                    'keyfile':{tls.get('keyfile')},
-                    'cert_reqs':{tls.get('cert_reqs')},
-                    'ciphers':{tls.get('ciphers')}               
-                """)
-                #Force ssl.PROTOCOL_TLSv1_2
+                LOGGER.debug("Connection with MQTT Broker is over SSL")
+                #Force ssl.PROTOCOL_TLS_CLIENT
                 if (path.exists(ca_certs)):
                     super().tls_set(ca_certs=ca_certs,
                                     certfile=certfile,
                                     keyfile=keyfile,
                                     cert_reqs=cert_reqs,
-                                    tls_version=ssl.PROTOCOL_TLSv1_2,
+                                    tls_version=ssl.PROTOCOL_TLS_CLIENT,
                                     ciphers=ciphers,
                                     keyfile_password=keyfile_password)
                     if (tls.get("insecure_cert")):
