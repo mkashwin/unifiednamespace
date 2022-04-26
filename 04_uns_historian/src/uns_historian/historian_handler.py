@@ -4,9 +4,7 @@ import time
 
 import psycopg2
 
-from historian_config import settings
-
-#Logger
+# Logger
 LOGGER = logging.getLogger(__name__)
 MAX_RETRIES: int = 5
 SLEEP_BTW_ATTEMPT = 10  # seconds to sleep between retries
@@ -22,12 +20,12 @@ class HistorianHandler:
         """
         Parameters
         -----------
-        hostname: str, 
-        port:int, 
-        database:str, 
-        table:str, 
+        hostname: str,
+        port:int,
+        database:str,
+        table:str,
         user: str,
-        password: str
+        password: str,
         sslmode: str
         """
         self.hostname = hostname
@@ -44,7 +42,7 @@ class HistorianHandler:
     def connect(self, retry: int = 0):
         """
         Connect to the postgres DB. Allow for reconnects tries up to MAX_RETRIES and sleep
-        SLEEP_BTW_ATTEMPT seconds between retry attempts 
+        SLEEP_BTW_ATTEMPT seconds between retry attempts
         This is required because psycopg2 doesn't support reconnecting connections which time out / expire
         """
         if (self.timescale_db_conn is None):
@@ -113,9 +111,9 @@ class HistorianHandler:
             Identifier for the Subscriber
         topic: str
             The topic on which the message was sent
-        timestamp 
-            The timestamp of the message received 
-        message: str 
+        timestamp
+            The timestamp of the message received
+        message: str
             The MQTT message. String is expected to be JSON formatted
         """
         if timestamp is None:
@@ -136,7 +134,7 @@ class HistorianHandler:
                     cursor.execute(sql_cmd,
                                    (_timestamp, topic, client_id, message))
             except (psycopg2.DataError, psycopg2.OperationalError) as ex:
-                #handle exception
+                # handle exception
                 LOGGER.error(
                     "Error persisting message to the database. Error: %s",
                     str(ex),
@@ -146,10 +144,10 @@ class HistorianHandler:
                     raise ex
                 else:
                     retry += 1
-                    ##Close the stale connection.
+                    # Close the stale connection.
                     self.close()
                     time.sleep(SLEEP_BTW_ATTEMPT)
                     executeSQLcmd(retry)
 
-        #############################################################################
+        # ---------------------------------------------------------------------------------------------------
         executeSQLcmd()

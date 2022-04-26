@@ -32,7 +32,7 @@ class Uns_Mqtt_Historian:
             protocol=self.mqtt_mqtt_version_code,
             transport=self.mqtt_transport,
             reconnect_on_failure=self.reconnect_on_failure)
-        ## Connect to the database
+        # Connect to the database
         self.uns_historian_handler = HistorianHandler(
             hostname=self.historian_hostname,
             port=self.historian_port,
@@ -82,8 +82,8 @@ class Uns_Mqtt_Historian:
             )
 
     def load_historian_config(self):
-        """ 
-        Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'"
+        """
+        Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
         """
         self.historian_hostname: str = settings.historian["hostname"]
         self.historian_port: int = settings.get("historian.port", None)
@@ -105,7 +105,8 @@ class Uns_Mqtt_Historian:
             )
         if (self.historian_table is None):
             raise ValueError(
-                f"Table in Historian Database {self.historian_database} not provided. Update key 'historian.table' in '../../conf/settings.yaml'"
+                f"""Table in Historian Database {self.historian_database} not provided.
+                Update key 'historian.table' in '../../conf/settings.yaml'"""
             )
         if ((self.historian_user is None)
                 or (self.historian_password is None)):
@@ -116,7 +117,7 @@ class Uns_Mqtt_Historian:
 
     def on_message(self, client, userdata, msg):
         """
-        Callback function executed every time a message is received by the subscriber  
+        Callback function executed every time a message is received by the subscriber
         """
         LOGGER.debug("{"
                      f"Client: {client},"
@@ -128,7 +129,7 @@ class Uns_Mqtt_Historian:
             filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
                 msg.topic, msg.payload.decode("utf-8"),
                 self.mqtt_ignored_attributes)
-            ## save message
+            # save message
             self.uns_historian_handler.persistMQTTmsg(
                 client_id=getattr(client, "_client_id"),
                 topic=msg.topic,

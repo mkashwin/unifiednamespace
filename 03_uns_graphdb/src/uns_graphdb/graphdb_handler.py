@@ -3,7 +3,7 @@ import neo4j
 import logging
 from neo4j import exceptions
 
-#Logger
+# Logger
 LOGGER = logging.getLogger(__name__)
 
 
@@ -24,19 +24,20 @@ class GraphDBHandler:
         user : str
             db user name. Must have write access on the Neo4j database also specified here
         password:
-            password for the db user 
+            password for the db user
         database : str = neo4j.DEFAULT_DATABASE
-            The Neo4j database in which this data should be persisted 
-        node_types : tuple [str]  
+            The Neo4j database in which this data should be persisted
+        node_types : tuple [str]
             Configuration for Node Labels to be used for the topics based on topic hierarchy
             Default value is ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")
-        
+
         MAX_RETRIES: int
-                Must be a positive integer. Default value is 5. Number of attempts after a failed database connection to retry connecting 
+                Must be a positive integer. Default value is 5.
+                Number of attempts after a failed database connection to retry connecting
         SLEEP_BTW_ATTEMPT: float
                 Must be a positive float. Default value is 10 seconds. Seconds to sleep between retries
         """
-        #TODO support additional secure authentication  methods
+        # TODO support additional secure authentication  methods
         self.uri = uri
         self.user = user
         self.password = password
@@ -106,7 +107,7 @@ class GraphDBHandler:
         ----------
         topic: str
             The topic on which the message was sent
-        message: dict 
+        message: dict
             The JSON MQTT message payload in in dict format
         timestamp:
             timestamp for receiving the message
@@ -114,8 +115,8 @@ class GraphDBHandler:
         response = None
         attributes = None
 
-        ## Neo4j supports only flat messages.
-        ## Also need to ensure that the message doesn't contain any attribute with the name "node_name"
+        # Neo4j supports only flat messages.
+        # Also need to ensure that the message doesn't contain any attribute with the name "node_name"
         if (message is not None):
             attributes = GraphDBHandler._flatten_json_for_Neo4J(message)
         try:
@@ -143,7 +144,7 @@ class GraphDBHandler:
                                     retry=retry)
         return response
 
-    ## method  starts
+    # method  starts
     def save_all_nodes(self, session, topic: str, message: dict,
                        timestamp: float):
         """
@@ -151,11 +152,11 @@ class GraphDBHandler:
         For the other topics in the hierarchy a node will be created / merged and linked to the parent topic node
         Parameters
         ----------
-        session : 
-            The Neo4j database session used for the write transaction 
+        session :
+            The Neo4j database session used for the write transaction
         topic: str
             The topic on which the message was sent
-        message: dict 
+        message: dict
             The MQTT message in JSON format converted to a dict
         timestamp:
             timestamp for receiving the message
@@ -169,7 +170,7 @@ class GraphDBHandler:
 
             nodeAttributes = None
             if (count == len(nodes) - 1):
-                ## Save the attributes only for the leaf node
+                # Save the attributes only for the leaf node
                 nodeAttributes = message
             node_name: str = GraphDBHandler.getNodeName(count, self.NODE_TYPES)
             response = GraphDBHandler.saveNode(session, node, node_name,
@@ -179,7 +180,7 @@ class GraphDBHandler:
             lastnode = node
         return response
 
-    ## method Ends
+    # method Ends
 
     # static method starts
     @staticmethod
@@ -189,7 +190,7 @@ class GraphDBHandler:
         else:
             return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
 
-    ## static method ends
+    # static method ends
 
     # static Method Starts
     @staticmethod
@@ -200,7 +201,7 @@ class GraphDBHandler:
                  parent: str = None,
                  timestamp: float = time.time()):
         """
-        Creates or Merges the MQTT message as a Graph node. Each level of the topic is also persisted 
+        Creates or Merges the MQTT message as a Graph node. Each level of the topic is also persisted
         as a graph node with appropriate parent relationship
         Parameters
         ----------
@@ -209,11 +210,12 @@ class GraphDBHandler:
         nodename : str
             Trimmed name of the topic
         nodetype : str
-            Based on ISA-95 part 2 the nested depth of the topic determines the node type.            
+            Based on ISA-95 part 2 the nested depth of the topic determines the node type.
         message : dict
-            The JSON delivered as message in the MQTT payload converted to a dict. Defaults to None (for all intermettent topics)
+            The JSON delivered as message in the MQTT payload converted to a dict.
+            Defaults to None (for all intermettent topics)
         parent  : str
-            The name of the parent node to which a relationship will be established. Defaults to None(for root nodes)     
+            The name of the parent node to which a relationship will be established. Defaults to None(for root nodes)
         """
         LOGGER.debug(
             f"Saving node:{nodename} of type:{nodetype} and attributes:{attributes} with parent:{parent}"
@@ -236,7 +238,7 @@ class GraphDBHandler:
         else:
             query = query + "RETURN node" ""
         LOGGER.debug(f"CQL statement to be executed: {query}")
-        ## non-referred would be ignored in the execution.
+        # non-referred would be ignored in the execution.
         node = session.run(query,
                            nodename=nodename,
                            timestamp=timestamp,
@@ -264,12 +266,12 @@ class GraphDBHandler:
 
         def flatten(json_object, name=''):
             if (type(json_object) is dict):
-                #iterate through the dict. recursively call the flattening function for each item
+                # iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
                     flatten(json_object[items], name + items + '_')
             elif (type(json_object) is list or type(json_object) is tuple):
                 i = 0
-                #iterate through the list. recursively call the flattening function for each item
+                # iterate through the list. recursively call the flattening function for each item
                 for items in json_object:
                     flatten(items, name + str(i) + '_')
                     i += 1

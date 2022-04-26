@@ -40,7 +40,7 @@ class Uns_MQTT_GraphDb:
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        ## Connect to the database
+        # Connect to the database
         self.graph_db_handler = GraphDBHandler(
             uri=self.graphdb_url,
             user=self.graphdb_user,
@@ -57,7 +57,7 @@ class Uns_MQTT_GraphDb:
                             topic=self.topic,
                             qos=self.mqtt_qos)
 
-    #end of init###############################################################
+    # end of init
 
     def load_mqtt_configs(self):
         # generate client ID with pub prefix randomly
@@ -87,10 +87,10 @@ class Uns_MQTT_GraphDb:
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
 
-    ###########################################################################
+    # -------------------------------------------------------------------------------------------------------
 
     def load_graphdb_config(self):
-        """ 
+        """
         Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'"
         """
         self.graphdb_url: str = settings.graphdb["url"]
@@ -100,10 +100,9 @@ class Uns_MQTT_GraphDb:
         # if we want to use a database different from the default
         self.graphdb_database: str = settings.get("graphdb.database", None)
 
-        #
-        self.graphdb_node_types = settings.get(
-            "graphdb.node_types",
-            ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
+        self.graphdb_node_types: tuple = tuple(
+            settings.get("graphdb.node_types",
+                         ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
 
         if (self.graphdb_url is None):
             raise ValueError(
@@ -116,8 +115,7 @@ class Uns_MQTT_GraphDb:
                 "Update keys 'graphdb.username' and 'graphdb.password' in '../../conf/.secrets.yaml'"
             )
 
-    ###########################################################################
-
+    # -------------------------------------------------------------------------------------------------------
     def on_message(self, client, userdata, msg):
         LOGGER.debug("{"
                      f"Client: {client},"
@@ -129,7 +127,7 @@ class Uns_MQTT_GraphDb:
             filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
                 msg.topic, json.loads(msg.payload.decode("utf-8")),
                 self.mqtt_ignored_attributes)
-            ## save message
+            # save message
             self.graph_db_handler.persistMQTTmsg(topic=msg.topic,
                                                  message=filtered_message,
                                                  timestamp=getattr(
@@ -143,7 +141,7 @@ class Uns_MQTT_GraphDb:
                          exc_info=True)
             raise ex
 
-    #end of on_message#########################################################
+    # end of on_message----------------------------------------------------------------------------
 
     def on_disconnect(self, client, userdata, rc, properties=None):
         # Close the database connection when the MQTT broker gets disconnected
@@ -156,10 +154,10 @@ class Uns_MQTT_GraphDb:
                          stack_info=True,
                          exc_info=True)
 
-    #end of on_disconnect######################################################
+    # end of on_disconnect-------------------------------------------------------------------------
 
 
-#end of class #################################################################
+# end of class ------------------------------------------------------------------------------------
 def main():
     uns_mqtt_graphdb = None
     try:
@@ -174,6 +172,6 @@ def main():
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
-#end of main()#################################################################
+# end of main()------------------------------------------------------------------------------------
 if __name__ == '__main__':
     main()

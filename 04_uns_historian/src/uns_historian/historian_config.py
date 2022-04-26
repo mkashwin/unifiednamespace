@@ -1,6 +1,5 @@
 from dynaconf import Dynaconf
 import os
-import inspect
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
 

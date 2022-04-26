@@ -8,7 +8,7 @@ import paho.mqtt.client as mqtt_client
 from paho.mqtt.properties import Properties
 from paho.mqtt.packettypes import PacketTypes
 
-#Logger
+# Logger
 LOGGER = logging.getLogger(__name__)
 
 
@@ -16,7 +16,6 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
     """
     Wrapper over te paho.mqtt.client to implement most commont MQTT related functionality
     The call only needs to implement the callback function on_message
-    
     """
     MQTTv5 = mqtt_client.MQTTv5
     MQTTv311 = mqtt_client.MQTTv311
@@ -32,31 +31,29 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         """
         Creates an instance of an MQTT client
         Parameters
-        ---------- 
-        client_id:  the unique client id string used when connecting to the
+        ----------
+        client_id: the unique client id string used when connecting to the
         broker. Must be provided
 
         clean_session: a boolean that determines the client type. If True,
         the broker will remove all information about this client when it
-        disconnects. clean_session applies to MQTT versions v3.1.1 and v3.1. 
-    
+        disconnects. clean_session applies to MQTT versions v3.1.1 and v3.1.
 
         userdata: user defined data of any type that is passed as the "userdata"
         parameter to callbacks.
 
-        protocol: allows explicit setting of the MQTT version to use for this client. 
-        Can be paho.mqtt.client.MQTTv311 (v3.1.1), paho.mqtt.client.MQTTv31 (v3.1) or 
+        protocol: allows explicit setting of the MQTT version to use for this client.
+        Can be paho.mqtt.client.MQTTv311 (v3.1.1), paho.mqtt.client.MQTTv31 (v3.1) or
         paho.mqtt.client.MQTTv5 (v5.0). Defaults to MQTTv5
-        
+
         transport: sets the transport mechanism as either "websockets" or  "tcp" to use raw TCP.
 
-        topic : the fully qualified topic to listen to. Supports wild cards # , + 
-      
+        topic : the fully qualified topic to listen to. Supports wild cards # , +
         """
         LOGGER.debug(f"""{{'client_id': '{client_id}',
                  'clean_session': {clean_session},
                  'userdata': {userdata},
-                 'protocol'{protocol}, 
+                 'protocol'{protocol},
                  'transport':'{transport}',
                  'reconnect_on_failure':{reconnect_on_failure}
                  }}""")
@@ -87,22 +84,22 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
         After this function invoke loop_forever() or loop start()
-    
+
         Parameters
-        ----------           
+        ----------
         username & password: credentials to connect to the  broker
 
-        tls: Dict containing the following attributed needed for an SSL connection  
+        tls: Dict containing the following attributed needed for an SSL connection
             "ca_certs" - a string path to the Certificate Authority certificate files
-            that are to be treated as trusted by this client. 
+            that are to be treated as trusted by this client.
 
             "certfile" and "keyfile" - strings pointing to the PEM encoded client
-            certificate and private keys respectively. 
+            certificate and private keys respectively.
 
             "cert_reqs" -  boolean. If None then  ssl.CERT_NONE is used
                            if True the ssl.CERT_REQUIRED is used
                            else ssl.CERT_OPTIONAL is used
-                    
+
             "ciphers" - specifying which encryption ciphers are allowed for this connection
 
             "keyfile_password" - pass phrase used to decrypt certfile and keyfile incase it is encrypted
@@ -133,7 +130,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                 keyfile_password = tls.get("keyfile_password")
 
                 LOGGER.debug("Connection with MQTT Broker is over SSL")
-                #Force ssl.PROTOCOL_TLS_CLIENT
+                # Force ssl.PROTOCOL_TLS_CLIENT
                 if (path.exists(ca_certs)):
                     super().tls_set(ca_certs=ca_certs,
                                     certfile=certfile,
@@ -150,7 +147,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                         f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
                     )
 
-            #Set username & password only if it was specified
+            # Set username & password only if it was specified
             if (username is not None):
                 super().username_pw_set(username, password)
             self.connect(host=host,
@@ -164,7 +161,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                          exc_info=True)
             raise ConnectionError(ex)
 
-    ## call back methods
+    # call back methods
     def on_connect(self, client, userdata, flags, rc, properties=None):
 
         LOGGER.debug(
@@ -181,7 +178,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
             LOGGER.info(f"Successfully connect {self} to MQTT Broker")
         else:
-            LOGGER.error(f"Bad connection. Returned code=%s", rc)
+            LOGGER.error("Bad connection. Returned code=%s", rc)
             client.bad_connection_flag = True
 
     def on_subscribe(self,
@@ -230,13 +227,13 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
     @staticmethod
     def isTopicMatching(topicWithWildcard: str, topic: str) -> bool:
         """
-        Checks if the actual topic matches with a wild card expression 
+        Checks if the actual topic matches with a wild card expression
         e.g. "a/b" matches with "a/+" and "a/#"
-             "a/b/c" matches wit "a/#" but not with "a/+"   
+             "a/b/c" matches wit "a/#" but not with "a/+"
         """
         if (topicWithWildcard is not None):
             regexList = topicWithWildcard.split('/')
-            ## Using Regex to do matching
+            # Using Regex to do matching
             # replace all occurrences of "+" wildcard with [^/]* -> any set of charecters except "/"
             # replace all occurrences of "#" wildcard with (.)*  -> any set of charecters including "/"
             regexExp = ""
@@ -264,9 +261,9 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                     message)
                 break
 
-                #descent into the nested key
+                # descent into the nested key
             if (count == len(ignored_attr) - 1):
-                #we are at leaf node hence can delete the key & value
+                # we are at leaf node hence can delete the key & value
                 LOGGER.info("%s deleted and will not be persisted",
                             msg_cursor[key], key)
                 del msg_cursor[key]
