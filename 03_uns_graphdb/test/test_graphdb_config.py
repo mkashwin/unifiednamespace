@@ -108,7 +108,7 @@ def test_mqtt_config():
 def test_graph_db_configs():
     #run these tests only if both configuration files exists or mandatory environment vars are set
     graphdb_url: str = settings.graphdb["url"]
-    REGEX_FOR_NEO4J = "(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*"
+    REGEX_FOR_NEO4J = "^(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*$"
     assert bool(
         re.fullmatch(REGEX_FOR_NEO4J, graphdb_url)
     ), f"configuration 'graphdb.url':{graphdb_url} is not a valid Neo4j URL"
@@ -125,3 +125,15 @@ def test_graph_db_configs():
         graphdb_password is not None and type(graphdb_password) is str
         and len(graphdb_password) > 0
     ), "Invalid password configured at key: 'graphdb.password'. Cannot be None or empty string"
+
+    node_types: tuple = settings.get(
+        "graphdb.node_types",
+        ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
+    assert node_types is not None and len(
+        node_types
+    ) > 0, "Invalid node_types configured at key: 'graphdb.node_types'. Must be a list of length > 1"
+    REGEX_FOR_NODE_TYPES = "^[a-zA-Z0-9_]*$"
+    for node_type in node_types :
+        assert bool(
+                re.fullmatch(REGEX_FOR_NODE_TYPES, node_type)
+            ), f"configuration {node_type} in {node_types} is not a valid node name"
