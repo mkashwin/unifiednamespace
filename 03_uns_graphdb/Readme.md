@@ -147,13 +147,28 @@ will result in a node in the GraphDB
 ```json
 (erp:enterprise : { id1: "identifier", sensor1: 100, value1: 202203011145})
 ```
+### Examples of MQTT Message being persisted to the GraphDB
+- By publishing the following message to the MQTT  Broker    
+  ![MQTT Message to ](../images/Message_2_GraphDBMQTTClient.png)
+- We get the following graph created 
+  ![Graph View](../images/GraphDB_view.png) 
+- Each level of the topic is represented as a node with a relationship also established between the nodes.
+  The label to the nodes is also assigned as per the Node Types which were [configured](#key-configurations-to-provide).
+
+  e.g. the node `my_device` in this message  has the label `DEVICE` in the GraphDB.
+
+  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB.
+  ![Graph View](../images/GraphDB_view0.png) 
+- A Tabular of the same data
+
+  ![Graph View](../images/GraphDB_Textview.png) 
 
 ## Limitations / workarounds 
 1. Neo4j does not support nested attributes. If your message contains nested data the current logic will flatten the JSON object. 
    See the function [_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
 1. If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name
-1. Current code & configurations have not considered securing the database and encrypted connections
-1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
-1. Add and improve automated test coverage
-1. Enhancing ACLs on the nodes for the various nodes to secure access
-1. Securing the neo4j database 
+[ ] Current code & configurations have not yet considered securing the database and encrypted connections
+[ ] Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
+[ ] Add and improve automated test coverage
+[ ] Enhancing ACLs on the nodes for the various nodes to secure access
+[ ] Securing the neo4j database 
