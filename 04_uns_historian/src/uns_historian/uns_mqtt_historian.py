@@ -34,13 +34,13 @@ class Uns_Mqtt_Historian:
             reconnect_on_failure=self.reconnect_on_failure)
         ## Connect to the database
         self.uns_historian_handler = HistorianHandler(
-                                            hostname = self.historian_hostname,
-                                            port = self.historian_port,
-                                            database = self.historian_database,
-                                            table = self.historian_table,
-                                            user = self.historian_user,
-                                            password = self.historian_password,
-                                            sslmode = self.historian_sslmode)
+            hostname=self.historian_hostname,
+            port=self.historian_port,
+            database=self.historian_database,
+            table=self.historian_table,
+            user=self.historian_user,
+            password=self.historian_password,
+            sslmode=self.historian_sslmode)
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
@@ -74,7 +74,8 @@ class Uns_Mqtt_Historian:
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
-        self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
+        self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
+                                               "timestamp")
         if (self.mqtt_host is None):
             raise ValueError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
@@ -148,7 +149,11 @@ class Uns_Mqtt_Historian:
             self.uns_historian_handler.close()
             self.uns_historian_handler = None
         if (rc != 0):
-            LOGGER.error("Unexpected disconnection.:%s",str(rc),stack_info=True,exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s",
+                         str(rc),
+                         stack_info=True,
+                         exc_info=True)
+
 
 def main():
     try:
@@ -157,9 +162,12 @@ def main():
     finally:
         if (uns_mqtt_historian is not None):
             uns_mqtt_historian.uns_client.disconnect()
-        if (uns_mqtt_historian is not None) and (uns_mqtt_historian.uns_historian_handler is not None):
+        if (uns_mqtt_historian
+                is not None) and (uns_mqtt_historian.uns_historian_handler
+                                  is not None):
             # incase the on_disconnect message is not called
             uns_mqtt_historian.uns_historian_handler.close()
+
 
 if __name__ == '__main__':
     main()

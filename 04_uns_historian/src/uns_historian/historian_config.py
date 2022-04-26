@@ -1,8 +1,8 @@
-
 from dynaconf import Dynaconf
 import os
 import inspect
-current_folder =  os.path.dirname(os.path.abspath(__file__))
+
+current_folder = os.path.dirname(os.path.abspath(__file__))
 
 settings = Dynaconf(
     envvar_prefix="UNS",

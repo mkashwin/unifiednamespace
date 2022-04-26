@@ -106,7 +106,7 @@ def test_mqtt_config():
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_graph_db_configs():
-     #run these tests only if both configuration files exists or mandatory environment vars are set
+    #run these tests only if both configuration files exists or mandatory environment vars are set
     graphdb_url: str = settings.graphdb["url"]
     REGEX_FOR_NEO4J = "(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*"
     assert bool(

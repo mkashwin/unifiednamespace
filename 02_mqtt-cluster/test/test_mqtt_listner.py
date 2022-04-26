@@ -12,7 +12,7 @@ cmd_subfolder = os.path.realpath(
             'src')))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder,"uns_mqtt"))
+    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_mqtt"))
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
@@ -50,11 +50,12 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
-    uns_client = Uns_MQTT_ClientWrapper(f"test_01_{protocol}",
-                                   clean_session=clean_session,
-                                   protocol=protocol,
-                                   transport=transport,
-                                   reconnect_on_failure=reconnect_on_failure)
+    uns_client = Uns_MQTT_ClientWrapper(
+        f"test_01_{protocol}",
+        clean_session=clean_session,
+        protocol=protocol,
+        transport=transport,
+        reconnect_on_failure=reconnect_on_failure)
     # container to mark callbacks happened correctly
     callback = []
 
@@ -83,11 +84,16 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
                        keepalive=KEEP_ALIVE,
                        topic=DEFAULT_TOPIC,
                        qos=qos)
-        uns_client.loop()
-        while (len(callback) == 0):
-            time.sleep(5)
+
+        while (not uns_client.is_connected()):
+            time.sleep(1)
+            uns_client.loop()
+#        while (len(callback) == 0):
+#            time.sleep(5)
         assert uns_client.protocol == protocol, "Protocol not matching"
-        assert len(callback) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
+        assert len(
+            callback
+        ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
         assert uns_client.connected_flag == True, "Client should have connected "
     finally:
         uns_client.loop_stop()
@@ -117,11 +123,12 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
     """
     Test all the parameters ( including username password against Mosquitto's hosted broker)
     """
-    uns_client = Uns_MQTT_ClientWrapper(f"test_01_{protocol}_",
-                                   clean_session=clean_session,
-                                   protocol=protocol,
-                                   transport=transport,
-                                   reconnect_on_failure=reconnect_on_failure)
+    uns_client = Uns_MQTT_ClientWrapper(
+        f"test_01_{protocol}_",
+        clean_session=clean_session,
+        protocol=protocol,
+        transport=transport,
+        reconnect_on_failure=reconnect_on_failure)
     # container to mark callbacks happened correctly
     callback = []
 
@@ -152,67 +159,163 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
                        keepalive=KEEP_ALIVE,
                        topic=DEFAULT_TOPIC,
                        qos=qos)
-        uns_client.loop()
-        while (len(callback) == 0):
-            time.sleep(5)
+        while (not uns_client.is_connected()):
+            time.sleep(1)
+            uns_client.loop()
+        # uns_client.loop()
+        # while (len(callback) == 0):
+        #     time.sleep(5)
         assert uns_client.protocol == protocol, "Protocol not matching"
-        assert len(callback) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
+        assert len(
+            callback
+        ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
         assert uns_client.connected_flag == True, "Client should have connected "
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()
 
-@pytest.mark.parametrize(
-    "topicWithWildcard,topic,expectedResult",[
-     ("#", "a", True), ("#", "a/b/c", True), ("a/#", "a", False),
-     ("a/#", "a/b/c", True), ("+", "a", True), ("+", "a/b/c", False),
-     (None, "a/b/c", False), ("+", "a/b/c", False), ("topic1","topic1",True)]
-)
+
+@pytest.mark.parametrize("topicWithWildcard,topic,expectedResult",
+                         [("#", "a", True), ("#", "a/b/c", True),
+                          ("a/#", "a", False), ("a/#", "a/b/c", True),
+                          ("+", "a", True), ("+", "a/b/c", False),
+                          (None, "a/b/c", False), ("+", "a/b/c", False),
+                          ("topic1", "topic1", True)])
 def test_isTopicMatching(topicWithWildcard: str, topic: str,
                          expectedResult: bool):
     result = Uns_MQTT_ClientWrapper.isTopicMatching(topicWithWildcard, topic)
-    assert result == expectedResult , f"""
+    assert result == expectedResult, f"""
             Topic WildCard:{topicWithWildcard}, 
             Topic:{topic}, 
             Expected Result:{expectedResult},
             Actual Result: {result}"""
 
 
-@pytest.mark.parametrize("message, ignored_attr , expected_result" , [
-                        ({} , ["key1"] , {}) ,
-                        ({"key1": "value1"} , ["key1"] , {}) ,
-                        ({"key1": ["value1" , "value2" , "value3"]} , ["key1"] , {}) , 
-                        ({"key1": "value1" , "key2": "value2"} , ["key1"] , {"key2": "value2"}) , 
-                        ({"key1": "value1" , "key2": "value2"} , ["key1" , "key2"] , {"key1": "value1" , "key2": "value2"} ) ,         
-                        ({"key1":  {"key1":"val" , "key2":100} , "key2": "value2" ,  "key3":"value3"} , ["key1" , "key2"] , 
-                                    {"key1":  {"key1":"val"} , "key2": "value2" ,  "key3":"value3"} ) , 
-                        ({"key1": "value1"} , ["key1", "childKey1"] , {"key1": "value1"}) , 
-                        ({"key1": {"child1":"val" , "child2":100}} , ["key1","child1"] , {"key1": {"child2":100}}) ,         
-                        ({"key1": {"child1":"val" , "child2":100}, "child1": "value2"} , ["key1","child1"] , {"key1": {"child2":100},"child1": "value2"}) ,         
-                        ]
-)
-def test_del_key_from_dict(message:dict , ignored_attr:list, expected_result:dict):
+@pytest.mark.parametrize("message, ignored_attr , expected_result", [
+    ({}, ["key1"], {}),
+    ({
+        "key1": "value1"
+    }, ["key1"], {}),
+    ({
+        "key1": ["value1", "value2", "value3"]
+    }, ["key1"], {}),
+    ({
+        "key1": "value1",
+        "key2": "value2"
+    }, ["key1"], {
+        "key2": "value2"
+    }),
+    ({
+        "key1": "value1",
+        "key2": "value2"
+    }, ["key1", "key2"], {
+        "key1": "value1",
+        "key2": "value2"
+    }),
+    ({
+        "key1": {
+            "key1": "val",
+            "key2": 100
+        },
+        "key2": "value2",
+        "key3": "value3"
+    }, ["key1", "key2"], {
+        "key1": {
+            "key1": "val"
+        },
+        "key2": "value2",
+        "key3": "value3"
+    }),
+    ({
+        "key1": "value1"
+    }, ["key1", "childKey1"], {
+        "key1": "value1"
+    }),
+    ({
+        "key1": {
+            "child1": "val",
+            "child2": 100
+        }
+    }, ["key1", "child1"], {
+        "key1": {
+            "child2": 100
+        }
+    }),
+    ({
+        "key1": {
+            "child1": "val",
+            "child2": 100
+        },
+        "child1": "value2"
+    }, ["key1", "child1"], {
+        "key1": {
+            "child2": 100
+        },
+        "child1": "value2"
+    }),
+])
+def test_del_key_from_dict(message: dict, ignored_attr: list,
+                           expected_result: dict):
     """
     Should remove just the key should it be present.
     Test support for nested keys. e.g. the key "parent.child" goes in as ["parent", "ch{}ild"]
     The index of the array always indicates the depth of the key tree
     """
     result = Uns_MQTT_ClientWrapper.del_key_from_dict(message, ignored_attr)
-    assert result == expected_result , f""" message:{message}, 
+    assert result == expected_result, f""" message:{message}, 
             Attributes to filter:{ignored_attr}, 
             Expected Result:{expected_result},
             Actual Result: {result}"""
 
-@pytest.mark.parametrize("topic,json_dict, mqtt_ignored_attributes, expected_result" , [
-    ("topic1", {"timestamp":123456, "val1": 1234 }, None, {"timestamp":123456, "val1": 1234 }),
-    ("topic1", {"timestamp":123456, "val1": 1234 }, {"+":"timestamp"}, {"val1": 1234 }),
-    ("topic1", {"timestamp":123456, "val1": 1234 }, {"#":"timestamp"}, {"val1": 1234 }),
-    ("topic1", {"timestamp":123456, "val1": 1234 }, {"topic1":"timestamp"}, {"val1": 1234 }),
-    ("topic1", {"timestamp":123456, "val1": 1234 }, {"topic2":"timestamp"}, {"timestamp":123456, "val1": 1234 }),
-])
-def test_filter_ignored_attributes(topic:str, json_dict:dict, mqtt_ignored_attributes, expected_result):
-    result = Uns_MQTT_ClientWrapper.filter_ignored_attributes(topic, json_dict, mqtt_ignored_attributes)
-    assert result == expected_result , f""" message:{json_dict}, 
+
+@pytest.mark.parametrize(
+    "topic,json_dict, mqtt_ignored_attributes, expected_result", [
+        ("topic1", {
+            "timestamp": 123456,
+            "val1": 1234
+        }, None, {
+            "timestamp": 123456,
+            "val1": 1234
+        }),
+        ("topic1", {
+            "timestamp": 123456,
+            "val1": 1234
+        }, {
+            "+": "timestamp"
+        }, {
+            "val1": 1234
+        }),
+        ("topic1", {
+            "timestamp": 123456,
+            "val1": 1234
+        }, {
+            "#": "timestamp"
+        }, {
+            "val1": 1234
+        }),
+        ("topic1", {
+            "timestamp": 123456,
+            "val1": 1234
+        }, {
+            "topic1": "timestamp"
+        }, {
+            "val1": 1234
+        }),
+        ("topic1", {
+            "timestamp": 123456,
+            "val1": 1234
+        }, {
+            "topic2": "timestamp"
+        }, {
+            "timestamp": 123456,
+            "val1": 1234
+        }),
+    ])
+def test_filter_ignored_attributes(topic: str, json_dict: dict,
+                                   mqtt_ignored_attributes, expected_result):
+    result = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
+        topic, json_dict, mqtt_ignored_attributes)
+    assert result == expected_result, f""" message:{json_dict}, 
             Attributes to filter:{mqtt_ignored_attributes}, 
             Expected Result:{expected_result},
             Actual Result: {result}"""

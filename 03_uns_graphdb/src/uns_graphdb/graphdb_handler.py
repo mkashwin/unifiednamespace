@@ -14,7 +14,8 @@ class GraphDBHandler:
                  user: str,
                  password: str,
                  database: str = neo4j.DEFAULT_DATABASE,
-                 node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"),
+                 node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE",
+                                      "DEVICE"),
                  MAX_RETRIES: int = 5,
                  SLEEP_BTW_ATTEMPT: float = 10):
         """
@@ -55,15 +56,16 @@ class GraphDBHandler:
                          exc_info=True)
             raise ex
 
-    def connect(self, retry: int = 0) :
+    def connect(self, retry: int = 0):
         try:
             if (self.driver is None):
                 self.driver = neo4j.GraphDatabase.driver(self.uri,
-                                                     auth=(self.user,
-                                                           self.password))
+                                                         auth=(self.user,
+                                                               self.password))
             self.driver.verify_connectivity()
         except (exceptions.DatabaseError, exceptions.TransientError,
-                exceptions.DatabaseUnavailable, exceptions.ServiceUnavailable) as ex:
+                exceptions.DatabaseUnavailable,
+                exceptions.ServiceUnavailable) as ex:
             if (retry >= self.MAX_RETRIES):
                 LOGGER.error("No. of retries exceeded %s",
                              self.MAX_RETRIES,
@@ -72,8 +74,8 @@ class GraphDBHandler:
                 raise ex
             else:
                 retry += 1
-                LOGGER.error("Error Connecting to %s. Error:",
-                             self.database, str(ex))
+                LOGGER.error("Error Connecting to %s. Error:", self.database,
+                             str(ex))
                 time.sleep(self.SLEEP_BTW_ATTEMPT)
                 self.connect(retry=retry)
 
@@ -116,10 +118,12 @@ class GraphDBHandler:
         ## Also need to ensure that the message doesn't contain any attribute with the name "node_name"
         if (message is not None):
             attributes = GraphDBHandler._flatten_json_for_Neo4J(message)
-        try :
-            with self.connect().session(database=f"{self.database}") as session:
-                response = session.write_transaction(self.save_all_nodes, topic,
-                                                    attributes, timestamp)
+        try:
+            with self.connect().session(
+                    database=f"{self.database}") as session:
+                response = session.write_transaction(self.save_all_nodes,
+                                                     topic, attributes,
+                                                     timestamp)
         except (exceptions.TransientError, exceptions.TransactionError) as ex:
             if (retry >= self.MAX_RETRIES):
                 LOGGER.error("No. of retries exceeded %s",
@@ -217,8 +221,8 @@ class GraphDBHandler:
 
         # CQL doesn't allow  the node label as a parameter.
         # using a statement with parameters is a safer option against CQL injection
-        query =        f"MERGE (node:{nodetype} {{ node_name: $nodename }}) \n"
-        query = query + "ON CREATE \n" 
+        query = f"MERGE (node:{nodetype} {{ node_name: $nodename }}) \n"
+        query = query + "ON CREATE \n"
         query = query + "   SET node._created_timestamp = $timestamp \n"
         if (attributes is not None):
             query = query + "ON MATCH \n"
@@ -229,15 +233,15 @@ class GraphDBHandler:
             query = "MATCH (parent {node_name: $parent})" + '\n' + query + '\n'
             query = query + "MERGE (parent) -[r:PARENT_OF]-> (node) \n"
             query = query + "RETURN node, parent"
-        else :
-            query = query + "RETURN node"""
+        else:
+            query = query + "RETURN node" ""
         LOGGER.debug(f"CQL statement to be executed: {query}")
         ## non-referred would be ignored in the execution.
         node = session.run(query,
-                            nodename=nodename,
-                            timestamp=timestamp,
-                            parent=parent,
-                            attributes=attributes)       
+                           nodename=nodename,
+                           timestamp=timestamp,
+                           parent=parent,
+                           attributes=attributes)
         return node
 
     # static Method Ends

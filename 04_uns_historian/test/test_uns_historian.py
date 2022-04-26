@@ -11,8 +11,6 @@ cmd_subfolder = os.path.realpath(
             'src')))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder,"uns_historian"))
+    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_historian"))
 
 from uns_historian.uns_mqtt_historian import Uns_Mqtt_Historian
-
-
