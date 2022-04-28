@@ -4,6 +4,9 @@ import logging
 import time
 import os
 import sys
+from historian_config import settings
+from historian_handler import HistorianHandler
+
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
@@ -12,9 +15,6 @@ cmd_subfolder = os.path.realpath(
             '..', '..', '02_mqtt-cluster', 'src')))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-
-from historian_config import settings
-from historian_handler import HistorianHandler
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 LOGGER = logging.getLogger(__name__)
@@ -106,8 +106,7 @@ class Uns_Mqtt_Historian:
         if (self.historian_table is None):
             raise ValueError(
                 f"""Table in Historian Database {self.historian_database} not provided.
-                Update key 'historian.table' in '../../conf/settings.yaml'"""
-            )
+                Update key 'historian.table' in '../../conf/settings.yaml'""")
         if ((self.historian_user is None)
                 or (self.historian_password is None)):
             raise ValueError(

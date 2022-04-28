@@ -25,7 +25,7 @@ is_configs_provided: bool = (os.path.exists(
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
-    #run these tests only if both configuration files exists or mandatory environment vars are set
+    # run these tests only if both configuration files exists or mandatory environment vars are set
     mqtt_transport: str = settings.get("mqtt.transport")
     assert mqtt_transport in (
         None, "tcp",
@@ -55,15 +55,11 @@ def test_mqtt_config():
     port: int = settings.get("mqtt.port", 1883)
     assert type(
         port
-    ) is int or port is None, f"Invalid value for key 'mqtt.port':{port}"
+    ) is int or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
     assert type(
         port
-    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{port} must be between 1024 to 49151"
-    """
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex(
-        (host, port)) == 0, f"Host: {host} is not reachable at port:{port}"
-    """
+    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+
     username = settings.mqtt["username"]
     password = settings.mqtt["password"]
     assert (username is None and password is None) or (
@@ -79,7 +75,7 @@ def test_mqtt_config():
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
     topic: str = settings.get("mqtt.topic", "#")
-    REGEX_TO_MATCH_TOPIC = "^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+    REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
     assert bool(
         re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
     ), f"configuration 'mqtt.topic':{topic} is not a valid MQTT topic"
@@ -105,7 +101,7 @@ def test_mqtt_config():
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_timescale_db_configs():
-    #run these tests only if both configuration files exists or mandatory environment vars are set
+    # run these tests only if both configuration files exists or mandatory environment vars are set
     hostname: str = settings.historian["hostname"]
     port: int = settings.get(
         "historian.port",
@@ -114,10 +110,10 @@ def test_timescale_db_configs():
 
     assert type(
         port
-    ) is int or port is None, f"Invalid value for key 'historian.port':{port}"
+    ) is int or port is None, f"Invalid value for key 'historian.port':{str(port)}"
     assert type(
         port
-    ) is int and port >= 1024 and port <= 49151, f"'historian.port':{port} must be between 1024 to 49151"
+    ) is int and port >= 1024 and port <= 49151, f"'historian.port':{str(port)} must be between 1024 to 49151"
 
     historian_user: str = settings.historian["username"]
     assert (
@@ -150,9 +146,29 @@ def test_timescale_db_configs():
         and len(historian_table) > 0
     ), f"""Invalid database name configured at key: 'historian.table' value:{historian_table}.
          Cannot be None or empty string"""
-    """
+
+
+@pytest.mark.xfail(
+    not is_configs_provided,
+    reason="Configurations absent, or these are not integration tests")
+def test_connectivity_to_mqtt():
+    host: str = settings.mqtt["host"]
+    port: int = settings.get("mqtt.port", 1883)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    assert sock.connect_ex(
+        (host,
+         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+
+
+@pytest.mark.xfail(
+    not is_configs_provided,
+    reason="Configurations absent, or these are not integration tests")
+def test_connectivity_to_historian():
+    hostname: str = settings.historian["hostname"]
+    port: int = settings.get(
+        "historian.port",
+        5432)  # if port not provided use default postgres port
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
         (hostname,
-         port)) == 0, f"Host: {hostname} is not reachable at port:{port}"
-    """
+         port)) == 0, f"Host: {hostname} is not reachable at port:{str(port)}"

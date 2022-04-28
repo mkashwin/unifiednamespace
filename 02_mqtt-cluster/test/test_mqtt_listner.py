@@ -33,7 +33,7 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("protocol", [(Uns_MQTT_ClientWrapper.MQTTv5),
                                       (Uns_MQTT_ClientWrapper.MQTTv311)])
 #                                     (UNS_MQTT_Listener.MQTTv31)])
-## There appears to be a bug for MQTTv31. The call backs are not occuring
+# There appears to be a bug for MQTTv31. The call backs are not occuring
 @pytest.mark.parametrize("transport,port,tls", [("tcp", 1883, None),
                                                 ("websockets", 8083, None),
                                                 ("tcp", 8883, {
@@ -94,7 +94,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
         assert len(
             callback
         ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
-        assert uns_client.connected_flag == True, "Client should have connected "
+        assert uns_client.connected_flag is True, "Client should have connected "
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()
@@ -104,7 +104,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 @pytest.mark.parametrize("protocol", [(Uns_MQTT_ClientWrapper.MQTTv5),
                                       (Uns_MQTT_ClientWrapper.MQTTv311),
                                       (Uns_MQTT_ClientWrapper.MQTTv31)])
-## There appears to be a bug for MQTTv31. The call backs are not occuring
+# There appears to be a bug for MQTTv31. The call backs are not occuring
 @pytest.mark.parametrize("transport,port,tls",
                          [("tcp", 1884, None), ("websockets", 8090, None),
                           ("tcp", 8885, {
@@ -169,7 +169,7 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
         assert len(
             callback
         ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
-        assert uns_client.connected_flag == True, "Client should have connected "
+        assert uns_client.connected_flag is True, "Client should have connected "
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()
@@ -185,8 +185,8 @@ def test_isTopicMatching(topicWithWildcard: str, topic: str,
                          expectedResult: bool):
     result = Uns_MQTT_ClientWrapper.isTopicMatching(topicWithWildcard, topic)
     assert result == expectedResult, f"""
-            Topic WildCard:{topicWithWildcard}, 
-            Topic:{topic}, 
+            Topic WildCard:{topicWithWildcard},
+            Topic:{topic},
             Expected Result:{expectedResult},
             Actual Result: {result}"""
 
@@ -262,8 +262,8 @@ def test_del_key_from_dict(message: dict, ignored_attr: list,
     The index of the array always indicates the depth of the key tree
     """
     result = Uns_MQTT_ClientWrapper.del_key_from_dict(message, ignored_attr)
-    assert result == expected_result, f""" message:{message}, 
-            Attributes to filter:{ignored_attr}, 
+    assert result == expected_result, f""" message:{message},
+            Attributes to filter:{ignored_attr},
             Expected Result:{expected_result},
             Actual Result: {result}"""
 
@@ -315,7 +315,7 @@ def test_filter_ignored_attributes(topic: str, json_dict: dict,
                                    mqtt_ignored_attributes, expected_result):
     result = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
         topic, json_dict, mqtt_ignored_attributes)
-    assert result == expected_result, f""" message:{json_dict}, 
-            Attributes to filter:{mqtt_ignored_attributes}, 
+    assert result == expected_result, f""" message:{json_dict},
+            Attributes to filter:{mqtt_ignored_attributes},
             Expected Result:{expected_result},
             Actual Result: {result}"""

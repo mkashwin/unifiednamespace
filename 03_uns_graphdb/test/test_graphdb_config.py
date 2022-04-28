@@ -4,6 +4,7 @@ import re
 import socket
 import sys
 import pytest
+from urllib.parse import urlparse
 
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
@@ -25,7 +26,7 @@ is_configs_provided: bool = (os.path.exists(
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
-    #run these tests only if both configuration files exists or mandatory environment vars are set
+    # run these tests only if both configuration files exists or mandatory environment vars are set
     mqtt_transport: str = settings.get("mqtt.transport")
     assert mqtt_transport in (
         None, "tcp",
@@ -55,15 +56,10 @@ def test_mqtt_config():
     port: int = settings.get("mqtt.port", 1883)
     assert type(
         port
-    ) is int or port is None, f"Invalid value for key 'mqtt.port':{port}"
+    ) is int or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
     assert type(
         port
-    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{port} must be between 1024 to 49151"
-    """     
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex(
-            (host, port)) == 0, f"Host: {host} is not reachable at port:{port}" 
-    """
+    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
     username = settings.mqtt["username"]
     password = settings.mqtt["password"]
@@ -80,7 +76,7 @@ def test_mqtt_config():
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
     topic: str = settings.get("mqtt.topic", "#")
-    REGEX_TO_MATCH_TOPIC = "^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+    REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
     assert bool(
         re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
     ), f"configuration 'mqtt.topic':{topic} is not a valid MQTT topic"
@@ -106,13 +102,13 @@ def test_mqtt_config():
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_graph_db_configs():
-    #run these tests only if both configuration files exists or mandatory environment vars are set
+    # run these tests only if both configuration files exists or mandatory environment vars are set
     graphdb_url: str = settings.graphdb["url"]
-    REGEX_FOR_NEO4J = "^(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*$"
+    REGEX_FOR_NEO4J = r"^(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*$"
     assert bool(
         re.fullmatch(REGEX_FOR_NEO4J, graphdb_url)
     ), f"configuration 'graphdb.url':{graphdb_url} is not a valid Neo4j URL"
-    ##TODO extract hostname port from the URL and check if the host is accessible
+    # TODO extract hostname port from the URL and check if the host is accessible
 
     graphdb_user: str = settings.graphdb["username"]
     assert (
@@ -133,7 +129,38 @@ def test_graph_db_configs():
         node_types
     ) > 0, "Invalid node_types configured at key: 'graphdb.node_types'. Must be a list of length > 1"
     REGEX_FOR_NODE_TYPES = "^[a-zA-Z0-9_]*$"
-    for node_type in node_types :
+    for node_type in node_types:
         assert bool(
-                re.fullmatch(REGEX_FOR_NODE_TYPES, node_type)
-            ), f"configuration {node_type} in {node_types} is not a valid node name"
+            re.fullmatch(REGEX_FOR_NODE_TYPES, node_type)
+        ), f"configuration {node_type} in {node_types} is not a valid node name"
+
+
+@pytest.mark.xfail(
+    not is_configs_provided,
+    reason="Configurations absent, or these are not integration tests")
+def test_connectivity_to_mqtt():
+    host: str = settings.mqtt["host"]
+    port: int = settings.get("mqtt.port", 1883)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    assert sock.connect_ex(
+        (host,
+         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+
+
+@pytest.mark.xfail(
+    not is_configs_provided,
+    reason="Configurations absent, or these are not integration tests")
+def test_connectivity_to_graphdb():
+    graphdb_url: str = settings.graphdb["url"]
+    parsed = urlparse(graphdb_url).netloc.split(':')
+
+    host: str = parsed[0]
+    port: int = None
+    if (len(parsed) == 2):
+        port: int = parsed[1]
+    if (port is None or port == ""):
+        port = 7687
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    assert sock.connect_ex(
+        (host,
+         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
