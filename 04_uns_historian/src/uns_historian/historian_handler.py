@@ -59,19 +59,25 @@ class HistorianHandler:
             except psycopg2.OperationalError as ex:
                 if (self.timescale_db_conn is None and retry >= MAX_RETRIES):
                     LOGGER.error("No. of retries exceeded %s",
-                                 MAX_RETRIES,
+                                 str(MAX_RETRIES),
                                  stack_info=True,
                                  exc_info=True)
                     raise ex
                 else:
                     retry += 1
                     LOGGER.error("Error Connecting to %s. Error:",
-                                 self.database, str(ex))
+                                 self.database,
+                                 str(ex),
+                                 stack_info=True,
+                                 exc_info=True)
                     time.sleep(SLEEP_BTW_ATTEMPT)
                     self.connect(retry=retry)
             except Exception as ex:
                 LOGGER.error("Error Connecting to %s. Unable to retry. Error:",
-                             self.database, str(ex))
+                             self.database,
+                             str(ex),
+                             stack_info=True,
+                             exc_info=True)
                 raise ex
 
     def getcursor(self):

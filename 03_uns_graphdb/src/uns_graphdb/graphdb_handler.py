@@ -69,20 +69,26 @@ class GraphDBHandler:
                 exceptions.ServiceUnavailable) as ex:
             if (retry >= self.MAX_RETRIES):
                 LOGGER.error("No. of retries exceeded %s",
-                             self.MAX_RETRIES,
+                             str(self.MAX_RETRIES),
                              stack_info=True,
                              exc_info=True)
                 raise ex
             else:
                 retry += 1
-                LOGGER.error("Error Connecting to %s. Error:", self.database,
-                             str(ex))
+                LOGGER.error("Error Connecting to %s. Error: %s",
+                             self.database,
+                             str(ex),
+                             stack_info=True,
+                             exc_info=True)
                 time.sleep(self.SLEEP_BTW_ATTEMPT)
                 self.connect(retry=retry)
 
         except Exception as ex:
-            LOGGER.error("Error Connecting to %s. Unable to retry. Error:",
-                         self.database, str(ex))
+            LOGGER.error("Error Connecting to %s. Unable to retry. Error: %s",
+                         self.database,
+                         str(ex),
+                         stack_info=True,
+                         exc_info=True)
             raise ex
         return self.driver
 
@@ -128,7 +134,7 @@ class GraphDBHandler:
         except (exceptions.TransientError, exceptions.TransactionError) as ex:
             if (retry >= self.MAX_RETRIES):
                 LOGGER.error("No. of retries exceeded %s",
-                             self.MAX_RETRIES,
+                             str(self.MAX_RETRIES),
                              stack_info=True,
                              exc_info=True)
                 raise ex
@@ -136,7 +142,11 @@ class GraphDBHandler:
                 retry += 1
                 LOGGER.error(
                     "Error persisting \ntopic:%s \nmessage %s. on Error:",
-                    topic, message, str(ex))
+                    topic,
+                    str(message),
+                    str(ex),
+                    stack_info=True,
+                    exc_info=True)
                 time.sleep(self.SLEEP_BTW_ATTEMPT)
                 self.persistMQTTmsg(topic=topic,
                                     message=message,

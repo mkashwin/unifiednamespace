@@ -26,6 +26,7 @@ is_configs_provided: bool = (os.path.exists(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
 def test_Uns_Mqtt_Historian():
+    uns_mqtt_historian = None
     try:
         uns_mqtt_historian = Uns_Mqtt_Historian()
         assert uns_mqtt_historian is not None, "Connection to either the MQTT Broker or the Historian DB did not happen"
