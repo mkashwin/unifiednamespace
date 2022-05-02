@@ -41,6 +41,6 @@ jobs:
         flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics 
     - name: Test with pytest
       run: |
-        pytest ./02_mqtt-cluster/test/
-        pytest ./03_uns_graphdb/test/
-        pytest ./04_uns_historian/test/
+        pytest -m "not integrationtest" ./02_mqtt-cluster/test/
+        pytest -m "not integrationtest" ./03_uns_graphdb/test/
+        pytest -m "not integrationtest" ./04_uns_historian/test/

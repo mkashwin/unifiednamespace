@@ -21,6 +21,7 @@ is_configs_provided: bool = (os.path.exists(
             os.getenv("UNS_historian.username")))
 
 
+@pytest.mark.integrationtest
 @pytest.mark.xfail(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")

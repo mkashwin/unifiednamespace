@@ -46,4 +46,4 @@ jobs:
     
     - name: Test with pytest
       run: |
-        pytest ./03_uns_graphdb/test/
+        pytest -m "not integrationtest" ./03_uns_graphdb/test/

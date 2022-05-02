@@ -46,4 +46,4 @@ jobs:
     
     - name: Test with pytest
       run: |
-        pytest ./04_uns_historian/test/
+        pytest -m "not integrationtest" ./04_uns_historian/test/

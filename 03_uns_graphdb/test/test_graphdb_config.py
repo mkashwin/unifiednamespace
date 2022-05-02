@@ -135,6 +135,7 @@ def test_graph_db_configs():
         ), f"configuration {node_type} in {node_types} is not a valid node name"
 
 
+@pytest.mark.integrationtest
 @pytest.mark.xfail(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
@@ -147,6 +148,7 @@ def test_connectivity_to_mqtt():
          port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
 
 
+@pytest.mark.integrationtest
 @pytest.mark.xfail(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
