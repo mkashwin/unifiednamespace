@@ -5,42 +5,44 @@ name: UNS Project
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f ./02_mqtt-cluster/requirements.txt ]; then pip install -r ./02_mqtt-cluster/requirements.txt; fi
-        if [ -f ./02_mqtt-cluster/requirements_dev.txt ]; then pip install -r ./02_mqtt-cluster/requirements_dev.txt; fi
-        if [ -f ./03_uns_graphdb/requirements.txt ]; then pip install -r ./03_uns_graphdb/requirements.txt; fi
-        if [ -f ./03_uns_graphdb/requirements_dev.txt ]; then pip install -r ./03_uns_graphdb/requirements_dev.txt; fi
-        if [ -f ./04_uns_historian/requirements.txt ]; then pip install -r ./04_uns_historian/requirements.txt; fi
-        if [ -f ./04_uns_historian/requirements_dev.txt ]; then pip install -r ./04_uns_historian/requirements_dev.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test --count --select=E9,F63,F7,F82 --show-source --statistics 
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics 
-    - name: Test with pytest
-      run: |
-        pytest -m "not integrationtest" ./02_mqtt-cluster/test/
-        pytest -m "not integrationtest" ./03_uns_graphdb/test/
-        pytest -m "not integrationtest" ./04_uns_historian/test/
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f ./02_mqtt-cluster/requirements.txt ]; then pip install -r ./02_mqtt-cluster/requirements.txt; fi
+          if [ -f ./02_mqtt-cluster/requirements_dev.txt ]; then pip install -r ./02_mqtt-cluster/requirements_dev.txt; fi
+          if [ -f ./03_uns_graphdb/requirements.txt ]; then pip install -r ./03_uns_graphdb/requirements.txt; fi
+          if [ -f ./03_uns_graphdb/requirements_dev.txt ]; then pip install -r ./03_uns_graphdb/requirements_dev.txt; fi
+          if [ -f ./04_uns_historian/requirements.txt ]; then pip install -r ./04_uns_historian/requirements.txt; fi
+          if [ -f ./04_uns_historian/requirements_dev.txt ]; then pip install -r ./04_uns_historian/requirements_dev.txt; fi
+          if [ -f ./05_sparkplugb/requirements.txt ]; then pip install -r ./05_sparkplugb/requirements.txt; fi
+          if [ -f ./05_sparkplugb/requirements_dev.txt ]; then pip install -r ./05_sparkplugb/requirements_dev.txt; fi
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test ./05_sparkplugb/src ./05_sparkplugb/test --count --select=E9,F63,F7,F82 --show-source --statistics 
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test ./05_sparkplugb/src ./05_sparkplugb/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+          pytest -m "not integrationtest" ./02_mqtt-cluster/test/
+          pytest -m "not integrationtest" ./03_uns_graphdb/test/
+          pytest -m "not integrationtest" ./04_uns_historian/test/
+          pytest -m "not integrationtest" ./05_sparkplugb/test/
