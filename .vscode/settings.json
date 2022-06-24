@@ -5,9 +5,12 @@
         "HIVEMQ",
         "hypertable",
         "IIOT",
+        "integrationtest",
         "k8scluster",
         "microk8s",
+        "mqtt",
         "paho",
+        "sparkplugb",
         "timescaledb",
         "venv",
         "VERNEMQ"
@@ -18,7 +21,8 @@
     "python.testing.pytestArgs": [
         "./02_mqtt-cluster/test",
         "./03_uns_graphdb/test",
-        "./04_uns_historian/test"
+        "./04_uns_historian/test",
+        "./05_sparkplugb/test"
     ],
     "python.analysis.extraPaths": [
         "./02_mqtt-cluster/src",
@@ -30,6 +34,8 @@
         "./04_uns_historian/src",
         "./04_uns_historian/src/uns_historian",
         "./04_uns_historian/test",
+        "./05_sparkplugb/src/uns_sparkplugb",
+        "./05_sparkplugb/test",
     ],
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true
