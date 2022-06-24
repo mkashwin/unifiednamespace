@@ -78,7 +78,14 @@ Some key limitations to bear in mind
 * microk8s is not available for every linux distribution. 
 ---
 ### **MQTT Broker**
-The backbone of the ***Unified Name Space*** is the MQTT broker.
+The backbone of the ***Unified Name Space*** is the MQTT broker. 
+#### **Why MQTT**
+The overall structure of the UNS is based on the hierarchical structure as defined in ISA-95 part 2.
+> \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
+
+The level at which the message is published has a direct implication on it's time sensitivity as well as guidance on being processed  at the edge or on the cloud.<br/>
+![ISA-95 Part 2](./images/ISA-95-part2.png)
+
 I evaluated and read the user guides of the following brokers (open source versions only). All three also provide commercial / enterprise versions which is recommended for more robust setup and professional support
 1. [EMQX](https://www.emqx.io/)
 2. [VERNEMQ](https://vernemq.com/)
