@@ -280,6 +280,13 @@ def test_del_key_from_dict(message: dict, ignored_attr: list,
         ("topic1", {
             "timestamp": 123456,
             "val1": 1234
+        }, {}, {
+            "timestamp": 123456,
+            "val1": 1234
+        }),
+        ("topic1", {
+            "timestamp": 123456,
+            "val1": 1234
         }, {
             "+": "timestamp"
         }, {
