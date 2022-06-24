@@ -1,0 +1,1 @@
+[![SparkplugB Decoder](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_sparkplugb-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_sparkplugb-app.yml)
