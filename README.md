@@ -136,7 +136,7 @@ For production systems you might want to consider the cloud versions of the hist
 ### **Plugin / MQTT Client to subscribe and write to the above databases**
 Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
 
-I choose to wite the client in Python even thought Python is not as performance as Go, C or Rust primarily because
+I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
 * Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
 * I wanted to learn Python

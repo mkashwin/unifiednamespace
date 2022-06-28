@@ -108,6 +108,9 @@ The set of test for this module is executed by
 ```python
 source env_graphdb/bin/activate
 python -m pip install  -r requirements_dev.txt
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
 pytest test/
 ```
 
@@ -168,7 +171,7 @@ will result in a node in the GraphDB
    
   Neo4j does not support nested attributes. If your message contains nested data the current logic will flatten the JSON object. 
   See the function [graphdb_handler.py#_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
-* [x] Handling exceptional case of mqtt message containg the key ***"node_name"***.
+* [x] Handling exceptional case of mqtt message containing the key ***"node_name"***.
   
   If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. The logic of this is in the function [graphdb_handler.py#_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
 * [ ] Current code & configurations have not yet considered securing the database and encrypted connections

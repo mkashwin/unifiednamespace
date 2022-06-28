@@ -66,7 +66,7 @@ This application has two configuration file.
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
     mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
-    mqtt | transp ort | Valid values are "websockets", "tcp" | *"tcp"*
+    mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
     mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  None 
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
     **historian** | **hostname**\* | Mandatory. The db hostname of your TimescaleDB  instance| *None*
@@ -110,8 +110,10 @@ The set of test for this module is executed by
 ```python
 source env_historian/bin/activate
 python -m pip install  -r requirements_dev.txt
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
 pytest test/
-TBD
 ```
 
 
