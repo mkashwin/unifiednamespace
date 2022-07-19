@@ -151,19 +151,18 @@ will result in a node in the GraphDB
 (erp:enterprise : { id1: "identifier", sensor1: 100, value1: 202203011145})
 ```
 ### Examples of MQTT Message being persisted to the GraphDB
-- By publishing the following message to the MQTT  Broker    
+- By publishing the following message to the MQTT  Broker    <br/>
   ![MQTT Message to ](../images/Message_2_GraphDBMQTTClient.png)
-- We get the following graph created 
+- We get the following graph created <br/>
   ![Graph View](../images/GraphDB_view.png) 
 - Each level of the topic is represented as a node with a relationship also established between the nodes.
   The label to the nodes is also assigned as per the Node Types which were [configured](#key-configurations-to-provide).
 
   e.g. the node `my_device` in this message  has the label `DEVICE` in the GraphDB.
 
-  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB.
+  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB. <br/>
   ![Graph View](../images/GraphDB_view0.png) 
-- A Tabular of the same data
-
+- A Tabular of the same data <br/>
   ![Graph View](../images/GraphDB_Textview.png) 
 
 ## Limitations / workarounds 
