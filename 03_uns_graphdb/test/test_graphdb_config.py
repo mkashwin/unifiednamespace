@@ -159,7 +159,7 @@ def test_connectivity_to_graphdb():
     host: str = parsed[0]
     port: int = None
     if (len(parsed) == 2):
-        port: int = parsed[1]
+        port: int = int(parsed[1])
     if (port is None or port == ""):
         port = 7687
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
