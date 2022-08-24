@@ -13,3 +13,5 @@ exclude =
     build,
     # This contains builds of flake8 that we don't want to check
     dist
+     # This folder contains auto generated files which doesnt make sense to check 
+    generated

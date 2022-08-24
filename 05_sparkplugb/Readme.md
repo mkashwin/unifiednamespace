@@ -40,14 +40,14 @@ spBv1.0 | - | Default namespace for sparkplugB. No mapping needed
 # Preparation steps required to setup protocol buffer and SparkplugB dependencies
 1. **Step 1**: Download or install protoc. Refer 
     - [Installing on Linux/MacOs](https://grpc.io/docs/protoc-installation/)
-    - [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version  [Protocol Buffers v21.2](https://github.com/protocolbuffers/protobuf/releases/tag/v21.2) 
+    - [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version  [Protocol Buffers v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) 
     and downloaded the pre-compiled versions for  linux-x86_64 and win64. For other platforms please replace with the appropriate runtime or compile the runtime directly
 1. **Step 2**: Copy the [SparkPlugB protocol buffer specification](https://github.com/eclipse/tahu/tree/master/sparkplug_b/sparkplug_b.proto) from [Eclipse Tahu project](https://github.com/eclipse/tahu/tree/master/sparkplug_b) to the folder [./sparkplug_b](./sparkplug_b/)
 1. **Step 3**: Compile the SparkplugB protocol buffer into python class by the following command
     > 
     ```bash
     # Execute on Linux
-    ./protobuf/bin/protoc.exe -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
+    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
     ```
     >
     ```powershell
@@ -114,3 +114,7 @@ pytest test/
 * [Eclipse Sparkplug B Specification](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
 * [Cirrus Link Sparkplug B MQTT Tutorials](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
 * [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
+
+
+## Limitations 
+1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0) hence I had to downgrade the protobuf version to  [Protobuf v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) 
