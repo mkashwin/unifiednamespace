@@ -8,6 +8,8 @@ My objective is to build an open source, free to use UNS solution for the commun
 All components used in this solution are community versions and I do not own any rights on them. Most of them also provide a commercial / enterprise version which may also be considered to have better tool support.
 I also used this, as an opportunity to learn Python.
 
+If you are looking for a production-ready Unified Namespace with enterprise support, you could check out the [United Manufacturing Hub](https://learn.umh.app/), which is an Open-Source Helm Chart for Kubernetes. 
+
 ## What is the Unified Name Space?
 A unified namespace is a ***software solution*** that acts as a ***centralized repository*** of data, information, and context where any application or device can consume or publish data needed for a specific action via an ***event driven*** and ***loosely coupled architecture***. ​
 
@@ -19,6 +21,7 @@ This is a critical concept to allow scalability by preventing point to point con
 1. [UNS Q&A by Walter Reynolds](https://youtu.be/IiUZTSGjCQI)
 1. [Event driven architecture on Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)​
 1. [Advantages of Event Driven Architecture](https://developer.ibm.com/articles/advantages-of-an-event-driven-architecture/)
+1. [Unified Namespace as extended event-driven architecture](https://learn.umh.app/know/industrial-internet-of-things/techniques/unified-namespace/)
 
 ---
 ## **Architecture**
