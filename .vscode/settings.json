@@ -11,8 +11,10 @@
         "IIOT",
         "integrationtest",
         "k8scluster",
+        "keepalive",
         "Kubernetes",
         "microk8s",
+        "MOSQUITTO",
         "mqtt",
         "NBIRTH",
         "NCMD",
@@ -27,6 +29,7 @@
         "sslmode",
         "Tahu",
         "timescaledb",
+        "userdata",
         "venv",
         "VERNEMQ",
         "virtualenv"
