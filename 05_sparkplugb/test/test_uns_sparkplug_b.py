@@ -201,7 +201,4 @@ def testSbp_Messages_getNodeBirthPayload():
     assert metric.get("name") == "bdSeq"
     assert metric.get("timestamp") is not None
     assert metric.get("datatype") == sparkplug_b_pb2.Int64
-    assert metric.get("longValue") == str(1)
-
-
-#    assert sparkplug_message.bdSeq == 0
+    assert int(metric.get("longValue")) >= 0
