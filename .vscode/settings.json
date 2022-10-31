@@ -53,6 +53,7 @@
         "./04_uns_historian/src",
         "./04_uns_historian/src/uns_historian",
         "./04_uns_historian/test",
+        "./05_sparkplugb/src",
         "./05_sparkplugb/src/uns_sparkplugb",
         "./05_sparkplugb/test",
     ],

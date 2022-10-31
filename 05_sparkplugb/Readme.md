@@ -2,7 +2,7 @@
 
 # Decoder Application to process SparkPlugB 
 This SparkplugB decoder is an MQTT Application Node  deployed on the edge with the following functionality
-- subscribes to the  Topic `*spBv1.0**/#` 
+- subscribes to the  Topic *`spBv1.0/#`* 
 - decodes the payload received.
 - translate the sparkplugB topic name space to the ISA-95 UNS 
 This is  **not** a SCADA/IIOT host and will not be publishing any control messages to the broker 
@@ -61,7 +61,7 @@ This application has two configuration file.
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
     mqtt | port | Port of the mqtt broker (int) | *1883*
-    mqtt | topic | Topic to be subscribed to. Recommend subscribing to a level + # e.g. "erp/#" | *"#"* 
+    mqtt | topic | Must be in the names space of SpB  i.e. **spBv1.0/#** | *spBv1.0/#* 
     mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
@@ -69,10 +69,11 @@ This application has two configuration file.
     mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
     mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  None 
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
+    sparkplugb | | |*None*
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
 
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster and the timescaledb
-    This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**
+    This file is not checked into the repository for security purposes. However there is a template file provided [**`.secrets_template.yaml`**](./conf/.secrets_template.yaml) which should be edited and renamed to **`.secrets.yaml`**
     **key** | **sub key** | **sub key** | **description**  | ***default value*** |
     :------ | :------ | :------ | :------ | :------
    mqtt | username | | The user id needed to authenticate with the MQTT broker | *None*
@@ -89,7 +90,7 @@ This application has two configuration file.
 
    
 ## Running the python script
-This function is executed by the following command with the current folder as `05_sparkplugb`
+This function is executed by the following command with the current folder as [`05_sparkplugb`](.)
 ```bash
 # install virtual env
 python -m pip install --user virtualenv
@@ -102,7 +103,7 @@ python ./src/uns_sparkplugb/uns_sparkplugb.py
 
 ### Running tests
 The set of test for this module is executed by
-```python
+```bash
 source env_sparkplugb/bin/activate
 python -m pip install  -r requirements_dev.txt
 #run all tests excluding integration tests 
@@ -112,9 +113,16 @@ pytest test/
 ```
 # Reference
 * [Eclipse Sparkplug B Specification](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
-* [Cirrus Link Sparkplug B MQTT Tutorials](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
+* [Cirrus Link Sparkplug B MQTT Tutorials](https://docs.chariot.io/display/CLD79/B%3A+Example+Python+Client)
+* [Github Eclipse Tahu project](https://github.com/eclipse/tahu)
 * [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
 
 
 ## Limitations 
-1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0) hence I had to downgrade the protobuf version to  [Protobuf v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) 
+1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0) hence I had to downgrade the protobuf version to  [Protobuf v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4)
+
+1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification. For other architectures please download the appropriate pre compiled version of [Protobuf release v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) e.g.
+    - [protoc-3.19.4-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-aarch_64.zip)
+    - [protoc-3.19.4-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-ppcle_64.zip)
+    - [protoc-3.19.4-linux-s390_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-s390_64.zip)
+    - [protoc-3.19.4-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-x86_32.zip)
