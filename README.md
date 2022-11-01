@@ -8,7 +8,7 @@ My objective is to build an open source, free to use UNS solution for the commun
 All components used in this solution are community versions and I do not own any rights on them. Most of them also provide a commercial / enterprise version which may also be considered to have better tool support.
 I also used this, as an opportunity to learn Python.
 
-If you are looking for a production-ready Unified Namespace with enterprise support, you could check out the [United Manufacturing Hub](https://learn.umh.app/), which is an Open-Source Helm Chart for Kubernetes. 
+If you are looking for an alternative Unified Namespace implementation with enterprise support, check out the [United Manufacturing Hub](https://learn.umh.app/), which is an Open-Source Helm Chart for Kubernetes. 
 
 ## What is the Unified Name Space?
 A unified namespace is a ***software solution*** that acts as a ***centralized repository*** of data, information, and context where any application or device can consume or publish data needed for a specific action via an ***event driven*** and ***loosely coupled architecture***. ​
@@ -121,7 +121,7 @@ The other critical component of the ***Unified Name Space*** is the historian. T
 Since the graph databases are not suited for historian data (there were a couple of projects enhancing Neo4j but all were archived), it makes sense to delegate that to specialist. 
 
 I evaluated and read the user guides of the following historians
-1. [InfluxDb](https://www.influxdata.com/) combined with Timescale
+1. [InfluxDb](https://www.influxdata.com/) combined with Telegraf
 1. [TimescaleDB](https://www.timescale.com/) combined with [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)
 
 Both of these are excellent options and have significant user adoption. InfluxDb combined with Telegraph provide a strong low code approach to the integration. Telegraf however did not have a plugin for Neo4j and InfluxDb does not support K8s. Given the stronger stability of postgres (on which TimescaleDB is built) as well as support for [JSON](https://docs.timescale.com/timescaledb/latest/how-to-guides/schema-management/json/) I decided to go ahead with **[TimescaleDB](https://www.timescale.com/)**
@@ -132,7 +132,7 @@ For production systems you might want to consider the cloud versions of the hist
 ### **Plugin / MQTT Client to subscribe and write to the above databases**
 Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
 
-I choose to wite the client in Python even thought Python is not as performance as Go, C or Rust primarily because
+I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
 * Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
 * I wanted to learn Python
