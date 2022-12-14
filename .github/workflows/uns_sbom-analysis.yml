@@ -33,8 +33,8 @@ jobs:
       - name: Generate Software Bill of Material for UNS
         uses: CycloneDX/gh-python-generate-sbom@v1.0.1
         with:
-          i: "**/requirements.txt **/requirements_dev.txt"
-          o: "./sbom.xml"
+          input: "**/requirements.txt **/requirements_dev.txt"
+          output: "./sbom.xml"
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v3.1.0
