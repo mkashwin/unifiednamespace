@@ -22,6 +22,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
       - uses: actions/checkout@v3
@@ -44,5 +45,13 @@ jobs:
           flake8 ./03_uns_graphdb/src ./03_uns_graphdb/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Test with pytest
+        env:
+          UNS_mqtt.host: ${{ secrets.MQTT_HOST }}
+          UNS_mqtt.port: ${{ secrets.MQTT_PORT }}
+          UNS_mqtt.username: ${{ secrets.MQTT_USER }}
+          UNS_mqtt.password: ${{ secrets.MQTT_PWD }}
+          UNS_graphdb.url: ${{ secrets.NEO4J_URL }}
+          UNS_graphdb.username: ${{ secrets.NEO4J_USER }}
+          UNS_graphdb.password: ${{ secrets.NEO4J_PWD }}
         run: |
           pytest -m "not integrationtest" ./03_uns_graphdb/test/

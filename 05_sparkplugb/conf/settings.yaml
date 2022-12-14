@@ -16,3 +16,6 @@ mqtt:
   timestamp_attribute: "timestamp" # the attribute name which should contain the timestamp of the message's publishing
 
 sparkplugb:
+  # SPB namespace is spBv1.0/<group_id>/<message_type>/<edge_node_id>/<[device_id]>
+
+dynaconf_merge: true

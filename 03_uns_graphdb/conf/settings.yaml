@@ -17,8 +17,8 @@ mqtt:
 
 graphdb:
   url: "bolt://localhost:7687"
-  # url: 'neo4j+s://4da22061.databases.neo4j.io'
-  #  database: 'Instance01'
+  # url: "neo4j+s://4da22061.databases.neo4j.io"
+  # database: "Instance01"
   node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
 
 dynaconf_merge: true
