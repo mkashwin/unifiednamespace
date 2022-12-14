@@ -18,7 +18,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(2,
                     os.path.join(cmd_subfolder, "uns_sparkplugb", "generated"))
 
-import uns_sparkplug_b
+import uns_sparkplug_b_gen
 from uns_sparkplugb.generated import sparkplug_b_pb2
 # Dict containing value types as key value pair.
 # Convert this to a SimpleNamespace to be able to access the attributes via dot notation
@@ -34,8 +34,6 @@ metric_dict = {
     "datatype": None
 }
 
-sparkplug_message = uns_sparkplug_b.Spb_Messages()
-
 
 @pytest.mark.parametrize(
     "value,metric,factor, metric_value",
@@ -48,7 +46,7 @@ sparkplug_message = uns_sparkplug_b.Spb_Messages()
      (-10, SimpleNamespace(**metric_dict), 32, -10 + 2**32)])
 def test_setIntValueInMetric(value: int, metric: dict, factor: int,
                              metric_value: int):
-    uns_sparkplug_b.setIntValueInMetric(value, metric, factor)
+    uns_sparkplug_b_gen.setIntValueInMetric(value, metric, factor)
     assert metric.int_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.int_value} "
     for datatype in metric_dict:
         if (datatype != "int_value"):
@@ -65,7 +63,7 @@ def test_setIntValueInMetric(value: int, metric: dict, factor: int,
 def test_setLongValueInMetric(value: int, metric: dict, factor: int,
                               metric_value: int):
     # In python all long values are int
-    uns_sparkplug_b.setLongValueInMetric(value, metric, factor)
+    uns_sparkplug_b_gen.setLongValueInMetric(value, metric, factor)
     assert metric.long_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.long_value} "
     for datatype in metric_dict:
         if (datatype != "long_value"):
@@ -80,7 +78,7 @@ def test_setLongValueInMetric(value: int, metric: dict, factor: int,
 ])
 def test_setFloatValueInMetric(value: float, metric: dict,
                                metric_value: float):
-    uns_sparkplug_b.setFloatValueInMetric(value, metric)
+    uns_sparkplug_b_gen.setFloatValueInMetric(value, metric)
     assert metric.float_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.float_value} "
     for datatype in metric_dict:
         if (datatype != "float_value"):
@@ -95,7 +93,7 @@ def test_setFloatValueInMetric(value: float, metric: dict,
 ])
 def test_setDoubleValueInMetric(value: float, metric: dict,
                                 metric_value: float):
-    uns_sparkplug_b.setDoubleValueInMetric(value, metric)
+    uns_sparkplug_b_gen.setDoubleValueInMetric(value, metric)
     assert metric.double_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.double_value} "
     for datatype in metric_dict:
         if (datatype != "double_value"):
@@ -110,7 +108,7 @@ def test_setDoubleValueInMetric(value: float, metric: dict,
 ])
 def test_setBooleanValueInMetric(value: bool, metric: dict,
                                  metric_value: bool):
-    uns_sparkplug_b.setBooleanValueInMetric(value, metric)
+    uns_sparkplug_b_gen.setBooleanValueInMetric(value, metric)
     assert metric.boolean_value == metric_value, f"Expecting metric value to be:{metric_value}, got:{metric.boolean_value}"
     for datatype in metric_dict:
         if (datatype != "boolean_value"):
@@ -125,7 +123,7 @@ def test_setBooleanValueInMetric(value: bool, metric: dict,
      """Test String2\nLine2"""),
 ])
 def test_setStringValueInMetric(value: str, metric: dict, metric_value: str):
-    uns_sparkplug_b.setStringValueInMetric(value, metric)
+    uns_sparkplug_b_gen.setStringValueInMetric(value, metric)
     assert metric.string_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.string_value}"
     for datatype in metric_dict:
         if (datatype != "string_value"):
@@ -142,7 +140,7 @@ def test_setStringValueInMetric(value: str, metric: dict, metric_value: str):
 ])
 def test_setBytesValueInMetric(value: bytes, metric: dict,
                                metric_value: bytes):
-    uns_sparkplug_b.setBytesValueInMetric(value, metric)
+    uns_sparkplug_b_gen.setBytesValueInMetric(value, metric)
     assert metric.bytes_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.string_value}"
     for datatype in metric_dict:
         if (datatype != "bytes_value"):
@@ -152,11 +150,13 @@ def test_setBytesValueInMetric(value: bytes, metric: dict,
 
 
 def testSbp_Messages_SeqNum():
+    sparkplug_message = uns_sparkplug_b_gen.Spb_Message_Generator()
     # Test sequence
     old_sequence = sparkplug_message.getSeqNum()
     assert old_sequence == 0, f"Sequence number should start with 0 but stated with {old_sequence}"
 
-    for count in range(270):
+    for count in range(
+            270):  # choose a number greater than 256 to test the counter reset
         new_sequence = sparkplug_message.getSeqNum()
         if old_sequence < 255:
             assert old_sequence == new_sequence - 1, f"Loop {count}: Sequence not incrementing-> {old_sequence}:{new_sequence}"
@@ -167,10 +167,12 @@ def testSbp_Messages_SeqNum():
 
 def testSbp_Messages_BdSeqNum():
     # Test sequence
+    sparkplug_message = uns_sparkplug_b_gen.Spb_Message_Generator()
     old_sequence = sparkplug_message.getBdSeqNum()
     assert old_sequence == 0, f"Sequence number should start with 0 but stated with {old_sequence}"
 
-    for count in range(260):
+    for count in range(
+            260):  # choose a number greater than 256 to test the counter reset
         new_sequence = sparkplug_message.getBdSeqNum()
         if old_sequence < 255:
             assert old_sequence == new_sequence - 1, f"Loop {count}: Sequence not incrementing-> {old_sequence}:{new_sequence}"
@@ -180,25 +182,25 @@ def testSbp_Messages_BdSeqNum():
 
 
 def testSbp_Messages_getNodeDeathPayload():
+    sparkplug_message = uns_sparkplug_b_gen.Spb_Message_Generator()
     payload = sparkplug_message.getNodeDeathPayload()
     payload_dict = MessageToDict(payload)
     metric = payload_dict.get("metrics")[0]
     assert metric.get("name") == "bdSeq"
     assert metric.get("timestamp") is not None
     assert metric.get("datatype") == sparkplug_b_pb2.Int64
-
-
-#    assert metric.get("longValue") == str(0)
+    assert int(metric.get("longValue")) == 0
 
 
 def testSbp_Messages_getNodeBirthPayload():
+    sparkplug_message = uns_sparkplug_b_gen.Spb_Message_Generator()
     sparkplug_message.getNodeDeathPayload()
     payload = sparkplug_message.getNodeBirthPayload()
-    payload_dict = MessageToDict(payload)
+    payload_dict: dict = MessageToDict(payload)
     metric = payload_dict.get("metrics")[0]
 
     assert payload.seq == 0
     assert metric.get("name") == "bdSeq"
     assert metric.get("timestamp") is not None
     assert metric.get("datatype") == sparkplug_b_pb2.Int64
-    assert int(metric.get("longValue")) >= 0
+    assert int(metric.get("longValue")) == 1

@@ -9,14 +9,16 @@ import time
 LOGGER = logging.getLogger(__name__)
 
 
-class Spb_Messages:
+class Spb_Message_Generator:
     # sequence number for messages
     seqNum: int = 0
     # birth/death sequence number
     bdSeq: int = 0
 
-    # map of aliases to metric names
-    aliasMap: dict = dict()
+    # map of  metric names to alias. While adding metrics, if an alias exists for that name it will be used instead
+    aliasMap: dict[str, str] = {}
+    def __init__(self) -> None:
+        self.aliasMap = dict()
 
     def getSeqNum(self):
         """
@@ -40,34 +42,37 @@ class Spb_Messages:
             self.bdSeq = 0
         return retVal
 
-    def getNodeDeathPayload(self):
+    def getNodeDeathPayload(self, payload=None):
         """
         Helper to get the Death Node Payload
         Always request this before requesting the Node Birth Payload
         """
-        payload = sparkplug_b_pb2.Payload()
+        if (payload is None):
+            payload = sparkplug_b_pb2.Payload()
         self.addMetric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
                        self.getBdSeqNum())
         return payload
 
-    def getNodeBirthPayload(self):
+    def getNodeBirthPayload(self, payload=None):
         """
         Helper to get the Node Birth Payload
         Always request this after requesting the Node Death Payload
         """
         self.seqNum = 0
-        payload = sparkplug_b_pb2.Payload()
+        if (payload is None):
+            payload = sparkplug_b_pb2.Payload()
         payload.timestamp = int(round(time.time() * 1000))
         payload.seq = self.getSeqNum()
         self.addMetric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
                        --self.bdSeq, payload.timestamp)
         return payload
 
-    def getDeviceBirthPayload(self):
+    def getDeviceBirthPayload(self, payload=None):
         """
         Get the DBIRTH payload
         """
-        payload = sparkplug_b_pb2.Payload()
+        if (payload is None):
+            payload = sparkplug_b_pb2.Payload()
         payload.timestamp = int(round(time.time() * 1000))
         payload.seq = self.getSeqNum()
         return payload
@@ -75,27 +80,43 @@ class Spb_Messages:
     ######################################################################
     # Get a DDATA payload
     ######################################################################
-    def getDdataPayload(self):
+    def getDeviceDataPayload(self, payload=None):
         """
         @TODO review this
         """
-        return self.getDeviceBirthPayload()
+        return self.getDeviceBirthPayload(payload)
+
+    ######################################################################
+    # Get a NDATA payload
+    ######################################################################
+    def getNodeDataPayload(self, payload=None):
+        """
+        @TODO review this
+        """
+        return self.getNodeBirthPayload(payload)
 
     ######################################################################
     # Refactored common code of obtaining metrics and initializing
     # common attributes
     ######################################################################
-    def getMetric(self,
-                  payload,
-                  name,
-                  alias,
-                  timestamp=int(round(time.time() * 1000))):
+    def getMetricWrapper(self,
+                         payload,
+                         name,
+                         alias,
+                         timestamp=int(round(time.time() * 1000))):
         metric = payload.metrics.add()
-        if name is not None:
-            metric.name = name
         if alias is not None:
             metric.alias = alias
-            self.aliasMap.add(alias, name)
+
+        if name is not None:
+            metric.name = name
+
+        if self.aliasMap.get(name) is None:
+            self.aliasMap[name] = alias
+        elif self.aliasMap.get(name) == alias:
+            metric.name = None
+        else:
+            raise ValueError(f"Alias:{alias} provided for Name:{name} not matching to previously provided alias:{self.aliasMap.get(name)}  ")
         metric.timestamp = timestamp
         return metric
 
@@ -103,7 +124,7 @@ class Spb_Messages:
     # Helper method for adding dataset metrics to a payload
     ######################################################################
     def initDatasetMetric(self, payload, name, alias, columns, types):
-        metric = self.getMetric(payload, name, alias)
+        metric = self.getMetricWrapper(payload, name, alias)
 
         metric.datatype = sparkplug_b_pb2.DataSet
         # Set up the dataset
@@ -116,7 +137,7 @@ class Spb_Messages:
     # Helper method for adding dataset metrics to a payload
     ######################################################################
     def initTemplateMetric(self, payload, name, alias, templateRef):
-        metric = self.getMetric(payload, name, alias)
+        metric = self.getMetricWrapper(payload, name, alias)
         metric.datatype = sparkplug_b_pb2.Template
 
         # Set up the template
@@ -139,7 +160,7 @@ class Spb_Messages:
                   value=None,
                   timestamp=int(round(time.time() * 1000))):
         """
-        Helper method for adding metrics to a container which can be a payload or a template
+        Helper method for adding metrics to a container which can be a payload or a template.
         Parameters
         ----------
         payload: the Payload object
@@ -150,7 +171,7 @@ class Spb_Messages:
         value,
         timestamp
         """
-        metric = self.getMetric(payload, name, alias, timestamp)
+        metric = self.getMetricWrapper(payload, name, alias, timestamp)
         if value is None:
             metric.is_null = True
         metric.datatype = type
@@ -171,6 +192,8 @@ class Spb_Messages:
             case sparkplug_b_pb2.DateTime: setLongValueInMetric(value, metric, 0),
             case sparkplug_b_pb2.Text: setStringValueInMetric(value, metric),
             case sparkplug_b_pb2.UUID: setStringValueInMetric(value, metric),
+            case sparkplug_b_pb2.DataSet: 
+                raise ValueError(f"MetricType:{sparkplug_b_pb2.DataSet} Not supported by #addMetric(). Use #initDatasetMetric()")
             case sparkplug_b_pb2.Bytes: setBytesValueInMetric(value, metric),
             case sparkplug_b_pb2.File: setBytesValueInMetric(value, metric),
             case sparkplug_b_pb2.Template: setTemplatesValueInMetric(value, metric)

@@ -18,7 +18,8 @@ from sparkplugb_enc_config import settings
 
 is_configs_provided: bool = (
     os.path.exists(os.path.join(cmd_subfolder, "../conf/.secrets.yaml"))
-    and os.path.exists(os.path.join(cmd_subfolder, "../conf/settings.yaml")))
+    and os.path.exists(os.path.join(cmd_subfolder, "../conf/settings.yaml"))
+    or (bool(os.getenv("UNS_mqtt.host"))))
 
 
 @pytest.mark.xfail(not is_configs_provided,
