@@ -30,6 +30,10 @@ def test_Uns_MQTT_GraphDb():
     try:
         uns_mqtt_graphdb = Uns_MQTT_GraphDb()
         assert uns_mqtt_graphdb is not None, "Connection to either the MQTT Broker or the Graph DB did not happen"
+    except Exception as ex:
+        pytest.fail(
+            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
+        )
     finally:
         if (uns_mqtt_graphdb is not None):
             uns_mqtt_graphdb.uns_client.disconnect()

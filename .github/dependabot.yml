@@ -1,0 +1,38 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "./02_mqtt-cluster/requirements.txt" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"
+
+  - package-ecosystem: "pip"
+    directory: "./03_uns_graphdb/requirements.txt" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"
+
+  - package-ecosystem: "pip"
+    directory: "./04_uns_historian/requirements.txt" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"
+
+  - package-ecosystem: "pip"
+    directory: "./05_sparkplugb/requirements.txt" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"

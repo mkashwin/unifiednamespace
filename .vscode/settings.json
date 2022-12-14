@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "aarch",
         "DBIRTH",
         "DCMD",
         "DDATA",
@@ -20,7 +21,11 @@
         "NCMD",
         "NDATA",
         "NDEATH",
+        "packettypes",
         "paho",
+        "ppcle",
+        "propertyset",
+        "propertysets",
         "proto",
         "protobuf",
         "pytest",
@@ -29,6 +34,7 @@
         "sslmode",
         "Tahu",
         "timescaledb",
+        "unspublisher",
         "userdata",
         "venv",
         "VERNEMQ",
@@ -58,5 +64,6 @@
         "./05_sparkplugb/test",
     ],
     "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.analysis.typeCheckingMode": "off"
 }

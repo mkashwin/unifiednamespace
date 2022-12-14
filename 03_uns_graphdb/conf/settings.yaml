@@ -1,25 +1,24 @@
 mqtt:
   host: "broker.emqx.io" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
   port: 1883 # Default value 1883 if not specified
-  topic : "test/uns/#" # Default Topic is a wild card #. if required can be tuned to listen subset 
+  topic: "test/uns/#" # Default Topic is a wild card #. if required can be tuned to listen subset
   qos: 1 # Default value is 1. Recommend 1 or 2. Do not use 0
   keep_alive: 60
-  reconnect_on_failure : True
-  version : 5 # Default is MQTTv5. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31)
- #clean_session: false # specify this only if the protocol is not MQTTv5
-  transport : "tcp"  # Default is tcp. Valid values are: websockets, tcp
-  ignored_attributes : {} # dict of topic , list of attributes which are to be ignored from persistance.
-                          # e.g. {'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],
-                          #       'topic2/+' : ["A", "A.B.C"],
-                          #        'topic3/#' : ["x", "Y"]} 
-  timestamp_attribute : "timestamp" # the attribute name which should contain the timestamp of the message's publishing
-
-
+  reconnect_on_failure: True
+  version: 5 # Default is MQTTv5. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31)
+  #clean_session: false # specify this only if the protocol is not MQTTv5
+  transport: "tcp" # Default is tcp. Valid values are: websockets, tcp
+  ignored_attributes:
+    {} # dict of topic , list of attributes which are to be ignored from persistance.
+    # e.g. {'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],
+    #       'topic2/+' : ["A", "A.B.C"],
+    #        'topic3/#' : ["x", "Y"]}
+  timestamp_attribute: "timestamp" # the attribute name which should contain the timestamp of the message's publishing
 
 graphdb:
-  url: 'bolt://localhost:7687'
-#  database: ''
+  url: "bolt://localhost:7687"
+  # url: 'neo4j+s://4da22061.databases.neo4j.io'
+  #  database: 'Instance01'
   node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
 
 dynaconf_merge: true
-   

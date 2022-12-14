@@ -104,7 +104,6 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 @pytest.mark.parametrize("protocol", [(Uns_MQTT_ClientWrapper.MQTTv5),
                                       (Uns_MQTT_ClientWrapper.MQTTv311),
                                       (Uns_MQTT_ClientWrapper.MQTTv31)])
-# There appears to be a bug for MQTTv31. The call backs are not occurring
 @pytest.mark.parametrize("transport,port,tls",
                          [("tcp", 1884, None), ("websockets", 8090, None),
                           ("tcp", 8885, {
