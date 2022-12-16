@@ -1,16 +1,44 @@
 {
     "cSpell.words": [
+        "aarch",
+        "DBIRTH",
+        "DCMD",
+        "DDATA",
+        "DDEATH",
         "EMQX",
         "graphdb",
         "HIVEMQ",
         "hypertable",
         "IIOT",
+        "integrationtest",
         "k8scluster",
+        "keepalive",
+        "Kubernetes",
         "microk8s",
+        "MOSQUITTO",
+        "mqtt",
+        "NBIRTH",
+        "NCMD",
+        "NDATA",
+        "NDEATH",
+        "packettypes",
         "paho",
+        "ppcle",
+        "propertyset",
+        "propertysets",
+        "proto",
+        "protobuf",
+        "pytest",
+        "SCADA",
+        "sparkplugb",
+        "sslmode",
+        "Tahu",
         "timescaledb",
+        "unspublisher",
+        "userdata",
         "venv",
-        "VERNEMQ"
+        "VERNEMQ",
+        "virtualenv"
     ],
     "python.formatting.provider": "yapf",
     "python.testing.unittestEnabled": false,
@@ -18,7 +46,8 @@
     "python.testing.pytestArgs": [
         "./02_mqtt-cluster/test",
         "./03_uns_graphdb/test",
-        "./04_uns_historian/test"
+        "./04_uns_historian/test",
+        "./05_sparkplugb/test"
     ],
     "python.analysis.extraPaths": [
         "./02_mqtt-cluster/src",
@@ -30,7 +59,11 @@
         "./04_uns_historian/src",
         "./04_uns_historian/src/uns_historian",
         "./04_uns_historian/test",
+        "./05_sparkplugb/src",
+        "./05_sparkplugb/src/uns_sparkplugb",
+        "./05_sparkplugb/test",
     ],
     "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.analysis.typeCheckingMode": "off"
 }

@@ -30,6 +30,10 @@ def test_Uns_Mqtt_Historian():
     try:
         uns_mqtt_historian = Uns_Mqtt_Historian()
         assert uns_mqtt_historian is not None, "Connection to either the MQTT Broker or the Historian DB did not happen"
+    except Exception as ex:
+        pytest.fail(
+            f"Connection to either the MQTT Broker or the Historian DB did not happen: Exception {ex}"
+        )
     finally:
         if (uns_mqtt_historian is not None):
             uns_mqtt_historian.uns_client.disconnect()

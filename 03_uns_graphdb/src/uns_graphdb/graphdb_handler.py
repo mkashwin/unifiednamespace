@@ -75,7 +75,7 @@ class GraphDBHandler:
                 raise ex
             else:
                 retry += 1
-                LOGGER.error("Error Connecting to %s. Error: %s",
+                LOGGER.error("Error Connecting to %s.\n Error: %s",
                              self.database,
                              str(ex),
                              stack_info=True,
@@ -141,7 +141,7 @@ class GraphDBHandler:
             else:
                 retry += 1
                 LOGGER.error(
-                    "Error persisting \ntopic:%s \nmessage %s. on Error:",
+                    "Error persisting \ntopic:%s \nmessage %s. on Error: %s",
                     topic,
                     str(message),
                     str(ex),

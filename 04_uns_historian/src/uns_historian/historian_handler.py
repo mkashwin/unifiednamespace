@@ -65,7 +65,7 @@ class HistorianHandler:
                     raise ex
                 else:
                     retry += 1
-                    LOGGER.error("Error Connecting to %s. Error:",
+                    LOGGER.error("Error Connecting to %s. Error: %s",
                                  self.database,
                                  str(ex),
                                  stack_info=True,
@@ -73,11 +73,12 @@ class HistorianHandler:
                     time.sleep(SLEEP_BTW_ATTEMPT)
                     self.connect(retry=retry)
             except Exception as ex:
-                LOGGER.error("Error Connecting to %s. Unable to retry. Error:",
-                             self.database,
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error(
+                    "Error Connecting to %s. Unable to retry. Error:%s",
+                    self.database,
+                    str(ex),
+                    stack_info=True,
+                    exc_info=True)
                 raise ex
 
     def getcursor(self):

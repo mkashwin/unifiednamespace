@@ -31,6 +31,7 @@ The overall architecture and the deployment setup is as follows
     * MQTT edge installed on K8s
     * Bridge between Factory1 and the Enterprise MQTT clusters
     * Graph DB installed and running on docker
+    * SparkplugB client to translate message from SparkPlug to UNS 
 
 1. K8s Cluster on the edge - Factory2
     * K8s Cluster on the edge
@@ -81,7 +82,14 @@ Some key limitations to bear in mind
 * microk8s is not available for every linux distribution. 
 ---
 ### **MQTT Broker**
-The backbone of the ***Unified Name Space*** is the MQTT broker.
+The backbone of the ***Unified Name Space*** is the MQTT broker. 
+#### **Why MQTT**
+The overall structure of the UNS is based on the hierarchical structure as defined in ISA-95 part 2.
+> \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
+
+The level at which the message is published has a direct implication on it's time sensitivity as well as guidance on being processed  at the edge or on the cloud.<br/>
+![ISA-95 Part 2](./images/ISA-95-part2.png)
+
 I evaluated and read the user guides of the following brokers (open source versions only). All three also provide commercial / enterprise versions which is recommended for more robust setup and professional support
 1. [EMQX](https://www.emqx.io/)
 2. [VERNEMQ](https://vernemq.com/)
@@ -136,3 +144,13 @@ I choose to wite the client in Python even thought Python is not as performant a
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
 * Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
 * I wanted to learn Python
+
+### **Plugin / MQTT Client to translate SparkplugB messages to UNS Namespace**
+Sparkplug consist of three primary features in its definition.  
+1. The first is the MQTT topic namespace definition.  
+2. The second is the definition of the order and flow of MQTT messages to and from various MQTT clients in the system.  
+3. The final is the payload data format which is called Sparkplug B.
+As the  messages are published in the Sparkplug Namespace and are packaged in protocol buffers, they are not visible in the UNS hierarchy which is based on ISA-95 part 2.
+
+The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/Readme.md)
+

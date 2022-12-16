@@ -1,0 +1,37 @@
+{
+    "cSpell.words": [
+        "DBIRTH",
+        "DCMD",
+        "DDATA",
+        "DDEATH",
+        "IIOT",
+        "NBIRTH",
+        "NCMD",
+        "NDATA",
+        "NDEATH",
+        "integrationtest",
+        "k8scluster",
+        "Kubernetes",
+        "microk8s",
+        "mqtt",
+        "paho",
+        "proto",
+        "protobuf",
+        "pytest",
+        "sparkplugb",
+        "sslmode",
+        "venv",
+        "virtualenv"
+    ],
+    "python.analysis.extraPaths": [
+        "src",
+        "../02_mqtt-cluster/src",
+        "./src/uns_sparkplugb"
+    ],
+    "python.testing.pytestArgs": [
+        "test"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.formatting.provider": "yapf",
+}

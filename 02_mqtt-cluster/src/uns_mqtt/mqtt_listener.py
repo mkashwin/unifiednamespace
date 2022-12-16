@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Uns_MQTT_ClientWrapper(mqtt_client.Client):
     """
-    Wrapper over te paho.mqtt.client to implement most commont MQTT related functionality
+    Wrapper over te paho.mqtt.client to implement most common MQTT related functionality
     The call only needs to implement the callback function on_message
     """
     MQTTv5 = mqtt_client.MQTTv5
@@ -66,7 +66,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         self.clean_session = clean_session
 
         if (protocol == mqtt_client.MQTTv5):
-            # if MQTT version is v5.0 the ignore cleansession in the constructor
+            # if MQTT version is v5.0 the ignore clean_session in the constructor
             clean_session = None
 
         super().__init__(client_id, clean_session, userdata, protocol,
@@ -234,8 +234,8 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         if (topicWithWildcard is not None):
             regexList = topicWithWildcard.split('/')
             # Using Regex to do matching
-            # replace all occurrences of "+" wildcard with [^/]* -> any set of charecters except "/"
-            # replace all occurrences of "#" wildcard with (.)*  -> any set of charecters including "/"
+            # replace all occurrences of "+" wildcard with [^/]* -> any set of characters except "/"
+            # replace all occurrences of "#" wildcard with (.)*  -> any set of characters including "/"
             regexExp = ""
             for value in regexList:
                 if (value == "+"):

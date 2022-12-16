@@ -87,7 +87,7 @@ def test_mqtt_config():
 
     ignored_attributes: dict = settings.get("mqtt.ignored_attributes")
     assert (ignored_attributes is None) or (
-        len(ignored_attributes) > 0
+        isinstance(ignored_attributes, dict)
     ), f"Configuration 'mqtt.ignored_attributes':{ignored_attributes} is not a valid dict"
 
     timestamp_attribute: str = settings.get("mqtt.timestamp_attribute",
