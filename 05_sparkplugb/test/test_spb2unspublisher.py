@@ -419,7 +419,7 @@ def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
         }
     }
 
-    spg2unPub = Spb2UNSPublisher(uns_client)-
+    spg2unPub = Spb2UNSPublisher(uns_client)
 
     def on_publish(client, userdata, result):
         msg_published.append(True)
