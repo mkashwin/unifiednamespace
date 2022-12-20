@@ -14,8 +14,6 @@ class GraphDBHandler:
                  user: str,
                  password: str,
                  database: str = neo4j.DEFAULT_DATABASE,
-                 node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE",
-                                      "DEVICE"),
                  MAX_RETRIES: int = 5,
                  SLEEP_BTW_ATTEMPT: float = 10):
         """
@@ -27,10 +25,6 @@ class GraphDBHandler:
             password for the db user
         database : str = neo4j.DEFAULT_DATABASE
             The Neo4j database in which this data should be persisted
-        node_types : tuple [str]
-            Configuration for Node Labels to be used for the topics based on topic hierarchy
-            Default value is ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")
-
         MAX_RETRIES: int
                 Must be a positive integer. Default value is 5.
                 Number of attempts after a failed database connection to retry connecting
@@ -38,16 +32,14 @@ class GraphDBHandler:
                 Must be a positive float. Default value is 10 seconds. Seconds to sleep between retries
         """
         # TODO support additional secure authentication  methods
-        self.uri = uri
-        self.user = user
-        self.password = password
-        self.database = database
-        if [self.database is None]:
-            self.database = ""
-        self.NODE_TYPES = node_types
-        self.MAX_RETRIES = MAX_RETRIES
-        self.SLEEP_BTW_ATTEMPT = SLEEP_BTW_ATTEMPT
-        self.driver = None
+        self.uri: str = uri
+        self.auth: tuple = (user, password)
+        self.database: str = database
+        if self.database is None or self.database == "":
+            self.database = neo4j.DEFAULT_DATABASE
+        self.MAX_RETRIES: int = MAX_RETRIES
+        self.SLEEP_BTW_ATTEMPT: int = SLEEP_BTW_ATTEMPT
+        self.driver: neo4j.Driver = None
         try:
             self.connect()
         except Exception as ex:
@@ -57,12 +49,19 @@ class GraphDBHandler:
                          exc_info=True)
             raise ex
 
-    def connect(self, retry: int = 0):
+    def connect(self, retry: int = 0) -> neo4j.Driver:
+        """
+        Returns Neo4j Driver which is the connection to the database
+        Validates if the current driver is still connected and of not will create a new connection
+        retry: int
+            Optional parameters to retry making a connection in case of errors. 
+            The max number of retry is `GraphDBHandler.MAX_RETRIES`
+            The time between attempts is  `GraphDBHandler.SLEEP_BTW_ATTEMPT`
+        """
         try:
             if (self.driver is None):
                 self.driver = neo4j.GraphDatabase.driver(self.uri,
-                                                         auth=(self.user,
-                                                               self.password))
+                                                         auth=self.auth)
             self.driver.verify_connectivity()
         except (exceptions.DatabaseError, exceptions.TransientError,
                 exceptions.DatabaseUnavailable,
@@ -93,6 +92,9 @@ class GraphDBHandler:
         return self.driver
 
     def close(self):
+        """
+        Closes the connection to the graph database
+        """
         if self.driver is not None:
             try:
                 self.driver.close()
@@ -102,11 +104,14 @@ class GraphDBHandler:
                              str(ex),
                              stack_info=True,
                              exc_info=True)
+                self.driver = None
 
     def persistMQTTmsg(self,
                        topic: str,
                        message: dict,
                        timestamp: float = time.time(),
+                       node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA",
+                                            "LINE", "DEVICE"),
                        retry: int = 0):
         """
         Persists all nodes and the message as attributes to the leaf node
@@ -117,6 +122,9 @@ class GraphDBHandler:
             The JSON MQTT message payload in in dict format
         timestamp:
             timestamp for receiving the message
+        node_types:
+            tuple of names given to nodes based on the hierarchy of the topic
+            Default value-> `("ENTERPRISE", "FACILITY", "AREA","LINE", "DEVICE")`
         """
         response = None
         attributes = None
@@ -126,12 +134,13 @@ class GraphDBHandler:
         if (message is not None):
             attributes = GraphDBHandler._flatten_json_for_Neo4J(message)
         try:
-            with self.connect().session(
-                    database=f"{self.database}") as session:
-                response = session.write_transaction(self.save_all_nodes,
+            with self.connect(retry) as driver:
+                with driver.session(database=self.database) as session:
+                    response = session.execute_write(self.save_all_nodes,
                                                      topic, attributes,
-                                                     timestamp)
-        except (exceptions.TransientError, exceptions.TransactionError) as ex:
+                                                     timestamp, node_types)
+        except (exceptions.TransientError, exceptions.TransactionError,
+                exceptions.SessionExpired) as ex:
             if (retry >= self.MAX_RETRIES):
                 LOGGER.error("No. of retries exceeded %s",
                              str(self.MAX_RETRIES),
@@ -147,6 +156,8 @@ class GraphDBHandler:
                     str(ex),
                     stack_info=True,
                     exc_info=True)
+                # reset the driver
+                self.close()
                 time.sleep(self.SLEEP_BTW_ATTEMPT)
                 self.persistMQTTmsg(topic=topic,
                                     message=message,
@@ -156,7 +167,7 @@ class GraphDBHandler:
 
     # method  starts
     def save_all_nodes(self, session, topic: str, message: dict,
-                       timestamp: float):
+                       timestamp: float, node_types: tuple):
         """
         Iterate the topics by '/'. create node for each level and merge the messages to the final node
         For the other topics in the hierarchy a node will be created / merged and linked to the parent topic node
@@ -182,7 +193,7 @@ class GraphDBHandler:
             if (count == len(nodes) - 1):
                 # Save the attributes only for the leaf node
                 nodeAttributes = message
-            node_name: str = GraphDBHandler.getNodeName(count, self.NODE_TYPES)
+            node_name: str = GraphDBHandler.getNodeName(count, node_types)
             response = GraphDBHandler.saveNode(session, node, node_name,
                                                nodeAttributes, lastnode,
                                                timestamp)
@@ -223,7 +234,7 @@ class GraphDBHandler:
             Based on ISA-95 part 2 the nested depth of the topic determines the node type.
         message : dict
             The JSON delivered as message in the MQTT payload converted to a dict.
-            Defaults to None (for all intermettent topics)
+            Defaults to None (for all intermittent topics)
         parent  : str
             The name of the parent node to which a relationship will be established. Defaults to None(for root nodes)
         """
@@ -246,7 +257,7 @@ class GraphDBHandler:
             query = query + "MERGE (parent) -[r:PARENT_OF]-> (node) \n"
             query = query + "RETURN node, parent"
         else:
-            query = query + "RETURN node" ""
+            query = query + "RETURN node"
         LOGGER.debug(f"CQL statement to be executed: {query}")
         # non-referred would be ignored in the execution.
         node = session.run(query,
@@ -269,17 +280,18 @@ class GraphDBHandler:
         Parameters
         ----------
         message  : dict
-        created by coverting MQTT message string in JSON format to python object
+        created by converting MQTT message string in JSON format to python object
         """
         LOGGER.debug(mqtt_msg)
         output = {}
 
         def flatten(json_object, name=''):
-            if (type(json_object) is dict):
+            if isinstance(json_object, dict):
                 # iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
                     flatten(json_object[items], name + items + '_')
-            elif (type(json_object) is list or type(json_object) is tuple):
+            elif (isinstance(json_object, list)
+                  or isinstance(json_object, tuple)):
                 i = 0
                 # iterate through the list. recursively call the flattening function for each item
                 for items in json_object:

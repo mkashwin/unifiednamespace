@@ -54,22 +54,24 @@ def test_mqtt_config():
     assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
 
     port: int = settings.get("mqtt.port", 1883)
-    assert type(
-        port
-    ) is int or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
-    assert type(
-        port
-    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+    assert isinstance(
+        port,
+        int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
+    assert isinstance(
+        port, int
+    ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
     username = settings.mqtt["username"]
     password = settings.mqtt["password"]
     assert (username is None and password is None) or (
-        type(username) is str and type(password) is str
+        isinstance(username, str) and len(username) > 0
+        and isinstance(password, str) and len(password) > 0
     ), "Either both username & password need to be specified or neither"
 
     tls: dict = settings.get("mqtt.tls", None)
     assert (tls is None) or (
-        type(tls) is dict and not bool(tls) and tls.get("ca_certs") is not None
+        isinstance(tls, dict) and not bool(tls)
+        and tls.get("ca_certs") is not None
     ), "Check the configuration provided for tls connection to the broker. the property ca_certs is missing"
 
     assert (tls is None) or (os.path.isfile(tls.get(
@@ -112,22 +114,30 @@ def test_graph_db_configs():
 
     graphdb_user: str = settings.graphdb["username"]
     assert (
-        graphdb_user is not None and type(graphdb_user) is str
+        graphdb_user is not None and isinstance(graphdb_user, str)
         and len(graphdb_user) > 0
     ), "Invalid username configured at key: 'graphdb.username'. Cannot be None or empty string"
 
     graphdb_password: str = settings.graphdb["password"]
     assert (
-        graphdb_password is not None and type(graphdb_password) is str
+        graphdb_password is not None and isinstance(graphdb_password, str)
         and len(graphdb_password) > 0
     ), "Invalid password configured at key: 'graphdb.password'. Cannot be None or empty string"
 
     node_types: tuple = settings.get(
-        "graphdb.node_types",
+        "graphdb.uns_node_types",
         ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
     assert node_types is not None and len(
         node_types
-    ) > 0, "Invalid node_types configured at key: 'graphdb.node_types'. Must be a list of length > 1"
+    ) > 0, "Invalid node_types configured at key: 'graphdb.uns_node_types'. Must be a list of length > 1"
+
+    spb_node_types: tuple = settings.get(
+        "graphdb.spB_node_types",
+        ("spBv1.0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
+    assert spb_node_types is not None and len(
+        spb_node_types
+    ) == 5, "Invalid node_types configured at key: 'graphdb.spB_node_types'. Must be a list of length of 5"
+
     REGEX_FOR_NODE_TYPES = "^[a-zA-Z0-9_]*$"
     for node_type in node_types:
         assert bool(

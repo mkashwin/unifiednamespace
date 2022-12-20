@@ -60,7 +60,7 @@ This application has two configuration file
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
     mqtt | port | Port of the mqtt broker (int) | *1883*
-    mqtt | topic | Topic to be subscribed to. Recommend subscribing to a level + # e.g. "erp/#" | *"#"* 
+    mqtt | topics | Array of topics to be subscribed to. Recommend subscribing to a level +/#  and spBv1.0 e.g. ["erp/#","spBv1.0/#"] | *["#"]* 
     mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
@@ -70,7 +70,8 @@ This application has two configuration file
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
     **graphdb** | **url**\* | Mandatory. The db connection URL string for your Neo4j instance| *None*
     graphdb | database | the data base name to write to. if not provided default db ('') will be used | *''*
-    graphdb | node_types | List based on ISA-95 part 2 the nested depth. Nodes will by tagged with the node type depending on their depth | ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] 
+    graphdb | uns_node_types | List based on ISA-95 part 2 the nested depth. Nodes will by tagged with the node type depending on their depth. Can be of variable length. Recommended is 5 | ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] 
+    graphdb | spB_node_types | List based SparkplugB namespace specifications. Nodes will by tagged with the node type depending on their depth. This must be of length 5 | ["spBv1.0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"]     
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
     
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the credentials to connect to the MQTT cluster and the GraphDB. This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**.
