@@ -82,11 +82,12 @@ def test_mqtt_config():
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
-    topic: str = settings.get("mqtt.topic", "#")
+    topics: str = settings.get("mqtt.topics", ["#"])
     REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
-    assert bool(
-        re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
-    ), f"configuration 'mqtt.topic':{topic} is not a valid MQTT topic"
+    for topic in topics:
+        assert bool(
+            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
+        ), f"configuration 'mqtt.topics':{topics} has an valid MQTT topic topic:{topic}"
 
     keep_alive: float = settings.get("mqtt.keep_alive", 60)
     assert (keep_alive is None) or (

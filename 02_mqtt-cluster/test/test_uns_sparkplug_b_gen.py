@@ -18,7 +18,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(2,
                     os.path.join(cmd_subfolder, "uns_sparkplugb", "generated"))
 
-import uns_sparkplug_b_gen
+import uns_sparkplugb.uns_sparkplug_b_gen as uns_sparkplug_b_gen
 from uns_sparkplugb.generated import sparkplug_b_pb2
 
 # Dict containing value types as key value pair.

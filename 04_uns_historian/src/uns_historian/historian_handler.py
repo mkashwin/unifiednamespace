@@ -81,7 +81,7 @@ class HistorianHandler:
                     exc_info=True)
                 raise ex
 
-    def getcursor(self):
+    def getCursor(self):
         if (self.timescale_db_cursor is None
                 or self.timescale_db_cursor.closed):
             if (self.timescale_db_conn is None):
@@ -137,7 +137,7 @@ class HistorianHandler:
             inline method to enable retry
             """
             try:
-                with self.getcursor() as cursor:
+                with self.getCursor() as cursor:
                     cursor.execute(sql_cmd,
                                    (_timestamp, topic, client_id, message))
             except (psycopg2.DataError, psycopg2.OperationalError) as ex:

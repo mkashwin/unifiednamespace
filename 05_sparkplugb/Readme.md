@@ -15,26 +15,6 @@ This SparkplugB decoder is an MQTT Application Node  deployed on the edge with t
 
 This is  **not** a SCADA/IIOT host and will not be publishing any control messages to the broker 
 
-# SparkplugB™ Topic Namespace 
-SparkplugB Topic namespace follows the following structure 
->**spBv1.0**/*\<group_id\>*/*\<message_type\>*/*\<edge_node_id\>*/*[\<device_id\>]*
-
-Where in:
-* *\<group_id\>*:  provides for a logical grouping of MQTT EoN nodes
-* *\<message_type\>*  provides an indication as to how to handle the MQTT payload of the message. The following message_type elements are defined for the SparkplugB™ Topic Namespace:
-    - NBIRTH: Birth certificate for MQTT EoN nodes.
-    - NDEATH: Death certificate for MQTT EoN nodes.
-    - DBIRTH: Birth certificate for Devices.
-    - DDEATH: Death certificate for Devices.
-    - NDATA: Node data message.
-    - DDATA: Device data message.
-    - NCMD: Node command message.
-    - DCMD: Device command message.
-    - STATE: Critical application state message
-    Please refer to the detailed specification of these message types in the [SparkplugB Specs](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
-* *\<edge_node_id\>*: uniquely identifies the MQTT EoN node within the factory context.
-* *[\<device_id\>]*: optional and  identifies a device attached (physically or logically) to the MQTT EoN node
-
 ## Mapping logic for SparkplugB to ISA-95 
 With reference to the article [Using Sparkplug to Map ISA 95](https://www.hivemq.com/solutions/manufacturing/smart-manufacturing-using-isa95-mqtt-sparkplug-and-uns/), each SparkPlugB message contains an attribute **name** which contains the ISA namespace for the message in addition to the tag. 
 e.g.
@@ -90,24 +70,6 @@ spBv1.0 | - | Default namespace for sparkplugB. No mapping needed
 \<message_type\> | - | Provides guidance on handling the payload. Not needed for mapping
 \<edge_node_id\> | \<area\>/\<line\> | Map the edge node id or the alias to the area and the line 
 \<device_id\> | \<device\> | Map the device id to th end device. If the device id is not provided then <br />extract the device(s) from the payload to appropriately map the messages -->
-
-# Preparation steps required to setup protocol buffer and SparkplugB dependencies
-1. **Step 1**: Download or install protoc. Refer 
-    - [Installing on Linux/MacOs](https://grpc.io/docs/protoc-installation/)
-    - [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version  [Protocol Buffers v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) 
-    and downloaded the pre-compiled versions for  linux-x86_64 and win64. For other platforms please replace with the appropriate runtime or compile the runtime directly
-1. **Step 2**: Copy the [SparkPlugB protocol buffer specification](https://github.com/eclipse/tahu/tree/master/sparkplug_b/sparkplug_b.proto) from [Eclipse Tahu project](https://github.com/eclipse/tahu/tree/master/sparkplug_b) to the folder [./sparkplug_b](./sparkplug_b/)
-1. **Step 3**: Compile the SparkplugB protocol buffer into python class by the following command
-    > 
-    ```bash
-    # Execute on Linux
-    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
-    ```
-    >
-    ```powershell
-    # Execute on windows
-    .\protobuf\bin\protoc.exe -I .\sparkplug_b\  --python_out=.\src\uns_sparkplugb\generated .\sparkplug_b\sparkplug_b.proto
-    ```
 ## Key Configurations to provide
 This application has two configuration file. 
 1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as timescale db

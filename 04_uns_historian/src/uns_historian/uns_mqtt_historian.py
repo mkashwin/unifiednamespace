@@ -75,7 +75,7 @@ class Uns_Mqtt_Historian:
         self.mqtt_username: str = settings.mqtt["username"]
         self.mqtt_password: str = settings.mqtt["password"]
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topics: str = settings.get("mqtt.topic", ["#"])
+        self.topics: str = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)

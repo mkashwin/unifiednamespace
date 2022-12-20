@@ -24,7 +24,7 @@ if uns_mqtt_folder not in sys.path:
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 from uns_sparkplugb import uns_sparkplug_b_gen
 from uns_sparkplugb.generated import sparkplug_b_pb2
-from uns_sparkplugb.spb2unspublisher import Spb2UNSPublisher
+from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -392,8 +392,21 @@ def test_publishToUNS_not_connected(clean_session, protocol, transport, host,
                          [("tcp", "broker.emqx.io", 1883, None)])
 @pytest.mark.parametrize("qos", [(1), (2)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True)])
+@pytest.mark.parametrize("all_uns_messages", [({
+    "a/b/c": {
+        "temperature": 28.0,
+        123: "testing value",
+        "pressure": 10.12
+    },
+    "x/y/z": {
+        "temperature": 28.0,
+        78945.12: "Can I have different keys?",
+        "my metric": 200
+    }
+})])
 def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
-                                tls, qos, reconnect_on_failure):
+                                tls, qos, reconnect_on_failure,
+                                all_uns_messages):
     """
     See Spb2UNSPublisher#publishToUNS()
     """
@@ -405,19 +418,6 @@ def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
         protocol=protocol,
         transport=transport,
         reconnect_on_failure=reconnect_on_failure)
-
-    all_uns_messages: dict = {
-        "a/b/c": {
-            "temperature": 28.0,
-            123: "testing value",
-            "pressure": 10.12
-        },
-        "x/y/z": {
-            "temperature": 28.0,
-            78945.12: "Can I have different keys?",
-            "my metric": 200
-        }
-    }
 
     spg2unPub = Spb2UNSPublisher(uns_client)
 
