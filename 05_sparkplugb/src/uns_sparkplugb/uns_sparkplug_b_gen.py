@@ -17,6 +17,7 @@ class Spb_Message_Generator:
 
     # map of  metric names to alias. While adding metrics, if an alias exists for that name it will be used instead
     aliasMap: dict[str, str] = {}
+
     def __init__(self) -> None:
         self.aliasMap = dict()
 
@@ -192,7 +193,7 @@ class Spb_Message_Generator:
             case sparkplug_b_pb2.DateTime: setLongValueInMetric(value, metric, 0),
             case sparkplug_b_pb2.Text: setStringValueInMetric(value, metric),
             case sparkplug_b_pb2.UUID: setStringValueInMetric(value, metric),
-            case sparkplug_b_pb2.DataSet: 
+            case sparkplug_b_pb2.DataSet:
                 raise ValueError(f"MetricType:{sparkplug_b_pb2.DataSet} Not supported by #addMetric(). Use #initDatasetMetric()")
             case sparkplug_b_pb2.Bytes: setBytesValueInMetric(value, metric),
             case sparkplug_b_pb2.File: setBytesValueInMetric(value, metric),

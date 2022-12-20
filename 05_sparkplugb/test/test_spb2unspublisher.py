@@ -293,7 +293,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
             23,
             1671028163,
             False,
-            {  #Test Set 1 -int, no historical data
+            {  # Test Set 1 -int, no historical data
                 "Temp": (23, 1671028163, False),
                 "timestamp": 1671028163,
                 "spBv1.0_group_id": "grp1",
@@ -306,7 +306,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
             "A",
             1671008100,
             False,
-            {  #Test Set 2 -String, no historical data
+            {  # Test Set 2 -String, no historical data
                 "Grade": ("A", 1671008100, False),
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
@@ -433,10 +433,14 @@ def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
     uns_client.on_connect = on_connect
     uns_client.on_publish = on_publish
     try:
-        uns_client.run(host=host, port=port, tls=tls, topic="#", qos=qos)
+        uns_client.run(host=host,
+                       port=port,
+                       tls=tls,
+                       topics="spBv1.0",
+                       qos=qos)
         uns_client.loop_forever()
     except Exception as ex:
-        print(ex)
+        pytest.fail, f"Exception occurred: {ex}"
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()

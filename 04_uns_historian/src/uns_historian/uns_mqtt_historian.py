@@ -1,9 +1,12 @@
 import inspect
-import random
+import json
 import logging
-import time
 import os
+import random
 import sys
+import time
+
+from google.protobuf.json_format import MessageToDict
 from historian_config import settings
 from historian_handler import HistorianHandler
 
@@ -18,6 +21,8 @@ if cmd_subfolder not in sys.path:
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 LOGGER = logging.getLogger(__name__)
+
+SPARKPLUG_NS = "spBv1.0/"
 
 
 class Uns_Mqtt_Historian:
@@ -50,7 +55,7 @@ class Uns_Mqtt_Historian:
                             password=self.mqtt_password,
                             tls=self.mqtt_tls,
                             keepalive=self.mqtt_keepalive,
-                            topic=self.topic,
+                            topics=self.topics,
                             qos=self.mqtt_qos)
 
     def load_mqtt_configs(self):
@@ -70,7 +75,7 @@ class Uns_Mqtt_Historian:
         self.mqtt_username: str = settings.mqtt["username"]
         self.mqtt_password: str = settings.mqtt["password"]
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topic: str = settings.get("mqtt.topic", "#")
+        self.topics: str = settings.get("mqtt.topic", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
@@ -125,9 +130,14 @@ class Uns_Mqtt_Historian:
                      "}")
 
         try:
+            if (msg.topic.startswith(SPARKPLUG_NS)):
+                # This message was to the sparkplugB namespace in protobuf format
+                decoded_payload = MessageToDict(msg.payload)
+            else:
+                # TODO Assuming all messages to UNS are json hence convertible to dict
+                decoded_payload = json.loads(msg.payload.decode("utf-8"))
             filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
-                msg.topic, msg.payload.decode("utf-8"),
-                self.mqtt_ignored_attributes)
+                msg.topic, decoded_payload, self.mqtt_ignored_attributes)
             # save message
             self.uns_historian_handler.persistMQTTmsg(
                 client_id=getattr(client, "_client_id"),

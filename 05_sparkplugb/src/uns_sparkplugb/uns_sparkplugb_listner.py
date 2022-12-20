@@ -1,10 +1,12 @@
 import inspect
-import random
 import logging
-import time
 import os
+import random
 import sys
+import time
+
 from sparkplugb_enc_config import settings
+
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
@@ -18,8 +20,8 @@ if cmd_subfolder not in sys.path:
         os.path.abspath(
             os.path.join(cmd_subfolder, "..", "..", "05_sparkplugb", "src")))
 
-from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 from spb2unspublisher import Spb2UNSPublisher
+from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +52,7 @@ class Uns_SparkPlugB_Mapper:
                             password=self.mqtt_password,
                             tls=self.mqtt_tls,
                             keepalive=self.mqtt_keepalive,
-                            topic=self.topic,
+                            topics=self.topics,
                             qos=self.mqtt_qos)
 
     def load_mqtt_configs(self):
@@ -70,7 +72,7 @@ class Uns_SparkPlugB_Mapper:
         self.mqtt_username: str = settings.mqtt["username"]
         self.mqtt_password: str = settings.mqtt["password"]
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topic: str = settings.get("mqtt.topic", "spBv1.0/#")
+        self.topics: list = settings.get("mqtt.topics", ["spBv1.0/#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
@@ -97,17 +99,21 @@ class Uns_SparkPlugB_Mapper:
                      f"Message: {msg},"
                      "}")
         try:
-            topics: list[str] = msg.topic.split('/')
+            topic_path: list[str] = msg.topic.split('/')
             # sPB topic structure spBv1.0/<group_id>/<message_type>/<edge_node_id>/<[device_id]>
             # device_id is optional. all others are mandatory
-            # if (len(topics) == 4 or len(topics) == 5):
-            if (len(topics) >= 4):
-                group_id = topics[1]
-                message_type = topics[2]
-                edge_node_id = topics[3]
+            if (len(topic_path) >= 4):
+                group_id = topic_path[1]
+                message_type = topic_path[2]
+                edge_node_id = topic_path[3]
                 device_id = None
-                if (len(topics) == 5):
-                    device_id = topics[4]
+                if (len(topic_path) == 5):
+                    device_id = topic_path[4]
+                else:
+                    raise ValueError(
+                        f"Unknown SparkplugB topic received: {msg.topic}." +
+                        f"Depth of tree should not be more than 5, got {len(topic_path)}"
+                    )
                 self.spg2unPub.transformSpbAndPublishToUNS(
                     msg.payload, group_id, message_type, edge_node_id,
                     device_id)

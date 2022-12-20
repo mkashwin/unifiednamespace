@@ -115,7 +115,7 @@ This application has two configuration file.
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
     mqtt | port | Port of the mqtt broker (int) | *1883*
-    mqtt | topic | Must be in the names space of SpB  i.e. **spBv1.0/#** | *spBv1.0/#* 
+    mqtt | topics | Array of topics to be subscribed to. Must be in the names space of SpB  i.e. **spBv1.0/#** | *["spBv1.0/#"]* 
     mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*

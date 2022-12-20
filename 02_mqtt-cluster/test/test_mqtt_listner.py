@@ -26,7 +26,10 @@ MOSQUITTO_CERT_FILE = os.path.join(
     os.path.split(inspect.getfile(inspect.currentframe()))[0], 'cert',
     'mosquitto.org.crt')
 
-DEFAULT_TOPIC = "test/uns/#"  # used to reduce load on the hosted broker
+ONE_TOPIC = ["test/uns/#"]
+
+TWO_TOPICS = ["test/uns/#",
+              "spBv1.0/#"]  # used to reduce load on the hosted broker
 KEEP_ALIVE = 60
 
 
@@ -45,8 +48,10 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True), (False)])
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
+@pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
 def test_01_unauthenticated_connections(clean_session, protocol, transport,
-                                        port, reconnect_on_failure, tls, qos):
+                                        port, reconnect_on_failure, topics,
+                                        tls, qos):
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
@@ -77,19 +82,19 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
     uns_client.on_connect_fail = on_connect_fail
     old_on_connect = uns_client.on_connect
     uns_client.on_connect = on_connect
+
     try:
         uns_client.run(EMQX_HOST,
                        port,
                        tls=tls,
                        keepalive=KEEP_ALIVE,
-                       topic=DEFAULT_TOPIC,
+                       topics=topics,
                        qos=qos)
 
         while (not uns_client.is_connected()):
             time.sleep(1)
             uns_client.loop()
-#        while (len(callback) == 0):
-#            time.sleep(5)
+
         assert uns_client.protocol == protocol, "Protocol not matching"
         assert len(
             callback
@@ -116,9 +121,10 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True), (False)])
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
+@pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
 def test_02_authenticated_connections(clean_session, protocol, transport, port,
                                       reconnect_on_failure, username, password,
-                                      tls, qos):
+                                      topics, tls, qos):
     """
     Test all the parameters ( including username password against Mosquitto's hosted broker)
     """
@@ -156,14 +162,12 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
                        password=password,
                        tls=tls,
                        keepalive=KEEP_ALIVE,
-                       topic=DEFAULT_TOPIC,
+                       topics=topics,
                        qos=qos)
         while (not uns_client.is_connected()):
             time.sleep(1)
             uns_client.loop()
-        # uns_client.loop()
-        # while (len(callback) == 0):
-        #     time.sleep(5)
+
         assert uns_client.protocol == protocol, "Protocol not matching"
         assert len(
             callback

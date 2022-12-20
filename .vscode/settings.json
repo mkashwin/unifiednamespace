@@ -14,6 +14,7 @@
         "k8scluster",
         "keepalive",
         "Kubernetes",
+        "lastnode",
         "microk8s",
         "MOSQUITTO",
         "mqtt",

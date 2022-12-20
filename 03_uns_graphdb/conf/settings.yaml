@@ -1,7 +1,7 @@
 mqtt:
   host: "broker.emqx.io" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
   port: 1883 # Default value 1883 if not specified
-  topic: "test/uns/#" # Default Topic is a wild card #. if required can be tuned to listen subset
+  topics: ["test/uns/#", "spBv1.0/#"] # Default Topic is a wild card #. if required can be tuned to listen subset
   qos: 1 # Default value is 1. Recommend 1 or 2. Do not use 0
   keep_alive: 60
   reconnect_on_failure: True
@@ -19,6 +19,6 @@ graphdb:
   url: "bolt://localhost:7687"
   # url: "neo4j+s://4da22061.databases.neo4j.io"
   # database: "Instance01"
-  node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
-
+  uns_node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
+  spB_node_types: ["spBv1.0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"] # Based on sparkplugB specification
 dynaconf_merge: true

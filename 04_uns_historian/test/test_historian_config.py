@@ -53,22 +53,24 @@ def test_mqtt_config():
     assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
 
     port: int = settings.get("mqtt.port", 1883)
-    assert type(
-        port
-    ) is int or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
-    assert type(
-        port
-    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+    assert isinstance(
+        port,
+        int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
+    assert isinstance(
+        port, int
+    ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
     username = settings.mqtt["username"]
     password = settings.mqtt["password"]
     assert (username is None and password is None) or (
-        type(username) is str and type(password) is str
+        isinstance(username, str) and len(username) > 0
+        and isinstance(password, str) and len(password) > 0
     ), "Either both username & password need to be specified or neither"
 
     tls: dict = settings.get("mqtt.tls", None)
     assert (tls is None) or (
-        type(tls) is dict and not bool(tls) and tls.get("ca_certs") is not None
+        isinstance(tls, dict) and not bool(tls)
+        and tls.get("ca_certs") is not None
     ), "Check the configuration provided for tls connection to the broker. the property ca_certs is missing"
 
     assert (tls is None) or (os.path.isfile(tls.get(
@@ -108,22 +110,22 @@ def test_timescale_db_configs():
         5432)  # if port not provided use default postgres port
     assert hostname is not None, f"Invalid value for key 'historian.hostname'{hostname}"
 
-    assert type(
-        port
-    ) is int or port is None, f"Invalid value for key 'historian.port':{str(port)}"
-    assert type(
-        port
-    ) is int and port >= 1024 and port <= 49151, f"'historian.port':{str(port)} must be between 1024 to 49151"
+    assert isinstance(
+        port, int
+    ) or port is None, f"Invalid value for key 'historian.port':{str(port)}"
+    assert isinstance(
+        port, int
+    ) and port >= 1024 and port <= 49151, f"'historian.port':{str(port)} must be between 1024 to 49151"
 
     historian_user: str = settings.historian["username"]
     assert (
-        historian_user is not None and type(historian_user) is str
+        historian_user is not None and isinstance(historian_user, str)
         and len(historian_user) > 0
     ), "Invalid username configured at key: 'historian.username'. Cannot be None or empty string"
 
     historian_password: str = settings.historian["password"]
     assert (
-        historian_password is not None and type(historian_password) is str
+        historian_password is not None and isinstance(historian_password, str)
         and len(historian_password) > 0
     ), "Invalid password configured at key: 'historian.password'. Cannot be None or empty string"
 
@@ -135,14 +137,14 @@ def test_timescale_db_configs():
 
     historian_database: str = settings.historian["database"]
     assert (
-        historian_database is not None and type(historian_database) is str
+        historian_database is not None and isinstance(historian_database, str)
         and len(historian_database) > 0
     ), f"""Invalid database name configured at key: 'historian.database' value:{historian_database}.
          Cannot be None or empty string"""
 
     historian_table: str = settings.historian["table"]
     assert (
-        historian_table is not None and type(historian_table) is str
+        historian_table is not None and isinstance(historian_table, str)
         and len(historian_table) > 0
     ), f"""Invalid database name configured at key: 'historian.table' value:{historian_table}.
          Cannot be None or empty string"""

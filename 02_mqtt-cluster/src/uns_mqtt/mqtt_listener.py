@@ -79,7 +79,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
             password: str = None,
             tls: dict = None,
             keepalive=60,
-            topic="#",
+            topics=["#"],
             qos=2):
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
@@ -88,7 +88,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         Parameters
         ----------
         username & password: credentials to connect to the  broker
-
+        topics: Array / list of topics to subscribe to
         tls: Dict containing the following attributed needed for an SSL connection
             "ca_certs" - a string path to the Certificate Authority certificate files
             that are to be treated as trusted by this client.
@@ -108,44 +108,15 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
         """
         try:
-            self.topic = topic
-            self.qos = qos
+            self.topics: list = topics
+            if isinstance(topics, str):
+                self.topics = [topics]
+            self.qos: int = qos
 
             properties = None
             if (self.protocol == mqtt_client.MQTTv5):
                 properties = Properties(PacketTypes.CONNECT)
-            if ((tls is not None) and (tls.get("ca_certs") is not None)):
-                ca_certs = tls.get("ca_certs")
-                certfile = tls.get("certfile")
-                keyfile = tls.get("keyfile")
-                cert_reqs = None
-                if (tls.get("cert_reqs") is None):  # key not present
-                    cert_reqs = ssl.CERT_NONE
-                elif (tls.get("cert_reqs")):  # Value is true
-                    cert_reqs = ssl.CERT_REQUIRED
-                else:
-                    cert_reqs = ssl.CERT_OPTIONAL
-
-                ciphers = tls.get("ciphers")
-                keyfile_password = tls.get("keyfile_password")
-
-                LOGGER.debug("Connection with MQTT Broker is over SSL")
-                # Force ssl.PROTOCOL_TLS_CLIENT
-                if (path.exists(ca_certs)):
-                    super().tls_set(ca_certs=ca_certs,
-                                    certfile=certfile,
-                                    keyfile=keyfile,
-                                    cert_reqs=cert_reqs,
-                                    tls_version=ssl.PROTOCOL_TLS_CLIENT,
-                                    ciphers=ciphers,
-                                    keyfile_password=keyfile_password)
-                    if (tls.get("insecure_cert")):
-                        super().tls_insecure_set(True)
-                        cert_reqs = ssl.CERT_NONE
-                else:
-                    raise FileNotFoundError(
-                        f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
-                    )
+            self.setupTLS(tls)
 
             # Set username & password only if it was specified
             if (username is not None):
@@ -161,6 +132,40 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                          exc_info=True)
             raise ConnectionError(ex)
 
+    def setupTLS(self, tls):
+        if ((tls is not None) and (tls.get("ca_certs") is not None)):
+            ca_certs = tls.get("ca_certs")
+            certfile = tls.get("certfile")
+            keyfile = tls.get("keyfile")
+            cert_reqs = None
+            if (tls.get("cert_reqs") is None):  # key not present
+                cert_reqs = ssl.CERT_NONE
+            elif (tls.get("cert_reqs")):  # Value is true
+                cert_reqs = ssl.CERT_REQUIRED
+            else:
+                cert_reqs = ssl.CERT_OPTIONAL
+
+            ciphers = tls.get("ciphers")
+            keyfile_password = tls.get("keyfile_password")
+
+            LOGGER.debug("Connection with MQTT Broker is over SSL")
+            # Force ssl.PROTOCOL_TLS_CLIENT
+            if (path.exists(ca_certs)):
+                super().tls_set(ca_certs=ca_certs,
+                                certfile=certfile,
+                                keyfile=keyfile,
+                                cert_reqs=cert_reqs,
+                                tls_version=ssl.PROTOCOL_TLS_CLIENT,
+                                ciphers=ciphers,
+                                keyfile_password=keyfile_password)
+                if (tls.get("insecure_cert")):
+                    super().tls_insecure_set(True)
+                    cert_reqs = ssl.CERT_NONE
+            else:
+                raise FileNotFoundError(
+                    f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
+                )
+
     # call back methods
     def on_connect(self, client, userdata, flags, rc, properties=None):
 
@@ -171,10 +176,11 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
             LOGGER.debug("Connection established. Returned code=", rc)
             # subscribe to the topic only if connection was successful
             client.connected_flag = True
-            self.subscribe(self.topic,
-                           self.qos,
-                           options=None,
-                           properties=properties)
+            for topic in self.topics:
+                self.subscribe(topic,
+                               self.qos,
+                               options=None,
+                               properties=properties)
 
             LOGGER.info(f"Successfully connect {self} to MQTT Broker")
         else:
@@ -187,8 +193,9 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                      mid,
                      granted_qos,
                      properties=None):
+        # TODO How to extract the topic name in this message
         LOGGER.info(
-            f"Successfully connect {self} to Topic: {self.topic} with QOS: {granted_qos} "
+            f"Successfully connect {self} to Topic: {client} with QOS: {granted_qos} "
         )
 
     @staticmethod
@@ -213,12 +220,12 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                     ignored_attr = None
                     # if the attribute is a single key.
                     # But this could be a nested key e.g. parent_key.child_key so split that into a list
-                    if (type(ignored_attr_list) is str):
+                    if isinstance(ignored_attr_list, str):
                         Uns_MQTT_ClientWrapper.del_key_from_dict(
                             resulting_message, ignored_attr_list.split("."))
                     # if the attribute is a list of keys
-                    elif (type(ignored_attr_list) is list
-                          or type(ignored_attr_list) is tuple):
+                    elif (isinstance(ignored_attr_list, list)
+                          or isinstance(ignored_attr_list, tuple)):
                         for ignored_attr in ignored_attr_list:
                             Uns_MQTT_ClientWrapper.del_key_from_dict(
                                 resulting_message, ignored_attr.split("."))
@@ -269,7 +276,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                 del msg_cursor[key]
             else:
                 msg_cursor = msg_cursor[key]
-            if (type(msg_cursor) is not dict):
+            if not isinstance(msg_cursor, dict):
                 LOGGER.warning(
                     "key: %s should return a dict but fount:%s. Cant proceed hence skipping !!!",
                     key, message)
