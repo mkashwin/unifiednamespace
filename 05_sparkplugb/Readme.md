@@ -135,15 +135,7 @@ pytest test/
 
 
 ## Limitations 
-1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0) hence I had to downgrade the protobuf version to  [Protobuf v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4)
-
-1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification. For other architectures please download the appropriate pre compiled version of [Protobuf release v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) e.g.
-    - [protoc-3.19.4-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-aarch_64.zip)
-    - [protoc-3.19.4-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-ppcle_64.zip)
-    - [protoc-3.19.4-linux-s390_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-s390_64.zip)
-    - [protoc-3.19.4-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-x86_32.zip)
-
 1. The application assumes the the MQTT broker for SparkPlugB and the UNS are one and the same as it does not sense to have separate brokers for the same. This can be enhanced easily if there is a requirement for the same. Please create issue on the Github project
-1. Need to understand how to handle NBIRTH, NDEATH, DBIRTH & DDEATH message types
-1. Need to understand how to handle metric types PropertySet, PropertySetList, Array 
-1. Need to understand how to handle metric fields : metadata, properties, is_multi_part
+1. Need to understand how to handle NBIRTH, NDEATH, DBIRTH, DDEATH, STATE message types
+1. Need to understand how to handle metric types DataSet, Template 
+1. Need to understand how to handle metadata, properties, is_multi_part etc.

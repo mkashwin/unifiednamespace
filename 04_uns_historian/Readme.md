@@ -14,7 +14,16 @@ I chose to run this as a docker instance to ease the setup and portability.
 >**Important Note:** Remember to update the passwords being passed to the docker run command for the postgres user (i.e. `-e POSTGRES_PASSWORD=<postgres user pwd>`)
 Quick command reference 
 ```bash
+# install docker
+sudo snap install docker
+# add current user to docker group so that we don't need to sudo for docker executions 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+# you might need to reboot here  
+# install the postgres client 
 sudo apt install postgresql-client-common postgresql-client-12 postgresql-doc-12
+
+# install & run postgres db 
 docker run \
     --name uns_timescaledb  \
     -p 5432:5432  \

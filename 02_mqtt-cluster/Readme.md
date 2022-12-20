@@ -139,3 +139,13 @@ For further securing options, like ACL, additional authentication methods etc. E
 1. Currently the configuration of the MQTT bridge is a manual step via the EMQX dashboard. Need to automate this via code
 
 1. Need to study and understand which storage class is better suited for this use-case of UNS
+
+1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0) hence I had to downgrade the protobuf version to  [Protobuf v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4)
+
+1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification. For other architectures please download the appropriate pre compiled version of [Protobuf release v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) e.g.
+    - [protoc-3.19.4-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-aarch_64.zip)
+    - [protoc-3.19.4-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-ppcle_64.zip)
+    - [protoc-3.19.4-linux-s390_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-s390_64.zip)
+    - [protoc-3.19.4-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-x86_32.zip)
+
+1. Need to understand how to handle metric types DataSet, Template 

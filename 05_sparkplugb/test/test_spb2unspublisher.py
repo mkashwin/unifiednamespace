@@ -22,7 +22,7 @@ if uns_mqtt_folder not in sys.path:
     sys.path.insert(2, uns_mqtt_folder)
 
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
-from uns_sparkplugb import uns_sparkplug_b_gen
+from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
@@ -244,7 +244,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
     See Spb2UNSPublisher#getPayload
     Spb2UNSPublisher#getMetricsListFromPayload
     """
-    sparkplug_message = uns_sparkplug_b_gen.Spb_Message_Generator()
+    sparkplug_message = uns_spb_helper.Spb_Message_Generator()
     sPBpayload = sparkplug_message.getDeviceDataPayload()
 
     for metric_data in metrics_list:

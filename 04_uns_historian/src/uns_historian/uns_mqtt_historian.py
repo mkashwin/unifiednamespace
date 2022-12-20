@@ -19,6 +19,7 @@ cmd_subfolder = os.path.realpath(
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
+from uns_sparkplugb.generated import sparkplug_b_pb2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -132,7 +133,9 @@ class Uns_Mqtt_Historian:
         try:
             if (msg.topic.startswith(SPARKPLUG_NS)):
                 # This message was to the sparkplugB namespace in protobuf format
-                decoded_payload = MessageToDict(msg.payload)
+                inboundPayload = sparkplug_b_pb2.Payload()
+                inboundPayload.ParseFromString(msg.payload)
+                decoded_payload = MessageToDict(inboundPayload)
             else:
                 # TODO Assuming all messages to UNS are json hence convertible to dict
                 decoded_payload = json.loads(msg.payload.decode("utf-8"))
