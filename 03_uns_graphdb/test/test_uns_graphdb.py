@@ -2,10 +2,11 @@ import inspect
 import json
 import os
 import sys
+
 import pytest
-from neo4j import exceptions, Session
-from paho.mqtt.properties import Properties
+from neo4j import Session, exceptions
 from paho.mqtt.packettypes import PacketTypes
+from paho.mqtt.properties import Properties
 
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(

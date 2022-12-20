@@ -2,8 +2,8 @@ import inspect
 import os
 import sys
 from types import SimpleNamespace
-import pytest
 
+import pytest
 from google.protobuf.json_format import MessageToDict
 
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
@@ -20,6 +20,7 @@ if cmd_subfolder not in sys.path:
 
 import uns_sparkplug_b_gen
 from uns_sparkplugb.generated import sparkplug_b_pb2
+
 # Dict containing value types as key value pair.
 # Convert this to a SimpleNamespace to be able to access the attributes via dot notation
 metric_dict = {

@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import time
+
 import pytest
 
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder

@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from types import SimpleNamespace
+
 import pytest
 
 cmd_subfolder = os.path.realpath(
@@ -22,8 +23,8 @@ if uns_mqtt_folder not in sys.path:
 
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 from uns_sparkplugb import uns_sparkplug_b_gen
-from uns_sparkplugb.spb2unspublisher import Spb2UNSPublisher
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.spb2unspublisher import Spb2UNSPublisher
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -418,7 +419,7 @@ def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
         }
     }
 
-    spg2unPub = Spb2UNSPublisher(uns_client)
+    spg2unPub = Spb2UNSPublisher(uns_client)-
 
     def on_publish(client, userdata, result):
         msg_published.append(True)

@@ -29,6 +29,7 @@
         "propertysets",
         "proto",
         "protobuf",
+        "psycopg",
         "pytest",
         "SCADA",
         "sparkplugb",

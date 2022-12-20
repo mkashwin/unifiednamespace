@@ -4,9 +4,8 @@ import re
 import ssl
 
 import paho.mqtt.client as mqtt_client
-
-from paho.mqtt.properties import Properties
 from paho.mqtt.packettypes import PacketTypes
+from paho.mqtt.properties import Properties
 
 # Logger
 LOGGER = logging.getLogger(__name__)

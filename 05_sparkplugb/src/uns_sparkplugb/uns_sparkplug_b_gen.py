@@ -3,8 +3,9 @@
 # * @see Tahu Project{https://github.com/eclipse/tahu/blob/master/python/core/sparkplug_b.py}
 # */
 import logging
-from uns_sparkplugb.generated import sparkplug_b_pb2
 import time
+
+from uns_sparkplugb.generated import sparkplug_b_pb2
 
 LOGGER = logging.getLogger(__name__)
 

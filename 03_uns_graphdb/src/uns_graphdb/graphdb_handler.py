@@ -1,6 +1,7 @@
-import time
-import neo4j
 import logging
+import time
+
+import neo4j
 from neo4j import exceptions
 
 # Logger
