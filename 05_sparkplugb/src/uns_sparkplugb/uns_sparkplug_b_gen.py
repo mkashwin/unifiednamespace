@@ -117,7 +117,8 @@ class Spb_Message_Generator:
         elif self.aliasMap.get(name) == alias:
             metric.name = None
         else:
-            raise ValueError(f"Alias:{alias} provided for Name:{name} not matching to previously provided alias:{self.aliasMap.get(name)}  ")
+            raise ValueError(f"Alias:{alias} provided for Name:{name} not matching"
+                             + f"to previously provided alias:{self.aliasMap.get(name)}")
         metric.timestamp = timestamp
         return metric
 
@@ -194,7 +195,8 @@ class Spb_Message_Generator:
             case sparkplug_b_pb2.Text: setStringValueInMetric(value, metric),
             case sparkplug_b_pb2.UUID: setStringValueInMetric(value, metric),
             case sparkplug_b_pb2.DataSet:
-                raise ValueError(f"MetricType:{sparkplug_b_pb2.DataSet} Not supported by #addMetric(). Use #initDatasetMetric()")
+                raise ValueError(f"MetricType:{sparkplug_b_pb2.DataSet}"
+                                 + " Not supported by #addMetric(). Use #initDatasetMetric()")
             case sparkplug_b_pb2.Bytes: setBytesValueInMetric(value, metric),
             case sparkplug_b_pb2.File: setBytesValueInMetric(value, metric),
             case sparkplug_b_pb2.Template: setTemplatesValueInMetric(value, metric)

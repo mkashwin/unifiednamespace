@@ -54,7 +54,7 @@ class GraphDBHandler:
         Returns Neo4j Driver which is the connection to the database
         Validates if the current driver is still connected and of not will create a new connection
         retry: int
-            Optional parameters to retry making a connection in case of errors. 
+            Optional parameters to retry making a connection in case of errors.
             The max number of retry is `GraphDBHandler.MAX_RETRIES`
             The time between attempts is  `GraphDBHandler.SLEEP_BTW_ATTEMPT`
         """

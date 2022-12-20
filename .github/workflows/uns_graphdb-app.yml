@@ -46,10 +46,6 @@ jobs:
 
       - name: Test with pytest
         env:
-          UNS_mqtt.host: ${{ secrets.MQTT_HOST }}
-          UNS_mqtt.port: ${{ secrets.MQTT_PORT }}
-          UNS_mqtt.username: ${{ secrets.MQTT_USER }}
-          UNS_mqtt.password: ${{ secrets.MQTT_PWD }}
           UNS_graphdb.url: ${{ secrets.NEO4J_URL }}
           UNS_graphdb.username: ${{ secrets.NEO4J_USER }}
           UNS_graphdb.password: ${{ secrets.NEO4J_PWD }}

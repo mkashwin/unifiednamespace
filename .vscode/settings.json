@@ -35,6 +35,7 @@
         "sslmode",
         "Tahu",
         "timescaledb",
+        "unifiednamespace",
         "unspublisher",
         "userdata",
         "venv",
