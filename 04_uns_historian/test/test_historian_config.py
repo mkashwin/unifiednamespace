@@ -60,8 +60,13 @@ def test_mqtt_config():
         port, int
     ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
-    username = settings.mqtt["username"]
-    password = settings.mqtt["password"]
+    username = settings.get("mqtt.username")
+    password = settings.get("mqtt.password")
+    assert (username is None and password is None) or (
+        isinstance(username, str) and len(username) > 0
+        and isinstance(password, str) and len(password) > 0
+    ), "Either both username & password need to be specified or neither"
+
     assert (username is None and password is None) or (
         isinstance(username, str) and len(username) > 0
         and isinstance(password, str) and len(password) > 0
