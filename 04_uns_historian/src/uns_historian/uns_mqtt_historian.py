@@ -145,8 +145,8 @@ class Uns_Mqtt_Historian:
             self.uns_historian_handler.persistMQTTmsg(
                 client_id=getattr(client, "_client_id"),
                 topic=msg.topic,
-                timestamp=getattr(filtered_message, self.mqtt_timestamp_key,
-                                  time.time()),
+                timestamp=filtered_message.get(self.mqtt_timestamp_key,
+                                               time.time()),
                 message=filtered_message)
         except Exception as ex:
             LOGGER.error(

@@ -135,7 +135,7 @@ def test_graph_db_configs():
 
     spb_node_types: tuple = settings.get(
         "graphdb.spB_node_types",
-        ("spBv1.0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
+        ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
     assert spb_node_types is not None and len(
         spb_node_types
     ) == 5, "Invalid node_types configured at key: 'graphdb.spB_node_types'. Must be a list of length of 5"

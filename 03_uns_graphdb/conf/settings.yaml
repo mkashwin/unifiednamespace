@@ -20,5 +20,5 @@ graphdb:
   # url: "neo4j+s://4da22061.databases.neo4j.io"
   # database: "Instance01"
   uns_node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
-  spB_node_types: ["spBv1.0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"] # Based on sparkplugB specification
+  spB_node_types: ["spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"] # Based on sparkplugB specification
 dynaconf_merge: true

@@ -111,7 +111,7 @@ class Uns_MQTT_GraphDb:
         self.graphdb_spb_node_types: tuple = tuple(
             settings.get(
                 "graphdb.spB_node_types",
-                ("spBv1.0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
+                ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
 
         if (self.graphdb_url is None):
             raise ValueError(
@@ -132,7 +132,8 @@ class Uns_MQTT_GraphDb:
                      f"Message: {msg},"
                      "}")
         try:
-            if (msg.topic.startswith(SPARKPLUG_NS)):
+            topic: str = msg.topic
+            if (topic.startswith(SPARKPLUG_NS)):
                 # This message was to the sparkplugB namespace in protobuf format
                 node_types = self.graphdb_spb_node_types
                 inboundPayload = sparkplug_b_pb2.Payload()
@@ -145,13 +146,12 @@ class Uns_MQTT_GraphDb:
             filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
                 msg.topic, decoded_payload, self.mqtt_ignored_attributes)
             # save message
-            self.graph_db_handler.persistMQTTmsg(topic=msg.topic,
-                                                 message=filtered_message,
-                                                 timestamp=getattr(
-                                                     filtered_message,
-                                                     self.mqtt_timestamp_key,
-                                                     time.time()),
-                                                 node_types=node_types)
+            self.graph_db_handler.persistMQTTmsg(
+                topic=topic,
+                message=filtered_message,
+                timestamp=filtered_message.get(self.mqtt_timestamp_key,
+                                               time.time()),
+                node_types=node_types)
         except Exception as ex:
             LOGGER.error("Error persisting the message to the Graph DB: %s",
                          str(ex),
