@@ -3,6 +3,7 @@ import inspect
 import json
 import os
 import sys
+import time
 import pytz
 
 import psycopg2
@@ -93,7 +94,9 @@ def test_MQTT_Historian_UNS_Persistance(topic: str, message):
         uns_mqtt_historian = Uns_Mqtt_Historian()
         uns_mqtt_historian.uns_client.loop()
 
-        def on_publish(client, userdata, result):
+        def on_message_decorator(client, userdata, msg):
+            # override / wrap the existing on_message callback so that on_publish is asleep until the message was received
+            old_on_message(client, userdata, msg)
             if topic.startswith("spBv1.0/"):
                 inboundPayload = sparkplug_b_pb2.Payload()
                 inboundPayload.ParseFromString(message)
@@ -103,42 +106,15 @@ def test_MQTT_Historian_UNS_Persistance(topic: str, message):
                 message_dict = message
 
             try:
-                # Read the database for the published data.
-                query_timestamp = datetime.datetime.fromtimestamp(
+                cursor = uns_mqtt_historian.uns_historian_handler.getCursor()
+                query_timestamp: datetime = datetime.datetime.fromtimestamp(
                     float(
                         message_dict.get(
                             uns_mqtt_historian.mqtt_timestamp_key)) / 1000)
-                SQL_CMD = f"""SELECT *
-                              FROM {uns_mqtt_historian.uns_historian_handler.table}
-                              WHERE
-                                time = %s AND
-                                topic = %s AND
-                                client_id=%s;
-                            """
-
-                with uns_mqtt_historian.uns_historian_handler.getCursor(
-                ) as cursor:
-                    cursor.execute(
-                        SQL_CMD,
-                        (query_timestamp, topic, uns_mqtt_historian.client_id))
-                    data = cursor.fetchone()
-                    db_msg = data[3]
-                    db_client = data[2]
-                    db_topic = data[1]
-                    assert db_msg == message_dict, "Message payload is not matching"
-                    assert db_client == uns_mqtt_historian.client_id, "client_id are not matching"
-                    assert db_topic == topic, "Topic are not matching"  # topic
-                    # Need to localize the value in order to be able to compare with the info from db
-                    assert data[0] == pytz.utc.localize(
-                        query_timestamp
-                    ), "Timestamp are not matching"  # timestamp
-
-            except (psycopg2.DataError, psycopg2.OperationalError) as ex:
-                pytest.fail(
-                    f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
-                )
-            except AssertionError as ex:
-                pytest.fail(f"Assertions did not pass: Exception {ex}")
+                compareWithHistorian(
+                    cursor, uns_mqtt_historian.uns_historian_handler.table,
+                    query_timestamp, topic, uns_mqtt_historian.client_id,
+                    message_dict)
             finally:
                 uns_mqtt_historian.uns_client.disconnect()
 
@@ -154,7 +130,10 @@ def test_MQTT_Historian_UNS_Persistance(topic: str, message):
         else:
             payload = json.dumps(message)
 
-        uns_mqtt_historian.uns_client.on_publish = on_publish
+        # Overriding on_message is more reliable that on_publish because some times on_publish was called before on_message
+        old_on_message = uns_mqtt_historian.uns_client.on_message
+        uns_mqtt_historian.uns_client.on_message = on_message_decorator
+
         # publish the messages as non-persistent to allow the tests to be idempotent across multiple runs
         uns_mqtt_historian.uns_client.publish(
             topic=topic,
@@ -179,3 +158,37 @@ def test_MQTT_Historian_UNS_Persistance(topic: str, message):
                                   is not None):
             # incase the on_disconnect message is not called
             uns_mqtt_historian.uns_historian_handler.close()
+
+
+def compareWithHistorian(cursor, db_table: str, query_timestamp: datetime,
+                         topic: str, client_id: str, message_dict: dict):
+    try:
+        # Read the database for the published data.
+
+        SQL_CMD = f"""SELECT *
+                      FROM {db_table}
+                      WHERE
+                        time = %s AND
+                        topic = %s AND
+                        client_id=%s;"""
+
+        with cursor as cursor:
+            cursor.execute(SQL_CMD, (query_timestamp, topic, client_id))
+            data = cursor.fetchone()
+            assert data is not None, "No data found in the database"
+            db_msg = data[3]
+            db_client = data[2]
+            db_topic = data[1]
+            assert db_msg == message_dict, "Message payload is not matching"
+            assert db_client == client_id, "client_id are not matching"
+            assert db_topic == topic, "Topic are not matching"  # topic
+            # Need to localize the value in order to be able to compare with the info from db
+            assert data[0] == pytz.utc.localize(
+                query_timestamp), "Timestamp are not matching"  # timestamp
+
+    except (psycopg2.DataError, psycopg2.OperationalError) as ex:
+        pytest.fail(
+            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
+        )
+    except AssertionError as ex:
+        pytest.fail(f"Assertions did not pass: Exception {ex}")

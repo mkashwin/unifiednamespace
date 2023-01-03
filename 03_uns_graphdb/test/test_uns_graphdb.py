@@ -92,7 +92,8 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
         uns_mqtt_graphdb = Uns_MQTT_GraphDb()
         uns_mqtt_graphdb.uns_client.loop()
 
-        def on_publish(client, userdata, result):
+        def on_message_decorator(client, userdata, msg):
+            old_on_message(client, userdata, msg)
             if topic.startswith("spBv1.0/"):
                 inboundPayload = sparkplug_b_pb2.Payload()
                 inboundPayload.ParseFromString(message)
@@ -127,7 +128,10 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
         else:
             payload = json.dumps(message)
 
-        uns_mqtt_graphdb.uns_client.on_publish = on_publish
+        # Overriding on_message is more reliable that on_publish because some times on_publish was called before on_message
+        old_on_message = uns_mqtt_graphdb.uns_client.on_message
+        uns_mqtt_graphdb.uns_client.on_message = on_message_decorator
+
         # publish the messages as non-persistent to allow the tests to be idempotent across multiple runs
         uns_mqtt_graphdb.uns_client.publish(
             topic=topic,
