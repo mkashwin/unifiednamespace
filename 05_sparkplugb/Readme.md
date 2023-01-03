@@ -53,13 +53,12 @@ The spB payload may contain multiple metrics which belong to different topics he
     - if a metric name is duplicated and not historical, the newer tag value will override the older tag value in the JSON object
     - the overall timestamp for the JSON object is the max of timestamps of all the tags  
 
-
-
 This mapping is to be done only for the message types 
    - NDATA
    - DDATA
    - NCMD
    - DCMD 
+
 ***IMPORTANT: The birth and death messages are not mapped to the UNS currently***
 
 <!-- \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
@@ -72,7 +71,7 @@ spBv1.0 | - | Default namespace for sparkplugB. No mapping needed
 \<device_id\> | \<device\> | Map the device id to th end device. If the device id is not provided then <br />extract the device(s) from the payload to appropriately map the messages -->
 ## Key Configurations to provide
 This application has two configuration file. 
-1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as timescale db
+1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers
     **key** | **sub key** | **description**  | ***default value*** |
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
@@ -88,7 +87,7 @@ This application has two configuration file.
     sparkplugb |   | *currently empty*|
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
 
-1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster and the timescaledb
+1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster
     This file is not checked into the repository for security purposes. However there is a template file provided [**`.secrets_template.yaml`**](./conf/.secrets_template.yaml) which should be edited and renamed to **`.secrets.yaml`**
     **key** | **sub key** | **sub key** | **description**  | ***default value*** |
     :------ | :------ | :------ | :------ | :------

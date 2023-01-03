@@ -295,7 +295,7 @@ class Spb_Message_Generator:
         return metric
 
     ######################################################################
-    def addNullMetric(self, container, name: str, alias: int, type:int):
+    def addNullMetric(self, container, name: str, alias: int, type: int):
         """
         Helper method for adding null metrics  to a container which can be a payload or a template
         Parameters
@@ -310,7 +310,7 @@ class Spb_Message_Generator:
         type:
             Unsigned int depicting the data type
         """
-        metric = self.addMetric(payload= container, name= name, alias=alias, type=type)
+        metric = self.addMetric(payload=container, name=name, alias=alias, type=type)
         metric.is_null = True
         return metric
 # class end
@@ -420,7 +420,7 @@ def setTemplatesValueInMetric(value, metric):
     ----------
     value:
     metric: Metric object
-    """    
+    """
     metric.template_value = value
     return value
 

@@ -25,7 +25,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(1, os.path.join(cmd_subfolder, "uns_graphdb"))
 if uns_mqtt_folder not in sys.path:
     sys.path.insert(2, uns_mqtt_folder)
-from uns_graphdb.graphdb_config import settings
+
 from uns_graphdb.uns_mqtt_graphdb import Uns_MQTT_GraphDb
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
 from uns_sparkplugb.generated import sparkplug_b_pb2
@@ -73,8 +73,18 @@ def test_Uns_MQTT_GraphDb():
             "TestMetric2": "TestUNS"
         }),
         ("spBv1.0/group1/NBIRTH/eon1",
-         b'\x08\xc4\x89\x89\x83\xd30\x12\x11\n\x08Inputs/A\x18\xea\xf2\xf5\xa8\xa0+\x12\x15\n\x08Inputs/A\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x15\n\x08Inputs/B\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x16\n\tOutputs/E\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x16\n\tOutputs/F\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12-\n\x18Properties/Hardware Make\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x08Pibrella\x12\x1f\n\x11Properties/Weight\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
-         ),
+         b'\x08\xc4\x89\x89\x83\xd30\x12\x11\n\x08' \
+            b'Inputs/A\x18\xea\xf2\xf5\xa8\xa0+\x12\x15' \
+            b'\n\x08Inputs/A\x18\xea\xf2\xf5\xa8\xa0+ ' \
+            b'\x0bp\x00\x12\x15\n\x08Inputs/B\x18\xea' \
+            b'\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x16\n' \
+            b'\tOutputs/E\x18\xea\xf2\xf5\xa8\xa0+ ' \
+            b'\x0bp\x00\x12\x16\n\tOutputs/F\x18\xea' \
+            b'\xf2\xf5\xa8\xa0+ \x0bp\x00\x12-\n' \
+            b'\x18Properties/Hardware Make\x18\xea\xf2' \
+            b'\xf5\xa8\xa0+ \x0cz\x08Sony\x12\x1f\n' \
+            b'\x11Properties/Weight\x18\xea\xf2\xf5\xa8' \
+            b'\xa0+ \x03P\xc8\x01\x18\x00')
     ])
 def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
     uns_mqtt_graphdb = None

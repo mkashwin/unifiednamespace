@@ -149,3 +149,6 @@ For further securing options, like ACL, additional authentication methods etc. E
     - [protoc-3.19.4-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-x86_32.zip)
 
 1. Need to understand how to handle metric types DataSet, Template 
+
+## Copyrights
+Copyright (c) 2016-2022 Eclipse Foundation. This software or document includes material copied from or derived from the [Sparkplug Specification](https://www.eclipse.org/tahu/spec/sparkplug_spec.pdf)
