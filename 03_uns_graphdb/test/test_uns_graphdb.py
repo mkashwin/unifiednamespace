@@ -73,7 +73,7 @@ def test_Uns_MQTT_GraphDb():
             "TestMetric2": "TestUNS"
         }),
         ("spBv1.0/group1/NBIRTH/eon1",
-         b'\x08\xc4\x89\x89\x83\xd30\x12\x11\n\x08' \
+            b'\x08\xc4\x89\x89\x83\xd30\x12\x11\n\x08' \
             b'Inputs/A\x18\xea\xf2\xf5\xa8\xa0+\x12\x15' \
             b'\n\x08Inputs/A\x18\xea\xf2\xf5\xa8\xa0+ ' \
             b'\x0bp\x00\x12\x15\n\x08Inputs/B\x18\xea' \
@@ -82,21 +82,18 @@ def test_Uns_MQTT_GraphDb():
             b'\x0bp\x00\x12\x16\n\tOutputs/F\x18\xea' \
             b'\xf2\xf5\xa8\xa0+ \x0bp\x00\x12-\n' \
             b'\x18Properties/Hardware Make\x18\xea\xf2' \
-            b'\xf5\xa8\xa0+ \x0cz\x08Sony\x12\x1f\n' \
+            b'\xf5\xa8\xa0+ \x0cz\x08Pibrella\x12\x1f\n' \
             b'\x11Properties/Weight\x18\xea\xf2\xf5\xa8' \
             b'\xa0+ \x03P\xc8\x01\x18\x00')
     ])
 def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
     uns_mqtt_graphdb = None
-    # override setting for
-
     try:
         uns_mqtt_graphdb = Uns_MQTT_GraphDb()
         uns_mqtt_graphdb.uns_client.loop()
 
         def on_publish(client, userdata, result):
-
-            if (topic.startswith("spBv1.0/")):
+            if topic.startswith("spBv1.0/"):
                 inboundPayload = sparkplug_b_pb2.Payload()
                 inboundPayload.ParseFromString(message)
                 message_dict = MessageToDict(inboundPayload)
@@ -118,6 +115,8 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
             finally:
                 uns_mqtt_graphdb.uns_client.disconnect()
 
+        # --- end of function
+
         publish_properties = None
         if (uns_mqtt_graphdb.uns_client.protocol ==
                 Uns_MQTT_ClientWrapper.MQTTv5):
@@ -129,12 +128,12 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
             payload = json.dumps(message)
 
         uns_mqtt_graphdb.uns_client.on_publish = on_publish
-
+        # publish the messages as non-persistent to allow the tests to be idempotent across multiple runs
         uns_mqtt_graphdb.uns_client.publish(
             topic=topic,
             payload=payload,
             qos=uns_mqtt_graphdb.uns_client.qos,
-            retain=True,
+            retain=False,
             properties=publish_properties)
 
         uns_mqtt_graphdb.uns_client.loop_forever()

@@ -33,6 +33,7 @@
         "protobuf",
         "psycopg",
         "pytest",
+        "pytz",
         "SCADA",
         "sparkplugb",
         "sslmode",

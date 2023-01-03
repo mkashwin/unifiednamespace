@@ -143,10 +143,11 @@ class Uns_Mqtt_Historian:
                 msg.topic, decoded_payload, self.mqtt_ignored_attributes)
             # save message
             self.uns_historian_handler.persistMQTTmsg(
-                client_id=getattr(client, "_client_id"),
+                client_id=client._client_id.decode(),
                 topic=msg.topic,
-                timestamp=filtered_message.get(self.mqtt_timestamp_key,
-                                               time.time()),
+                timestamp=float(
+                    filtered_message.get(self.mqtt_timestamp_key,
+                                         time.time())),
                 message=filtered_message)
         except Exception as ex:
             LOGGER.error(
