@@ -71,8 +71,9 @@ class Spb_Message_Generator:
             payload = sparkplug_b_pb2.Payload()
         payload.timestamp = int(round(time.time() * 1000))
         payload.seq = self.getSeqNum()
+        ## why was there --self.bdSeq over here ?? 
         self.addMetric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
-                       --self.bdSeq, payload.timestamp)
+                       self.getBdSeqNum(), payload.timestamp)
         return payload
 
     def getDeviceBirthPayload(self, payload=None):
