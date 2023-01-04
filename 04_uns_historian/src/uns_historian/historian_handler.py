@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import time
 
@@ -81,7 +82,7 @@ class HistorianHandler:
                     exc_info=True)
                 raise ex
 
-    def getcursor(self):
+    def getCursor(self):
         if (self.timescale_db_cursor is None
                 or self.timescale_db_cursor.closed):
             if (self.timescale_db_conn is None):
@@ -109,8 +110,8 @@ class HistorianHandler:
                              stack_info=True,
                              exc_info=True)
 
-    def persistMQTTmsg(self, client_id: str, topic: str, timestamp,
-                       message: str):
+    def persistMQTTmsg(self, client_id: str, topic: str, timestamp: float,
+                       message: dict):
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -126,7 +127,8 @@ class HistorianHandler:
         if timestamp is None:
             _timestamp = datetime.datetime.now()
         else:
-            _timestamp = datetime.date.fromtimestamp(timestamp)
+            # Timestamp is normally in milliseconds and needs to be converted prior to insertion
+            _timestamp = datetime.datetime.fromtimestamp(timestamp / 1000)
 
         sql_cmd = f"""INSERT INTO {self.table} ( time, topic, client_id, mqtt_msg )
                         VALUES (%s,%s,%s,%s)
@@ -137,9 +139,10 @@ class HistorianHandler:
             inline method to enable retry
             """
             try:
-                with self.getcursor() as cursor:
-                    cursor.execute(sql_cmd,
-                                   (_timestamp, topic, client_id, message))
+                with self.getCursor() as cursor:
+                    cursor.execute(
+                        sql_cmd,
+                        (_timestamp, topic, client_id, json.dumps(message)))
             except (psycopg2.DataError, psycopg2.OperationalError) as ex:
                 # handle exception
                 LOGGER.error(

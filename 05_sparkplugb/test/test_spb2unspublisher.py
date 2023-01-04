@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from types import SimpleNamespace
+
 import pytest
 
 cmd_subfolder = os.path.realpath(
@@ -21,9 +22,9 @@ if uns_mqtt_folder not in sys.path:
     sys.path.insert(2, uns_mqtt_folder)
 
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
-from uns_sparkplugb import uns_sparkplug_b_gen
-from uns_sparkplugb.spb2unspublisher import Spb2UNSPublisher
+from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -243,7 +244,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
     See Spb2UNSPublisher#getPayload
     Spb2UNSPublisher#getMetricsListFromPayload
     """
-    sparkplug_message = uns_sparkplug_b_gen.Spb_Message_Generator()
+    sparkplug_message = uns_spb_helper.Spb_Message_Generator()
     sPBpayload = sparkplug_message.getDeviceDataPayload()
 
     for metric_data in metrics_list:
@@ -293,7 +294,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
             23,
             1671028163,
             False,
-            {  #Test Set 1 -int, no historical data
+            {  # Test Set 1 -int, no historical data
                 "Temp": (23, 1671028163, False),
                 "timestamp": 1671028163,
                 "spBv1.0_group_id": "grp1",
@@ -306,7 +307,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
             "A",
             1671008100,
             False,
-            {  #Test Set 2 -String, no historical data
+            {  # Test Set 2 -String, no historical data
                 "Grade": ("A", 1671008100, False),
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
@@ -391,8 +392,21 @@ def test_publishToUNS_not_connected(clean_session, protocol, transport, host,
                          [("tcp", "broker.emqx.io", 1883, None)])
 @pytest.mark.parametrize("qos", [(1), (2)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True)])
+@pytest.mark.parametrize("all_uns_messages", [({
+    "a/b/c": {
+        "temperature": 28.0,
+        123: "testing value",
+        "pressure": 10.12
+    },
+    "x/y/z": {
+        "temperature": 28.0,
+        78945.12: "Can I have different keys?",
+        "my metric": 200
+    }
+})])
 def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
-                                tls, qos, reconnect_on_failure):
+                                tls, qos, reconnect_on_failure,
+                                all_uns_messages):
     """
     See Spb2UNSPublisher#publishToUNS()
     """
@@ -404,19 +418,6 @@ def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
         protocol=protocol,
         transport=transport,
         reconnect_on_failure=reconnect_on_failure)
-
-    all_uns_messages: dict = {
-        "a/b/c": {
-            "temperature": 28.0,
-            123: "testing value",
-            "pressure": 10.12
-        },
-        "x/y/z": {
-            "temperature": 28.0,
-            78945.12: "Can I have different keys?",
-            "my metric": 200
-        }
-    }
 
     spg2unPub = Spb2UNSPublisher(uns_client)
 
@@ -433,10 +434,14 @@ def test_publishToUNS_connected(clean_session, protocol, transport, host, port,
     uns_client.on_connect = on_connect
     uns_client.on_publish = on_publish
     try:
-        uns_client.run(host=host, port=port, tls=tls, topic="#", qos=qos)
+        uns_client.run(host=host,
+                       port=port,
+                       tls=tls,
+                       topics="spBv1.0",
+                       qos=qos)
         uns_client.loop_forever()
     except Exception as ex:
-        print(ex)
+        pytest.fail, f"Exception occurred: {ex}"
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()

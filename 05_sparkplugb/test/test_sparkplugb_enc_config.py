@@ -3,6 +3,7 @@ import os
 import re
 import socket
 import sys
+
 import pytest
 
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
@@ -11,10 +12,18 @@ cmd_subfolder = os.path.realpath(
         os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
+uns_mqtt_folder = os.path.realpath(
+    os.path.abspath(
+        os.path.join(cmd_subfolder, '..', '..', '02_mqtt-cluster', 'src')))
+
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_sparkplugb"))
-from sparkplugb_enc_config import settings
+    sys.path.insert(0, cmd_subfolder)
+
+if uns_mqtt_folder not in sys.path:
+    sys.path.insert(2, uns_mqtt_folder)
+
+from uns_spb_mapper.sparkplugb_enc_config import settings
 
 is_configs_provided: bool = (
     os.path.exists(os.path.join(cmd_subfolder, "../conf/.secrets.yaml"))
@@ -53,32 +62,35 @@ def test_mqtt_config():
     assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
 
     port: int = settings.get("mqtt.port", 1883)
-    assert type(
-        port
-    ) is int or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
-    assert type(
-        port
-    ) is int and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+    assert isinstance(
+        port,
+        int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
+    assert isinstance(
+        port, int
+    ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
     username = settings.mqtt["username"]
     password = settings.mqtt["password"]
     assert (username is None and password is None) or (
-        type(username) is str and type(password) is str
+        isinstance(username, str) and len(username) > 0
+        and isinstance(password, str) and len(password) > 0
     ), "Either both username & password need to be specified or neither"
 
     tls: dict = settings.get("mqtt.tls", None)
     assert (tls is None) or (
-        type(tls) is dict and not bool(tls) and tls.get("ca_certs") is not None
+        isinstance(tls, dict) and not bool(tls)
+        and tls.get("ca_certs") is not None
     ), "Check the configuration provided for tls connection to the broker. the property ca_certs is missing"
 
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
-    topic: str = settings.get("mqtt.topic", "#")
+    topics: str = settings.get("mqtt.topics", ["spBv1.0/#"])
     REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
-    assert bool(
-        re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
-    ), f"configuration 'mqtt.topic':{topic} is not a valid MQTT topic"
+    for topic in topics:
+        assert bool(
+            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
+        ), f"configuration 'mqtt.topics':{topics} has an valid MQTT topic topic:{topic}"
 
     keep_alive: float = settings.get("mqtt.keep_alive", 60)
     assert (keep_alive is None) or (

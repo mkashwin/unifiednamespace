@@ -1,12 +1,15 @@
 import inspect
 import json
-import random
 import logging
-import time
 import os
+import random
 import sys
+import time
+
+from google.protobuf.json_format import MessageToDict
 from graphdb_config import settings
 from graphdb_handler import GraphDBHandler
+
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
@@ -17,8 +20,11 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
+from uns_sparkplugb.generated import sparkplug_b_pb2
 
 LOGGER = logging.getLogger(__name__)
+
+SPARKPLUG_NS = "spBv1.0/"
 
 
 class Uns_MQTT_GraphDb:
@@ -41,12 +47,10 @@ class Uns_MQTT_GraphDb:
         self.uns_client.on_disconnect = self.on_disconnect
 
         # Connect to the database
-        self.graph_db_handler = GraphDBHandler(
-            uri=self.graphdb_url,
-            user=self.graphdb_user,
-            password=self.graphdb_password,
-            database=self.graphdb_database,
-            node_types=self.graphdb_node_types)
+        self.graph_db_handler = GraphDBHandler(uri=self.graphdb_url,
+                                               user=self.graphdb_user,
+                                               password=self.graphdb_password,
+                                               database=self.graphdb_database)
 
         self.uns_client.run(host=self.mqtt_host,
                             port=self.mqtt_port,
@@ -54,7 +58,7 @@ class Uns_MQTT_GraphDb:
                             password=self.mqtt_password,
                             tls=self.mqtt_tls,
                             keepalive=self.mqtt_keepalive,
-                            topic=self.topic,
+                            topics=self.topics,
                             qos=self.mqtt_qos)
 
     # end of init
@@ -76,7 +80,7 @@ class Uns_MQTT_GraphDb:
         self.mqtt_username: str = settings.mqtt["username"]
         self.mqtt_password: str = settings.mqtt["password"]
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topic: str = settings.get("mqtt.topic", "#")
+        self.topics: str = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
@@ -101,8 +105,13 @@ class Uns_MQTT_GraphDb:
         self.graphdb_database: str = settings.get("graphdb.database", None)
 
         self.graphdb_node_types: tuple = tuple(
-            settings.get("graphdb.node_types",
+            settings.get("graphdb.uns_node_types",
                          ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
+
+        self.graphdb_spb_node_types: tuple = tuple(
+            settings.get(
+                "graphdb.spB_node_types",
+                ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
 
         if (self.graphdb_url is None):
             raise ValueError(
@@ -123,17 +132,26 @@ class Uns_MQTT_GraphDb:
                      f"Message: {msg},"
                      "}")
         try:
-
+            topic: str = msg.topic
+            if (topic.startswith(SPARKPLUG_NS)):
+                # This message was to the sparkplugB namespace in protobuf format
+                node_types = self.graphdb_spb_node_types
+                inboundPayload = sparkplug_b_pb2.Payload()
+                inboundPayload.ParseFromString(msg.payload)
+                decoded_payload = MessageToDict(inboundPayload)
+            else:
+                # TODO Assuming all messages to UNS are json hence convertible to dict
+                node_types = self.graphdb_node_types
+                decoded_payload = json.loads(msg.payload.decode("utf-8"))
             filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
-                msg.topic, json.loads(msg.payload.decode("utf-8")),
-                self.mqtt_ignored_attributes)
+                msg.topic, decoded_payload, self.mqtt_ignored_attributes)
             # save message
-            self.graph_db_handler.persistMQTTmsg(topic=msg.topic,
-                                                 message=filtered_message,
-                                                 timestamp=getattr(
-                                                     filtered_message,
-                                                     self.mqtt_timestamp_key,
-                                                     time.time()))
+            self.graph_db_handler.persistMQTTmsg(
+                topic=topic,
+                message=filtered_message,
+                timestamp=filtered_message.get(self.mqtt_timestamp_key,
+                                               time.time()),
+                node_types=node_types)
         except Exception as ex:
             LOGGER.error("Error persisting the message to the Graph DB: %s",
                          str(ex),

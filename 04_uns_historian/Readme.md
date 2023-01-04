@@ -14,7 +14,16 @@ I chose to run this as a docker instance to ease the setup and portability.
 >**Important Note:** Remember to update the passwords being passed to the docker run command for the postgres user (i.e. `-e POSTGRES_PASSWORD=<postgres user pwd>`)
 Quick command reference 
 ```bash
+# install docker
+sudo snap install docker
+# add current user to docker group so that we don't need to sudo for docker executions 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+# you might need to reboot here  
+# install the postgres client 
 sudo apt install postgresql-client-common postgresql-client-12 postgresql-doc-12
+
+# install & run postgres db 
 docker run \
     --name uns_timescaledb  \
     -p 5432:5432  \
@@ -61,7 +70,7 @@ This application has two configuration file.
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
     mqtt | port | Port of the mqtt broker (int) | *1883*
-    mqtt | topic | Topic to be subscribed to. Recommend subscribing to a level + # e.g. "erp/#" | *"#"* 
+    mqtt | topics | Array of topics to be subscribed to. Recommend subscribing to a level +/#  and spBv1.0 e.g. ["erp/#","spBv1.0/#"] | *["#"]* 
     mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
