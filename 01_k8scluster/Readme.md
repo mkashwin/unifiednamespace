@@ -22,14 +22,14 @@ This module has two scripts in `bash` and configuration file.
     ```bash
     #Counter here is a placeholder for the node count (0,1,2,3,4 etc.)
     NODE_${COUNTER}_NAME = ## Hostname of the node 
-    NODE_${COUNTER}_IP = ## Host ip addresed to be used by k8s control plane to communicate
+    NODE_${COUNTER}_IP = ## Host ip addressed to be used by k8s control plane to communicate
     NODE_${COUNTER}_USERNAME = ## Unix user name used to log into the machine over ssh
     NODE_${COUNTER}_ISMASTER = ## (true/false) boolean to indicate this node is a master node. IMPORTANT to pay attention this is is specified in lower case. If more than one node is marked as master then the k8s will be setup as high availability
     ```
 1. Configure network traffic based on the Metal Load Balancer Range configured in the configuration file. For more details also refer the links in the [Further Reading](#further-reading) section
 
     ### <a id="windows"></a>
-    * On windows if you are working with virtual machines. Add route to the range convering the METALLB range and ensure that it points to the DHCP server for your virtual machine farm. 
+    * On windows if you are working with virtual machines. Add route to the range covering the METALLB range and ensure that it points to the DHCP server for your virtual machine farm. 
         ```powershell
         route -p ADD 198.168.220.0 MASK 255.255.255.128 198.168.200.1
         ```
@@ -38,7 +38,7 @@ This module has two scripts in `bash` and configuration file.
         - `198.168.200.1` is the DHCP server for your virtual box network 
 
     ### <a id="unix"></a>
-    * On Unix if you are working with virtual machines. Add route to the range convering the METALLB range and ensure that it points to the DHCP server for your virtual machine farm. 
+    * On Unix if you are working with virtual machines. Add route to the range covering the METALLB range and ensure that it points to the DHCP server for your virtual machine farm. 
         ```powershell
         sudo ip route add 198.168.220.0/24 via 198.168.200.1 dev vboxnet0
         ```
@@ -62,7 +62,7 @@ This module has two scripts in `bash` and configuration file.
     sudo chmod o-r,a-w /etc/sudoers.d/$USER
     su - $USER
     ```
-1. Run the preconfiguration script **on each node** ensuring that the configuration file is in the same directory as the script and readable. **Run the script as the normal unix user and not as ***root***.**
+1. Run the pre-configuration script **on each node** ensuring that the configuration file is in the same directory as the script and readable. **Run the script as the normal unix user and not as ***root***.**
     ```bash
     ./pre_setup_nodes.sh
     ```
@@ -76,7 +76,7 @@ This module has two scripts in `bash` and configuration file.
     * ingress
     * openebs 
     * metallb   : ***Not required if your cluster is deployed on the cloud. Only needed for edge clusters and enterprise clusters***
-    * dashboard : ***This is not mandatory. This is just for your convinience should you need it***
+    * dashboard : ***This is not mandatory. This is just for your convenience should you need it***
 ---
 ## **Further Reading**
 ### MetalLB
