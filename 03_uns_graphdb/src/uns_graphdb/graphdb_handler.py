@@ -192,7 +192,7 @@ class GraphDBHandler:
         """
         response = None
         count = 0
-        lastnode = None
+        lastnode_id = None
         nodes = topic.split('/')
         for node in nodes:
             LOGGER.debug("Processing sub topic: %s of topic:%s", str(node),
@@ -204,10 +204,10 @@ class GraphDBHandler:
                 nodeAttributes = message
             node_name: str = GraphDBHandler.getNodeName(count, node_types)
             response = GraphDBHandler.saveNode(session, node, node_name,
-                                               nodeAttributes, lastnode,
+                                               nodeAttributes, lastnode_id,
                                                timestamp)
+            lastnode_id = response.peek()[0]._element_id
             count += 1
-            lastnode = node
         return response
 
     # method Ends
@@ -228,7 +228,7 @@ class GraphDBHandler:
                  nodename: str,
                  nodetype: str,
                  attributes: dict = None,
-                 parent: str = None,
+                 parent_id: str = None,
                  timestamp: float = time.time()):
         """
         Creates or Merges the MQTT message as a Graph node. Each level of the topic is also persisted
@@ -240,16 +240,21 @@ class GraphDBHandler:
         nodename : str
             Trimmed name of the topic
         nodetype : str
-            Based on ISA-95 part 2 the nested depth of the topic determines the node type.
+            Based on ISA-95 part 2 or Sparkplug spec
+            The nested depth of the topic determines the node type.
         message : dict
             The JSON delivered as message in the MQTT payload converted to a dict.
             Defaults to None (for all intermittent topics)
-        parent  : str
-            The name of the parent node to which a relationship will be established. Defaults to None(for root nodes)
+        parent_id  : str
+            elementId of the parent node to ensure unique relationships
+
+        Returns the result of the query which will either be
+            - one node (in case of top most node)
+            - two node in the order of currently created/updated node, parent node
         """
         LOGGER.debug(
             "Saving node: %s of type: %s and attributes: %s with parent: %s",
-            str(nodename), str(nodetype), str(attributes), str(parent))
+            str(nodename), str(nodetype), str(attributes), str(parent_id))
 
         # CQL doesn't allow  the node label as a parameter.
         # using a statement with parameters is a safer option against CQL injection
@@ -261,20 +266,20 @@ class GraphDBHandler:
             query = query + "    SET node._modified_timestamp = $timestamp \n"
             query = query + "SET node += $attributes \n"
 
-        if parent is not None:
-            query = "MATCH (parent {node_name: $parent})" + '\n' + query + '\n'
+        if parent_id is not None:
+            query = "MATCH (parent) \n WHERE  elementId(parent)= $parent_id" + '\n' + query + '\n'
             query = query + "MERGE (parent) -[r:PARENT_OF]-> (node) \n"
             query = query + "RETURN node, parent"
         else:
             query = query + "RETURN node"
         LOGGER.debug("CQL statement to be executed: %s", str(query))
         # non-referred would be ignored in the execution.
-        node = session.run(query,
-                           nodename=nodename,
-                           timestamp=timestamp,
-                           parent=parent,
-                           attributes=attributes)
-        return node
+        result: neo4j.Result = session.run(query,
+                                           nodename=nodename,
+                                           timestamp=timestamp,
+                                           parent_id=parent_id,
+                                           attributes=attributes)
+        return result
 
     # static Method Ends
 
