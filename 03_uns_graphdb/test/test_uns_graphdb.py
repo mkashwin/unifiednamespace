@@ -51,7 +51,7 @@ def test_Uns_MQTT_GraphDb():
             f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
         )
     finally:
-        if (uns_mqtt_graphdb is not None):
+        if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
 
         if ((uns_mqtt_graphdb is not None)
@@ -123,7 +123,7 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
                 Uns_MQTT_ClientWrapper.MQTTv5):
             publish_properties = Properties(PacketTypes.PUBLISH)
 
-        if (topic.startswith("spBv1.0/")):
+        if topic.startswith("spBv1.0/"):
             payload = message
         else:
             payload = json.dumps(message)
@@ -149,7 +149,7 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
         )
 
     finally:
-        if (uns_mqtt_graphdb is not None):
+        if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
 
         if ((uns_mqtt_graphdb is not None)

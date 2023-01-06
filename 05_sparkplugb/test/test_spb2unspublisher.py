@@ -251,7 +251,7 @@ def testGetPayloadAndMetrics_Ddata(metrics_list: list[dict]):
         sparkplug_message.addMetric(payload=sPBpayload,
                                     name=metric_data[0],
                                     alias=metric_data[1],
-                                    type=metric_data[2],
+                                    data_type=metric_data[2],
                                     value=metric_data[3])
     parsedPayload = Spb2UNSPublisher.getPayload(sPBpayload.SerializeToString())
     assert parsedPayload is not None, "parsed payload should not be none"

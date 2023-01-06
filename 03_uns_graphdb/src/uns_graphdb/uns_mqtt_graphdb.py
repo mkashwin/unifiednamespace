@@ -1,3 +1,6 @@
+"""
+MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the GraphDB
+"""
 import inspect
 import json
 import logging
@@ -86,7 +89,7 @@ class Uns_MQTT_GraphDb:
             "mqtt.ignored_attributes", None)
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
                                                "timestamp")
-        if (self.mqtt_host is None):
+        if self.mqtt_host is None:
             raise ValueError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
@@ -113,12 +116,12 @@ class Uns_MQTT_GraphDb:
                 "graphdb.spB_node_types",
                 ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
 
-        if (self.graphdb_url is None):
+        if self.graphdb_url is None:
             raise ValueError(
                 "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'"
             )
 
-        if ((self.graphdb_user is None) or (self.graphdb_password is None)):
+        if (self.graphdb_user is None) or (self.graphdb_password is None):
             raise ValueError(
                 "GraphDB Username & Password not provided."
                 "Update keys 'graphdb.username' and 'graphdb.password' in '../../conf/.secrets.yaml'"
@@ -126,14 +129,17 @@ class Uns_MQTT_GraphDb:
 
     # -------------------------------------------------------------------------------------------------------
     def on_message(self, client, userdata, msg):
+        """
+        Callback function executed every time a message is received by the subscriber
+        """
         LOGGER.debug("{"
-                     f"Client: {client},"
-                     f"Userdata: {userdata},"
-                     f"Message: {msg},"
-                     "}")
+                     "Client: %s,"
+                     "Userdata: %s,"
+                     "Message: %s,"
+                     "}", str(client), str(userdata), str(msg))
         try:
             topic: str = msg.topic
-            if (topic.startswith(SPARKPLUG_NS)):
+            if topic.startswith(SPARKPLUG_NS):
                 # This message was to the sparkplugB namespace in protobuf format
                 node_types = self.graphdb_spb_node_types
                 inboundPayload = sparkplug_b_pb2.Payload()
@@ -166,7 +172,7 @@ class Uns_MQTT_GraphDb:
         if self.graph_db_handler is not None:
             self.graph_db_handler.close()
             self.graph_db_handler = None
-        if (rc != 0):
+        if rc != 0:
             LOGGER.error("Unexpected disconnection.:%s",
                          str(rc),
                          stack_info=True,
@@ -177,12 +183,15 @@ class Uns_MQTT_GraphDb:
 
 # end of class ------------------------------------------------------------------------------------
 def main():
+    """
+    Main function invoked from command line
+    """
     uns_mqtt_graphdb = None
     try:
         uns_mqtt_graphdb = Uns_MQTT_GraphDb()
         uns_mqtt_graphdb.uns_client.loop_forever()
     finally:
-        if (uns_mqtt_graphdb is not None):
+        if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
 
         if ((uns_mqtt_graphdb is not None)

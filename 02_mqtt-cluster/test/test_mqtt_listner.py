@@ -1,3 +1,6 @@
+"""
+Test class for uns_mqtt.mqtt_listener
+"""
 import inspect
 import os
 import sys
@@ -76,7 +79,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
                        flags=flags,
                        rc=rc,
                        properties=properties)
-        if (rc != 0):
+        if rc != 0:
             assert pytest.fail(
             ), f"Client should have connected. Connection error:{rc}"
 
@@ -92,7 +95,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
                        topics=topics,
                        qos=qos)
 
-        while (not uns_client.is_connected()):
+        while not uns_client.is_connected():
             time.sleep(1)
             uns_client.loop()
 
@@ -149,7 +152,7 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
                        flags=flags,
                        rc=rc,
                        properties=properties)
-        if (rc != 0):
+        if rc != 0:
             assert pytest.fail(
             ), f"Client should have connected. Connection error:{rc}"
 
@@ -165,7 +168,7 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
                        keepalive=KEEP_ALIVE,
                        topics=topics,
                        qos=qos)
-        while (not uns_client.is_connected()):
+        while not uns_client.is_connected():
             time.sleep(1)
             uns_client.loop()
 
@@ -187,6 +190,9 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
                           ("topic1", "topic1", True)])
 def test_isTopicMatching(topicWithWildcard: str, topic: str,
                          expectedResult: bool):
+    """
+    Test case for function Uns_MQTT_ClientWrapper.isTopicMatching
+    """
     result = Uns_MQTT_ClientWrapper.isTopicMatching(topicWithWildcard, topic)
     assert result == expectedResult, f"""
             Topic WildCard:{topicWithWildcard},
@@ -324,6 +330,9 @@ def test_del_key_from_dict(message: dict, ignored_attr: list,
     ])
 def test_filter_ignored_attributes(topic: str, json_dict: dict,
                                    mqtt_ignored_attributes, expected_result):
+    """
+    Test case for Uns_MQTT_ClientWrapper.filter_ignored_attributes
+    """
     result = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
         topic, json_dict, mqtt_ignored_attributes)
     assert result == expected_result, f""" message:{json_dict},

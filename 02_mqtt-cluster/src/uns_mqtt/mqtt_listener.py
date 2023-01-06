@@ -1,3 +1,8 @@
+"""
+Base class for all the MQTT listeners to be implemented for the Unified Name Space
+Implements basic functionality of establishing connection, subscription on connection and 
+handle various MQTT versions
+"""
 import logging
 import os.path as path
 import re
@@ -49,13 +54,15 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
         topic : the fully qualified topic to listen to. Supports wild cards # , +
         """
-        LOGGER.debug(f"""{{'client_id': '{client_id}',
-                 'clean_session': {clean_session},
-                 'userdata': {userdata},
-                 'protocol'{protocol},
-                 'transport':'{transport}',
-                 'reconnect_on_failure':{reconnect_on_failure}
-                 }}""")
+        LOGGER.debug(
+            """{'client_id': %s,
+                 'clean_session': %s,
+                 'userdata': %s,
+                 'protocol': %s,
+                 'transport': %s,
+                 'reconnect_on_failure': %s
+                 }""", str(client_id), str(clean_session), str(userdata),
+            str(protocol), str(transport), str(reconnect_on_failure))
 
         if (protocol not in (mqtt_client.MQTTv5, mqtt_client.MQTTv311,
                              mqtt_client.MQTTv31)):
@@ -64,12 +71,14 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         self.protocol = protocol
         self.clean_session = clean_session
 
-        if (protocol == mqtt_client.MQTTv5):
+        if protocol == mqtt_client.MQTTv5:
             # if MQTT version is v5.0 the ignore clean_session in the constructor
             clean_session = None
 
         super().__init__(client_id, clean_session, userdata, protocol,
                          transport, reconnect_on_failure)
+        self.topics: list = None
+        self.qos: int = 0
 
     def run(self,
             host,
@@ -107,18 +116,18 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
         """
         try:
-            self.topics: list = topics
+            self.topics = topics
             if isinstance(topics, str):
                 self.topics = [topics]
-            self.qos: int = qos
+            self.qos = qos
 
             properties = None
-            if (self.protocol == mqtt_client.MQTTv5):
+            if self.protocol == mqtt_client.MQTTv5:
                 properties = Properties(PacketTypes.CONNECT)
             self.setupTLS(tls)
 
             # Set username & password only if it was specified
-            if (username is not None):
+            if username is not None:
                 super().username_pw_set(username, password)
             self.connect(host=host,
                          port=port,
@@ -129,7 +138,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                          str(ex),
                          stack_info=True,
                          exc_info=True)
-            raise ConnectionError(ex)
+            raise ConnectionError(ex) from ex
 
     def setupTLS(self, tls):
         if ((tls is not None) and (tls.get("ca_certs") is not None)):
@@ -137,9 +146,9 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
             certfile = tls.get("certfile")
             keyfile = tls.get("keyfile")
             cert_reqs = None
-            if (tls.get("cert_reqs") is None):  # key not present
+            if tls.get("cert_reqs") is None:  # key not present
                 cert_reqs = ssl.CERT_NONE
-            elif (tls.get("cert_reqs")):  # Value is true
+            elif tls.get("cert_reqs"):  # Value is true
                 cert_reqs = ssl.CERT_REQUIRED
             else:
                 cert_reqs = ssl.CERT_OPTIONAL
@@ -149,7 +158,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
             LOGGER.debug("Connection with MQTT Broker is over SSL")
             # Force ssl.PROTOCOL_TLS_CLIENT
-            if (path.exists(ca_certs)):
+            if path.exists(ca_certs):
                 super().tls_set(ca_certs=ca_certs,
                                 certfile=certfile,
                                 keyfile=keyfile,
@@ -157,7 +166,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                                 tls_version=ssl.PROTOCOL_TLS_CLIENT,
                                 ciphers=ciphers,
                                 keyfile_password=keyfile_password)
-                if (tls.get("insecure_cert")):
+                if tls.get("insecure_cert"):
                     super().tls_insecure_set(True)
                     cert_reqs = ssl.CERT_NONE
             else:
@@ -167,12 +176,13 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
     # call back methods
     def on_connect(self, client, userdata, flags, rc, properties=None):
-
-        LOGGER.debug(
-            f"{{Client: {client}, Userdata: {userdata},Flags: {flags}, rc: {rc}  }}"
-        )
-        if (rc == 0):
-            LOGGER.debug("Connection established. Returned code=", rc)
+        """
+        Call back method when a mqtt connection happens
+        """
+        LOGGER.debug("{ Client: %s, Userdata: %s, Flags: %s, rc: %s}",
+                     str(client), str(userdata), str(flags), str(rc))
+        if rc == 0:
+            LOGGER.debug("Connection established. Returned code=%s", str(rc))
             # subscribe to the topic only if connection was successful
             client.connected_flag = True
             for topic in self.topics:
@@ -181,9 +191,9 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                                options=None,
                                properties=properties)
 
-            LOGGER.info(f"Successfully connect {self} to MQTT Broker")
+            LOGGER.info("Successfully connected %s to MQTT Broker", str(self))
         else:
-            LOGGER.error("Bad connection. Returned code=%s", rc)
+            LOGGER.error("Bad connection. Returned code=%s", str(rc))
             client.bad_connection_flag = True
 
     def on_subscribe(self,
@@ -192,10 +202,13 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                      mid,
                      granted_qos,
                      properties=None):
-        # TODO How to extract the topic name in this message
+        """
+        Callback method when client subscribes to a topic
+        Unfortunately information about the topic subscribed to is not available heres
+        """
         LOGGER.info(
-            f"Successfully connect {self} to Topic: {client} with QOS: {granted_qos} "
-        )
+            "Successfully connected: %s with QOS: %s, userdata:%s , mid:%s",
+            str(client), str(granted_qos), str(userdata), str(mid))
 
     @staticmethod
     def filter_ignored_attributes(topic: str, mqtt_message: dict,
@@ -204,7 +217,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         removed the attributes configured to be ignored in the mqtt message and topic
         """
         resulting_message = mqtt_message
-        if (mqtt_ignored_attributes is not None):
+        if mqtt_ignored_attributes is not None:
 
             for topic_key in mqtt_ignored_attributes:
                 # Match Topic in ignored list with current topic and fetch associated ignored attributes
@@ -237,16 +250,16 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         e.g. "a/b" matches with "a/+" and "a/#"
              "a/b/c" matches wit "a/#" but not with "a/+"
         """
-        if (topicWithWildcard is not None):
+        if topicWithWildcard is not None:
             regexList = topicWithWildcard.split('/')
             # Using Regex to do matching
             # replace all occurrences of "+" wildcard with [^/]* -> any set of characters except "/"
             # replace all occurrences of "#" wildcard with (.)*  -> any set of characters including "/"
             regexExp = ""
             for value in regexList:
-                if (value == "+"):
+                if value == "+":
                     regexExp += "[^/]*"
-                elif (value == "#"):
+                elif value == "#":
                     regexExp += "(.)*"
                 else:
                     regexExp += value + "/"
@@ -257,28 +270,37 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
     @staticmethod
     def del_key_from_dict(message: dict, ignored_attr: list) -> dict:
+        """
+        Deletes the list of keys recursively through nested dicts
+        Params
+        ------
+        message:
+            the dict from which the keys need to be deleted
+        ignored_attr:
+            list of keys which need to be removed from message
+        """
         msg_cursor = message
         count = 0
         for key in ignored_attr:
-            if (msg_cursor.get(key) is None):
+            if msg_cursor.get(key) is None:
                 # If a key is not found break the loop as we cant proceed further to search for child nodes
                 LOGGER.warning(
                     "Unable to find attribute %s in %s. Skipping !!!", key,
-                    message)
+                    str(message))
                 break
 
                 # descent into the nested key
-            if (count == len(ignored_attr) - 1):
+            if count == len(ignored_attr) - 1:
                 # we are at leaf node hence can delete the key & value
                 LOGGER.info("%s deleted and will not be persisted",
-                            msg_cursor[key], key)
+                            str((key, msg_cursor[key])))
                 del msg_cursor[key]
             else:
                 msg_cursor = msg_cursor[key]
             if not isinstance(msg_cursor, dict):
                 LOGGER.warning(
-                    "key: %s should return a dict but fount:%s. Cant proceed hence skipping !!!",
-                    key, message)
+                    "key: %s should return a dict but found:%s. Cant proceed hence skipping !!!",
+                    key, str(message))
                 break
             count += 1
         return message

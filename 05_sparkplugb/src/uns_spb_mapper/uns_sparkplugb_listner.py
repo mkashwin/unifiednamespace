@@ -1,3 +1,6 @@
+"""
+MQTT listener that listens to SparkplugB name space for messages and publishes to ISA-95 UNS
+"""
 import inspect
 import logging
 import os
@@ -29,6 +32,9 @@ LOGGER = logging.getLogger(__name__)
 # listens to SparkplugB name space for messages and publishes to ISA-95
 # https://www.hivemq.com/solutions/manufacturing/smart-manufacturing-using-isa95-mqtt-sparkplug-and-uns/
 class Uns_SparkPlugB_Mapper:
+    """
+    MQTT listener that listens to SparkplugB name space for messages and publishes to ISA-95 UNS
+    """
 
     def __init__(self):
         self.uns_client: Uns_MQTT_ClientWrapper = None
@@ -78,7 +84,7 @@ class Uns_SparkPlugB_Mapper:
             "mqtt.ignored_attributes", None)
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
                                                "timestamp")
-        if (self.mqtt_host is None):
+        if self.mqtt_host is None:
             raise ValueError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
@@ -94,20 +100,20 @@ class Uns_SparkPlugB_Mapper:
         Callback function executed every time a message is received by the subscriber
         """
         LOGGER.debug("{"
-                     f"Client: {client},"
-                     f"Userdata: {userdata},"
-                     f"Message: {msg},"
-                     "}")
+                     "Client: %s,"
+                     "Userdata: %s,"
+                     "Message: %s,"
+                     "}", str(client), str(userdata), str(msg))
         try:
             topic_path: list[str] = msg.topic.split('/')
             # sPB topic structure spBv1.0/<group_id>/<message_type>/<edge_node_id>/<[device_id]>
             # device_id is optional. all others are mandatory
-            if (len(topic_path) >= 4):
+            if len(topic_path) >= 4:
                 group_id = topic_path[1]
                 message_type = topic_path[2]
                 edge_node_id = topic_path[3]
                 device_id = None
-                if (len(topic_path) == 5):
+                if len(topic_path) == 5:
                     device_id = topic_path[4]
                 else:
                     raise ValueError(
@@ -131,7 +137,7 @@ class Uns_SparkPlugB_Mapper:
     def on_disconnect(self, client, userdata, rc, properties=None):
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("SparkplugB listener got disconnected")
-        if (rc != 0):
+        if rc != 0:
             LOGGER.error("Unexpected disconnection.:%s",
                          str(rc),
                          stack_info=True,
@@ -139,6 +145,9 @@ class Uns_SparkPlugB_Mapper:
 
 
 def main():
+    """
+    Main function invoked from command line
+    """
     try:
         uns_spb_mapper = Uns_SparkPlugB_Mapper()
         uns_spb_mapper.uns_client.loop_forever()

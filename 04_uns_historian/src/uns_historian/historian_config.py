@@ -1,3 +1,6 @@
+"""
+Configuration reader for mqtt server and Timescale DB server details
+"""
 import os
 
 from dynaconf import Dynaconf

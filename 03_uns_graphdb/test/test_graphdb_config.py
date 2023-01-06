@@ -1,3 +1,6 @@
+"""
+Test cases for graphdb_config
+"""
 import inspect
 import os
 import re
@@ -131,14 +134,14 @@ def test_graph_db_configs():
         ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
     assert node_types is not None and len(
         node_types
-    ) > 0, "Invalid node_types configured at key: 'graphdb.uns_node_types'. Must be a list of length > 1"
+    ) > 0, "Invalid node_types configured at key:'graphdb.uns_node_types'. Must be list of length > 1"
 
     spb_node_types: tuple = settings.get(
         "graphdb.spB_node_types",
         ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
     assert spb_node_types is not None and len(
         spb_node_types
-    ) == 5, "Invalid node_types configured at key: 'graphdb.spB_node_types'. Must be a list of length of 5"
+    ) == 5, "Invalid node_types configured at key:'graphdb.spB_node_types'. Must be list of length of 5"
 
     REGEX_FOR_NODE_TYPES = "^[a-zA-Z0-9_]*$"
     for node_type in node_types:
@@ -170,9 +173,9 @@ def test_connectivity_to_graphdb():
 
     host: str = parsed[0]
     port: int = None
-    if (len(parsed) == 2):
+    if len(parsed) == 2:
         port: int = int(parsed[1])
-    if (port is None or port == ""):
+    if port is None or port == "":
         port = 7687
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(

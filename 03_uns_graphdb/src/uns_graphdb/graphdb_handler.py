@@ -1,3 +1,6 @@
+"""
+Class responsible for persisting the MQTT message into the Graph Database
+"""
 import logging
 import time
 
@@ -9,6 +12,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class GraphDBHandler:
+    """
+    Class responsible for persisting the MQTT message into the Graph Database
+    """
 
     def __init__(self,
                  uri: str,
@@ -30,7 +36,8 @@ class GraphDBHandler:
                 Must be a positive integer. Default value is 5.
                 Number of attempts after a failed database connection to retry connecting
         SLEEP_BTW_ATTEMPT: float
-                Must be a positive float. Default value is 10 seconds. Seconds to sleep between retries
+                Must be a positive float. Default value is 10 seconds.
+                Seconds to sleep between retries
         """
         # TODO support additional secure authentication  methods
         self.uri: str = uri
@@ -60,14 +67,14 @@ class GraphDBHandler:
             The time between attempts is  `GraphDBHandler.SLEEP_BTW_ATTEMPT`
         """
         try:
-            if (self.driver is None):
+            if self.driver is None:
                 self.driver = neo4j.GraphDatabase.driver(self.uri,
                                                          auth=self.auth)
             self.driver.verify_connectivity()
         except (exceptions.DatabaseError, exceptions.TransientError,
                 exceptions.DatabaseUnavailable,
                 exceptions.ServiceUnavailable) as ex:
-            if (retry >= self.MAX_RETRIES):
+            if retry >= self.MAX_RETRIES:
                 LOGGER.error("No. of retries exceeded %s",
                              str(self.MAX_RETRIES),
                              stack_info=True,
@@ -132,7 +139,7 @@ class GraphDBHandler:
 
         # Neo4j supports only flat messages.
         # Also need to ensure that the message doesn't contain any attribute with the name "node_name"
-        if (message is not None):
+        if message is not None:
             attributes = GraphDBHandler._flatten_json_for_Neo4J(message)
         try:
             with self.connect(retry) as driver:
@@ -142,7 +149,7 @@ class GraphDBHandler:
                                                      timestamp, node_types)
         except (exceptions.TransientError, exceptions.TransactionError,
                 exceptions.SessionExpired) as ex:
-            if (retry >= self.MAX_RETRIES):
+            if retry >= self.MAX_RETRIES:
                 LOGGER.error("No. of retries exceeded %s",
                              str(self.MAX_RETRIES),
                              stack_info=True,
@@ -188,10 +195,11 @@ class GraphDBHandler:
         lastnode = None
         nodes = topic.split('/')
         for node in nodes:
-            LOGGER.debug(f"Processing sub topic:\"{node}\" of topic:{topic}")
+            LOGGER.debug("Processing sub topic: %s of topic:%s", str(node),
+                         str(topic))
 
             nodeAttributes = None
-            if (count == len(nodes) - 1):
+            if count == len(nodes) - 1:
                 # Save the attributes only for the leaf node
                 nodeAttributes = message
             node_name: str = GraphDBHandler.getNodeName(count, node_types)
@@ -207,7 +215,7 @@ class GraphDBHandler:
     # static method starts
     @staticmethod
     def getNodeName(current_depth: int, node_types: tuple) -> str:
-        if (current_depth < len(node_types)):
+        if current_depth < len(node_types):
             return node_types[current_depth]
         else:
             return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
@@ -240,26 +248,26 @@ class GraphDBHandler:
             The name of the parent node to which a relationship will be established. Defaults to None(for root nodes)
         """
         LOGGER.debug(
-            f"Saving node:{nodename} of type:{nodetype} and attributes:{attributes} with parent:{parent}"
-        )
+            "Saving node: %s of type: %s and attributes: %s with parent: %s",
+            str(nodename), str(nodetype), str(attributes), str(parent))
 
         # CQL doesn't allow  the node label as a parameter.
         # using a statement with parameters is a safer option against CQL injection
         query = f"MERGE (node:{nodetype} {{ node_name: $nodename }}) \n"
         query = query + "ON CREATE \n"
         query = query + "   SET node._created_timestamp = $timestamp \n"
-        if (attributes is not None):
+        if attributes is not None:
             query = query + "ON MATCH \n"
             query = query + "    SET node._modified_timestamp = $timestamp \n"
             query = query + "SET node += $attributes \n"
 
-        if (parent is not None):
+        if parent is not None:
             query = "MATCH (parent {node_name: $parent})" + '\n' + query + '\n'
             query = query + "MERGE (parent) -[r:PARENT_OF]-> (node) \n"
             query = query + "RETURN node, parent"
         else:
             query = query + "RETURN node"
-        LOGGER.debug(f"CQL statement to be executed: {query}")
+        LOGGER.debug("CQL statement to be executed: %s", str(query))
         # non-referred would be ignored in the execution.
         node = session.run(query,
                            nodename=nodename,
@@ -298,8 +306,8 @@ class GraphDBHandler:
                 for items in json_object:
                     flatten(items, name + str(i) + '_')
                     i += 1
-            elif (json_object is not None):
-                if (name[:-1] == "node_name"):
+            elif json_object is not None:
+                if name[:-1] == "node_name":
                     name = name.upper()
                 output[name[:-1]] = json_object
 

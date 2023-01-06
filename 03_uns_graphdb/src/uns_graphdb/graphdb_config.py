@@ -1,3 +1,6 @@
+"""
+Configuration reader for mqtt server and Neo4J DB server details
+"""
 import os
 
 from dynaconf import Dynaconf

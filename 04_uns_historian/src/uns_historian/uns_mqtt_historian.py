@@ -1,3 +1,6 @@
+"""
+MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the Historian
+"""
 import inspect
 import json
 import logging
@@ -27,6 +30,9 @@ SPARKPLUG_NS = "spBv1.0/"
 
 
 class Uns_Mqtt_Historian:
+    """
+    MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the Historian
+    """
 
     def __init__(self):
         self.load_mqtt_configs()
@@ -82,7 +88,7 @@ class Uns_Mqtt_Historian:
             "mqtt.ignored_attributes", None)
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
                                                "timestamp")
-        if (self.mqtt_host is None):
+        if self.mqtt_host is None:
             raise ValueError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
@@ -101,15 +107,15 @@ class Uns_Mqtt_Historian:
 
         self.historian_table: str = settings.historian["table"]
 
-        if (self.historian_hostname is None):
+        if self.historian_hostname is None:
             raise ValueError(
                 "Historian Url not provided. Update key 'historian.hostname' in '../../conf/settings.yaml'"
             )
-        if (self.historian_database is None):
+        if self.historian_database is None:
             raise ValueError(
                 "Historian Database name  not provided. Update key 'historian.database' in '../../conf/settings.yaml'"
             )
-        if (self.historian_table is None):
+        if self.historian_table is None:
             raise ValueError(
                 f"""Table in Historian Database {self.historian_database} not provided.
                 Update key 'historian.table' in '../../conf/settings.yaml'""")
@@ -125,13 +131,13 @@ class Uns_Mqtt_Historian:
         Callback function executed every time a message is received by the subscriber
         """
         LOGGER.debug("{"
-                     f"Client: {client},"
-                     f"Userdata: {userdata},"
-                     f"Message: {msg},"
-                     "}")
+                     "Client: %s,"
+                     "Userdata: %s,"
+                     "Message: %s,"
+                     "}", str(client), str(userdata), str(msg))
 
         try:
-            if (msg.topic.startswith(SPARKPLUG_NS)):
+            if msg.topic.startswith(SPARKPLUG_NS):
                 # This message was to the sparkplugB namespace in protobuf format
                 inboundPayload = sparkplug_b_pb2.Payload()
                 inboundPayload.ParseFromString(msg.payload)
@@ -158,11 +164,14 @@ class Uns_Mqtt_Historian:
             raise ex
 
     def on_disconnect(self, client, userdata, rc, properties=None):
+        """
+        Callback function executed every time the client is disconnected from the MQTT broker
+        """
         # Close the database connection when the MQTT broker gets disconnected
         if self.uns_historian_handler is not None:
             self.uns_historian_handler.close()
             self.uns_historian_handler = None
-        if (rc != 0):
+        if rc != 0:
             LOGGER.error("Unexpected disconnection.:%s",
                          str(rc),
                          stack_info=True,
@@ -170,11 +179,14 @@ class Uns_Mqtt_Historian:
 
 
 def main():
+    """
+    Main function invoked from command line
+    """
     try:
         uns_mqtt_historian = Uns_Mqtt_Historian()
         uns_mqtt_historian.uns_client.loop_forever()
     finally:
-        if (uns_mqtt_historian is not None):
+        if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()
         if (uns_mqtt_historian
                 is not None) and (uns_mqtt_historian.uns_historian_handler

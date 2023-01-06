@@ -1,3 +1,6 @@
+"""
+Configuration reader for mqtt server where UNS and SparkplugB are published
+"""
 import os
 
 from dynaconf import Dynaconf
