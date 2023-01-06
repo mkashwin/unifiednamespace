@@ -3,11 +3,10 @@ import inspect
 import json
 import os
 import sys
-import time
-import pytz
 
 import psycopg2
 import pytest
+import pytz
 from google.protobuf.json_format import MessageToDict
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
