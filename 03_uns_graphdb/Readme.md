@@ -101,6 +101,8 @@ python -m venv env_graphdb
 source env_graphdb/bin/activate
 python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt
+pip install --upgrade -e .
+pip install --upgrade -e ../02_mqtt-cluster
 python ./src/uns_graphdb/graphdb_handler.py
 ```
 

@@ -1,28 +1,11 @@
 """
 MQTT listener that listens to SparkplugB name space for messages and publishes to ISA-95 UNS
 """
-import inspect
 import logging
-import os
 import random
-import sys
 import time
 
 from uns_spb_mapper.sparkplugb_enc_config import settings
-
-# From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            '..', '..', '02_mqtt-cluster', 'src')))
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(
-        0,
-        os.path.abspath(
-            os.path.join(cmd_subfolder, "..", "..", "05_sparkplugb", "src")))
-
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
