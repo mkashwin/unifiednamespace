@@ -10,12 +10,14 @@ on:
     paths:
       - "02_mqtt-cluster/**"
       - "05_sparkplugb/**"
+      - ".github/workflows/uns_sparkplugb-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
       - "02_mqtt-cluster/**"
       - "05_sparkplugb/**"
+      - ".github/workflows/uns_sparkplugb-app.yml"
 permissions:
   contents: read
 
@@ -37,7 +39,7 @@ jobs:
           if [ -f ./02_mqtt-cluster/requirements_dev.txt ]; then pip install --upgrade -r ./02_mqtt-cluster/requirements_dev.txt; fi
           if [ -f ./05_sparkplugb/requirements.txt ]; then pip install --upgrade -r ./05_sparkplugb/requirements.txt; fi
           if [ -f ./05_sparkplugb/requirements_dev.txt ]; then pip install --upgrade -r ./05_sparkplugb/requirements_dev.txt; fi
-          pip install --upgrade -e ./02_mqtt-cluster
+          pip install --upgrade -e ./02_mqtt-cluster -e ./05_sparkplugb
 
       - name: Lint with flake8
         run: |

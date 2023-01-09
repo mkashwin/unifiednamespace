@@ -10,12 +10,14 @@ on:
     paths:
       - "02_mqtt-cluster/**"
       - "03_uns_graphdb/**"
+      - ".github/workflows/uns_graphdb-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
       - "02_mqtt-cluster/**"
       - "03_uns_graphdb/**"
+      - ".github/workflows/uns_graphdb-app.yml"
 permissions:
   contents: read
 
@@ -38,7 +40,7 @@ jobs:
           if [ -f ./02_mqtt-cluster/requirements_dev.txt ]; then pip install --upgrade -r ./02_mqtt-cluster/requirements_dev.txt; fi
           if [ -f ./03_uns_graphdb/requirements.txt ]; then pip install --upgrade -r ./03_uns_graphdb/requirements.txt; fi
           if [ -f ./03_uns_graphdb/requirements_dev.txt ]; then pip install --upgrade -r ./03_uns_graphdb/requirements_dev.txt; fi
-          pip install --upgrade -e ./02_mqtt-cluster
+          pip install --upgrade -e ./02_mqtt-cluster  -e ./03_uns_graphdb
 
       - name: Lint with flake8
         run: |
