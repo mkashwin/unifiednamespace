@@ -2,14 +2,12 @@
 MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the GraphDB
 """
 import inspect
-import json
 import logging
 import os
 import random
 import sys
 import time
 
-from google.protobuf.json_format import MessageToDict
 from graphdb_config import settings
 from graphdb_handler import GraphDBHandler
 
@@ -23,7 +21,6 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
-from uns_sparkplugb.generated import sparkplug_b_pb2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -138,22 +135,19 @@ class Uns_MQTT_GraphDb:
                      "Message: %s,"
                      "}", str(client), str(userdata), str(msg))
         try:
-            topic: str = msg.topic
-            if topic.startswith(SPARKPLUG_NS):
-                # This message was to the sparkplugB namespace in protobuf format
+            if msg.topic.startswith(Uns_MQTT_ClientWrapper.SPARKPLUG_NS):
                 node_types = self.graphdb_spb_node_types
-                inboundPayload = sparkplug_b_pb2.Payload()
-                inboundPayload.ParseFromString(msg.payload)
-                decoded_payload = MessageToDict(inboundPayload)
             else:
-                # TODO Assuming all messages to UNS are json hence convertible to dict
                 node_types = self.graphdb_node_types
-                decoded_payload = json.loads(msg.payload.decode("utf-8"))
-            filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
-                msg.topic, decoded_payload, self.mqtt_ignored_attributes)
+            # get the payload as a dict object
+            filtered_message = self.uns_client.getPayloadAsDict(
+                topic=msg.topic,
+                payload=msg.payload,
+                mqtt_ignored_attributes=self.mqtt_ignored_attributes)
+
             # save message
             self.graph_db_handler.persistMQTTmsg(
-                topic=topic,
+                topic=msg.topic,
                 message=filtered_message,
                 timestamp=filtered_message.get(self.mqtt_timestamp_key,
                                                time.time()),

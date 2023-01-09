@@ -1,16 +1,19 @@
 """
 Base class for all the MQTT listeners to be implemented for the Unified Name Space
-Implements basic functionality of establishing connection, subscription on connection and 
+Implements basic functionality of establishing connection, subscription on connection and
 handle various MQTT versions
 """
+import json
 import logging
 import os.path as path
 import re
 import ssl
 
 import paho.mqtt.client as mqtt_client
+from google.protobuf.json_format import MessageToDict
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_sparkplugb.generated import sparkplug_b_pb2
 
 # Logger
 LOGGER = logging.getLogger(__name__)
@@ -24,6 +27,8 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
     MQTTv5 = mqtt_client.MQTTv5
     MQTTv311 = mqtt_client.MQTTv311
     MQTTv31 = mqtt_client.MQTTv31
+
+    SPARKPLUG_NS = "spBv1.0/"
 
     def __init__(self,
                  client_id: str,
@@ -209,6 +214,21 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         LOGGER.info(
             "Successfully connected: %s with QOS: %s, userdata:%s , mid:%s",
             str(client), str(granted_qos), str(userdata), str(mid))
+
+    def getPayloadAsDict(self, topic: str, payload: any,
+                         mqtt_ignored_attributes: dict) -> dict:
+        if topic.startswith(Uns_MQTT_ClientWrapper.SPARKPLUG_NS):
+            # This message was to the sparkplugB namespace in protobuf format
+            inboundPayload = sparkplug_b_pb2.Payload()
+            inboundPayload.ParseFromString(payload)
+            decoded_payload = MessageToDict(inboundPayload)
+        else:
+            # TODO Assuming all messages to UNS are json hence convertible to dict
+            decoded_payload = json.loads(payload.decode("utf-8"))
+
+        filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
+            topic, decoded_payload, mqtt_ignored_attributes)
+        return filtered_message
 
     @staticmethod
     def filter_ignored_attributes(topic: str, mqtt_message: dict,

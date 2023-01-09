@@ -2,14 +2,12 @@
 MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the Historian
 """
 import inspect
-import json
 import logging
 import os
 import random
 import sys
 import time
 
-from google.protobuf.json_format import MessageToDict
 from historian_config import settings
 from historian_handler import HistorianHandler
 
@@ -22,7 +20,6 @@ cmd_subfolder = os.path.realpath(
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
-from uns_sparkplugb.generated import sparkplug_b_pb2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,16 +134,11 @@ class Uns_Mqtt_Historian:
                      "}", str(client), str(userdata), str(msg))
 
         try:
-            if msg.topic.startswith(SPARKPLUG_NS):
-                # This message was to the sparkplugB namespace in protobuf format
-                inboundPayload = sparkplug_b_pb2.Payload()
-                inboundPayload.ParseFromString(msg.payload)
-                decoded_payload = MessageToDict(inboundPayload)
-            else:
-                # TODO Assuming all messages to UNS are json hence convertible to dict
-                decoded_payload = json.loads(msg.payload.decode("utf-8"))
-            filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
-                msg.topic, decoded_payload, self.mqtt_ignored_attributes)
+            # get the payload as a dict object
+            filtered_message = self.uns_client.getPayloadAsDict(
+                topic=msg.topic,
+                payload=msg.payload,
+                mqtt_ignored_attributes=self.mqtt_ignored_attributes)
             # save message
             self.uns_historian_handler.persistMQTTmsg(
                 client_id=client._client_id.decode(),
