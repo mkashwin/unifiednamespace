@@ -17,18 +17,22 @@
         "EMQX",
         "hostpath",
         "k8scluster",
+        "keepalive",
         "microk8s",
+        "mqtt",
         "NBIRTH",
         "NCMD",
         "NDATA",
         "NDEATH",
         "openebs",
+        "packettypes",
         "paho",
         "ppcle",
         "proto",
         "protobuf",
         "sparkplugb",
         "storageclass",
-        "Tahu"
+        "Tahu",
+        "userdata"
     ],
 }
