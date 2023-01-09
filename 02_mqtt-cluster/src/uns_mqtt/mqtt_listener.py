@@ -86,20 +86,15 @@ class UnsMQTTClient(mqtt_client.Client):
         self.qos: int = 0
 
         # call back methods
-        def on_uns_connect(client,
-                           userdata,
-                           flags,
-                           result_code,
-                           properties=None):
+        def on_uns_connect(client, userdata, flags, rc, properties=None):
             """
             Call back method when a mqtt connection happens
             """
             LOGGER.debug("{ Client: %s, Userdata: %s, Flags: %s, rc: %s}",
-                         str(client), str(userdata), str(flags),
-                         str(result_code))
-            if result_code == 0:
+                         str(client), str(userdata), str(flags), str(rc))
+            if rc == 0:
                 LOGGER.debug("Connection established. Returned code=%s",
-                             str(result_code))
+                             str(rc))
                 for topic in self.topics:
                     self.subscribe(topic,
                                    self.qos,
@@ -109,8 +104,7 @@ class UnsMQTTClient(mqtt_client.Client):
                 LOGGER.info("Successfully connected %s to MQTT Broker",
                             str(self))
             else:
-                LOGGER.error("Bad connection. Returned code=%s",
-                             str(result_code))
+                LOGGER.error("Bad connection. Returned code=%s", str(rc))
                 client.bad_connection_flag = True
 
         def on_uns_subscribe(client: mqtt_client,
