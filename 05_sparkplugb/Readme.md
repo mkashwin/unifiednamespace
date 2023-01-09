@@ -113,7 +113,9 @@ python -m venv env_sparkplugb
 source env_sparkplugb/bin/activate
 python -m pip install --upgrade pip
 python -m pip install --upgrade -r requirements.txt
-python ./src/uns_sparkplugb/uns_sparkplugb.py
+pip install --upgrade -e .
+pip install --upgrade -e ../02_mqtt-cluster
+python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
 ```
 
 ### Running tests
