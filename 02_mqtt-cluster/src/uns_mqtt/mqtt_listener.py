@@ -85,6 +85,51 @@ class UnsMQTTClient(mqtt_client.Client):
         self.topics: list = None
         self.qos: int = 0
 
+        # call back methods
+        def on_uns_connect(client,
+                           userdata,
+                           flags,
+                           result_code,
+                           properties=None):
+            """
+            Call back method when a mqtt connection happens
+            """
+            LOGGER.debug("{ Client: %s, Userdata: %s, Flags: %s, rc: %s}",
+                         str(client), str(userdata), str(flags),
+                         str(result_code))
+            if result_code == 0:
+                LOGGER.debug("Connection established. Returned code=%s",
+                             str(result_code))
+                for topic in self.topics:
+                    self.subscribe(topic,
+                                   self.qos,
+                                   options=None,
+                                   properties=properties)
+
+                LOGGER.info("Successfully connected %s to MQTT Broker",
+                            str(self))
+            else:
+                LOGGER.error("Bad connection. Returned code=%s",
+                             str(result_code))
+                client.bad_connection_flag = True
+
+        def on_uns_subscribe(client: mqtt_client,
+                             userdata,
+                             mid,
+                             granted_qos,
+                             properties=None):
+            """
+            Callback method when client subscribes to a topic
+            Unfortunately information about the topic subscribed to is not available here
+            """
+            LOGGER.info(
+                "Successfully connected: %s with QOS: %s, userdata:%s , mid:%s, properties:%s",
+                str(client), str(granted_qos), str(userdata), str(mid),
+                str(properties))
+
+        self.on_connect = on_uns_connect
+        self.on_subscribe = on_uns_subscribe
+
     def run(self,
             host,
             port=1883,
@@ -188,42 +233,6 @@ class UnsMQTTClient(mqtt_client.Client):
                 raise FileNotFoundError(
                     f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
                 )
-
-    # call back methods
-    def on_connect(self, client, userdata, flags, rc, properties=None):
-        """
-        Call back method when a mqtt connection happens
-        """
-        LOGGER.debug("{ Client: %s, Userdata: %s, Flags: %s, rc: %s}",
-                     str(client), str(userdata), str(flags), str(rc))
-        if rc == 0:
-            LOGGER.debug("Connection established. Returned code=%s", str(rc))
-            # subscribe to the topic only if connection was successful
-            client.connected_flag = True
-            for topic in self.topics:
-                self.subscribe(topic,
-                               self.qos,
-                               options=None,
-                               properties=properties)
-
-            LOGGER.info("Successfully connected %s to MQTT Broker", str(self))
-        else:
-            LOGGER.error("Bad connection. Returned code=%s", str(rc))
-            client.bad_connection_flag = True
-
-    def on_subscribe(self,
-                     client: mqtt_client,
-                     userdata,
-                     mid,
-                     granted_qos,
-                     properties=None):
-        """
-        Callback method when client subscribes to a topic
-        Unfortunately information about the topic subscribed to is not available heres
-        """
-        LOGGER.info(
-            "Successfully connected: %s with QOS: %s, userdata:%s , mid:%s",
-            str(client), str(granted_qos), str(userdata), str(mid))
 
     def get_payload_as_dict(self, topic: str, payload: any,
                             mqtt_ignored_attributes: dict) -> dict:

@@ -33,6 +33,9 @@ is_configs_provided: bool = (os.path.exists(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
 def test_uns_mqtt_historian():
+    """
+    Test case for UnsMqttHistorian#init()
+    """
     uns_mqtt_historian = None
     try:
         uns_mqtt_historian = UnsMqttHistorian()
@@ -41,10 +44,10 @@ def test_uns_mqtt_historian():
         )
     except Exception as ex:
         pytest.fail(
-            f"Connection to either the MQTT Broker or the Historian DB did not happen: Exception {ex}"
-        )
+            "Connection to either the MQTT Broker or the Historian DB did not happen:"
+            f" Exception {ex}")
     finally:
-        if (uns_mqtt_historian is not None):
+        if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()
         if (uns_mqtt_historian
                 is not None) and (uns_mqtt_historian.uns_historian_handler
@@ -119,19 +122,21 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
         # --- end of function
 
         publish_properties = None
-        if (uns_mqtt_historian.uns_client.protocol == UnsMQTTClient.MQTTv5):
+        if uns_mqtt_historian.uns_client.protocol == UnsMQTTClient.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
 
-        if (topic.startswith("spBv1.0/")):
+        if topic.startswith("spBv1.0/"):
             payload = message
         else:
             payload = json.dumps(message)
 
-        # Overriding on_message is more reliable that on_publish because some times on_publish was called before on_message
+        # Overriding on_message is more reliable that on_publish because some times
+        # on_publish was called before on_message
         old_on_message = uns_mqtt_historian.uns_client.on_message
         uns_mqtt_historian.uns_client.on_message = on_message_decorator
 
-        # publish the messages as non-persistent to allow the tests to be idempotent across multiple runs
+        # publish the messages as non-persistent
+        # to allow the tests to be idempotent across multiple runs
         uns_mqtt_historian.uns_client.publish(
             topic=topic,
             payload=payload,
@@ -144,11 +149,11 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
         print(f"Assertion failure in the test, {ex}")
     except Exception as ex:
         pytest.fail(
-            f"Connection to either the MQTT Broker or the Historian DB did not happen: Exception {ex}"
-        )
+            "Connection to either the MQTT Broker or the Historian DB did not happen:"
+            f" Exception {ex}")
 
     finally:
-        if (uns_mqtt_historian is not None):
+        if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()
         if (uns_mqtt_historian
                 is not None) and (uns_mqtt_historian.uns_historian_handler
@@ -159,6 +164,9 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
 
 def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
                            topic: str, client_id: str, message_dict: dict):
+    """
+    Utility method for test case to compare data in the database with the data sent
+    """
     try:
         # Read the database for the published data.
 

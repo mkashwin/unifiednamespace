@@ -128,9 +128,9 @@ def test_timescale_db_configs():
     assert isinstance(
         port, int
     ) or port is None, f"Invalid value for key 'historian.port':{str(port)}"
-    assert isinstance(
-        port, int
-    ) and port >= 1024 and port <= 49151, f"'historian.port':{str(port)} must be between 1024 to 49151"
+    assert isinstance(port, int) and port >= 1024 and port <= 49151, (
+        f"'historian.port':{str(port)} "
+        "must be between 1024 to 49151")
 
     historian_user: str = settings.historian["username"]
     assert (

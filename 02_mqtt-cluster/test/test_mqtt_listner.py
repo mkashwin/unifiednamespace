@@ -91,9 +91,8 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
         assert len(
             callback
         ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
-        assert getattr(
-            uns_client,
-            "connected_flag") is True, "Client should have connected "
+        assert uns_client.is_connected(
+        ) is True, "Client should have connected "
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()
@@ -165,9 +164,8 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
         assert len(
             callback
         ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
-        assert getattr(
-            uns_client,
-            "connected_flag") is True, "Client should have connected "
+        assert uns_client.is_connected(
+        ) is True, "Client should have connected "
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()

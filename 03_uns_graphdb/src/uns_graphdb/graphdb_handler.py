@@ -39,7 +39,6 @@ class GraphDBHandler:
                 Must be a positive float. Default value is 10 seconds.
                 Seconds to sleep between retries
         """
-        # TODO support additional secure authentication  methods
         self.uri: str = uri
         self.auth: tuple = (user, password)
         self.database: str = database
