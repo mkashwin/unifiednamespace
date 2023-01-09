@@ -19,7 +19,7 @@ from uns_sparkplugb.generated import sparkplug_b_pb2
 LOGGER = logging.getLogger(__name__)
 
 
-class Uns_MQTT_ClientWrapper(mqtt_client.Client):
+class UnsMQTTClient(mqtt_client.Client):
     """
     Wrapper over te paho.mqtt.client to implement most common MQTT related functionality
     The call only needs to implement the callback function on_message
@@ -92,7 +92,7 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
             password: str = None,
             tls: dict = None,
             keepalive=60,
-            topics=["#"],
+            topics=None,
             qos=2):
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
@@ -115,21 +115,27 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
 
             "ciphers" - specifying which encryption ciphers are allowed for this connection
 
-            "keyfile_password" - pass phrase used to decrypt certfile and keyfile incase it is encrypted
+            "keyfile_password" - pass phrase used to decrypt certfile and
+                                 keyfile incase it is encrypted
 
-            "insecure_cert" - Boolean to allow self signed certificates. When true, hostname matching will be skipped
+            "insecure_cert" - Boolean to allow self signed certificates.
+                              When true, hostname matching will be skipped
 
         """
         try:
             self.topics = topics
+            # Handle scenarios where only one topic or no topic is provided
             if isinstance(topics, str):
                 self.topics = [topics]
+            elif topics is None:
+                self.topics = ["#"]
+
             self.qos = qos
 
             properties = None
             if self.protocol == mqtt_client.MQTTv5:
                 properties = Properties(PacketTypes.CONNECT)
-            self.setupTLS(tls)
+            self.setup_tls(tls)
 
             # Set username & password only if it was specified
             if username is not None:
@@ -145,7 +151,11 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
                          exc_info=True)
             raise ConnectionError(ex) from ex
 
-    def setupTLS(self, tls):
+    def setup_tls(self, tls):
+        """
+        Setup the TLS connection (encrypted secure connection) to the MQTT broker
+        if configured. If no TLS configurations are provided then do nothing
+        """
         if ((tls is not None) and (tls.get("ca_certs") is not None)):
             ca_certs = tls.get("ca_certs")
             certfile = tls.get("certfile")
@@ -215,18 +225,34 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
             "Successfully connected: %s with QOS: %s, userdata:%s , mid:%s",
             str(client), str(granted_qos), str(userdata), str(mid))
 
-    def getPayloadAsDict(self, topic: str, payload: any,
-                         mqtt_ignored_attributes: dict) -> dict:
-        if topic.startswith(Uns_MQTT_ClientWrapper.SPARKPLUG_NS):
+    def get_payload_as_dict(self, topic: str, payload: any,
+                            mqtt_ignored_attributes: dict) -> dict:
+        """
+        Converts the message payload into a dictionary.
+
+        For UNS messages, the JSON string is converted to a dictionary.
+        For sPB messages, the protocol buffer is converted to a dictionary.
+
+        If any attributes are to be ignored, they will be removed from the returned dictionary.
+
+        Parameters:
+            topic (str): The topic of the message.
+            payload (any): The payload of the message.
+            mqtt_ignored_attributes (dict): A dictionary of attributes to be ignored.
+
+        Returns:
+            dict: The payload as a dictionary.
+        """
+        if topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # This message was to the sparkplugB namespace in protobuf format
-            inboundPayload = sparkplug_b_pb2.Payload()
-            inboundPayload.ParseFromString(payload)
-            decoded_payload = MessageToDict(inboundPayload)
+            inbound_payload = sparkplug_b_pb2.Payload()
+            inbound_payload.ParseFromString(payload)
+            decoded_payload = MessageToDict(inbound_payload)
         else:
             # TODO Assuming all messages to UNS are json hence convertible to dict
             decoded_payload = json.loads(payload.decode("utf-8"))
 
-        filtered_message = Uns_MQTT_ClientWrapper.filter_ignored_attributes(
+        filtered_message = UnsMQTTClient.filter_ignored_attributes(
             topic, decoded_payload, mqtt_ignored_attributes)
         return filtered_message
 
@@ -240,52 +266,55 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         if mqtt_ignored_attributes is not None:
 
             for topic_key in mqtt_ignored_attributes:
-                # Match Topic in ignored list with current topic and fetch associated ignored attributes
+                # Match Topic in ignored list with current topic and
+                # fetch associated ignored attributes
 
                 ignored_topic = topic_key
-                if (Uns_MQTT_ClientWrapper.isTopicMatching(
-                        ignored_topic, topic)):
+                if UnsMQTTClient.is_topic_matched(ignored_topic, topic):
                     # This could be either a single string or a list of strings
                     ignored_attr_list = mqtt_ignored_attributes.get(
                         ignored_topic, [])
 
                     ignored_attr = None
-                    # if the attribute is a single key.
-                    # But this could be a nested key e.g. parent_key.child_key so split that into a list
+                    # if the attribute is a single key. But this could be a nested key
+                    # e.g. parent_key.child_key
+                    # so split that into a list
                     if isinstance(ignored_attr_list, str):
-                        Uns_MQTT_ClientWrapper.del_key_from_dict(
+                        UnsMQTTClient.del_key_from_dict(
                             resulting_message, ignored_attr_list.split("."))
                     # if the attribute is a list of keys
                     elif (isinstance(ignored_attr_list, list)
                           or isinstance(ignored_attr_list, tuple)):
                         for ignored_attr in ignored_attr_list:
-                            Uns_MQTT_ClientWrapper.del_key_from_dict(
+                            UnsMQTTClient.del_key_from_dict(
                                 resulting_message, ignored_attr.split("."))
         return resulting_message
 
     @staticmethod
-    def isTopicMatching(topicWithWildcard: str, topic: str) -> bool:
+    def is_topic_matched(topic_with_wildcard: str, topic: str) -> bool:
         """
         Checks if the actual topic matches with a wild card expression
         e.g. "a/b" matches with "a/+" and "a/#"
              "a/b/c" matches wit "a/#" but not with "a/+"
         """
-        if topicWithWildcard is not None:
-            regexList = topicWithWildcard.split('/')
+        if topic_with_wildcard is not None:
+            regex_list = topic_with_wildcard.split('/')
             # Using Regex to do matching
-            # replace all occurrences of "+" wildcard with [^/]* -> any set of characters except "/"
-            # replace all occurrences of "#" wildcard with (.)*  -> any set of characters including "/"
-            regexExp = ""
-            for value in regexList:
+            # replace all occurrences of "+" wildcard with [^/]*
+            #                           -> any set of characters except "/"
+            # replace all occurrences of "#" wildcard with (.)*
+            #                           -> any set of characters including "/"
+            regex_exp = ""
+            for value in regex_list:
                 if value == "+":
-                    regexExp += "[^/]*"
+                    regex_exp += "[^/]*"
                 elif value == "#":
-                    regexExp += "(.)*"
+                    regex_exp += "(.)*"
                 else:
-                    regexExp += value + "/"
-            if (len(regexExp) > 1 and regexExp[-1] == "/"):
-                regexExp = regexExp[:-1]
-            return bool(re.fullmatch(regexExp, topic))
+                    regex_exp += value + "/"
+            if (len(regex_exp) > 1 and regex_exp[-1] == "/"):
+                regex_exp = regex_exp[:-1]
+            return bool(re.fullmatch(regex_exp, topic))
         return False
 
     @staticmethod
@@ -303,7 +332,8 @@ class Uns_MQTT_ClientWrapper(mqtt_client.Client):
         count = 0
         for key in ignored_attr:
             if msg_cursor.get(key) is None:
-                # If a key is not found break the loop as we cant proceed further to search for child nodes
+                # If a key is not found break the loop as we cant proceed further
+                # to search for child nodes
                 LOGGER.warning(
                     "Unable to find attribute %s in %s. Skipping !!!", key,
                     str(message))

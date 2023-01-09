@@ -1,41 +1,32 @@
 """
 MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the GraphDB
 """
-import inspect
 import logging
-import os
 import random
-import sys
 import time
 
-from graphdb_config import settings
-from graphdb_handler import GraphDBHandler
-
-# From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            '..', '..', '02_mqtt-cluster', 'src')))
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-
-from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
+from uns_graphdb.graphdb_config import settings
+from uns_graphdb.graphdb_handler import GraphDBHandler
+from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 LOGGER = logging.getLogger(__name__)
 
 SPARKPLUG_NS = "spBv1.0/"
 
 
-class Uns_MQTT_GraphDb:
+class UnsMqttGraphDb:
+    """
+    Class instantiating MQTT listener that listens to ISA-95 UNS and SparkplugB and
+    persists all messages to the GraphDB
+    """
 
     def __init__(self):
         self.graph_db_handler = None
-        self.uns_client: Uns_MQTT_ClientWrapper = None
+        self.uns_client: UnsMQTTClient = None
 
         self.load_mqtt_configs()
         self.load_graphdb_config()
-        self.uns_client: Uns_MQTT_ClientWrapper = Uns_MQTT_ClientWrapper(
+        self.uns_client: UnsMQTTClient = UnsMQTTClient(
             client_id=self.client_id,
             clean_session=self.clean_session,
             userdata=None,
@@ -64,12 +55,15 @@ class Uns_MQTT_GraphDb:
     # end of init
 
     def load_mqtt_configs(self):
+        """
+        Read the MQTT configurations required to connect to the MQTT broker
+        """
         # generate client ID with pub prefix randomly
         self.client_id = f'graphdb-{time.time()}-{random.randint(0, 1000)}'
 
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
-            "mqtt.version", Uns_MQTT_ClientWrapper.MQTTv5)
+            "mqtt.version", UnsMQTTClient.MQTTv5)
         self.mqtt_qos: int = settings.get("mqtt.qos", 1)
         self.reconnect_on_failure: bool = settings.get(
             "mqtt.reconnect_on_failure", True)
@@ -91,7 +85,7 @@ class Uns_MQTT_GraphDb:
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
 
-    # -------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------------------------
 
     def load_graphdb_config(self):
         """
@@ -121,10 +115,10 @@ class Uns_MQTT_GraphDb:
         if (self.graphdb_user is None) or (self.graphdb_password is None):
             raise ValueError(
                 "GraphDB Username & Password not provided."
-                "Update keys 'graphdb.username' and 'graphdb.password' in '../../conf/.secrets.yaml'"
-            )
+                "Update keys 'graphdb.username' and 'graphdb.password' "
+                "in '../../conf/.secrets.yaml'")
 
-    # -------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------------------------
     def on_message(self, client, userdata, msg):
         """
         Callback function executed every time a message is received by the subscriber
@@ -135,18 +129,18 @@ class Uns_MQTT_GraphDb:
                      "Message: %s,"
                      "}", str(client), str(userdata), str(msg))
         try:
-            if msg.topic.startswith(Uns_MQTT_ClientWrapper.SPARKPLUG_NS):
+            if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
                 node_types = self.graphdb_spb_node_types
             else:
                 node_types = self.graphdb_node_types
             # get the payload as a dict object
-            filtered_message = self.uns_client.getPayloadAsDict(
+            filtered_message = self.uns_client.get_payload_as_dict(
                 topic=msg.topic,
                 payload=msg.payload,
                 mqtt_ignored_attributes=self.mqtt_ignored_attributes)
 
             # save message
-            self.graph_db_handler.persistMQTTmsg(
+            self.graph_db_handler.persist_mqtt_msg(
                 topic=msg.topic,
                 message=filtered_message,
                 timestamp=filtered_message.get(self.mqtt_timestamp_key,
@@ -161,14 +155,18 @@ class Uns_MQTT_GraphDb:
 
     # end of on_message----------------------------------------------------------------------------
 
-    def on_disconnect(self, client, userdata, rc, properties=None):
+    def on_disconnect(self, client, userdata, result_code, properties=None):
+        """
+        Callback function executed every time the client is disconnected from the MQTT broker
+        Used to clean up all database connections
+        """
         # Close the database connection when the MQTT broker gets disconnected
         if self.graph_db_handler is not None:
             self.graph_db_handler.close()
             self.graph_db_handler = None
-        if rc != 0:
+        if result_code != 0:
             LOGGER.error("Unexpected disconnection.:%s",
-                         str(rc),
+                         str(result_code),
                          stack_info=True,
                          exc_info=True)
 
@@ -182,7 +180,7 @@ def main():
     """
     uns_mqtt_graphdb = None
     try:
-        uns_mqtt_graphdb = Uns_MQTT_GraphDb()
+        uns_mqtt_graphdb = UnsMqttGraphDb()
         uns_mqtt_graphdb.uns_client.loop_forever()
     finally:
         if uns_mqtt_graphdb is not None:

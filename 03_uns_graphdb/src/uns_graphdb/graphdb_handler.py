@@ -21,8 +21,8 @@ class GraphDBHandler:
                  user: str,
                  password: str,
                  database: str = neo4j.DEFAULT_DATABASE,
-                 MAX_RETRIES: int = 5,
-                 SLEEP_BTW_ATTEMPT: float = 10):
+                 max_retry: int = 5,
+                 sleep_btw_attempts: float = 10):
         """
         uri: str
             Full URI to the Neo4j database including protocol, server name and port
@@ -45,8 +45,8 @@ class GraphDBHandler:
         self.database: str = database
         if self.database is None or self.database == "":
             self.database = neo4j.DEFAULT_DATABASE
-        self.MAX_RETRIES: int = MAX_RETRIES
-        self.SLEEP_BTW_ATTEMPT: int = SLEEP_BTW_ATTEMPT
+        self.max_retry: int = max_retry
+        self.sleep_btw_attempts: int = sleep_btw_attempts
         self.driver: neo4j.Driver = None
         try:
             self.connect()
@@ -74,9 +74,9 @@ class GraphDBHandler:
         except (exceptions.DatabaseError, exceptions.TransientError,
                 exceptions.DatabaseUnavailable,
                 exceptions.ServiceUnavailable) as ex:
-            if retry >= self.MAX_RETRIES:
+            if retry >= self.max_retry:
                 LOGGER.error("No. of retries exceeded %s",
-                             str(self.MAX_RETRIES),
+                             str(self.max_retry),
                              stack_info=True,
                              exc_info=True)
                 raise ex
@@ -87,7 +87,7 @@ class GraphDBHandler:
                              str(ex),
                              stack_info=True,
                              exc_info=True)
-                time.sleep(self.SLEEP_BTW_ATTEMPT)
+                time.sleep(self.sleep_btw_attempts)
                 self.connect(retry=retry)
 
         except Exception as ex:
@@ -114,13 +114,13 @@ class GraphDBHandler:
                              exc_info=True)
                 self.driver = None
 
-    def persistMQTTmsg(self,
-                       topic: str,
-                       message: dict,
-                       timestamp: float = time.time(),
-                       node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA",
-                                            "LINE", "DEVICE"),
-                       retry: int = 0):
+    def persist_mqtt_msg(self,
+                         topic: str,
+                         message: dict,
+                         timestamp: float = time.time(),
+                         node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA",
+                                              "LINE", "DEVICE"),
+                         retry: int = 0):
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -138,9 +138,10 @@ class GraphDBHandler:
         attributes = None
 
         # Neo4j supports only flat messages.
-        # Also need to ensure that the message doesn't contain any attribute with the name "node_name"
+        # Also need to ensure that the message doesn't contain
+        # any attribute with the name "node_name"
         if message is not None:
-            attributes = GraphDBHandler._flatten_json_for_Neo4J(message)
+            attributes = GraphDBHandler.flatten_json_for_neo4j(message)
         try:
             with self.connect(retry) as driver:
                 with driver.session(database=self.database) as session:
@@ -149,9 +150,9 @@ class GraphDBHandler:
                                                      timestamp, node_types)
         except (exceptions.TransientError, exceptions.TransactionError,
                 exceptions.SessionExpired) as ex:
-            if retry >= self.MAX_RETRIES:
+            if retry >= self.max_retry:
                 LOGGER.error("No. of retries exceeded %s",
-                             str(self.MAX_RETRIES),
+                             str(self.max_retry),
                              stack_info=True,
                              exc_info=True)
                 raise ex
@@ -166,19 +167,20 @@ class GraphDBHandler:
                     exc_info=True)
                 # reset the driver
                 self.close()
-                time.sleep(self.SLEEP_BTW_ATTEMPT)
-                self.persistMQTTmsg(topic=topic,
-                                    message=message,
-                                    timestamp=timestamp,
-                                    retry=retry)
+                time.sleep(self.sleep_btw_attempts)
+                self.persist_mqtt_msg(topic=topic,
+                                      message=message,
+                                      timestamp=timestamp,
+                                      retry=retry)
         return response
 
     # method  starts
     def save_all_nodes(self, session, topic: str, message: dict,
                        timestamp: float, node_types: tuple):
         """
-        Iterate the topics by '/'. create node for each level and merge the messages to the final node
-        For the other topics in the hierarchy a node will be created / merged and linked to the parent topic node
+        Iterate the topics by '/'. create node for each level & merge the messages to the final node
+        For the other topics in the hierarchy a node will be created / merged and linked to the
+        parent topic node
         Parameters
         ----------
         session :
@@ -198,15 +200,15 @@ class GraphDBHandler:
             LOGGER.debug("Processing sub topic: %s of topic:%s", str(node),
                          str(topic))
 
-            nodeAttributes = None
+            node_attr = None
             if count == len(nodes) - 1:
                 # Save the attributes only for the leaf node
-                nodeAttributes = message
-            node_name: str = GraphDBHandler.getNodeName(count, node_types)
-            response = GraphDBHandler.saveNode(session, node, node_name,
-                                               nodeAttributes, lastnode_id,
-                                               timestamp)
-            lastnode_id = response.peek()[0]._element_id
+                node_attr = message
+            node_name: str = GraphDBHandler.get_node_name(count, node_types)
+            response = GraphDBHandler.save_node(session, node, node_name,
+                                                node_attr, lastnode_id,
+                                                timestamp)
+            lastnode_id = getattr(response.peek()[0], "_element_id")
             count += 1
         return response
 
@@ -214,7 +216,10 @@ class GraphDBHandler:
 
     # static method starts
     @staticmethod
-    def getNodeName(current_depth: int, node_types: tuple) -> str:
+    def get_node_name(current_depth: int, node_types: tuple) -> str:
+        """
+        Get the name of the node depending on the depth in the tree
+        """
         if current_depth < len(node_types):
             return node_types[current_depth]
         else:
@@ -224,15 +229,15 @@ class GraphDBHandler:
 
     # static Method Starts
     @staticmethod
-    def saveNode(session: neo4j.Session,
-                 nodename: str,
-                 nodetype: str,
-                 attributes: dict = None,
-                 parent_id: str = None,
-                 timestamp: float = time.time()):
+    def save_node(session: neo4j.Session,
+                  nodename: str,
+                  nodetype: str,
+                  attributes: dict = None,
+                  parent_id: str = None,
+                  timestamp: float = time.time()):
         """
-        Creates or Merges the MQTT message as a Graph node. Each level of the topic is also persisted
-        as a graph node with appropriate parent relationship
+        Creates or Merges the MQTT message as a Graph node. Each level of the topic is also
+        persisted as a graph node with appropriate parent relationship
         Parameters
         ----------
         session  : neo4j.Session
@@ -285,7 +290,7 @@ class GraphDBHandler:
 
     # static Method Starts
     @staticmethod
-    def _flatten_json_for_Neo4J(mqtt_msg: dict) -> dict:
+    def flatten_json_for_neo4j(mqtt_msg: dict) -> dict:
         """
         Utility methods to convert a nested JSON into a flat structure
         Keys for lists will be of the form <key>_<count>

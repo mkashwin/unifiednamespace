@@ -1,3 +1,6 @@
+"""
+Tests for GraphDBHandler
+"""
 import inspect
 import os
 import sys
@@ -18,7 +21,7 @@ from uns_graphdb.graphdb_handler import GraphDBHandler
 
 
 @pytest.mark.parametrize(
-    "nested_dict, expectedResult",
+    "nested_dict, expected_result",
     [
         # blank
         ({}, {}),
@@ -87,15 +90,19 @@ from uns_graphdb.graphdb_handler import GraphDBHandler
         }),
         (None, {}),
     ])
-def test_flatten_json_for_Neo4J(nested_dict: dict, expectedResult: dict):
-    result = GraphDBHandler._flatten_json_for_Neo4J(nested_dict)
-    assert result == expectedResult, f"""
+def test_flatten_json_for_neo4j(nested_dict: dict, expected_result: dict):
+    """
+    Testcase for GraphDBHandler.flatten_json_for_neo4j.
+    Validate that the nested dict object is properly flattened
+    """
+    result = GraphDBHandler.flatten_json_for_neo4j(nested_dict)
+    assert result == expected_result, f"""
             Json/dict to flatten:{nested_dict},
-            Expected Result:{expectedResult},
+            Expected Result:{expected_result},
             Actual Result: {result}"""
 
 
-@pytest.mark.parametrize("current_depth, expectedResult", [
+@pytest.mark.parametrize("current_depth, expected_result", [
     (0, "ENTERPRISE"),
     (1, "FACILITY"),
     (2, "AREA"),
@@ -105,11 +112,14 @@ def test_flatten_json_for_Neo4J(nested_dict: dict, expectedResult: dict):
     (6, "DEVICE_depth_2"),
     (9, "DEVICE_depth_5"),
 ])
-def test_getNodeName(current_depth: int, expectedResult):
+def test_get_node_name(current_depth: int, expected_result):
+    """
+    Test case for GraphDBHandler#get_node_name
+    """
     node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")
-    result = GraphDBHandler.getNodeName(current_depth, node_types)
-    assert result == expectedResult, f"""
+    result = GraphDBHandler.get_node_name(current_depth, node_types)
+    assert result == expected_result, f"""
             Get Node name for Depth:{current_depth},
             From Node Types : {node_types}
-            Expected Result:{expectedResult},
+            Expected Result:{expected_result},
             Actual Result: {result}"""

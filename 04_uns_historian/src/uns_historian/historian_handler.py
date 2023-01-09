@@ -82,7 +82,7 @@ class HistorianHandler:
                     exc_info=True)
                 raise ex
 
-    def getCursor(self):
+    def get_cursor(self):
         if (self.timescale_db_cursor is None
                 or self.timescale_db_cursor.closed):
             if (self.timescale_db_conn is None):
@@ -110,8 +110,8 @@ class HistorianHandler:
                              stack_info=True,
                              exc_info=True)
 
-    def persistMQTTmsg(self, client_id: str, topic: str, timestamp: float,
-                       message: dict):
+    def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: float,
+                         message: dict):
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -134,12 +134,12 @@ class HistorianHandler:
                         VALUES (%s,%s,%s,%s)
                         RETURNING *;"""
 
-        def executeSQLcmd(retry: int = 0):
+        def execute_sql_cmd(retry: int = 0):
             """
             inline method to enable retry
             """
             try:
-                with self.getCursor() as cursor:
+                with self.get_cursor() as cursor:
                     cursor.execute(
                         sql_cmd,
                         (_timestamp, topic, client_id, json.dumps(message)))
@@ -157,7 +157,7 @@ class HistorianHandler:
                     # Close the stale connection.
                     self.close()
                     time.sleep(SLEEP_BTW_ATTEMPT)
-                    executeSQLcmd(retry)
+                    execute_sql_cmd(retry)
 
         # ---------------------------------------------------------------------------------------------------
-        executeSQLcmd()
+        execute_sql_cmd()

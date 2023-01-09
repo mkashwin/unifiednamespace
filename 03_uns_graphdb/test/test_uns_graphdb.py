@@ -1,7 +1,9 @@
+"""
+Tests for Uns_MQTT_GraphDb
+"""
 import inspect
 import json
 import os
-import sys
 import warnings
 
 import pytest
@@ -9,26 +11,15 @@ from google.protobuf.json_format import MessageToDict
 from neo4j import Session, exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
+from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_sparkplugb.generated import sparkplug_b_pb2
 
-# From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
-uns_mqtt_folder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(cmd_subfolder, '..', '..', '02_mqtt-cluster', 'src')))
-
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_graphdb"))
-if uns_mqtt_folder not in sys.path:
-    sys.path.insert(2, uns_mqtt_folder)
-
-from uns_graphdb.uns_mqtt_graphdb import Uns_MQTT_GraphDb
-from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
-from uns_sparkplugb.generated import sparkplug_b_pb2
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
@@ -40,12 +31,17 @@ is_configs_provided: bool = (os.path.exists(
 @pytest.mark.xfail(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
-def test_Uns_MQTT_GraphDb():
+def test_uns_mqtt_graph_db():
+    """
+    Test the constructor of the class Uns_MQTT_GraphDb
+    """
     uns_mqtt_graphdb = None
     try:
-        uns_mqtt_graphdb = Uns_MQTT_GraphDb()
+        uns_mqtt_graphdb = UnsMqttGraphDb()
         uns_mqtt_graphdb.uns_client.loop()
-        assert uns_mqtt_graphdb is not None, "Connection to either the MQTT Broker or the Graph DB did not happen"
+        assert uns_mqtt_graphdb is not None, (
+            "Connection to either the MQTT Broker "
+            "or the Graph DB did not happen")
     except Exception as ex:
         pytest.fail(
             f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
@@ -86,18 +82,21 @@ def test_Uns_MQTT_GraphDb():
             b'\x11Properties/Weight\x18\xea\xf2\xf5\xa8' \
             b'\xa0+ \x03P\xc8\x01\x18\x00')
     ])
-def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
+def test_mqtt_graphdb_persistance(topic: str, message):
+    """
+    Test the persistance of message (UNS & SpB) to the database
+    """
     uns_mqtt_graphdb = None
     try:
-        uns_mqtt_graphdb = Uns_MQTT_GraphDb()
+        uns_mqtt_graphdb = UnsMqttGraphDb()
         uns_mqtt_graphdb.uns_client.loop()
 
         def on_message_decorator(client, userdata, msg):
             old_on_message(client, userdata, msg)
             if topic.startswith("spBv1.0/"):
-                inboundPayload = sparkplug_b_pb2.Payload()
-                inboundPayload.ParseFromString(message)
-                message_dict = MessageToDict(inboundPayload)
+                inbound_payload = sparkplug_b_pb2.Payload()
+                inbound_payload.ParseFromString(message)
+                message_dict = MessageToDict(inbound_payload)
                 node_type = uns_mqtt_graphdb.graphdb_spb_node_types
             else:
                 message_dict = message
@@ -106,21 +105,19 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                         database=uns_mqtt_graphdb.graph_db_handler.database
                 ) as session:
-                    session.execute_read(readNodes, node_type, topic,
+                    session.execute_read(read_nodes, node_type, topic,
                                          message_dict)
             except (exceptions.TransientError,
                     exceptions.TransactionError) as ex:
-                pytest.fail(
-                    f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
-                )
+                pytest.fail("Connection to either the MQTT Broker or "
+                            f"the Graph DB did not happen: Exception {ex}")
             finally:
                 uns_mqtt_graphdb.uns_client.disconnect()
 
         # --- end of function
 
         publish_properties = None
-        if (uns_mqtt_graphdb.uns_client.protocol ==
-                Uns_MQTT_ClientWrapper.MQTTv5):
+        if uns_mqtt_graphdb.uns_client.protocol == UnsMQTTClient.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
 
         if topic.startswith("spBv1.0/"):
@@ -128,11 +125,13 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
         else:
             payload = json.dumps(message)
 
-        # Overriding on_message is more reliable that on_publish because some times on_publish was called before on_message
+        # Overriding on_message is more reliable that on_publish because some times
+        # on_publish was called before on_message
         old_on_message = uns_mqtt_graphdb.uns_client.on_message
         uns_mqtt_graphdb.uns_client.on_message = on_message_decorator
 
-        # publish the messages as non-persistent to allow the tests to be idempotent across multiple runs
+        # publish the messages as non-persistent to allow the tests to be
+        # idempotent across multiple runs
         uns_mqtt_graphdb.uns_client.publish(
             topic=topic,
             payload=payload,
@@ -157,7 +156,7 @@ def test_MQTT_GraphDb_UNS_Persistance(topic: str, message):
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
-def readNodes(session: Session, node_type: tuple, topic: str, message: dict):
+def read_nodes(session: Session, node_type: tuple, topic: str, message: dict):
     """
         Helper function to read the database and compare the persisted data
     """

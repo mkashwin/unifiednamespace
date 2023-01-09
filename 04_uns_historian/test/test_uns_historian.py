@@ -1,8 +1,10 @@
+"""
+Tests for uns_historian.uns_mqtt_historian
+"""
 import datetime
 import inspect
 import json
 import os
-import sys
 
 import psycopg2
 import pytest
@@ -10,26 +12,15 @@ import pytz
 from google.protobuf.json_format import MessageToDict
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_historian.uns_mqtt_historian import UnsMqttHistorian
+from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_sparkplugb.generated import sparkplug_b_pb2
 
-# From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
-uns_mqtt_folder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(cmd_subfolder, '..', '..', '02_mqtt-cluster', 'src')))
-
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_historian"))
-if uns_mqtt_folder not in sys.path:
-    sys.path.insert(2, uns_mqtt_folder)
-
-from uns_historian.uns_mqtt_historian import Uns_Mqtt_Historian
-from uns_mqtt.mqtt_listener import Uns_MQTT_ClientWrapper
-from uns_sparkplugb.generated import sparkplug_b_pb2
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
@@ -41,11 +32,13 @@ is_configs_provided: bool = (os.path.exists(
 @pytest.mark.xfail(
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
-def test_Uns_Mqtt_Historian():
+def test_uns_mqtt_historian():
     uns_mqtt_historian = None
     try:
-        uns_mqtt_historian = Uns_Mqtt_Historian()
-        assert uns_mqtt_historian is not None, "Connection to either the MQTT Broker or the Historian DB did not happen"
+        uns_mqtt_historian = UnsMqttHistorian()
+        assert uns_mqtt_historian is not None, (
+            "Connection to either the MQTT Broker or the Historian DB did not happen"
+        )
     except Exception as ex:
         pytest.fail(
             f"Connection to either the MQTT Broker or the Historian DB did not happen: Exception {ex}"
@@ -87,30 +80,36 @@ def test_Uns_Mqtt_Historian():
             b'\x11Properties/Weight\x18\xea\xf2\xf5\xa8' \
             b'\xa0+ \x03P\xc8\x01\x18\x00')
     ])
-def test_MQTT_Historian_UNS_Persistance(topic: str, message):
+def test_uns_mqtt_historian_persistance(topic: str, message):
+    """
+    Test the persistance of message (UNS & SpB) to the database
+    """
     uns_mqtt_historian = None
     try:
-        uns_mqtt_historian = Uns_Mqtt_Historian()
+        uns_mqtt_historian = UnsMqttHistorian()
         uns_mqtt_historian.uns_client.loop()
 
         def on_message_decorator(client, userdata, msg):
-            # override / wrap the existing on_message callback so that on_publish is asleep until the message was received
+            """
+            override / wrap the existing on_message callback so that
+            on_publish is asleep until the message was received
+            """
             old_on_message(client, userdata, msg)
             if topic.startswith("spBv1.0/"):
-                inboundPayload = sparkplug_b_pb2.Payload()
-                inboundPayload.ParseFromString(message)
-                message_dict = MessageToDict(inboundPayload)
+                inbound_payload = sparkplug_b_pb2.Payload()
+                inbound_payload.ParseFromString(message)
+                message_dict = MessageToDict(inbound_payload)
 
             else:
                 message_dict = message
 
             try:
-                cursor = uns_mqtt_historian.uns_historian_handler.getCursor()
+                cursor = uns_mqtt_historian.uns_historian_handler.get_cursor()
                 query_timestamp: datetime = datetime.datetime.fromtimestamp(
                     float(
                         message_dict.get(
                             uns_mqtt_historian.mqtt_timestamp_key)) / 1000)
-                compareWithHistorian(
+                compare_with_historian(
                     cursor, uns_mqtt_historian.uns_historian_handler.table,
                     query_timestamp, topic, uns_mqtt_historian.client_id,
                     message_dict)
@@ -120,8 +119,7 @@ def test_MQTT_Historian_UNS_Persistance(topic: str, message):
         # --- end of function
 
         publish_properties = None
-        if (uns_mqtt_historian.uns_client.protocol ==
-                Uns_MQTT_ClientWrapper.MQTTv5):
+        if (uns_mqtt_historian.uns_client.protocol == UnsMQTTClient.MQTTv5):
             publish_properties = Properties(PacketTypes.PUBLISH)
 
         if (topic.startswith("spBv1.0/")):
@@ -159,12 +157,12 @@ def test_MQTT_Historian_UNS_Persistance(topic: str, message):
             uns_mqtt_historian.uns_historian_handler.close()
 
 
-def compareWithHistorian(cursor, db_table: str, query_timestamp: datetime,
-                         topic: str, client_id: str, message_dict: dict):
+def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
+                           topic: str, client_id: str, message_dict: dict):
     try:
         # Read the database for the published data.
 
-        SQL_CMD = f"""SELECT *
+        sql_command = f"""SELECT *
                       FROM {db_table}
                       WHERE
                         time = %s AND
@@ -172,7 +170,7 @@ def compareWithHistorian(cursor, db_table: str, query_timestamp: datetime,
                         client_id=%s;"""
 
         with cursor as cursor:
-            cursor.execute(SQL_CMD, (query_timestamp, topic, client_id))
+            cursor.execute(sql_command, (query_timestamp, topic, client_id))
             data = cursor.fetchone()
             assert data is not None, "No data found in the database"
             db_msg = data[3]

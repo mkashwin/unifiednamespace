@@ -6,50 +6,50 @@ import logging
 import time
 
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload as spbPayload
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Spb_Message_Generator:
+class SpBMessageGenerator:
     """
     Helper class to parse & create SparkplugB messages
     """
     # sequence number for messages
-    seqNum: int = 0
+    msg_seq_number: int = 0
     # birth/death sequence number
-    bdSeq: int = 0
+    birth_death_seq_num: int = 0
 
     # map of  metric names to alias.
     # While adding metrics, if an alias exists for that name it will be used instead
-    aliasMap: dict[str, str] = {}
+    alias_map: dict[str, str] = {}
 
     def __init__(self) -> None:
-        self.aliasMap = dict()
+        self.alias_map = dict()
 
-    def getSeqNum(self):
+    def get_seq_num(self):
         """
         Helper method for getting the next sequence number
         """
-        retVal = self.seqNum
-        LOGGER.debug("Sequence Number:%s", str(retVal))
-        self.seqNum += 1
-        if self.seqNum == 256:
-            self.seqNum = 0
-        return retVal
+        ret_val = self.msg_seq_number
+        LOGGER.debug("Sequence Number:%s", str(ret_val))
+        self.msg_seq_number += 1
+        if self.msg_seq_number == 256:
+            self.msg_seq_number = 0
+        return ret_val
 
-    def getBdSeqNum(self):
+    def get_birth_seq_num(self):
         """
         Helper method for getting the next birth/death sequence number
         """
-        retVal = self.bdSeq
-        LOGGER.debug("Birth/Death Sequence Number:%s", str(retVal))
-        self.bdSeq += 1
-        if self.bdSeq == 256:
-            self.bdSeq = 0
-        return retVal
+        ret_val = self.birth_death_seq_num
+        LOGGER.debug("Birth/Death Sequence Number:%s", str(ret_val))
+        self.birth_death_seq_num += 1
+        if self.birth_death_seq_num == 256:
+            self.birth_death_seq_num = 0
+        return ret_val
 
-    def getNodeDeathPayload(self,
-                            payload: sparkplug_b_pb2.Payload = None) -> sparkplug_b_pb2.Payload:
+    def get_node_death_payload(self, payload: spbPayload = None) -> spbPayload:
         """
         Helper to get the Death Node Payload
         Always request this before requesting the Node Birth Payload
@@ -58,13 +58,12 @@ class Spb_Message_Generator:
         payload:  Can be None if blank message is being created
         """
         if payload is None:
-            payload = sparkplug_b_pb2.Payload()
-        self.addMetric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
-                       self.getBdSeqNum())
+            payload = spbPayload()
+        self.add_metric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
+                        self.get_birth_seq_num())
         return payload
 
-    def getNodeBirthPayload(self,
-                            payload: sparkplug_b_pb2.Payload = None) -> sparkplug_b_pb2.Payload:
+    def get_node_birth_payload(self, payload: spbPayload = None) -> spbPayload:
         """
         Helper to get the Node Birth Payload
         Always request this after requesting the Node Death Payload
@@ -72,18 +71,18 @@ class Spb_Message_Generator:
         ----------
         payload:  Can be None if blank message is being created
         """
-        self.seqNum = 0
+        self.msg_seq_number = 0
         if payload is None:
-            payload = sparkplug_b_pb2.Payload()
+            payload = spbPayload()
         payload.timestamp = int(round(time.time() * 1000))
-        payload.seq = self.getSeqNum()
+        payload.seq = self.get_seq_num()
         # FIXME why was there --self.bdSeq over here ??
-        self.addMetric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
-                       self.getBdSeqNum(), payload.timestamp)
+        self.add_metric(payload, "bdSeq", None, sparkplug_b_pb2.Int64,
+                        self.get_birth_seq_num(), payload.timestamp)
         return payload
 
-    def getDeviceBirthPayload(self,
-                              payload: sparkplug_b_pb2.Payload = None) -> sparkplug_b_pb2.Payload:
+    def get_device_birth_payload(self,
+                                 payload: spbPayload = None) -> spbPayload:
         """
         Get the DBIRTH payload
         Parameters
@@ -91,14 +90,14 @@ class Spb_Message_Generator:
         payload:  Can be None if blank message is being created
         """
         if payload is None:
-            payload = sparkplug_b_pb2.Payload()
+            payload = spbPayload()
         payload.timestamp = int(round(time.time() * 1000))
-        payload.seq = self.getSeqNum()
+        payload.seq = self.get_seq_num()
         return payload
 
     ######################################################################
-    def getDeviceDataPayload(self,
-                             payload: sparkplug_b_pb2.Payload = None) -> sparkplug_b_pb2.Payload:
+    def get_device_data_payload(self,
+                                payload: spbPayload = None) -> spbPayload:
         """
         Get a DDATA payload
         Parameters
@@ -106,11 +105,11 @@ class Spb_Message_Generator:
         payload:  Can be None if blank message is being created
         @TODO review this
         """
-        return self.getDeviceBirthPayload(payload)
+        return self.get_device_birth_payload(payload)
 
     ######################################################################
-    def getNodeDataPayload(self,
-                           payload: sparkplug_b_pb2.Payload = None) -> sparkplug_b_pb2.Payload:
+    def get_node_data_payload(self,
+                              payload: spbPayload = None) -> spbPayload:
         """
         Get a NDATA payload
         Parameters
@@ -118,15 +117,15 @@ class Spb_Message_Generator:
         payload:  Can be none if blank message is being created
         @TODO review this
         """
-        return self.getNodeBirthPayload(payload)
+        return self.get_node_birth_payload(payload)
 
     ######################################################################
 
-    def getMetricWrapper(self,
-                         payload: sparkplug_b_pb2.Payload,
-                         name: str,
-                         alias: int = None,
-                         timestamp: float = int(round(time.time() * 1000))):
+    def get_metric_wrapper(self,
+                           payload: spbPayload,
+                           name: str,
+                           alias: int = None,
+                           timestamp: float = int(round(time.time() * 1000))):
         """
         Refactored common code of obtaining metrics and initializing common attributes
         Parameters
@@ -148,20 +147,20 @@ class Spb_Message_Generator:
         if name is not None:
             metric.name = name
 
-        if self.aliasMap.get(name) is None:
-            self.aliasMap[name] = alias
-        elif self.aliasMap.get(name) == alias:
+        if self.alias_map.get(name) is None:
+            self.alias_map[name] = alias
+        elif self.alias_map.get(name) == alias:
             metric.name = None
         else:
             raise ValueError(f"Alias:{alias} provided for Name:{name} not matching"
-                             + f"to previously provided alias:{self.aliasMap.get(name)}")
+                             + f"to previously provided alias:{self.alias_map.get(name)}")
         metric.timestamp = timestamp
         return metric
 
     ######################################################################
-    def initDatasetMetric(self, payload: sparkplug_b_pb2.Payload, name: str, alias: int,
-                          columns: list[str], types: list[int],
-                          timestamp: float = int(round(time.time() * 1000))):
+    def init_dataset_metric(self, payload: spbPayload, name: str, alias: int,
+                            columns: list[str], types: list[int],
+                            timestamp: float = int(round(time.time() * 1000))):
         """
         Helper method for initializing a dataset metric to a payload
         FIXME Need to enhance to add Row and Elements (DataSet.Row and  DataSet.DataSetValue )
@@ -181,7 +180,8 @@ class Spb_Message_Generator:
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
-        metric = self.getMetricWrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
+        metric = self.get_metric_wrapper(payload=payload,
+                                         name=name, alias=alias, timestamp=timestamp)
 
         metric.datatype = sparkplug_b_pb2.DataSet
         # Set up the dataset
@@ -191,8 +191,8 @@ class Spb_Message_Generator:
         return metric.dataset_value
 
     ######################################################################
-    def initTemplateMetric(self, payload: sparkplug_b_pb2.Payload, name: str, alias: int,
-                           templateRef: str):
+    def init_template_metric(self, payload: spbPayload, name: str, alias: int,
+                             template_ref: str):
         """
         Helper method for adding template metrics to a payload
         Parameters
@@ -203,16 +203,16 @@ class Spb_Message_Generator:
             Name of the metric. First time a metric is added Name is mandatory
         alias: int
             alias for metric name. Either Name or Alias must be provided
-        templateRef:
+        template_ref:
             Represents reference to a Template name if this is a Template instance.
             If this is a Template definition this field must be null
         """
-        metric = self.getMetricWrapper(payload=payload, name=name, alias=alias)
+        metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias)
         metric.datatype = sparkplug_b_pb2.Template
 
         # Set up the template
-        if templateRef is not None:
-            metric.template_value.template_ref = templateRef
+        if template_ref is not None:
+            metric.template_value.template_ref = template_ref
             metric.template_value.is_definition = False
         else:
             metric.template_value.is_definition = True
@@ -222,13 +222,13 @@ class Spb_Message_Generator:
     ######################################################################
     #
     ######################################################################
-    def addMetric(self,
-                  payload: sparkplug_b_pb2.Payload,
-                  name: str,
-                  alias: int,
-                  data_type: int,
-                  value=None,
-                  timestamp=int(round(time.time() * 1000))):
+    def add_metric(self,
+                   payload: spbPayload,
+                   name: str,
+                   alias: int,
+                   data_type: int,
+                   value=None,
+                   timestamp=int(round(time.time() * 1000))):
         """
         Helper method for adding metrics to a container which can be a payload or a template.
         Parameters
@@ -247,43 +247,44 @@ class Spb_Message_Generator:
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
-        metric = self.getMetricWrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
+        metric = self.get_metric_wrapper(payload=payload, name=name,
+                                         alias=alias, timestamp=timestamp)
         if value is None:
             metric.is_null = True
         metric.datatype = data_type
 
         match data_type:
-            case sparkplug_b_pb2.Int8: value = setIntValueInMetric(value, metric, 8),
-            case sparkplug_b_pb2.Int16: value = setIntValueInMetric(value, metric, 16),
-            case sparkplug_b_pb2.Int32: value = setIntValueInMetric(value, metric, 32),
-            case sparkplug_b_pb2.Int64: value = setLongValueInMetric(value, metric, 64),
-            case sparkplug_b_pb2.UInt8: value = setIntValueInMetric(value, metric, 0),
-            case sparkplug_b_pb2.UInt16: value = setIntValueInMetric(value, metric, 0),
-            case sparkplug_b_pb2.UInt32: value = setIntValueInMetric(value, metric, 0),
-            case sparkplug_b_pb2.UInt64: value = setLongValueInMetric(value, metric, 0),
-            case sparkplug_b_pb2.Float: value = setFloatValueInMetric(value, metric),
-            case sparkplug_b_pb2.Double: value = setDoubleValueInMetric(value, metric),
-            case sparkplug_b_pb2.Boolean: value = setBooleanValueInMetric(value, metric),
-            case sparkplug_b_pb2.String: value = setStringValueInMetric(value, metric),
-            case sparkplug_b_pb2.DateTime: value = setLongValueInMetric(value, metric, 0),
-            case sparkplug_b_pb2.Text: value = setStringValueInMetric(value, metric),
-            case sparkplug_b_pb2.UUID: value = setStringValueInMetric(value, metric),
+            case sparkplug_b_pb2.Int8: value = set_int_value_in_metric(value, metric, 8),
+            case sparkplug_b_pb2.Int16: value = set_int_value_in_metric(value, metric, 16),
+            case sparkplug_b_pb2.Int32: value = set_int_value_in_metric(value, metric, 32),
+            case sparkplug_b_pb2.Int64: value = set_long_value_in_metric(value, metric, 64),
+            case sparkplug_b_pb2.UInt8: value = set_int_value_in_metric(value, metric, 0),
+            case sparkplug_b_pb2.UInt16: value = set_int_value_in_metric(value, metric, 0),
+            case sparkplug_b_pb2.UInt32: value = set_int_value_in_metric(value, metric, 0),
+            case sparkplug_b_pb2.UInt64: value = set_long_value_in_metric(value, metric, 0),
+            case sparkplug_b_pb2.Float: value = set_float_value_in_metric(value, metric),
+            case sparkplug_b_pb2.Double: value = set_double_value_in_metric(value, metric),
+            case sparkplug_b_pb2.Boolean: value = set_boolean_value_in_metric(value, metric),
+            case sparkplug_b_pb2.String: value = set_string_value_in_metric(value, metric),
+            case sparkplug_b_pb2.DateTime: value = set_long_value_in_metric(value, metric, 0),
+            case sparkplug_b_pb2.Text: value = set_string_value_in_metric(value, metric),
+            case sparkplug_b_pb2.UUID: value = set_string_value_in_metric(value, metric),
             case sparkplug_b_pb2.DataSet:
                 # FIXME how to support this?
                 raise ValueError(f"MetricType:{sparkplug_b_pb2.DataSet}"
                                  + " Not supported by #addMetric(). Use #initDatasetMetric()")
-            case sparkplug_b_pb2.Bytes: value = setBytesValueInMetric(value, metric),
-            case sparkplug_b_pb2.File: value = setBytesValueInMetric(value, metric),
-            case sparkplug_b_pb2.Template: value = setTemplatesValueInMetric(value, metric)
-            case _: unknownValueTypeInMetric(data_type, value, metric)
+            case sparkplug_b_pb2.Bytes: value = set_bytes_value_in_metric(value, metric),
+            case sparkplug_b_pb2.File: value = set_bytes_value_in_metric(value, metric),
+            case sparkplug_b_pb2.Template: value = set_templates_value_in_metric(value, metric)
+            case _: unknown_value_in_metric(data_type, value, metric)
 
         # Return the metric
         return metric
 
     ######################################################################
 
-    def addHistoricalMetric(self, container, name: str, alias: int,
-                            data_type: int, value, timestamp):
+    def add_historical_metric(self, container, name: str, alias: int,
+                              data_type: int, value, timestamp):
         """
         Helper method for adding metrics to a container which can be a
         payload or a template
@@ -303,14 +304,14 @@ class Spb_Message_Generator:
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
-        metric = self.addMetric(container, name=name, alias=alias, data_type=data_type,
-                                value=value, timestamp=timestamp)
+        metric = self.add_metric(container, name=name, alias=alias, data_type=data_type,
+                                 value=value, timestamp=timestamp)
         metric.is_historical = True
         # Return the metric
         return metric
 
     ######################################################################
-    def addNullMetric(self, container, name: str, alias: int, data_type: int):
+    def add_null_metric(self, container, name: str, alias: int, data_type: int):
         """
         Helper method for adding null metrics  to a container which can be a payload or a template
         Parameters
@@ -325,7 +326,7 @@ class Spb_Message_Generator:
         data_type:
             Unsigned int depicting the data type
         """
-        metric = self.addMetric(payload=container, name=name, alias=alias, data_type=data_type)
+        metric = self.add_metric(payload=container, name=name, alias=alias, data_type=data_type)
         metric.is_null = True
         return metric
 # class end
@@ -333,7 +334,7 @@ class Spb_Message_Generator:
 
 ######################################################################
 @staticmethod
-def setIntValueInMetric(value: int, metric, factor: int):
+def set_int_value_in_metric(value: int, metric, factor: int):
     """
     Helper method for setting Int value in metric
     Parameters
@@ -353,7 +354,7 @@ def setIntValueInMetric(value: int, metric, factor: int):
 
 ######################################################################
 @staticmethod
-def setLongValueInMetric(value: int, metric, factor=0):
+def set_long_value_in_metric(value: int, metric, factor=0):
     """
     Helper method for setting Long value in metric
     Parameters
@@ -372,7 +373,7 @@ def setLongValueInMetric(value: int, metric, factor=0):
 
 ######################################################################
 @staticmethod
-def setFloatValueInMetric(value: float, metric):
+def set_float_value_in_metric(value: float, metric):
     """
     Helper method for setting float value in metric
     Parameters
@@ -386,7 +387,7 @@ def setFloatValueInMetric(value: float, metric):
 
 ######################################################################
 @staticmethod
-def setDoubleValueInMetric(value: float, metric):
+def set_double_value_in_metric(value: float, metric):
     """
     Helper method for setting double value in metric
     Parameters
@@ -400,7 +401,7 @@ def setDoubleValueInMetric(value: float, metric):
 
 ######################################################################
 @staticmethod
-def setStringValueInMetric(value: str, metric):
+def set_string_value_in_metric(value: str, metric):
     """
     Helper method for setting string value in metric
     Parameters
@@ -414,7 +415,7 @@ def setStringValueInMetric(value: str, metric):
 
 ######################################################################
 @staticmethod
-def setBytesValueInMetric(value: bytes, metric):
+def set_bytes_value_in_metric(value: bytes, metric):
     """
     Helper method for setting bytes value in metric
     Parameters
@@ -428,7 +429,7 @@ def setBytesValueInMetric(value: bytes, metric):
 
 ######################################################################
 @staticmethod
-def setTemplatesValueInMetric(value, metric):
+def set_templates_value_in_metric(value, metric):
     """
     Helper method for setting template value in metric
     Parameters
@@ -442,7 +443,7 @@ def setTemplatesValueInMetric(value, metric):
 
 ######################################################################
 @staticmethod
-def setBooleanValueInMetric(value: bool, metric):
+def set_boolean_value_in_metric(value: bool, metric):
     """
     Helper method for setting boolean value in metric
     Parameters
@@ -456,7 +457,7 @@ def setBooleanValueInMetric(value: bool, metric):
 
 ######################################################################
 @staticmethod
-def unknownValueTypeInMetric(data_type, value, metric):
+def unknown_value_in_metric(data_type, value, metric):
     """
     Helper method handling values of unknown type in metric
     Parameters
