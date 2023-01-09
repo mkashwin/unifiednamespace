@@ -33,8 +33,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
+          if [ -f ./02_mqtt-cluster/requirements.txt ]; then pip install --upgrade -r ./02_mqtt-cluster/requirements.txt; fi
+          if [ -f ./02_mqtt-cluster/requirements_dev.txt ]; then pip install --upgrade -r ./02_mqtt-cluster/requirements_dev.txt; fi
           if [ -f ./05_sparkplugb/requirements.txt ]; then pip install --upgrade -r ./05_sparkplugb/requirements.txt; fi
           if [ -f ./05_sparkplugb/requirements_dev.txt ]; then pip install --upgrade -r ./05_sparkplugb/requirements_dev.txt; fi
+          pip install --upgrade -e ./02_mqtt-cluster
 
       - name: Lint with flake8
         run: |
