@@ -5,9 +5,9 @@ import inspect
 import os
 import re
 import socket
-import sys
 
 import pytest
+from uns_historian.historian_config import settings
 
 # From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
@@ -15,10 +15,6 @@ cmd_subfolder = os.path.realpath(
         os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_historian"))
-from uns_historian.historian_config import settings
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(

@@ -1,3 +1,6 @@
+"""
+Encapsulate logic of persisting messages to the historian database
+"""
 import datetime
 import json
 import logging
@@ -12,7 +15,9 @@ SLEEP_BTW_ATTEMPT = 10  # seconds to sleep between retries
 
 
 class HistorianHandler:
-
+    """
+    Class to encapsulate logic of persisting messages to the historian database
+    """
     timescale_db_conn = None
     timescale_db_cursor = None
 
