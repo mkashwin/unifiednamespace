@@ -157,6 +157,12 @@ def test_graph_db_configs():
             re.fullmatch(REGEX_FOR_NODE_TYPES, node_type)
         ), f"configuration {node_type} in {node_types} is not a valid node name"
 
+    nested_attribute_node_type = settings.get(
+        "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
+    assert re.fullmatch(
+        REGEX_FOR_NODE_TYPES, nested_attribute_node_type
+    ), f"configuration {nested_attribute_node_type} at key: 'graphdb.nested_attribute_node_type' is not a valid node name"
+
 
 @pytest.mark.integrationtest
 @pytest.mark.xfail(

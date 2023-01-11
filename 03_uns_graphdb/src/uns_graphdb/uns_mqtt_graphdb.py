@@ -106,7 +106,8 @@ class UnsMqttGraphDb:
             settings.get(
                 "graphdb.spB_node_types",
                 ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
-
+        self.graphdb_nested_attribute_node_type: str = settings.get(
+            "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
         if self.graphdb_url is None:
             raise ValueError(
                 "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'"
@@ -145,7 +146,8 @@ class UnsMqttGraphDb:
                 message=filtered_message,
                 timestamp=filtered_message.get(self.mqtt_timestamp_key,
                                                time.time()),
-                node_types=node_types)
+                node_types=node_types,
+                attr_node_type=self.graphdb_nested_attribute_node_type)
         except Exception as ex:
             LOGGER.error("Error persisting the message to the Graph DB: %s",
                          str(ex),

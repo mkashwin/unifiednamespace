@@ -101,12 +101,15 @@ def test_mqtt_graphdb_persistance(topic: str, message):
             else:
                 message_dict = message
                 node_type = uns_mqtt_graphdb.graphdb_node_types
+
+            attr_nd_typ: str = uns_mqtt_graphdb.graphdb_nested_attribute_node_type
+
             try:
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                         database=uns_mqtt_graphdb.graph_db_handler.database
                 ) as session:
-                    session.execute_read(read_nodes, node_type, topic,
-                                         message_dict)
+                    session.execute_read(read_nodes, node_type, attr_nd_typ,
+                                         topic, message_dict)
             except (exceptions.TransientError,
                     exceptions.TransactionError) as ex:
                 pytest.fail("Connection to either the MQTT Broker or "
@@ -156,7 +159,8 @@ def test_mqtt_graphdb_persistance(topic: str, message):
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
-def read_nodes(session: Session, node_type: tuple, topic: str, message: dict):
+def read_nodes(session: Session, node_type: tuple, attr_node_type: str,
+               topic: str, message: dict):
     """
         Helper function to read the database and compare the persisted data
     """
@@ -185,6 +189,10 @@ def read_nodes(session: Session, node_type: tuple, topic: str, message: dict):
                     # Need to enhance test to handle nested dicts
                     warnings.warn(
                         message="Need to enhance test to handle nested dicts")
+                elif isinstance(value, list) or isinstance(value, tuple):
+                    for item in value:
+                        warnings.warn(
+                            "Need to enhance test to handle nested lists")
                 else:
                     assert records[0].values()[0].get(attr_key) == message.get(
                         attr_key)

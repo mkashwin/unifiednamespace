@@ -102,9 +102,80 @@ def test_get_node_name(current_depth: int, expected_result):
     Test case for GraphDBHandler#get_node_name
     """
     node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")
-    result = GraphDBHandler.get_node_name(current_depth, node_types)
+    result = GraphDBHandler.get_topic_node_type(current_depth, node_types)
     assert result == expected_result, f"""
             Get Node name for Depth:{current_depth},
             From Node Types : {node_types}
             Expected Result:{expected_result},
             Actual Result: {result}"""
+
+
+@pytest.mark.parametrize(
+    "message, plain, composite",
+    [
+        ({
+            "a": "value1",
+            "b": "value2"
+        }, {
+            "a": "value1",
+            "b": "value2"
+        }, {}),  # test only plain
+        ({
+            "node_name": "value1",
+            "b": "value2"
+        }, {
+            "node_name": "value1",
+            "b": "value2"
+        }, {}),  # test only plain with node name
+        ({
+            "a": "value1",
+            "b": [10, 23],
+            "c": {
+                "k1": "v1",
+                "k2": 100
+            }
+        }, {
+            "a": "value1",
+            "b": [10, 23]
+        }, {
+            "c": {
+                "k1": "v1",
+                "k2": 100
+            }
+        }),  # test composite
+        ({
+            "a": "value1",
+            "b": [10, 23],
+            "c": [{
+                "name": "v1",
+                "k2": 100
+            }, {
+                "name": "v2",
+                "k2": 200
+            }]
+        }, {
+            "a": "value1",
+            "b": [10, 23]
+        }, {
+            "v1": {
+                "name": "v1",
+                "k2": 100
+            },
+            "v2": {
+                "name": "v2",
+                "k2": 200
+            }
+        }),  # test composite with name
+        ({}, {}, {}),  # test empty
+        (None, {}, {}),  # test None
+    ])
+def test_separate_plain_composite_attributes(message: dict, plain: dict,
+                                             composite: dict):
+    """
+    Testcase for GraphDBHandler.separate_plain_composite_attributes.
+    Validate that the nested dict object is properly split
+    """
+    result_plain, result_composite = GraphDBHandler.separate_plain_composite_attributes(
+        message)
+    assert result_plain == plain
+    assert result_composite == composite

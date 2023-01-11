@@ -131,6 +131,54 @@ For further securing options, like ACL, additional authentication methods etc. E
 
 > **Important Note**: The installation exposes the dashboard with the [standard user & credentials](https://www.emqx.io/docs/en/v4.4/getting-started/dashboard.html#view-dashboard). Remember to update the default user as well as the password after the system is deployed
 
+
+# Setting up the development environment for this module 
+This function is executed by the following command with the current folder as `02_mqtt-cluster`
+**Unix**
+```bash
+# install virtual env
+python -m pip install --user virtualenv
+python -m venv env_graphdb
+source env_graphdb/bin/activate
+python -m pip install --upgrade pip
+python -m pip install  -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e .
+# Execute the MQTT listener
+python ./src/uns_graphdb/graphdb_handler.py
+```
+**Windows**
+```ps
+# install virtual env
+python -m pip install --upgrade --user virtualenv
+python -m venv env_graphdb
+env_graphdb\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install  -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e .
+# Execute the MQTT listener
+python .\src\uns_graphdb\graphdb_handler.py
+```
+
+
+## Running tests
+The set of test for this module is executed by
+**Unix**
+```bash
+source env_graphdb/bin/activate
+python -m pip install --upgrade -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e . -r requirements_dev.txt -r ../02_mqtt-cluster/requirements_dev.txt
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
+pytest test/
+```
+**Windows**
+```ps
+env_graphdb\Scripts\Activate.ps1
+python -m pip install --upgrade -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e . -r requirements_dev.txt -r ..\02_mqtt-cluster\requirements_dev.txt
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
+pytest test/
+```
+
 ## Known Limitations / workarounds
 1. MQTTv3.1 appears not to be supported by EMQX. While testing client code using `paho.mqtt.client` against [broker.emqx.io](https://www.emqx.com/en/mqtt/public-mqtt5-broker) observed that the connection was not happening and neither the `on_connect()` nor the `on_connect_fail()` callbacks were invoked. Since most clients would be either MQTTv3.1.1 or MQTTv5.0 this should not be a problem. In local testing and implementations I have chosen to go with MQTT 5
 

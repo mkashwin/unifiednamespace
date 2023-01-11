@@ -10,6 +10,11 @@ from neo4j import exceptions
 # Logger
 LOGGER = logging.getLogger(__name__)
 
+# Constants used for creating the CQL query
+NODE_NAME_KEY = "node_name"
+CREATED_TIMESTAMP_KEY = "_created_timestamp"
+MODIFIED_TIMESTAMP_KEY = "_modified_timestamp"
+
 
 class GraphDBHandler:
     """
@@ -119,6 +124,7 @@ class GraphDBHandler:
                          timestamp: float = time.time(),
                          node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA",
                                               "LINE", "DEVICE"),
+                         attr_node_type: str = "NESTED_ATTRIBUTE",
                          retry: int = 0):
         """
         Persists all nodes and the message as attributes to the leaf node
@@ -132,21 +138,22 @@ class GraphDBHandler:
         node_types:
             tuple of names given to nodes based on the hierarchy of the topic
             Default value-> `("ENTERPRISE", "FACILITY", "AREA","LINE", "DEVICE")`
+        attr_node_type:
+            Node type used to depict nested attributes which will be child nodes, after the node_types
         """
-        response = None
-        attributes = None
+        # attributes = None
 
         # Neo4j supports only flat messages.
         # Also need to ensure that the message doesn't contain
         # any attribute with the name "node_name"
-        if message is not None:
-            attributes = GraphDBHandler.flatten_json_for_neo4j(message)
+        # if message is not None:
+        #     attributes = GraphDBHandler.flatten_json_for_neo4j(message)
         try:
             with self.connect(retry) as driver:
                 with driver.session(database=self.database) as session:
-                    response = session.execute_write(self.save_all_nodes,
-                                                     topic, attributes,
-                                                     timestamp, node_types)
+                    session.execute_write(self.save_all_nodes, topic, message,
+                                          timestamp, node_types,
+                                          attr_node_type)
         except (exceptions.TransientError, exceptions.TransactionError,
                 exceptions.SessionExpired) as ex:
             if retry >= self.max_retry:
@@ -170,12 +177,13 @@ class GraphDBHandler:
                 self.persist_mqtt_msg(topic=topic,
                                       message=message,
                                       timestamp=timestamp,
+                                      attr_node_type=attr_node_type,
                                       retry=retry)
-        return response
 
     # method  starts
-    def save_all_nodes(self, session, topic: str, message: dict,
-                       timestamp: float, node_types: tuple):
+    def save_all_nodes(self, session: neo4j.Session, topic: str, message: dict,
+                       timestamp: float, node_types: tuple,
+                       attr_node_type: str):
         """
         Iterate the topics by '/'. create node for each level & merge the messages to the final node
         For the other topics in the hierarchy a node will be created / merged and linked to the
@@ -195,27 +203,67 @@ class GraphDBHandler:
         count = 0
         lastnode_id = None
         nodes = topic.split('/')
+        dict_less_message, child_dict_vals = GraphDBHandler.separate_plain_composite_attributes(
+            message)
         for node in nodes:
             LOGGER.debug("Processing sub topic: %s of topic:%s", str(node),
                          str(topic))
 
             node_attr = None
             if count == len(nodes) - 1:
-                # Save the attributes only for the leaf node
-                node_attr = message
-            node_name: str = GraphDBHandler.get_node_name(count, node_types)
-            response = GraphDBHandler.save_node(session, node, node_name,
+                # Save the attributes without nested dicts only for the leaf node of topics
+                node_attr = dict_less_message
+            node_type: str = GraphDBHandler.get_topic_node_type(
+                count, node_types)
+            response = GraphDBHandler.save_node(session, node, node_type,
                                                 node_attr, lastnode_id,
                                                 timestamp)
             lastnode_id = getattr(response.peek()[0], "_element_id")
+            if count == len(nodes) - 1:
+                # If this is the last node we iterate through the nested dicts
+                GraphDBHandler.save_attribute_nodes(session, lastnode_id,
+                                                    child_dict_vals,
+                                                    attr_node_type, timestamp)
             count += 1
-        return response
 
     # method Ends
 
     # static method starts
     @staticmethod
-    def get_node_name(current_depth: int, node_types: tuple) -> str:
+    def save_attribute_nodes(session, lastnode_id: str, attr_nodes: dict,
+                             attr_node_type: str, timestamp: float):
+        """
+        This function saves attribute nodes in the graph database.
+
+        Parameters:
+        session: The session object to interact with the database.
+        lastnode_id (str): The _element_id of the parent node in the graph. None for top most nodes
+        attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples
+        attr_node_type (str): The type of attribute node.
+        timestamp (float): The timestamp of when the attribute nodes were saved.
+
+        """
+        for key in attr_nodes:
+            plain_attributes, composite_attributes = GraphDBHandler.separate_plain_composite_attributes(
+                attr_nodes[key])
+            response = GraphDBHandler.save_node(session, key, attr_node_type,
+                                                plain_attributes, lastnode_id,
+                                                timestamp)
+            last_attr_node_id = getattr(response.peek()[0], "_element_id")
+            if (composite_attributes is not None
+                    and len(composite_attributes) > 0):
+                for child_key in composite_attributes:
+
+                    response = GraphDBHandler.save_attribute_nodes(
+                        session, last_attr_node_id,
+                        {child_key, composite_attributes[child_key]},
+                        attr_node_type, timestamp)
+
+    # method Ends
+
+    # static method starts
+    @staticmethod
+    def get_topic_node_type(current_depth: int, node_types: tuple) -> str:
         """
         Get the name of the node depending on the depth in the tree
         """
@@ -262,12 +310,13 @@ class GraphDBHandler:
 
         # CQL doesn't allow  the node label as a parameter.
         # using a statement with parameters is a safer option against CQL injection
-        query = f"MERGE (node:{nodetype} {{ node_name: $nodename }}) \n"
+
+        query = f"MERGE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
         query = query + "ON CREATE \n"
-        query = query + "   SET node._created_timestamp = $timestamp \n"
+        query = query + f"   SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
         if attributes is not None:
             query = query + "ON MATCH \n"
-            query = query + "    SET node._modified_timestamp = $timestamp \n"
+            query = query + f"    SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
             query = query + "SET node += $attributes \n"
 
         if parent_id is not None:
@@ -304,6 +353,9 @@ class GraphDBHandler:
         output = {}
 
         def flatten(json_object, name=''):
+            """
+            Recursive function to flatten nested dict/json objects
+            """
             if isinstance(json_object, dict):
                 # iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
@@ -316,11 +368,71 @@ class GraphDBHandler:
                     flatten(items, name + str(i) + '_')
                     i += 1
             elif json_object is not None:
-                if name[:-1] == "node_name":
+                if name[:-1] == NODE_NAME_KEY:
                     name = name.upper()
                 output[name[:-1]] = json_object
 
         flatten(mqtt_msg)
         return output
+
+    # static Method Ends
+
+    # static Method Starts
+    @staticmethod
+    def separate_plain_composite_attributes(attributes: dict):
+        """
+        Splits provided dict into simple values and composite values
+        Removes a composite values from the attribute object
+        Composite values are of instance list, tuple and dict
+        Does not recursively go into the value object
+        Parameters
+        ----------
+        attributes  : dict
+            Message properties which may or may not contain combination of plain and composite values
+
+        Returns
+        ----------
+        1. dict with only simple attribute
+        2. dict of remaining composite attributes ( list, dict, tuple)
+        """
+        # dictionary of simple attributes
+        simple_attr: dict = {}
+        # dictionary of complex attributes
+        complex_attr: dict = {}
+        if attributes is None:
+            attributes = {}
+        for key in attributes:
+            attr_val = attributes[key]
+            name = key
+            # Handle restricted name node_name
+            if isinstance(attr_val, dict):
+                # if the value is type dict then add it to the complex_attributes
+                complex_attr[name] = attr_val
+
+            elif isinstance(attr_val, list) or isinstance(attr_val, tuple):
+                counter: int = 0
+                temp_dict: dict = {}
+                is_only_simple_arr: bool = True
+                for item in attr_val:
+                    name_key = name + "_" + str(counter)
+                    if isinstance(item, dict) or isinstance(
+                            item, list) or isinstance(item, tuple):
+                        # special handling. if there is a sub attribute "name", use it for the node name
+                        if isinstance(item, dict) and item["name"] is not None:
+                            name_key = item["name"]
+                        is_only_simple_arr = False
+                    temp_dict[name_key] = item
+                    counter = counter + 1
+                if is_only_simple_arr:
+                    # if the item is a list or tuple of only primitive types
+                    # then it can be merged to the simple_attributes
+                    simple_attr[key] = attr_val
+                else:
+                    complex_attr.update(temp_dict)
+            else:
+                # if the value is neither dict, list or tuple  add it to the simple_attributes
+                simple_attr[key] = attr_val
+
+        return simple_attr, complex_attr
 
     # static Method Ends
