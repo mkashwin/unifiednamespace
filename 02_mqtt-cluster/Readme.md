@@ -138,8 +138,8 @@ This function is executed by the following command with the current folder as `0
 ```bash
 # install virtual env
 python -m pip install --user virtualenv
-python -m venv env_graphdb
-source env_graphdb/bin/activate
+python -m venv env_mqtt
+source env_mqtt/bin/activate
 python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e .
 # Execute the MQTT listener
@@ -149,8 +149,8 @@ python ./src/uns_graphdb/graphdb_handler.py
 ```ps
 # install virtual env
 python -m pip install --upgrade --user virtualenv
-python -m venv env_graphdb
-env_graphdb\Scripts\Activate.ps1
+python -m venv env_mqtt
+env_mqtt\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e .
 # Execute the MQTT listener

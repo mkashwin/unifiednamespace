@@ -25,6 +25,13 @@ I chose to run this as a docker instance to ease the setup and portability.
 
 Quick command reference 
 ```bash
+# install docker
+sudo snap install docker
+# add current user to docker group so that we don't need to sudo for docker executions 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+# you might need to reboot here  
+# Run the database docker
 docker run \
     --name  uns_graphdb \
     -p7474:7474 -p7687:7687 \
