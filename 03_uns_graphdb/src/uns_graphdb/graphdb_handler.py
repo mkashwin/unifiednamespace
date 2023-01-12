@@ -320,16 +320,23 @@ class GraphDBHandler:
                                                           nodename=nodename,
                                                           parent_id=parent_id)
             node_exist = list(node_exist_result)
-        if parent_id is not None and (node_exist is None
-                                      or len(node_exist) == 0):
-            query = f"CREATE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
-            query = query + f"SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
-        else:
+        if parent_id is None:
+            # Merge the top most node always
             query = f"MERGE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
             query = query + "ON CREATE \n"
             query = query + f"   SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
             query = query + "ON MATCH \n"
             query = query + f"    SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
+        elif node_exist is None or len(node_exist) == 0:
+            # other nodes should be created if they dont exist in the tree path
+            query = f"CREATE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
+            query = query + f"SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
+        else:
+            # get the element if of the existing node
+            # nodes should be updated if they  exist in the tree path
+            node_element_id = getattr(node_exist[0].values()[0], "_element_id")
+            query = f"MATCH (node) WHERE elementId(node)= '{node_element_id}'\n"
+            query = query + f"SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
         # CQL doesn't allow  the node label as a parameter.
         # using a statement with parameters is a safer option against CQL injection
 
