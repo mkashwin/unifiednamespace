@@ -308,15 +308,32 @@ class GraphDBHandler:
             "Saving node: %s of type: %s and attributes: %s with parent: %s",
             str(nodename), str(nodetype), str(attributes), str(parent_id))
 
+        # Need to create unique tree structures so jut a merge for the node name will not do
+        # FIXME facing some issues with apoc.do.when to handle this in the DB hence will temp
+        # handle this in the python code
+        node_exist = None
+        if parent_id is not None:
+            check_query: str = "MATCH (parent)-[relation:PARENT_OF]->"
+            check_query = check_query + f" (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }})\n"
+            check_query = check_query + "WHERE elementId(parent)= $parent_id \n RETURN node"
+            node_exist_result: neo4j.Result = session.run(check_query,
+                                                          nodename=nodename,
+                                                          parent_id=parent_id)
+            node_exist = list(node_exist_result)
+        if parent_id is not None and (node_exist is None
+                                      or len(node_exist) == 0):
+            query = f"CREATE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
+            query = query + f"SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
+        else:
+            query = f"MERGE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
+            query = query + "ON CREATE \n"
+            query = query + f"   SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
+            query = query + "ON MATCH \n"
+            query = query + f"    SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
         # CQL doesn't allow  the node label as a parameter.
         # using a statement with parameters is a safer option against CQL injection
 
-        query = f"MERGE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
-        query = query + "ON CREATE \n"
-        query = query + f"   SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
         if attributes is not None:
-            query = query + "ON MATCH \n"
-            query = query + f"    SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
             query = query + "SET node += $attributes \n"
 
         if parent_id is not None:
@@ -400,25 +417,26 @@ class GraphDBHandler:
         # dictionary of complex attributes
         complex_attr: dict = {}
         if attributes is None:
+            # if this is not a dict then this must be a nested simple list
             attributes = {}
         for key in attributes:
-            attr_val = attributes[key]
-            name = key
+            attr_val = attributes.get(key)
             # Handle restricted name node_name
             if isinstance(attr_val, dict):
                 # if the value is type dict then add it to the complex_attributes
-                complex_attr[name] = attr_val
+                complex_attr[key] = attr_val
 
             elif isinstance(attr_val, list) or isinstance(attr_val, tuple):
                 counter: int = 0
                 temp_dict: dict = {}
                 is_only_simple_arr: bool = True
                 for item in attr_val:
-                    name_key = name + "_" + str(counter)
+                    name_key = key + "_" + str(counter)
                     if isinstance(item, dict) or isinstance(
                             item, list) or isinstance(item, tuple):
                         # special handling. if there is a sub attribute "name", use it for the node name
-                        if isinstance(item, dict) and item["name"] is not None:
+                        if isinstance(item,
+                                      dict) and "name" in item is not None:
                             name_key = item["name"]
                         is_only_simple_arr = False
                     temp_dict[name_key] = item
