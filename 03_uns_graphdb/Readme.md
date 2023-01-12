@@ -175,16 +175,18 @@ will result in a node in the GraphDB
 - A Tabular of the same data <br/>
   ![Graph View](../images/GraphDB_Textview.png) 
 
+- Graph view of UNS and Sparkplug payloads <br/>
+  ![Graph View](../images/GraphDB_with_spb_and_uns.png) 
+
 ## Limitations / workarounds 
-* [x] Handle nested JSON messages. 
-   
-  Neo4j does not support nested attributes. If your message contains nested data the current logic will flatten the JSON object. 
-  See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)
-* [x] Handling exceptional case of mqtt message containing the key ***"node_name"***.
-  
-  If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. The logic of this is in the function [graphdb_handler.py#_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
-* [ ] Current code & configurations have not yet considered securing the database and encrypted connections
+* [x] ~~Handle nested JSON messages.~~ 
+  Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
+  Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
+  See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)
+  ~~If your message contains nested data the current logic will flatten the JSON object. See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)~~
+* [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
+  If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. 
 * [ ] Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
-* [ ] Add and improve automated test coverage
+* [x] Add and improve automated test coverage
 * [ ] Enhancing ACLs on the nodes for the various nodes to secure access
 * [ ] Securing the Neo4j database 
