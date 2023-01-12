@@ -71,8 +71,8 @@ class UnsMqttGraphDb:
 
         self.mqtt_host: str = settings.mqtt["host"]
         self.mqtt_port: int = settings.get("mqtt.port", 1883)
-        self.mqtt_username: str = settings.mqtt["username"]
-        self.mqtt_password: str = settings.mqtt["password"]
+        self.mqtt_username: str = settings.get("mqtt.username")
+        self.mqtt_password: str = settings.get("mqtt.password")
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
         self.topics: str = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
