@@ -145,8 +145,7 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
             properties=publish_properties)
 
         uns_mqtt_historian.uns_client.loop_forever()
-    except AssertionError as ex:
-        print(f"Assertion failure in the test, {ex}")
+
     except Exception as ex:
         pytest.fail(
             "Connection to either the MQTT Broker or the Historian DB did not happen:"
