@@ -407,12 +407,10 @@ def test_publish_to_uns_connected(clean_session, protocol, transport, host,
 
     def on_publish(client, userdata, result):
         msg_published.append(True)
-        print(f"{client} successfully published to {host} ")
         if len(msg_published) == len(all_uns_messages):
             client.disconnect()
 
     def on_connect(client, userdata, flags, return_code, properties=None):
-        print(f"{client} successfully connected to {host} ")
         spb_to_uns_pub.publish_to_uns(all_uns_messages)
 
     uns_client.on_connect = on_connect
