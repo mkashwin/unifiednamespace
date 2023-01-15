@@ -14,6 +14,7 @@ LOGGER = logging.getLogger(__name__)
 NODE_NAME_KEY = "node_name"
 CREATED_TIMESTAMP_KEY = "_created_timestamp"
 MODIFIED_TIMESTAMP_KEY = "_modified_timestamp"
+NODE_RELATION_NAME = "PARENT_OF"
 
 
 class GraphDBHandler:

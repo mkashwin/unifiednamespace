@@ -4,10 +4,11 @@ Tests for Uns_MQTT_GraphDb
 import inspect
 import json
 import os
+from test.test_graphdb_handler import read_nodes
 
 import pytest
 from google.protobuf.json_format import MessageToDict
-from neo4j import Session, exceptions
+from neo4j import exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
@@ -171,8 +172,6 @@ def test_mqtt_graphdb_persistance(topic: str, message):
             properties=publish_properties)
 
         uns_mqtt_graphdb.uns_client.loop_forever()
-    except AssertionError as ex:
-        print(f"Assertion failure in the test, {ex}")
     except Exception as ex:
         pytest.fail(
             f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
@@ -185,90 +184,3 @@ def test_mqtt_graphdb_persistance(topic: str, message):
         if ((uns_mqtt_graphdb is not None)
                 and (uns_mqtt_graphdb.graph_db_handler is not None)):
             uns_mqtt_graphdb.graph_db_handler.close()
-
-
-def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
-               topic: str, message: dict):
-    """
-        Helper function to read the database and compare the persisted data
-    """
-    topic_list: list = topic.split("/")
-    records: list = []
-    index = 0
-    for node, topic_name in zip(topic_list, topic_node_types):
-        query = f"MATCH (n:{topic_name}{{ node_name: $node_name }})\n"
-        query = query + "RETURN n"
-
-        print(f"CQL statement to be executed: {query}")
-
-        result = session.run(query, node_name=node)
-        records = list(result)
-        assert result is not None and len(records) == 1
-
-        db_node_properties = records[0].values()[0]
-        # check node_name
-        assert db_node_properties.get("node_name") == node
-        # labels is a frozen set
-        assert topic_name in db_node_properties.labels
-
-        if index == len(topic_list) - 1:
-            # this is a leaf node and the message attributes must match
-            parent_id = getattr(db_node_properties, "_element_id")
-            for attr_key in message:
-                value = message[attr_key]
-
-                is_only_primitive: bool = True
-                if isinstance(value, dict):
-                    is_only_primitive = False
-                    read_dict_attr_node(session, attr_node_type, parent_id,
-                                        attr_key, value)
-                elif isinstance(value, list) or isinstance(value, tuple):
-                    is_only_primitive = read_list_attr_nodes(
-                        session, db_node_properties.get(attr_key),
-                        attr_node_type, parent_id, attr_key, value)
-                if is_only_primitive:
-                    assert db_node_properties.get(attr_key) == value
-        index = index + 1
-
-
-def read_list_attr_nodes(session, db_attr_list, attr_node_type, parent_id,
-                         attr_key, value):
-    counter: int = 0
-    is_only_primitive = True
-    for item in value:
-        name_key = attr_key + "_" + str(counter)
-        if isinstance(item, list) or isinstance(item, tuple):
-            is_only_primitive = False
-            read_list_attr_nodes(session, attr_node_type, parent_id, name_key,
-                                 item)
-        elif isinstance(item, dict):
-            is_only_primitive = False
-            # special handling. if there is a sub attribute "name", use it for the node name
-            if "name" in item:
-                name_key = item["name"]
-            read_dict_attr_node(session, attr_node_type, parent_id, name_key,
-                                item)
-    if is_only_primitive:
-        assert db_attr_list == value
-    return is_only_primitive
-
-
-def read_dict_attr_node(session, attr_node_type: str, parent_id: str,
-                        attr_key: str, value: dict):
-    """
-    Read and compare node created for nested dict attributes in the message
-    """
-    # Need to enhance test to handle nested dicts
-    attr_node_query: str = f"""
-                        MATCH (parent) -[r:PARENT_OF]-> (n:{attr_node_type}{{ node_name: $node_name }})
-                        WHERE  elementId(parent)= $parent_id
-                        RETURN n
-                    """
-    attr_nodes_result = session.run(attr_node_query,
-                                    node_name=attr_key,
-                                    parent_id=parent_id)
-    attr_nodes = list(attr_nodes_result)
-    assert attr_nodes is not None and len(attr_nodes) == 1
-    for sub_items in value:
-        assert value[sub_items] == attr_nodes[0].values(
-        )[0][sub_items], "Attributes of child attribute not matching"
