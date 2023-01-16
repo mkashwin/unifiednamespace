@@ -29,6 +29,10 @@ class GraphDBHandler:
                  max_retry: int = 5,
                  sleep_btw_attempts: float = 10):
         """
+        Initialize the GraphDBHandler class.
+
+        Parameters
+        ----------
         uri: str
             Full URI to the Neo4j database including protocol, server name and port
         user : str
@@ -37,10 +41,10 @@ class GraphDBHandler:
             password for the db user
         database : str = neo4j.DEFAULT_DATABASE
             The Neo4j database in which this data should be persisted
-        MAX_RETRIES: int
+        max_retry: int
                 Must be a positive integer. Default value is 5.
                 Number of attempts after a failed database connection to retry connecting
-        SLEEP_BTW_ATTEMPT: float
+        sleep_btw_attempts: float
                 Must be a positive float. Default value is 10 seconds.
                 Seconds to sleep between retries
         """
@@ -64,11 +68,22 @@ class GraphDBHandler:
     def connect(self, retry: int = 0) -> neo4j.Driver:
         """
         Returns Neo4j Driver which is the connection to the database
-        Validates if the current driver is still connected and of not will create a new connection
+        Validates if the current driver is still connected and if not will create a new connection
+
+        Parameters
+        ----------
         retry: int
             Optional parameters to retry making a connection in case of errors.
             The max number of retry is `GraphDBHandler.MAX_RETRIES`
             The time between attempts is  `GraphDBHandler.SLEEP_BTW_ATTEMPT`
+        Returns:
+            neo4j.Driver: The Neo4j driver object.
+
+        Raises:
+            neo4j.exceptions.DatabaseError: When there is a general error from the database.
+            neo4j.exceptions.TransientError: When there is a problem connecting to the database.
+            neo4j.exceptions.DatabaseUnavailable: When the database is unavailable.
+            neo4j.exceptions.ServiceUnavailable: When the service is unavailable.
         """
         try:
             if self.driver is None:
@@ -132,14 +147,15 @@ class GraphDBHandler:
         topic: str
             The topic on which the message was sent
         message: dict
-            The JSON MQTT message payload in in dict format
-        timestamp:
-            timestamp for receiving the message
-        node_types:
-            tuple of names given to nodes based on the hierarchy of the topic
-            Default value-> `("ENTERPRISE", "FACILITY", "AREA","LINE", "DEVICE")`
+            The JSON MQTT message payload in dict format
+        timestamp : float, optional
+            Timestamp for receiving the message, by default `time.time()`
+        node_types : tuple, optional
+            Tuple of names given to nodes based on the hierarchy of the topic.
+            By default `("ENTERPRISE", "FACILITY", "AREA","LINE", "DEVICE")`
         attr_node_type:
-            Node type used to depict nested attributes which will be child nodes, after the node_types
+            Node type used to depict nested attributes which will be child nodes
+            by default `"NESTED_ATTRIBUTE"`
         """
         # attributes = None
 
@@ -198,6 +214,10 @@ class GraphDBHandler:
             The MQTT message in JSON format converted to a dict
         timestamp:
             timestamp for receiving the message
+        node_types : tuple
+            Tuple of strings representing the node types for each level in the topic hierarchy
+        attr_node_type : str
+            The node type for attribute nodes
         """
         response = None
         count = 0
@@ -236,6 +256,7 @@ class GraphDBHandler:
         This function saves attribute nodes in the graph database.
 
         Parameters:
+        -----------
         session: The session object to interact with the database.
         lastnode_id (str): The _element_id of the parent node in the graph. None for top most nodes
         attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples
@@ -250,6 +271,9 @@ class GraphDBHandler:
                                                 plain_attributes, lastnode_id,
                                                 timestamp)
             last_attr_node_id = getattr(response.peek()[0], "_element_id")
+            # After all the topics have been created the nested dicts , list of dicts in the message
+            # need to be created as nodes so that they are properly persisted and traversable
+            # The Label for all nodes created for attributes will be the same `attr_node_type`
             if (composite_attributes is not None
                     and len(composite_attributes) > 0):
                 for child_key in composite_attributes:
