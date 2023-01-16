@@ -26,6 +26,7 @@ TWO_TOPICS = ["test/uns/#",
 KEEP_ALIVE = 60
 
 
+@pytest.mark.integrationtest
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311)])
 #                                     (UNS_MQTT_Listener.MQTTv31)])
@@ -99,6 +100,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 
 
 ###############################################################################
+@pytest.mark.integrationtest
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311),
                                       (UnsMQTTClient.MQTTv31)])
