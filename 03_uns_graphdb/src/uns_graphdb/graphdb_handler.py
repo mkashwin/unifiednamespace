@@ -239,7 +239,8 @@ class GraphDBHandler:
             response = GraphDBHandler.save_node(session, node, node_type,
                                                 node_attr, lastnode_id,
                                                 timestamp)
-            lastnode_id = getattr(response.peek()[0], "_element_id")
+            records = list(response)
+            lastnode_id = getattr(records[0][0], "_element_id")
             if count == len(nodes) - 1:
                 # If this is the last node we iterate through the nested dicts
                 GraphDBHandler.save_attribute_nodes(session, lastnode_id,
@@ -332,48 +333,57 @@ class GraphDBHandler:
         LOGGER.debug(
             "Saving node: %s of type: %s and attributes: %s with parent: %s",
             str(nodename), str(nodetype), str(attributes), str(parent_id))
+        # attributes should not be null for the query to work
+        if attributes is None:
+            attributes = {}
 
-        # Need to create unique tree structures so jut a merge for the node name will not do
-        # FIXME facing some issues with apoc.do.when to handle this in the DB hence will temp
-        # handle this in the python code
-        node_exist = None
-        if parent_id is not None:
-            check_query: str = "MATCH (parent)-[relation:PARENT_OF]->"
-            check_query = check_query + f" (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }})\n"
-            check_query = check_query + "WHERE elementId(parent)= $parent_id \n RETURN node"
-            node_exist_result: neo4j.Result = session.run(check_query,
-                                                          nodename=nodename,
-                                                          parent_id=parent_id)
-            node_exist = list(node_exist_result)
-        if parent_id is None:
-            # Merge the top most node always
-            query = f"MERGE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
-            query = query + "ON CREATE \n"
-            query = query + f"   SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
-            query = query + "ON MATCH \n"
-            query = query + f"    SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
-        elif node_exist is None or len(node_exist) == 0:
-            # other nodes should be created if they dont exist in the tree path
-            query = f"CREATE (node:{nodetype} {{ {NODE_NAME_KEY}: $nodename }}) \n"
-            query = query + f"SET node.{CREATED_TIMESTAMP_KEY} = $timestamp \n"
-        else:
-            # get the element if of the existing node
-            # nodes should be updated if they  exist in the tree path
-            node_element_id = getattr(node_exist[0].values()[0], "_element_id")
-            query = f"MATCH (node) WHERE elementId(node)= '{node_element_id}'\n"
-            query = query + f"SET node.{MODIFIED_TIMESTAMP_KEY} = $timestamp \n"
-        # CQL doesn't allow  the node label as a parameter.
-        # using a statement with parameters is a safer option against CQL injection
+        query = f"""
+//Create FACILITY Node
+OPTIONAL MATCH (parent) WHERE elementId(parent) = $parent_id
+// Optional match the child node
+OPTIONAL MATCH (parent) -[r:{NODE_RELATION_NAME}]-> (child:{nodetype}{{ node_name: $nodename}})
 
-        if attributes is not None:
-            query = query + "SET node += $attributes \n"
+// Use apoc.do.when to handle the case where parent is null
+CALL apoc.do.when(
+        // Check if the child is null
+        parent is null,
+        "
+        MERGE (new_node:{nodetype} {{ node_name: $nodename }})
+        SET new_node._created_timestamp = $timestamp
+        SET new_node += $attributes
+        RETURN new_node as child
+        ",
+        "
+        CALL apoc.do.when(
+                // Check if the child is nulls
+                child is null,
+                // Create a new node when the child is null
+                'CREATE (new_node:{nodetype} {{ node_name: $nodename }})
+                SET new_node._created_timestamp = $timestamp
+                SET new_node += $attributes
+                MERGE (parent)-[r:PARENT_OF]-> (new_node)
+                // Return the new child node, parent node
+                RETURN new_node as child, parent as parent
+                ',
+                // Modify the existing child node when it is not null
+                'SET child._modified_timestamp = $timestamp
+                SET child += $attributes
+                RETURN child as child, parent as parent
+                ',
+                // Pass in the variables
+                {{parent:parent, child:child, nodename:$nodename, timestamp:$timestamp, attributes:$attributes}}
+                ) YIELD value as result
 
-        if parent_id is not None:
-            query = "MATCH (parent) \n WHERE  elementId(parent)= $parent_id" + '\n' + query + '\n'
-            query = query + "MERGE (parent) -[r:PARENT_OF]-> (node) \n"
-            query = query + "RETURN node, parent"
-        else:
-            query = query + "RETURN node"
+        // Return the child node and the parent node
+        RETURN result.child as child, result.parent as parent
+        ",
+        // Pass in the variables
+        {{parent:parent, child:child, nodename:$nodename, timestamp:$timestamp, attributes:$attributes}}
+        ) YIELD value
+// return the child node
+RETURN value.child
+"""
+
         LOGGER.debug("CQL statement to be executed: %s", str(query))
         # non-referred would be ignored in the execution.
         result: neo4j.Result = session.run(query,

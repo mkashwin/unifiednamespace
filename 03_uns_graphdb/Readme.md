@@ -22,7 +22,7 @@ There are a number of ways to deploy and run your Neo4j instance.
 I chose to run this as a docker instance to ease the setup and portability. 
 
 **[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**$
-We will also be using the [APOC plugin](https://neo4j.com/docs/apoc/5/)
+We will also be using the [APOC plugin](https://neo4j.com/docs/apoc/5/).
 
 Quick command reference 
 ```bash
