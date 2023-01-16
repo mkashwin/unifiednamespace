@@ -21,7 +21,8 @@ We need setup 2 instances of this connector
 There are a number of ways to deploy and run your Neo4j instance. 
 I chose to run this as a docker instance to ease the setup and portability. 
 
-**[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**
+**[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**$
+We will also be using the [APOC plugin](https://neo4j.com/docs/apoc/5/)
 
 Quick command reference 
 ```bash
@@ -35,19 +36,26 @@ sudo usermod -aG docker $USER
 docker run \
     --name  uns_graphdb \
     -p7474:7474 -p7687:7687 \
+    --user="$(id -u):$(id -g)" \
     -d \
     -v $HOME/neo4j/data:/data \
     -v $HOME/neo4j/logs:/logs \
-    -v $HOME/neo4j/import:/var/lib/neo4j/import \
     -v $HOME/neo4j/plugins:/plugins \
+    -v $HOME/neo4j/import:/var/lib/neo4j/import \
     --env NEO4J_AUTH=neo4j/uns_neo4j_password \
+    --env apoc.export.file.enabled=true \
+    --env apoc.import.file.enabled=true \
+    --env apoc.import.file.use_neo4j_config=true \
+    --env NEO4J_PLUGINS=\[\"apoc\"\] \
     neo4j:latest
 # --name : <container_name> . Needed 
-# -p : # Ports of operation 
+# -p : # Ports of operation 7687 is the DB server, 7474 is the Neo4j browser( not recommended for production)
 # -v : volume to persist data,logs, import file directory and plugins
 #- d : run the container detached
 # --env NEO4J_AUTH=#<username/<password> 
 ```
+In a production environment we should download the APOC release matching our Neo4j version and, copy it to a local folder, and supply it as a data volume mounted at /plugins. See [APOC Installation Guide](https://neo4j.com/docs/apoc/5/installation/#docker)
+
 **The key parameters you must update for your environment are :**
 * \<container_name\> : is a name you give to identify your container
 * \<username\> : is the username needed to connect to the DB. Needs to be updated in [./.secrets.yaml](#key-configurations-to-provide)
