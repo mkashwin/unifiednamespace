@@ -211,6 +211,7 @@ python -m pip install --upgrade -r ./04_uns_historian/requirements.txt -r ./04_u
 python -m pip install --upgrade -r ./05_sparkplugb/requirements.txt    -r ./05_sparkplugb/requirements_dev.txt    -e ./05_sparkplugb
 
 #run all tests excluding integration tests 
+pip install pytest
 pytest -m "not integrationtest" ./02_mqtt-cluster/tes
 pytest -m "not integrationtest" ./03_uns_graphdb/test/
 pytest -m "not integrationtest" ./04_uns_historian/test
@@ -234,6 +235,7 @@ python -m pip install --upgrade -r .\04_uns_historian\requirements.txt -r .\04_u
 python -m pip install --upgrade -r .\05_sparkplugb\requirements.txt    -r .\05_sparkplugb\requirements_dev.txt    -e .\05_sparkplugb
 
 #run all tests excluding integration tests 
+pip install pytest
 pytest -m "not integrationtest" .\02_mqtt-cluster\test
 pytest -m "not integrationtest" .\03_uns_graphdb\test
 pytest -m "not integrationtest" .\04_uns_historian\test
