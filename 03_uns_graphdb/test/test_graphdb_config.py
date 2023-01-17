@@ -5,31 +5,38 @@ import inspect
 import os
 import re
 import socket
-import sys
 from urllib.parse import urlparse
 
 import pytest
+from uns_graphdb.graphdb_config import settings
 
-# From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(1, os.path.join(cmd_subfolder, "uns_graphdb"))
-from graphdb_config import settings
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
         os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
             os.getenv("UNS_graphdb.username")))
 
+# Constant regex expression to match valid MQTT topics
+REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+
+# Constant regex expression to match valid neo4j database url
+REGEX_FOR_NEO4J = r"^(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*$"
+
+# Constant regex expression to match valid node types
+REGEX_FOR_NODE_TYPES = "^[a-zA-Z0-9_]*$"
+
 
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
+    """
+    Test if the mqtt configurations are valid
+    """
     # run these tests only if both configuration files exists or mandatory environment vars are set
     mqtt_transport: str = settings.get("mqtt.transport")
     assert mqtt_transport in (
@@ -76,13 +83,13 @@ def test_mqtt_config():
     assert (tls is None) or (
         isinstance(tls, dict) and not bool(tls)
         and tls.get("ca_certs") is not None
-    ), "Check the configuration provided for tls connection to the broker. the property ca_certs is missing"
+    ), ("Check the configuration provided for tls connection to the broker. "
+        "The property ca_certs is missing")
 
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
     topics: str = settings.get("mqtt.topics", ["#"])
-    REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
     for topic in topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
@@ -109,13 +116,15 @@ def test_mqtt_config():
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_graph_db_configs():
+    """
+    Test if the provided configurations for GraphDBHandler are valid and
+    """
     # run these tests only if both configuration files exists or mandatory environment vars are set
     graphdb_url: str = settings.graphdb["url"]
-    REGEX_FOR_NEO4J = r"^(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*$"
+
     assert bool(
         re.fullmatch(REGEX_FOR_NEO4J, graphdb_url)
     ), f"configuration 'graphdb.url':{graphdb_url} is not a valid Neo4j URL"
-    # TODO extract hostname port from the URL and check if the host is accessible
 
     graphdb_user: str = settings.graphdb["username"]
     assert (
@@ -132,22 +141,27 @@ def test_graph_db_configs():
     node_types: tuple = settings.get(
         "graphdb.uns_node_types",
         ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"))
-    assert node_types is not None and len(
-        node_types
-    ) > 0, "Invalid node_types configured at key:'graphdb.uns_node_types'. Must be list of length > 1"
+    assert node_types is not None and len(node_types) > 0, (
+        "Invalid node_types configured at key:'graphdb.uns_node_types'. "
+        "Must be list of length > 1")
 
     spb_node_types: tuple = settings.get(
         "graphdb.spB_node_types",
         ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
-    assert spb_node_types is not None and len(
-        spb_node_types
-    ) == 5, "Invalid node_types configured at key:'graphdb.spB_node_types'. Must be list of length of 5"
+    assert spb_node_types is not None and len(spb_node_types) == 5, (
+        "Invalid node_types configured at key:'graphdb.spB_node_types'. "
+        "Must be list of length of 5")
 
-    REGEX_FOR_NODE_TYPES = "^[a-zA-Z0-9_]*$"
     for node_type in node_types:
         assert bool(
             re.fullmatch(REGEX_FOR_NODE_TYPES, node_type)
         ), f"configuration {node_type} in {node_types} is not a valid node name"
+
+    nested_attribute_node_type = settings.get(
+        "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
+    assert re.fullmatch(
+        REGEX_FOR_NODE_TYPES, nested_attribute_node_type
+    ), f"configuration {nested_attribute_node_type} at key: 'graphdb.nested_attribute_node_type' is not a valid node name"
 
 
 @pytest.mark.integrationtest
@@ -155,6 +169,10 @@ def test_graph_db_configs():
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
 def test_connectivity_to_mqtt():
+    """
+    Test if the provided configurations for the MQTT server are valid and
+    there is connectivity to the MQTT broker
+    """
     host: str = settings.mqtt["host"]
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -168,6 +186,10 @@ def test_connectivity_to_mqtt():
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
 def test_connectivity_to_graphdb():
+    """
+    Test if the provided configurations to connect to  GraphDB Server are valid and
+    there is connectivity to the GraphDB
+    """
     graphdb_url: str = settings.graphdb["url"]
     parsed = urlparse(graphdb_url).netloc.split(':')
 

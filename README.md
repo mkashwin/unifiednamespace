@@ -122,6 +122,7 @@ This provide the flexibility of defining relationships , simple way representing
 I choose to go with **[Neo4J](https://neo4j.com/)** simply because it was the only graphDB I was aware of as well as the fact that it runs seamlessly on Kubernetes.
 The GraphDB also allows for extremely fine grained access control across the nodes, specific sections of the tree as well as limit access to specific properties. Refer [Neo4j - Access Control](https://neo4j.com/docs/operations-manual/current/authentication-authorization/access-control/)
 
+
 > **Important Note:** The clustering feature of neo4j on K8s is an enterprise feature and [not available in the community version](https://community.neo4j.com/t/neo4j-community-edition-on-kubernetes/4955)
 
 ### **Historian**
@@ -139,18 +140,108 @@ For production systems you might want to consider the cloud versions of the hist
 
 ### **Plugin / MQTT Client to subscribe and write to the above databases**
 Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
+* The MQTT listener to persist UNS messages & SPB messages to the GraphDB can be found at [03_uns_graphdb](./03_uns_graphdb/Readme.md) 
+* The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/Readme.md) 
+* The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at  [05_sparkplugb](./05_sparkplugb/Readme.md)
 
-I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because
+I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because 
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
 * Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
-* I wanted to learn Python
 
 ### **Plugin / MQTT Client to translate SparkplugB messages to UNS Namespace**
-Sparkplug consist of three primary features in its definition.  
+Sparkplug B consist of three primary features in its definition.  
 1. The first is the MQTT topic namespace definition.  
 2. The second is the definition of the order and flow of MQTT messages to and from various MQTT clients in the system.  
-3. The final is the payload data format which is called Sparkplug B.
-As the  messages are published in the Sparkplug Namespace and are packaged in protocol buffers, they are not visible in the UNS hierarchy which is based on ISA-95 part 2.
-
+3. The final is the payload data format.
+As the  messages are published in the Sparkplug Namespace , they are not visible in the UNS hierarchy which is based on ISA-95 part 2. Also given that they are packaged in protocol buffers, these message payloads are not easily understandable and need some parsing / transformation to a JSON structure.
+This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages  
 The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/Readme.md)
 
+
+
+# **Setting up the development environment**
+The current project contains the following microservices
+1. [01_k8scluster](./01_k8scluster/Readme.md): Scripts and utilities to create a K8s cluster (on the edge and in the cloud)
+1. [02_mqtt-cluster](./02_mqtt-cluster/Readme.md): Scripts and utilities to create a MQTT cluster (on the edge and in the cloud). Common python package for all uns mqtt listeners and  sparkplugB generated code and helper code 
+1. [03_uns_graphdb](./03_uns_graphdb/Readme.md): Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a GraphDB. Spb messages are translated from protocol buffers to JSON prior to persisting 
+1. [04_uns_historian](./04_uns_historian/Readme.md):  Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a Historian. Spb messages are translated from protocol buffers to JSON prior to persisting  
+1. [05_sparkplugb](./05_sparkplugb/Readme.md):  Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace 
+Each microservice can be independently imported into VSCode by going into the specific microservice folder. Instructions on setting up the python pip & virtual environments are provided in the respective ´Readme.md´ within that folder 
+However to import all  microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
+
+
+**Unix**
+```bash
+# install virtual env
+python -m pip install --user virtualenv
+python -m venv env_uns
+source env_uns/bin/activate
+python -m pip install --upgrade pip
+python -m pip install --upgrade -r ./02_mqtt-cluster/requirements.txt  -e ./02_mqtt-cluster
+python -m pip install --upgrade -r ./03_uns_graphdb/requirements.txt   -e ./03_uns_graphdb 
+python -m pip install --upgrade -r ./04_uns_historian/requirements.txt -e ./04_uns_historian
+python -m pip install --upgrade -r ./05_sparkplugb/requirements.txt    -e ./05_sparkplugb
+```
+
+
+**Windows**
+```ps
+# install virtual env
+python -m pip install --upgrade --user virtualenv
+python -m venv env_uns
+env_uns\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install --upgrade -r .\02_mqtt-cluster\requirements.txt  -e .\02_mqtt-cluster
+python -m pip install --upgrade -r .\03_uns_graphdb\requirements.txt   -e .\03_uns_graphdb 
+python -m pip install --upgrade -r .\04_uns_historian\requirements.txt -e .\04_uns_historian
+python -m pip install --upgrade -r .\05_sparkplugb\requirements.txt    -e .\05_sparkplugb
+```
+
+### Running tests
+We  need to execute the tests for each microservice / module separately 
+
+
+**Unix**
+```bash
+# Activate the venv
+source env_uns/bin/activate
+python -m pip install --upgrade -r ./02_mqtt-cluster/requirements.txt  -r ./02_mqtt-cluster/requirements_dev.txt  -e ./02_mqtt-cluster
+python -m pip install --upgrade -r ./03_uns_graphdb/requirements.txt   -r ./03_uns_graphdb/requirements_dev.txt   -e ./03_uns_graphdb 
+python -m pip install --upgrade -r ./04_uns_historian/requirements.txt -r ./04_uns_historian/requirements_dev.txt -e ./04_uns_historian
+python -m pip install --upgrade -r ./05_sparkplugb/requirements.txt    -r ./05_sparkplugb/requirements_dev.txt    -e ./05_sparkplugb
+
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" ./02_mqtt-cluster/tes
+pytest -m "not integrationtest" ./03_uns_graphdb/test/
+pytest -m "not integrationtest" ./04_uns_historian/test
+pytest -m "not integrationtest" ./05_sparkplugb/test
+
+#run all tests
+pytest ./02_mqtt-cluster/test
+pytest ./03_uns_graphdb/test
+pytest ./04_uns_historian/test
+pytest ./05_sparkplugb/test
+```
+
+
+**Windows**
+```ps
+# Activate the venv
+env_uns\Scripts\Activate.ps1
+python -m pip install --upgrade -r .\02_mqtt-cluster\requirements.txt  -r .\02_mqtt-cluster\requirements_dev.txt  -e .\02_mqtt-cluster
+python -m pip install --upgrade -r .\03_uns_graphdb\requirements.txt   -r .\03_uns_graphdb\requirements_dev.txt   -e .\03_uns_graphdb 
+python -m pip install --upgrade -r .\04_uns_historian\requirements.txt -r .\04_uns_historian\requirements_dev.txt -e .\04_uns_historian
+python -m pip install --upgrade -r .\05_sparkplugb\requirements.txt    -r .\05_sparkplugb\requirements_dev.txt    -e .\05_sparkplugb
+
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" .\02_mqtt-cluster\test
+pytest -m "not integrationtest" .\03_uns_graphdb\test
+pytest -m "not integrationtest" .\04_uns_historian\test
+pytest -m "not integrationtest" .\05_sparkplugb\test
+
+#run all tests
+pytest .\02_mqtt-cluster\test\
+pytest .\03_uns_graphdb\test\
+pytest .\04_uns_historian\test\
+pytest .\05_sparkplugb\test\
+```

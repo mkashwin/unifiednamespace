@@ -1,39 +1,35 @@
+"""
+Test cases for sparkplugb_enc_config
+"""
 import inspect
 import os
 import re
 import socket
-import sys
 
 import pytest
+from uns_spb_mapper.sparkplugb_enc_config import settings
 
-# From http://stackoverflow.com/questions/279237/python-import-a-module-from-a-folder
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
-uns_mqtt_folder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(cmd_subfolder, '..', '..', '02_mqtt-cluster', 'src')))
-
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-    sys.path.insert(0, cmd_subfolder)
-
-if uns_mqtt_folder not in sys.path:
-    sys.path.insert(2, uns_mqtt_folder)
-
-from uns_spb_mapper.sparkplugb_enc_config import settings
 
 is_configs_provided: bool = (
     os.path.exists(os.path.join(cmd_subfolder, "../conf/.secrets.yaml"))
     and os.path.exists(os.path.join(cmd_subfolder, "../conf/settings.yaml"))
     or (bool(os.getenv("UNS_mqtt.host"))))
 
+# Constant regex expression to match valid MQTT topics
+REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+
 
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
 def test_mqtt_config():
+    """
+    Test if the mqtt configurations are valid
+    """
     # run these tests only if both configuration files exists or mandatory environment vars are set
     mqtt_transport: str = settings.get("mqtt.transport")
     assert mqtt_transport in (
@@ -69,8 +65,9 @@ def test_mqtt_config():
         port, int
     ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
-    username = settings.mqtt["username"]
-    password = settings.mqtt["password"]
+    username = settings.get("mqtt.username")
+    password = settings.get("mqtt.password")
+
     assert (username is None and password is None) or (
         isinstance(username, str) and len(username) > 0
         and isinstance(password, str) and len(password) > 0
@@ -80,13 +77,14 @@ def test_mqtt_config():
     assert (tls is None) or (
         isinstance(tls, dict) and not bool(tls)
         and tls.get("ca_certs") is not None
-    ), "Check the configuration provided for tls connection to the broker. the property ca_certs is missing"
+    ), ("Check the configuration provided for tls connection to the broker."
+        "The property ca_certs is missing")
 
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
     topics: str = settings.get("mqtt.topics", ["spBv1.0/#"])
-    REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+
     for topic in topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
@@ -115,6 +113,10 @@ def test_mqtt_config():
     not is_configs_provided,
     reason="Configurations absent, or these are not integration tests")
 def test_connectivity_to_mqtt():
+    """
+    Test if the provided configurations for the MQTT server are valid and
+    there is connectivity to the MQTT broker
+    """
     host: str = settings.mqtt["host"]
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

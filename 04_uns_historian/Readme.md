@@ -111,6 +111,8 @@ python -m venv env_historian
 source env_historian/bin/activate
 python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt
+pip install --upgrade -e .
+pip install --upgrade -e ../02_mqtt-cluster
 python ./src/uns_historian/uns_mqtt_historian.py
 ```
 

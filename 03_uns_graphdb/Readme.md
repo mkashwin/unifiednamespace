@@ -21,26 +21,41 @@ We need setup 2 instances of this connector
 There are a number of ways to deploy and run your Neo4j instance. 
 I chose to run this as a docker instance to ease the setup and portability. 
 
-**[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**
+**[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**$
+We will also be using the [APOC plugin](https://neo4j.com/docs/apoc/5/).
 
 Quick command reference 
 ```bash
+# install docker
+sudo snap install docker
+# add current user to docker group so that we don't need to sudo for docker executions 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+# you might need to reboot here  
+# Run the database docker
 docker run \
     --name  uns_graphdb \
     -p7474:7474 -p7687:7687 \
+    --user="$(id -u):$(id -g)" \
     -d \
     -v $HOME/neo4j/data:/data \
     -v $HOME/neo4j/logs:/logs \
-    -v $HOME/neo4j/import:/var/lib/neo4j/import \
     -v $HOME/neo4j/plugins:/plugins \
+    -v $HOME/neo4j/import:/var/lib/neo4j/import \
     --env NEO4J_AUTH=neo4j/uns_neo4j_password \
+    --env apoc.export.file.enabled=true \
+    --env apoc.import.file.enabled=true \
+    --env apoc.import.file.use_neo4j_config=true \
+    --env NEO4J_PLUGINS=\[\"apoc\"\] \
     neo4j:latest
 # --name : <container_name> . Needed 
-# -p : # Ports of operation 
+# -p : # Ports of operation 7687 is the DB server, 7474 is the Neo4j browser( not recommended for production)
 # -v : volume to persist data,logs, import file directory and plugins
 #- d : run the container detached
 # --env NEO4J_AUTH=#<username/<password> 
 ```
+In a production environment we should download the APOC release matching our Neo4j version and, copy it to a local folder, and supply it as a data volume mounted at /plugins. See [APOC Installation Guide](https://neo4j.com/docs/apoc/5/installation/#docker)
+
 **The key parameters you must update for your environment are :**
 * \<container_name\> : is a name you give to identify your container
 * \<username\> : is the username needed to connect to the DB. Needs to be updated in [./.secrets.yaml](#key-configurations-to-provide)
@@ -101,6 +116,8 @@ python -m venv env_graphdb
 source env_graphdb/bin/activate
 python -m pip install --upgrade pip
 python -m pip install  -r requirements.txt
+pip install --upgrade -e .
+pip install --upgrade -e ../02_mqtt-cluster
 python ./src/uns_graphdb/graphdb_handler.py
 ```
 
@@ -166,16 +183,18 @@ will result in a node in the GraphDB
 - A Tabular of the same data <br/>
   ![Graph View](../images/GraphDB_Textview.png) 
 
+- Graph view of UNS and Sparkplug payloads <br/>
+  ![Graph View](../images/GraphDB_with_spb_and_uns.png) 
+
 ## Limitations / workarounds 
-* [x] Handle nested JSON messages. 
-   
-  Neo4j does not support nested attributes. If your message contains nested data the current logic will flatten the JSON object. 
-  See the function [graphdb_handler.py#_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
-* [x] Handling exceptional case of mqtt message containing the key ***"node_name"***.
-  
-  If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. The logic of this is in the function [graphdb_handler.py#_flatten_json_for_Neo4J()](./src/uns_graphdb/graphdb_handler.py#_flatten_json_for_Neo4J)
-* [ ] Current code & configurations have not yet considered securing the database and encrypted connections
+* [x] ~~Handle nested JSON messages.~~ 
+  Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
+  Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
+  See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)
+  ~~If your message contains nested data the current logic will flatten the JSON object. See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)~~
+* [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
+  If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. 
 * [ ] Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
-* [ ] Add and improve automated test coverage
+* [x] Add and improve automated test coverage
 * [ ] Enhancing ACLs on the nodes for the various nodes to secure access
 * [ ] Securing the Neo4j database 

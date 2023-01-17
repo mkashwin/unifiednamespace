@@ -36,17 +36,17 @@ Where in:
     > 
     ```bash
     # Execute on Linux
-    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
+    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated --pyi_out=./src/uns_sparkplugb/generate ./sparkplug_b/sparkplug_b.proto
     ```
     >
     ```powershell
     # Execute on windows
-    .\protobuf\bin\protoc.exe -I .\sparkplug_b\  --python_out=.\src\uns_sparkplugb\generated .\sparkplug_b\sparkplug_b.proto
+    .\protobuf\bin\protoc.exe -I .\sparkplug_b\  --python_out=.\src\uns_sparkplugb\generated --pyi_out=.\src\uns_sparkplugb\generated .\sparkplug_b\sparkplug_b.proto
     ```
 The executables and the generated code are checked into the repository 
 - The [`protoc` executable for Linux and Windows](./protobuf/bin) 
 - The [`sparkplug_b.proto`](./sparkplug_b/sparkplug_b.proto) file 
-- The [generated python files](./src/uns_sparkplugb/generated/sparkplug_b_pb2.py) from sparkplug_b.proto specification 
+- The [generated python files](./src/uns_sparkplugb/generated/) from sparkplug_b.proto specification 
 
 # The MQTT Cluster 
 The MQTT Cluster from EMQX is easily setup on a cluster. *There are other ways like within a docker or directly via the executable, but I choose to use the K8s setup to be able to leverage the benefits of scaling up, failover and other orchestration benefits.*
@@ -131,6 +131,54 @@ For further securing options, like ACL, additional authentication methods etc. E
 
 > **Important Note**: The installation exposes the dashboard with the [standard user & credentials](https://www.emqx.io/docs/en/v4.4/getting-started/dashboard.html#view-dashboard). Remember to update the default user as well as the password after the system is deployed
 
+
+# Setting up the development environment for this module 
+This function is executed by the following command with the current folder as `02_mqtt-cluster`
+**Unix**
+```bash
+# install virtual env
+python -m pip install --user virtualenv
+python -m venv env_mqtt
+source env_mqtt/bin/activate
+python -m pip install --upgrade pip
+python -m pip install  -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e .
+# Execute the MQTT listener
+python ./src/uns_graphdb/graphdb_handler.py
+```
+**Windows**
+```ps
+# install virtual env
+python -m pip install --upgrade --user virtualenv
+python -m venv env_mqtt
+env_mqtt\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install  -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e .
+# Execute the MQTT listener
+python .\src\uns_graphdb\graphdb_handler.py
+```
+
+
+## Running tests
+The set of test for this module is executed by
+**Unix**
+```bash
+source env_graphdb/bin/activate
+python -m pip install --upgrade -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e . -r requirements_dev.txt -r ../02_mqtt-cluster/requirements_dev.txt
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
+pytest test/
+```
+**Windows**
+```ps
+env_graphdb\Scripts\Activate.ps1
+python -m pip install --upgrade -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e . -r requirements_dev.txt -r ..\02_mqtt-cluster\requirements_dev.txt
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
+pytest test/
+```
+
 ## Known Limitations / workarounds
 1. MQTTv3.1 appears not to be supported by EMQX. While testing client code using `paho.mqtt.client` against [broker.emqx.io](https://www.emqx.com/en/mqtt/public-mqtt5-broker) observed that the connection was not happening and neither the `on_connect()` nor the `on_connect_fail()` callbacks were invoked. Since most clients would be either MQTTv3.1.1 or MQTTv5.0 this should not be a problem. In local testing and implementations I have chosen to go with MQTT 5
 
@@ -138,15 +186,17 @@ For further securing options, like ACL, additional authentication methods etc. E
 
 1. Currently the configuration of the MQTT bridge is a manual step via the EMQX dashboard. Need to automate this via code
 
-1. Need to study and understand which storage class is better suited for this use-case of UNS
+1. Need to study and understand which kubernetes storage class is better suited for this use-case of UNS
 
-1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0) hence I had to downgrade the protobuf version to  [Protobuf v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4)
+1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0). After raising the [issue](https://github.com/eclipse/tahu/issues/217) it was found that that from this version onwards we need to provide the additional parameter `--pyi_out`
 
-1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification. For other architectures please download the appropriate pre compiled version of [Protobuf release v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) e.g.
-    - [protoc-3.19.4-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-aarch_64.zip)
-    - [protoc-3.19.4-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-ppcle_64.zip)
-    - [protoc-3.19.4-linux-s390_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-s390_64.zip)
-    - [protoc-3.19.4-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-x86_32.zip)
+1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification.
+   The protoc executable for [Windows](./protobuf/bin/protoc.exe) is for a 64 bit processor.
+   For other architectures please download the appropriate pre compiled version of [Protobuf release v21.12](https://github.com/protocolbuffers/protobuf/releases/tag/v21.12) e.g.
+    - [protoc-21.12-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-aarch_64.zip)
+    - [protoc-21.12-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-ppcle_64.zip)
+    - [protoc-21.12-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_32.zip)
+    - [protoc-21.12-win32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-win32.zip)
 
 1. Need to understand how to handle metric types DataSet, Template 
 
