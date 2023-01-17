@@ -189,7 +189,7 @@ python -m pip install --upgrade -r ./05_sparkplugb/requirements.txt    -e ./05_s
 # install virtual env
 python -m pip install --upgrade --user virtualenv
 python -m venv env_uns
-env_uns\Scripts\Activate.ps1
+env_uns\Scripts\Activate.ps1 ( If you get windows security error for running scripts, please run this first " powershell Set-ExecutionPolicy RemoteSigned" )
 python -m pip install --upgrade pip
 python -m pip install --upgrade -r .\02_mqtt-cluster\requirements.txt  -e .\02_mqtt-cluster
 python -m pip install --upgrade -r .\03_uns_graphdb\requirements.txt   -e .\03_uns_graphdb 
