@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "uns_graphdb"
+version = "0.1.0"
+description = "Graph Database implementation for a UNS setup"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/03_uns_graphdb"
+# documentation = ""
+keywords = ["uns", "mqtt", "neo4j", "graphdb"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: Graph DB",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: GraphDB Client"
+# ]
+packages = [{ include = "uns_graphdb", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+logger = "^1.4"
+
+[tool.poetry.group.dev.dependencies]
+uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
+neo4j = "^5.4"
+paho-mqtt = "^1.6.1"
+dynaconf = "^3.1.9"
+yapf = "^0.32.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+flake8 = "^6.0.0"
+pytest-cov = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]

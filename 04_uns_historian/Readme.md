@@ -102,30 +102,6 @@ This application has two configuration file.
    **historian** | **password**\* | | The password needed to authenticate with TimescaleDB | *None*
    historian | sslmode | | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full | *None*
    **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
-## Running the python script
-This function is executed by the following command with the current folder as `04_uns_historian`
-```bash
-# install virtual env
-python -m pip install --user virtualenv
-python -m venv env_historian
-source env_historian/bin/activate
-python -m pip install --upgrade pip
-python -m pip install  -r requirements.txt
-pip install --upgrade -e .
-pip install --upgrade -e ../02_mqtt-cluster
-python ./src/uns_historian/uns_mqtt_historian.py
-```
-
-### Running tests
-The set of test for this module is executed by
-```python
-source env_historian/bin/activate
-python -m pip install  -r requirements_dev.txt
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
-# runs all tests
-pytest test/
-```
 
 
 ## The Logic for persisting the message into the historian
@@ -137,6 +113,44 @@ If this attribute is missing the application will use the current time
 time.time()
 ```
 
+# Setting up the development environment for this module 
+This sub module can be independently setup as a dev environment in the folder [`04_uns_historian`](.)
+This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
+```bash
+python -m pip install --upgrade pip
+pip install poetry
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
+python ./src/uns_historian/uns_mqtt_historian.py
+```
+> While importing the folder into VSCode remember to do the following steps the first time
+>   1. Open a terminal in VSCode
+>   1. Activate the poetry shell.  
+        ```bash
+        poetry shell 
+        poetry install
+        ```    
+>   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+## Running the python script
+This function is executed by the following command with the current folder as [`04_uns_historian`](.)
+Ensure that the [configuration files](./conf/) are correctly updated to your MQTT broker and database instance
+```bash
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
+python ./src/uns_historian/uns_mqtt_historian.py
+```
+## Running tests
+The set of test for this module is executed by
+```bash
+# Ensure that the poetry shell is activated
+poetry shell 
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
+pytest test/
+```
 
 ## Limitations 
 1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers

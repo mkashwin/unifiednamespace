@@ -134,52 +134,34 @@ For further securing options, like ACL, additional authentication methods etc. E
 
 # Setting up the development environment for this module 
 This function is executed by the following command with the current folder as `02_mqtt-cluster`
-**Unix**
+This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 ```bash
-# install virtual env
-python -m pip install --user virtualenv
-python -m venv env_mqtt
-source env_mqtt/bin/activate
 python -m pip install --upgrade pip
-python -m pip install  -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e .
-# Execute the MQTT listener
-python ./src/uns_graphdb/graphdb_handler.py
+pip install poetry
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
 ```
-**Windows**
-```ps
-# install virtual env
-python -m pip install --upgrade --user virtualenv
-python -m venv env_mqtt
-env_mqtt\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install  -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e .
-# Execute the MQTT listener
-python .\src\uns_graphdb\graphdb_handler.py
-```
-
-
+> While importing the folder into VSCode remember to do the following steps the first time
+>   1. Open a terminal in VSCode
+>   1. Activate the poetry shell.  
+        ```bash
+        poetry shell 
+        poetry install
+        ```    
+>   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 ## Running tests
-The set of test for this module is executed by
-**Unix**
+The set of test for this module is executed after the poetry setup is done
 ```bash
-source env_graphdb/bin/activate
-python -m pip install --upgrade -r requirements.txt -r ../02_mqtt-cluster/requirements.txt -e ../02_mqtt-cluster  -e . -r requirements_dev.txt -r ../02_mqtt-cluster/requirements_dev.txt
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
-# runs all tests
-pytest test/
-```
-**Windows**
-```ps
-env_graphdb\Scripts\Activate.ps1
-python -m pip install --upgrade -r requirements.txt -r ..\02_mqtt-cluster\requirements.txt -e ..\02_mqtt-cluster  -e . -r requirements_dev.txt -r ..\02_mqtt-cluster\requirements_dev.txt
+# Ensure that the poetry shell is activated
+poetry shell 
 #run all tests excluding integration tests 
 pytest -m "not integrationtest" test/
 # runs all tests
 pytest test/
 ```
 
-## Known Limitations / workarounds
+# Known Limitations / workarounds
 1. MQTTv3.1 appears not to be supported by EMQX. While testing client code using `paho.mqtt.client` against [broker.emqx.io](https://www.emqx.com/en/mqtt/public-mqtt5-broker) observed that the connection was not happening and neither the `on_connect()` nor the `on_connect_fail()` callbacks were invoked. Since most clients would be either MQTTv3.1.1 or MQTTv5.0 this should not be a problem. In local testing and implementations I have chosen to go with MQTT 5
 
 1. The plugins to intercept messages from EMQx ( which is probably the more efficient mechanism) in order to persist them are available only in the enterprise version and not in the community edition. As a workaround, I created an MQTT client which subscribes to `#` and allows subsequent processing.
@@ -200,5 +182,5 @@ pytest test/
 
 1. Need to understand how to handle metric types DataSet, Template 
 
-## Copyrights
+# Copyrights
 Copyright (c) 2016-2022 Eclipse Foundation. This software or document includes material copied from or derived from the [Sparkplug Specification](https://www.eclipse.org/tahu/spec/sparkplug_spec.pdf)

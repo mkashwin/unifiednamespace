@@ -170,78 +170,40 @@ Each microservice can be independently imported into VSCode by going into the sp
 However to import all  microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
 
 
-**Unix**
+This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 ```bash
-# install virtual env
-python -m pip install --user virtualenv
-python -m venv env_uns
-source env_uns/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --upgrade -r ./02_mqtt-cluster/requirements.txt  -e ./02_mqtt-cluster
-python -m pip install --upgrade -r ./03_uns_graphdb/requirements.txt   -e ./03_uns_graphdb 
-python -m pip install --upgrade -r ./04_uns_historian/requirements.txt -e ./04_uns_historian
-python -m pip install --upgrade -r ./05_sparkplugb/requirements.txt    -e ./05_sparkplugb
+pip install poetry
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
 ```
+> While importing the folder into VSCode remember to do the following steps the first time
+>   1. Open a terminal in VSCode
+>   1. Activate the poetry shell.  
+        ```bash
+        poetry shell 
+        poetry install
+        ```    
+>   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 
-
-**Windows**
-```ps
-# install virtual env
-python -m pip install --upgrade --user virtualenv
-python -m venv env_uns
-env_uns\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install --upgrade -r .\02_mqtt-cluster\requirements.txt  -e .\02_mqtt-cluster
-python -m pip install --upgrade -r .\03_uns_graphdb\requirements.txt   -e .\03_uns_graphdb 
-python -m pip install --upgrade -r .\04_uns_historian\requirements.txt -e .\04_uns_historian
-python -m pip install --upgrade -r .\05_sparkplugb\requirements.txt    -e .\05_sparkplugb
-```
-
-### Running tests
+## Running tests
 We  need to execute the tests for each microservice / module separately 
 
 
-**Unix**
-```bash
-# Activate the venv
-source env_uns/bin/activate
-python -m pip install --upgrade -r ./02_mqtt-cluster/requirements.txt  -r ./02_mqtt-cluster/requirements_dev.txt  -e ./02_mqtt-cluster
-python -m pip install --upgrade -r ./03_uns_graphdb/requirements.txt   -r ./03_uns_graphdb/requirements_dev.txt   -e ./03_uns_graphdb 
-python -m pip install --upgrade -r ./04_uns_historian/requirements.txt -r ./04_uns_historian/requirements_dev.txt -e ./04_uns_historian
-python -m pip install --upgrade -r ./05_sparkplugb/requirements.txt    -r ./05_sparkplugb/requirements_dev.txt    -e ./05_sparkplugb
+```python
+# Ensure that the poetry shell is activated
+poetry shell 
 
 #run all tests excluding integration tests 
-pytest -m "not integrationtest" ./02_mqtt-cluster/tes
-pytest -m "not integrationtest" ./03_uns_graphdb/test/
-pytest -m "not integrationtest" ./04_uns_historian/test
-pytest -m "not integrationtest" ./05_sparkplugb/test
+pytest -m "not integrationtest" ./02_mqtt-cluster
+pytest -m "not integrationtest" ./03_uns_graphdb
+pytest -m "not integrationtest" ./04_uns_historian
+pytest -m "not integrationtest" ./05_sparkplugb
 
 #run all tests
-pytest ./02_mqtt-cluster/test
-pytest ./03_uns_graphdb/test
-pytest ./04_uns_historian/test
-pytest ./05_sparkplugb/test
-```
-
-
-**Windows**
-```ps
-# Activate the venv
-env_uns\Scripts\Activate.ps1
-python -m pip install --upgrade -r .\02_mqtt-cluster\requirements.txt  -r .\02_mqtt-cluster\requirements_dev.txt  -e .\02_mqtt-cluster
-python -m pip install --upgrade -r .\03_uns_graphdb\requirements.txt   -r .\03_uns_graphdb\requirements_dev.txt   -e .\03_uns_graphdb 
-python -m pip install --upgrade -r .\04_uns_historian\requirements.txt -r .\04_uns_historian\requirements_dev.txt -e .\04_uns_historian
-python -m pip install --upgrade -r .\05_sparkplugb\requirements.txt    -r .\05_sparkplugb\requirements_dev.txt    -e .\05_sparkplugb
-
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" .\02_mqtt-cluster\test
-pytest -m "not integrationtest" .\03_uns_graphdb\test
-pytest -m "not integrationtest" .\04_uns_historian\test
-pytest -m "not integrationtest" .\05_sparkplugb\test
-
-#run all tests
-pytest .\02_mqtt-cluster\test\
-pytest .\03_uns_graphdb\test\
-pytest .\04_uns_historian\test\
-pytest .\05_sparkplugb\test\
+pytest ./02_mqtt-cluster
+pytest ./03_uns_graphdb
+pytest ./04_uns_historian
+pytest ./05_sparkplugb
 ```

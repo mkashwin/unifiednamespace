@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "uns-mqtt"
+version = "0.1.0"
+description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/02_mqtt-cluster"
+# documentation = ""
+keywords = ["uns", "mqtt", "sparkplugB"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Topic :: Software Development :: Libraries :: MQTT"
+#   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client"
+# ]
+packages = [
+    { include = "uns_mqtt", from = "src" },
+    { include = "uns_sparkplugb", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+logger = "^1.4"
+paho-mqtt = "^1.6.1"
+protobuf = "^4.21.1"
+
+[tool.poetry.group.dev.dependencies]
+yapf = "^0.32.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+flake8 = "^6.0.0"
+pytest-cov = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]

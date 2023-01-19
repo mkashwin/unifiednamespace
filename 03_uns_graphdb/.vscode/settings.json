@@ -13,6 +13,13 @@
     "cSpell.words": [
         "graphdb",
         "integrationtest",
+        "lastnode",
+        "mqtt",
+        "packettypes",
+        "paho",
+        "protobuf",
+        "sparkplugb",
+        "userdata",
         "venv",
         "virtualenv"
     ]

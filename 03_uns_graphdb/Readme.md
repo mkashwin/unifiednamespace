@@ -107,31 +107,6 @@ This application has two configuration file
    **graphdb** | **password**\* | | The password needed to authenticate with GraphDB | *None*
    **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 
-## Running the python script
-This function is executed by the following command with the current folder as `03_uns_graphdb`
-```bash
-# install virtual env
-python -m pip install --user virtualenv
-python -m venv env_graphdb
-source env_graphdb/bin/activate
-python -m pip install --upgrade pip
-python -m pip install  -r requirements.txt
-pip install --upgrade -e .
-pip install --upgrade -e ../02_mqtt-cluster
-python ./src/uns_graphdb/graphdb_handler.py
-```
-
-### Running tests
-The set of test for this module is executed by
-```python
-source env_graphdb/bin/activate
-python -m pip install  -r requirements_dev.txt
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
-# runs all tests
-pytest test/
-```
-
 ## Logic for persisting MQTT messages to the Graph DB
 The GraphDB will always store the latest value of all attributes but allows merging of MQTT messages also.
 
@@ -186,7 +161,46 @@ will result in a node in the GraphDB
 - Graph view of UNS and Sparkplug payloads <br/>
   ![Graph View](../images/GraphDB_with_spb_and_uns.png) 
 
-## Limitations / workarounds 
+# Setting up the development environment for this module 
+This sub module can be independently setup as a dev environment in the folder [`03_uns_graphdb`](.)
+Ensure that the [configuration files](./conf/) are correctly updated to your MQTT broker and database instance
+This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
+```bash
+python -m pip install --upgrade pip
+pip install poetry
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
+python ./src/uns_graphdb/graphdb_handler.py
+```
+> While importing the folder into VSCode remember to do the following steps the first time
+>   1. Open a terminal in VSCode
+>   1. Activate the poetry shell.  
+        ```bash
+        poetry shell 
+        poetry install
+        ```    
+>   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+## Running the python script
+This function is executed by the following command with the current folder as [`03_uns_graphdb`](.)
+```bash
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
+python ./src/uns_graphdb/graphdb_handler.py
+```
+## Running tests
+The set of test for this module is executed by
+```bash
+# Ensure that the poetry shell is activated
+poetry shell 
+#run all tests excluding integration tests 
+pytest -m "not integrationtest" test/
+# runs all tests
+pytest test/
+```
+
+# Limitations / workarounds 
 * [x] ~~Handle nested JSON messages.~~ 
   Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
   Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
