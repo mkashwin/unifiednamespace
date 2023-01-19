@@ -240,7 +240,7 @@ class GraphDBHandler:
                                                 node_attr, lastnode_id,
                                                 timestamp)
             records = list(response)
-            lastnode_id = getattr(records[0][0], "_element_id")
+            lastnode_id = records[0][0].element_id
             if count == len(nodes) - 1:
                 # If this is the last node we iterate through the nested dicts
                 GraphDBHandler.save_attribute_nodes(session, lastnode_id,
@@ -260,7 +260,7 @@ class GraphDBHandler:
         Parameters:
         -----------
         session: The session object to interact with the database.
-        lastnode_id (str): The _element_id of the parent node in the graph. None for top most nodes
+        lastnode_id (str): The element_id of the parent node in the graph. None for top most nodes
         attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples
         attr_node_type (str): The type of attribute node.
         timestamp (float): The timestamp of when the attribute nodes were saved.
@@ -272,7 +272,7 @@ class GraphDBHandler:
             response = GraphDBHandler.save_node(session, key, attr_node_type,
                                                 plain_attributes, lastnode_id,
                                                 timestamp)
-            last_attr_node_id = getattr(response.peek()[0], "_element_id")
+            last_attr_node_id = response.peek()[0].element_id
             # After all the topics have been created the nested dicts , list of dicts in the message
             # need to be created as nodes so that they are properly persisted and traversable
             # The Label for all nodes created for attributes will be the same `attr_node_type`
