@@ -207,3 +207,10 @@ pytest ./03_uns_graphdb
 pytest ./04_uns_historian
 pytest ./05_sparkplugb
 ```
+
+# Known Limitations / workarounds
+1. **Windows**: Allowing powershell to run scripts
+   If you get windows security error for running scripts, please run this first
+   ```bash
+   powershell Set-ExecutionPolicy RemoteSigned
+    ```
