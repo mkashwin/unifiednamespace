@@ -191,7 +191,7 @@ python -m pip install --upgrade --user virtualenv
 python -m venv env_uns
 # Allowing powershell to run scripts
 powershell Set-ExecutionPolicy RemoteSigned
-env_uns\Scripts\Activate.ps1 ( If you get windows security error for running scripts, please run this first " powershell Set-ExecutionPolicy RemoteSigned" )
+env_uns\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install --upgrade -r .\02_mqtt-cluster\requirements.txt  -e .\02_mqtt-cluster
 python -m pip install --upgrade -r .\03_uns_graphdb\requirements.txt   -e .\03_uns_graphdb 
