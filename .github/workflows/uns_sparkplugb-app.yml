@@ -36,7 +36,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           cd ./05_sparkplugb
-          poetry install --no-root --develop
+          poetry install --no-root
 
       - name: Lint with flake8
         run: |
