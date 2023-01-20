@@ -34,10 +34,11 @@ jobs:
           python-version: "3.10"
       - name: Install dependencies
         run: |
+          cd ./03_uns_graphdb
           python -m pip install --upgrade pip
           pip install poetry
-          cd ./03_uns_graphdb
           poetry install
+          poetry env info
 
       - name: Lint with flake8
         run: |
