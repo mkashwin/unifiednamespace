@@ -37,15 +37,14 @@ jobs:
           pip install poetry
           cd ./04_uns_historian
           poetry install
-          cd ..
 
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          poetry run flake8 ./04_uns_historian/src ./04_uns_historian/test --count --select=E9,F63,F7,F82 --show-source --statistics 
+          poetry run flake8 ./src ./test --count --select=E9,F63,F7,F82 --show-source --statistics 
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          poetry run flake8 ./04_uns_historian/src ./04_uns_historian/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          poetry run flake8 ./src ./test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Test with pytest
         run: |
-          poetry run pytest -m "not integrationtest" ./04_uns_historian/test/
+          poetry run pytest -m "not integrationtest" ./test/
