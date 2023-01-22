@@ -6,7 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "./02_mqtt-cluster/requirements.txt" # Location of package manifests
+    directory: "./02_mqtt-cluster" # Location of package manifests
     schedule:
       interval: "weekly"
     allow:
@@ -14,7 +14,7 @@ updates:
       - dependency-type: "all"
 
   - package-ecosystem: "pip"
-    directory: "./03_uns_graphdb/requirements.txt" # Location of package manifests
+    directory: "./03_uns_graphdb" # Location of package manifests
     schedule:
       interval: "weekly"
     allow:
@@ -22,7 +22,7 @@ updates:
       - dependency-type: "all"
 
   - package-ecosystem: "pip"
-    directory: "./04_uns_historian/requirements.txt" # Location of package manifests
+    directory: "./04_uns_historian" # Location of package manifests
     schedule:
       interval: "weekly"
     allow:
@@ -30,7 +30,15 @@ updates:
       - dependency-type: "all"
 
   - package-ecosystem: "pip"
-    directory: "./05_sparkplugb/requirements.txt" # Location of package manifests
+    directory: "./05_sparkplugb" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"
+
+  - package-ecosystem: "pip"
+    directory: "./" # Location of package manifests
     schedule:
       interval: "weekly"
     allow:
