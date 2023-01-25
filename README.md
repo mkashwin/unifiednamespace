@@ -181,11 +181,11 @@ poetry install
 > While importing the folder into VSCode remember to do the following steps the first time
 >   1. Open a terminal in VSCode
 >   1. Activate the poetry shell.  
-        ```bash
-        poetry shell 
-        poetry install
-        ```    
->   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+```bash
+poetry shell 
+poetry install
+```    
+>   3. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 
 ## Running tests
 We  need to execute the tests for each microservice / module separately 
