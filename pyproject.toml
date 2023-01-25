@@ -1,0 +1,68 @@
+[tool.poetry]
+name = "Unified Name Space"
+version = "0.1.0"
+description = "Set of modules / tools to realize an UNS for your organization"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/"
+# documentation = ""
+keywords = ["uns", "mqtt", "sparkplugB", "graphDB", "historian"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Topic :: Software Development :: Libraries :: MQTT"
+#   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client"
+# ]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+# All modules need the logger
+logger = "^1.4"
+# List of sub modules
+uns_mqtt = { path = "./02_mqtt-cluster", develop = true }
+uns_graphdb = { path = "./03_uns_graphdb", develop = true }
+uns_historian = { path = "./04_uns_historian", develop = true }
+uns_spb_mapper = { path = "./05_sparkplugb", develop = true }
+
+[tool.poetry.group.02_mqtt-cluster.dependencies]
+paho-mqtt = "^1.6.1"
+protobuf = "^4.21.1"
+
+[tool.poetry.group.03_uns_graphdb.dependencies]
+neo4j = "^5.4"
+paho-mqtt = "^1.6.1"
+dynaconf = "^3.1.9"
+
+[tool.poetry.group.04_uns_historian.dependencies]
+psycopg2-binary = "^2.9.3"
+pytz = "^2022.1"
+dynaconf = "^3.1.9"
+
+[tool.poetry.group.05_sparkplugb.dependencies]
+dynaconf = "^3.1.9"
+# All other dependencies fulfilled by uns_mqtt
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+flake8 = "^6.0.0"
+pytest-cov = "^4.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+yapf = "^0.32.0"
+
+[tool.pytest.ini_options]
+markers = ["integrationtest: mark a test as an integration test"]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = [
+    "02_mqtt-cluster/test",
+    "03_uns_graphdb/test",
+    "04_uns_historian/test",
+    "05_sparkplugb/test",
+]

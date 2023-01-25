@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: UNS Sparkplug B Decoder
+name: UNS Sparkplug B Decoder MQTT Client
 
 on:
   push:
@@ -33,21 +33,23 @@ jobs:
           python-version: "3.10"
       - name: Install dependencies
         run: |
+          # change to current directory of module                
+          cd ./05_sparkplugb
           python -m pip install --upgrade pip
-          pip install flake8 pytest
-          if [ -f ./02_mqtt-cluster/requirements.txt ]; then pip install --upgrade -r ./02_mqtt-cluster/requirements.txt; fi
-          if [ -f ./02_mqtt-cluster/requirements_dev.txt ]; then pip install --upgrade -r ./02_mqtt-cluster/requirements_dev.txt; fi
-          if [ -f ./05_sparkplugb/requirements.txt ]; then pip install --upgrade -r ./05_sparkplugb/requirements.txt; fi
-          if [ -f ./05_sparkplugb/requirements_dev.txt ]; then pip install --upgrade -r ./05_sparkplugb/requirements_dev.txt; fi
-          pip install --upgrade -e ./02_mqtt-cluster -e ./05_sparkplugb
+          pip install poetry
+          poetry install
 
       - name: Lint with flake8
         run: |
+          # change to current directory of module                
+          cd ./05_sparkplugb
           # stop the build if there are Python syntax errors or undefined names
-          flake8 ./05_sparkplugb/src ./05_sparkplugb/test --count --select=E9,F63,F7,F82 --show-source --statistics 
+          poetry run flake8 ./src ./test --count --select=E9,F63,F7,F82 --show-source --statistics 
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 ./05_sparkplugb/src ./05_sparkplugb/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          poetry run flake8 ./src ./test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Test with pytest
         run: |
-          pytest -m "not integrationtest" ./05_sparkplugb/test/
+          # change to current directory of module                
+          cd ./05_sparkplugb
+          poetry run pytest -m "not integrationtest" ./test

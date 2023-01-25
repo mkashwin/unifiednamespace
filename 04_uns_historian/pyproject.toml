@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "uns_historian"
+version = "0.1.0"
+description = "Historian implementation for a UNS setup"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/04_uns_historian"
+# documentation = ""
+keywords = ["uns", "mqtt", "timescaledb", "postgres", "historian"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: Historian",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: Historian Client"
+# ]
+packages = [{ include = "uns_historian", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+logger = "^1.4"
+
+
+[tool.poetry.group.dev.dependencies]
+uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
+psycopg2-binary = "^2.9.3"
+pytz = "^2022.1"
+dynaconf = "^3.1.9"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+flake8 = "^6.0.0"
+pytest-cov = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]

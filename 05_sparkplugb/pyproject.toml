@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "uns_spb_mapper"
+version = "0.1.0"
+description = "SparkplugB decoder to parse and unpack  SparkplugB messages to the UNS structure"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/05_sparkplugb"
+# documentation = ""
+keywords = ["uns", "mqtt", "sparkplugb"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: spB to UNS ",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: spB to UNS Mapper Client"
+# ]
+packages = [{ include = "uns_spb_mapper", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+logger = "^1.4"
+
+
+[tool.poetry.group.dev.dependencies]
+uns_mqtt = { path = "../02_mqtt-cluster" }
+dynaconf = "^3.1.9"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+flake8 = "^6.0.0"
+pytest-cov = "^4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]

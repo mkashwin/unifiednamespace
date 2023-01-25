@@ -295,7 +295,7 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
         assert result is not None and len(records) == 1
 
         db_node_properties = records[0].values()[0]
-        last_node_id = getattr(records[0][0], "_element_id")
+        last_node_id = records[0][0].element_id
         # check node_name
         assert db_node_properties.get("node_name") == node
         # labels is a frozen set
@@ -303,7 +303,7 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
 
         if index == len(topic_list) - 1:
             # this is a leaf node and the message attributes must match
-            parent_id = getattr(db_node_properties, "_element_id")
+            parent_id = db_node_properties.element_id
             for attr_key in message:
                 value = message[attr_key]
 

@@ -103,26 +103,41 @@ This application has two configuration file.
    mqtt | tls | insecure_cert | Boolean. Skips hostname checking required for self signed certificates.  | *True*
    **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 
-   
-## Running the python script
-This function is executed by the following command with the current folder as [`05_sparkplugb`](.)
+
+# Setting up the development environment for this module 
+This sub module can be independently setup as a dev environment in the folder [`05_sparkplugb`](.)
+This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 ```bash
-# install virtual env
-python -m pip install --user virtualenv
-python -m venv env_sparkplugb
-source env_sparkplugb/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --upgrade -r requirements.txt
-pip install --upgrade -e .
-pip install --upgrade -e ../02_mqtt-cluster
+pip install poetry
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
 python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
 ```
+> While importing the folder into VSCode remember to do the following steps the first time
+>   1. Open a terminal in VSCode
+>   1. Activate the poetry shell.  
+        ```bash
+        poetry shell 
+        poetry install
+        ```    
+>   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 
-### Running tests
+## Running the python script
+This function is executed by the following command with the current folder as [`05_sparkplugb`](.)
+Ensure that the [configuration files](./conf/) are correctly updated to your MQTT broker and database instance
+```bash
+# Ensure that the poetry shell is activated
+poetry shell 
+poetry install
+python ./src/uns_historian/uns_mqtt_historian.py
+```
+## Running tests
 The set of test for this module is executed by
 ```bash
-source env_sparkplugb/bin/activate
-python -m pip install  -r requirements_dev.txt
+# Ensure that the poetry shell is activated
+poetry shell 
 #run all tests excluding integration tests 
 pytest -m "not integrationtest" test/
 # runs all tests
@@ -135,7 +150,7 @@ pytest test/
 * [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
 
 
-## Limitations 
+# Limitations 
 1. The application assumes the the MQTT broker for SparkPlugB and the UNS are one and the same as it does not sense to have separate brokers for the same. This can be enhanced easily if there is a requirement for the same. Please create issue on the Github project
 1. Need to understand how to handle NBIRTH, NDEATH, DBIRTH, DDEATH, STATE message types
 1. Need to understand how to handle metric types DataSet, Template 

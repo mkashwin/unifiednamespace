@@ -1,4 +1,0 @@
-wheel>=0.37.1
-logger>=1.4
-paho-mqtt==1.6.1
-protobuf>=4.21.1
