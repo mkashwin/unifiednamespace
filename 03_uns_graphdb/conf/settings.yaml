@@ -21,4 +21,5 @@ graphdb:
   # database: "Instance01"
   uns_node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
   spB_node_types: ["spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"] # Based on sparkplugB specification
+  nested_attribute_node_type: "NESTED_ATTRIBUTE"
 dynaconf_merge: true
