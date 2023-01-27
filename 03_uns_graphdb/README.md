@@ -174,14 +174,17 @@ poetry shell
 poetry install
 python ./src/uns_graphdb/graphdb_handler.py
 ```
+> **Setting up VSCode**
+> 
 > While importing the folder into VSCode remember to do the following steps the first time
->   1. Open a terminal in VSCode
->   1. Activate the poetry shell.  
-        ```bash
-        poetry shell 
-        poetry install
-        ```    
->   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+> 1. Open a terminal in VSCode
+> 2. Activate the poetry shell.  
+    > ```bash
+    > poetry shell 
+    > poetry install
+    >  ```    
+> 3. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+
 ## Running the python script
 This function is executed by the following command with the current folder as [`03_uns_graphdb`](.)
 ```bash
