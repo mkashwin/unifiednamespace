@@ -21,7 +21,7 @@ We need setup 2 instances of this connector
 There are a number of ways to deploy and run your Neo4j instance. 
 I chose to run this as a docker instance to ease the setup and portability. 
 
-**[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)**$
+Refer to the **[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)** for more guidance<br/>
 We will also be using the [APOC plugin](https://neo4j.com/docs/apoc/5/).
 
 Quick command reference 
@@ -86,7 +86,8 @@ This application has two configuration file
     **graphdb** | **url**\* | Mandatory. The db connection URL string for your Neo4j instance| *None*
     graphdb | database | the data base name to write to. if not provided default db ('') will be used | *''*
     graphdb | uns_node_types | List based on ISA-95 part 2 the nested depth. Nodes will by tagged with the node type depending on their depth. Can be of variable length. Recommended is 5 | ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] 
-    graphdb | spB_node_types | List based SparkplugB namespace specifications. Nodes will by tagged with the node type depending on their depth. This must be of length 5 | ["spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"]     
+    graphdb | spB_node_types | List based SparkplugB namespace specifications. Nodes will by tagged with the node type depending on their depth. This must be of length 5 | ["spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"]
+    graphdb | nested_attribute_node_type | Node Type used for nested attributes when they are created as child nodes to one of the topic nodes or another nested attribute node | NESTED_ATTRIBUTE
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
     
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the credentials to connect to the MQTT cluster and the GraphDB. This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**.
@@ -173,14 +174,17 @@ poetry shell
 poetry install
 python ./src/uns_graphdb/graphdb_handler.py
 ```
+> **Setting up VSCode**
+> 
 > While importing the folder into VSCode remember to do the following steps the first time
->   1. Open a terminal in VSCode
->   1. Activate the poetry shell.  
-        ```bash
-        poetry shell 
-        poetry install
-        ```    
->   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+> 1. Open a terminal in VSCode
+> 2. Activate the poetry shell.  
+>```bash 
+> poetry shell 
+> poetry install
+>```    
+> 3. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+
 ## Running the python script
 This function is executed by the following command with the current folder as [`03_uns_graphdb`](.)
 ```bash
