@@ -102,7 +102,7 @@ toml = ["tomli"]
 name = "dynaconf"
 version = "3.1.11"
 description = "The dynamic configurator for your Python Project"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -191,7 +191,7 @@ files = [
 name = "neo4j"
 version = "5.5.0"
 description = "Neo4j Bolt driver for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -275,7 +275,7 @@ files = [
 name = "psycopg2-binary"
 version = "2.9.5"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -423,7 +423,7 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 name = "pytz"
 version = "2022.7.1"
 description = "World timezone definitions, modern and historical"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -454,7 +454,10 @@ files = []
 develop = true
 
 [package.dependencies]
+dynaconf = "^3.1.9"
 logger = "^1.4"
+neo4j = "^5.5"
+paho-mqtt = "^1.6.1"
 
 [package.source]
 type = "directory"
@@ -471,7 +474,10 @@ files = []
 develop = true
 
 [package.dependencies]
+dynaconf = "^3.1.9"
 logger = "^1.4"
+psycopg2-binary = "^2.9.3"
+pytz = "^2022.1"
 
 [package.source]
 type = "directory"
@@ -507,6 +513,7 @@ files = []
 develop = true
 
 [package.dependencies]
+dynaconf = "^3.1.9"
 logger = "^1.4"
 
 [package.source]

@@ -102,7 +102,7 @@ toml = ["tomli"]
 name = "dynaconf"
 version = "3.1.11"
 description = "The dynamic configurator for your Python Project"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -351,7 +351,19 @@ protobuf = "^4.21.1"
 type = "directory"
 url = "../02_mqtt-cluster"
 
+[[package]]
+name = "yapf"
+version = "0.32.0"
+description = "A formatter for Python code."
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "yapf-0.32.0-py2.py3-none-any.whl", hash = "sha256:8fea849025584e486fd06d6ba2bed717f396080fd3cc236ba10cb97c4c51cf32"},
+    {file = "yapf-0.32.0.tar.gz", hash = "sha256:a3f5085d37ef7e3e004c4ba9f9b3e40c54ff1901cd111f05145ae313a7c67d1b"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "b6f70b800a27b1f3bf3ca25694397c1a6eafb0a30673830afad06a2111f5f688"
+content-hash = "2b1b42144a5731d14d765f3d443c2482447c77778ef1041d2db09d48b4166493"

@@ -25,13 +25,14 @@ packages = [{ include = "uns_historian", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
+psycopg2-binary = "^2.9.3"
+pytz = "^2022.1"
+dynaconf = "^3.1.9"
 
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
-psycopg2-binary = "^2.9.3"
-pytz = "^2022.1"
-dynaconf = "^3.1.9"
+yapf = "^0.32.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.1"

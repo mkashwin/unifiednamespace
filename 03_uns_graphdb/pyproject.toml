@@ -25,12 +25,12 @@ packages = [{ include = "uns_graphdb", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-
-[tool.poetry.group.dev.dependencies]
-uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
 neo4j = "^5.5"
 paho-mqtt = "^1.6.1"
 dynaconf = "^3.1.9"
+
+[tool.poetry.group.dev.dependencies]
+uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
 yapf = "^0.32.0"
 
 [tool.poetry.group.test.dependencies]
