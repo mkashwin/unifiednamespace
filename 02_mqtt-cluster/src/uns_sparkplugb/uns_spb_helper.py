@@ -294,7 +294,7 @@ class SpBMessageGenerator:
 
     ######################################################################
 
-    def add_historical_metric(self, container, name: str, 
+    def add_historical_metric(self, container, name: str,
                               datatype: int, value, timestamp, alias: int = None,):
         """
         Helper method for adding metrics to a container which can be a
