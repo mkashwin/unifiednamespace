@@ -279,10 +279,13 @@ class GraphDBHandler:
             if (composite_attributes is not None
                     and len(composite_attributes) > 0):
                 for child_key in composite_attributes:
-
+                    child_value = composite_attributes[child_key]
+                    # Fix to handle blank values which were give error unhashable type: 'dict'
+                    if (isinstance(child_value, list) or isinstance(child_value, dict)) and len(child_value) == 0:
+                        child_value = None
                     response = GraphDBHandler.save_attribute_nodes(
                         session, last_attr_node_id,
-                        {child_key, composite_attributes[child_key]},
+                        {child_key, child_value},
                         attr_node_type, timestamp)
 
     # method Ends
