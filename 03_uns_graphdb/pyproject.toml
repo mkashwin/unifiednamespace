@@ -38,6 +38,9 @@ pytest = "^7.2.1"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
 
+[tool.poetry.scripts]
+uns_graphdb = "uns_graphdb.uns_mqtt_graphdb:main"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

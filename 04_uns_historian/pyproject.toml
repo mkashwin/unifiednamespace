@@ -39,6 +39,10 @@ pytest = "^7.2.1"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
 
+
+[tool.poetry.scripts]
+uns_historian = "uns_historian.uns_mqtt_historian:main"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
