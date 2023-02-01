@@ -52,6 +52,7 @@ dynaconf = "^3.1.9"
 pytest = "^7.2.1"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
+safety = "^2.3.5"
 
 
 [tool.poetry.group.dev.dependencies]
