@@ -39,6 +39,10 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           poetry run flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test ./05_sparkplugb/src ./05_sparkplugb/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+      - name: Test for security vulnerabilities
+        run: |
+          poetry run safety check
+
       - name: Test with pytest
 
         run: |
