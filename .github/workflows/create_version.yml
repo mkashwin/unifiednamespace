@@ -1,0 +1,114 @@
+name: Update Version and Build Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - version.txt
+  workflow_dispatch:
+
+env:
+  SHA_TAG: ${{ env.GITHUB_SHA }}
+  MODULES: |
+    03_uns_graphdb
+    04_uns_historian
+    05_sparkplugb
+  IMAGE_NAMES: |
+    uns/graphdb
+    uns/historian
+    uns/spb_mapper
+
+jobs:
+  update-version:
+    name: Update version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Read version.txt
+        id: read_version
+        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
+      - name: Update version in pyproject.toml
+        run: |
+          echo "Updating all pyproject.toml with version ${{ env.VERSION }}"
+          find . -name 'pyproject.toml' -type f -exec sed -i "s/^version.*/version = \"${{ env.VERSION }}\"/g" {} +
+
+      - name: Commit and push modified files
+        uses: actions/github-script@0.9.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            git config --global user.email "actions@github.com"
+            git config --global user.name "Github Actions"
+            git add .
+            git commit -m "Update version number to ${{ env.VERSION }}"
+            git push origin main
+
+      - name: Set up Docker CLI
+        uses: docker/setup-docker@v2
+        with:
+          registry-url: ${{ env.GITHUB_REGISTRY }}
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }} # or  ${{ github.actor }}??
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Test Docker Image for all modules
+        env:
+          VERSION_TAG: "${{ env.VERSION }}"
+        run: |
+          IFS=$'\n'
+          modules=($MODULES)
+          image_names=($IMAGE_NAMES)
+          for i in "${!modules[@]}"; do
+            cd "${modules[$i]}"
+
+            echo "Creating Docker: ${image_names[$i]}:${{env.SHA_TAG }}"
+            docker build -t "${image_names[$i]}:${{env.SHA_TAG }}" -f ./Dockerfile ..
+
+            # Run the Docker tests
+            echo "Running tests for Docker image: ${image_names[$i]}::${{ env.VERSION_TAG }}"
+            docker run --entrypoint "/bin/bash" "${image_names[$i]}:${{ env.VERSION_TAG }}" -c '
+              if [ ! -d "/02_mqtt-cluster" ]; then
+                echo "Error: Folder /02_mqtt-cluster not found in Docker image"
+                exit 1
+              fi
+              if [ ! "$(ls -A /app/src | grep -E ".py$" | wc -l)" -gt "0" ]; then
+                echo "Error: No .py files found in folder /app/src"
+                exit 1
+              fi
+              if [ ! -f "/app/pyproject.toml" ]; then
+                echo "Error: pyproject.toml file not found in folder /app"
+                exit 1
+              fi
+              poetry run python -m compileall /app || (echo "Error: compileall failed" && exit 1)
+              echo "Docker image tests passed successfully"
+            '
+            echo "Tests successful, proceeding to create additional tags: ${image_names[$i]}::${{ env.VERSION_TAG }} "
+            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "${image_names[$i]}:${{ env.VERSION_TAG }}"
+            docker tag "${image_names[$i]}:${VERSION_TAG}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{ env.VERSION_TAG }}"
+            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{env.SHA_TAG }}""
+            # docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "${image_names[$i]}:latest"
+            cd ..
+          done
+
+      - name: Push docker image to Github Container Registry
+        run: |
+          modules=($MODULES)
+          image_names=($IMAGE_NAMES)
+          for i in "${!modules[@]}"; do
+            docker image push --all-tags "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{env.SHA_TAG }}""
+
+      - name: Tag repository
+        run: |
+          version=${{ env.VERSION }}
+          git tag $(version)
+          git push origin $(version)
