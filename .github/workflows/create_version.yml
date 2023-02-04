@@ -32,11 +32,6 @@ jobs:
         id: read_version
         run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-
       - name: Update version in pyproject.toml
         run: |
           echo "Updating all pyproject.toml with version ${{ env.VERSION }}"
@@ -68,11 +63,9 @@ jobs:
           IFS=$'\n'
           modules=($MODULES)
           image_names=($IMAGE_NAMES)
-          python -m pip install --upgrade pip
-          pip install poetry
+
           for i in "${!modules[@]}"; do
             cd "${modules[$i]}"
-            poetry install --only main -n
             echo "Validating Docker Entry prior to build"
             entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
             if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
@@ -88,17 +81,14 @@ jobs:
               echo "Error: Script entry for ${script_name} not found in [tool.poetry.scripts] section of pyproject.toml"
               exit 1
             fi
+
             main_entry=$(grep "^${script_name} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
             echo "Validate if ${main_entry} points to a valid python function"
+            
             module=${main_entry%:*}
             function=${main_entry##*:}
             if [[ ! "${function}" == "main" ]]; then
               echo "Error: '${main_entry}' should map to a main function of python module"
-              exit 1
-            fi
-
-            if ! $(poetry run python -c "import ${module} as module;print('${function}' in dir(module))"); then
-              echo "Error: Invalid main entry '${main_entry}'"
               exit 1
             fi
 
@@ -121,6 +111,10 @@ jobs:
                 exit 1
               fi
               poetry run python -m compileall /app || (echo "Error: compileall failed" && exit 1)
+              if ! $(poetry run python -c "import ${module} as module;print('${function}' in dir(module))"); then
+                echo "Error: Invalid main entry '${main_entry}'"
+                exit 1
+              fi
               echo "Docker image tests passed successfully"
             '
             echo "Tests successful, proceeding to create additional tags: ${image_names[$i]}::${{ env.VERSION_TAG }} "
