@@ -32,6 +32,11 @@ jobs:
         id: read_version
         run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
 
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
       - name: Update version in pyproject.toml
         run: |
           echo "Updating all pyproject.toml with version ${{ env.VERSION }}"
@@ -63,8 +68,11 @@ jobs:
           IFS=$'\n'
           modules=($MODULES)
           image_names=($IMAGE_NAMES)
+          python -m pip install --upgrade pip
+          pip install poetry
           for i in "${!modules[@]}"; do
             cd "${modules[$i]}"
+            poetry install --only main -n
             echo "Validating Docker Entry prior to build"
             entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
             if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
