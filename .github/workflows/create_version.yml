@@ -137,8 +137,10 @@ jobs:
               
               poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
 
-              if ! $(poetry run python -c "import '${python_module}' as module;print('${function}' in dir(module))"); then
-                echo "Error: Invalid main entry '${main_entry}'"
+              entry_valid=$(poetry run python -c "import ${python_module} as module;print('${function}' in dir(module))")
+
+              if [ ! "$entry_valid" == "True" ];then
+                echo "Error: Invalid main entry ${python_module}:${function}"
                 exit 1
               fi
               echo "Docker image tests passed successfully"
