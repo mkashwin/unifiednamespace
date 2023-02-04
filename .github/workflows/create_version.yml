@@ -89,10 +89,10 @@ jobs:
               exit 1
             fi
 
-            if ! poetry run python -c "
+            if ! $(poetry run python -c "
             import ${module} as module
-            '${function}' in dir (module)
-            " &> /dev/null; then
+            print('${function}' in dir(module))
+            "); then
               echo "Error: Invalid main entry '${main_entry}'"
               exit 1
             fi
