@@ -156,7 +156,8 @@ jobs:
           modules=($MODULES)
           image_names=($IMAGE_NAMES)
           for i in "${!modules[@]}"; do
-            docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_names[$i]}:${{env.SHA_TAG }}"
+            docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_names[$i]}"
+            docker image push --all-tags "${image_names[$i]}"
           done
 
       - name: Tag repository
