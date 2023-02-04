@@ -135,8 +135,7 @@ jobs:
               
               poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
 
-              entry_valid=$(poetry run python -c "import ${python_module} as module; print('${function}' in dir(module))")
-              echo "Is the main entry valid? $entry_valid"
+              entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
               if [ ! "$entry_valid" == "True" ];then
                 echo "Error: Invalid main entry ${python_module}:${function}"
                 exit 1
