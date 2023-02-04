@@ -90,7 +90,7 @@ jobs:
             echo "Tests successful, proceeding to create additional tags: ${image_names[$i]}::${{ env.VERSION_TAG }} "
             docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "${image_names[$i]}:${{ env.VERSION_TAG }}"
             docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{ env.VERSION_TAG }}"
-            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{env.SHA_TAG }}""
+            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{env.SHA_TAG }}"
             # docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "${image_names[$i]}:latest"
             cd ..
           done
