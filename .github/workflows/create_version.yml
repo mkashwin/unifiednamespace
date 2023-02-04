@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  SHA_TAG: ${{ env.GITHUB_SHA }}
+  SHA_TAG: ${{ GITHUB_SHA }}
   MODULES: |
     03_uns_graphdb
     04_uns_historian
