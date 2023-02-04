@@ -45,6 +45,7 @@ jobs:
           if ! git diff-index --quiet HEAD ; then
             git commit -m "Update version number to ${{ env.VERSION }}"
             git push origin ${{ github.ref }}
+            echo "SHA_TAG=$(git rev-parse HEAD)" >> $GITHUB_ENV
           else
             echo "No changes to commit."
           fi
@@ -155,7 +156,8 @@ jobs:
           modules=($MODULES)
           image_names=($IMAGE_NAMES)
           for i in "${!modules[@]}"; do
-            docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_names[$i]}:${{env.SHA_TAG }}""
+            docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_names[$i]}:${{env.SHA_TAG }}"
+          done
 
       - name: Tag repository
         run: |
