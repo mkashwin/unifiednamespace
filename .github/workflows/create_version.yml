@@ -76,7 +76,7 @@ jobs:
                 echo "Error: Folder /02_mqtt-cluster not found in Docker image"
                 exit 1
               fi
-              if [ ! "$(ls -A /app/src | grep -E ".py$" | wc -l)" -gt "0" ]; then
+              if [ ! "$(ls -AR /app/src | grep -E ".py$" | wc -l)" -gt "0" ]; then
                 echo "Error: No .py files found in folder /app/src"
                 exit 1
               fi
