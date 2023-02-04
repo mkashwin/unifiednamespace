@@ -84,8 +84,8 @@ jobs:
             echo "Validate if ${main_entry} points to a valid python function"
             module=${main_entry%:*}
             function=${main_entry##*:}
-            if ! ${function} == "main"; then
-              echo "Error: '${main_entry}' should map to main function of python module"
+            if [[ ! "${function}" == "main" ]]; then
+              echo "Error: '${main_entry}' should map to a main function of python module"
               exit 1
             fi
 
