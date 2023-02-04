@@ -71,24 +71,33 @@ jobs:
             if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
               echo "Error: Entry point should be in the format [\"poetry\", \"run\", \"<script_name>\"]"
               exit 1
+            else
+              echo "Entrypoint for docker is: ${entry_point}"
             fi
+
             script_name="$(echo "${entry_point}" | awk '{print $4}' | tr -d '"]')"
             if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
               echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
               exit 1
             fi
+
             if ! grep -q "^${script_name} =" ./pyproject.toml; then
               echo "Error: Script entry for ${script_name} not found in [tool.poetry.scripts] section of pyproject.toml"
               exit 1
+            else            
+              echo "[tool.poetry.scripts] entry is: ${script_name}"
             fi
 
             main_entry=$(grep "^${script_name} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
             echo "Validate if ${main_entry} points to a valid python function"
-            
-            module=${main_entry%:*}
+
+            python_module=${main_entry%:*}
             function=${main_entry##*:}
+            echo "python_module : ${python_module}"
+            echo "function : ${function}"
+
             if [[ ! "${function}" == "main" ]]; then
-              echo "Error: '${main_entry}' should map to a main function of python module"
+              echo "Error: '${main_entry}' should map to a main function of python python_module"
               exit 1
             fi
 
@@ -101,17 +110,34 @@ jobs:
               if [ ! -d "/02_mqtt-cluster" ]; then
                 echo "Error: Folder /02_mqtt-cluster not found in Docker image"
                 exit 1
+              else
+                echo "Success:  Folder /02_mqtt-cluster is present"
               fi
+
               if [ ! "$(ls -AR /app/src | grep -E ".py$" | wc -l)" -gt "0" ]; then
                 echo "Error: No .py files found in folder /app/src"
                 exit 1
+              else
+                echo "Success:  Python Files are present"
               fi
+
               if [ ! -f "/app/pyproject.toml" ]; then
                 echo "Error: pyproject.toml file not found in folder /app"
                 exit 1
+              else
+                echo "Success:  pyproject.toml file found"
               fi
+
+              if [ ! -d "/app/test" ]; then
+                echo "Error: test folder not found in folder /app"
+                exit 1
+              else
+                echo "Success:  test folder was not copied to the Docker"
+              fi
+              
               poetry run python -m compileall /app || (echo "Error: compileall failed" && exit 1)
-              if ! $(poetry run python -c "import ${module} as module;print('${function}' in dir(module))"); then
+
+              if ! $(poetry run python -c "import ${python_module} as module;print('${function}' in dir(module))"); then
                 echo "Error: Invalid main entry '${main_entry}'"
                 exit 1
               fi
