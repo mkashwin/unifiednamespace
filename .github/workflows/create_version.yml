@@ -93,8 +93,6 @@ jobs:
 
             python_module=${main_entry%:*}
             function=${main_entry##*:}
-            echo "python_module : ${python_module}"
-            echo "function : ${function}"
 
             if [[ ! "${function}" == "main" ]]; then
               echo "Error: '${main_entry}' should map to a main function of python python_module"
@@ -137,8 +135,8 @@ jobs:
               
               poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
 
-              entry_valid=$(poetry run python -c "import ${python_module} as module;print('${function}' in dir(module))")
-
+              entry_valid=$(poetry run python -c "import ${python_module} as module; print('${function}' in dir(module))")
+              echo "Is the main entry valid? $entry_valid"
               if [ ! "$entry_valid" == "True" ];then
                 echo "Error: Invalid main entry ${python_module}:${function}"
                 exit 1
