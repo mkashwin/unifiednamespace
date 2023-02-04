@@ -44,7 +44,7 @@ jobs:
           git add .
           if ! git diff-index --quiet HEAD ; then
             git commit -m "Update version number to ${{ env.VERSION }}"
-            git push origin ${{ env.GITHUB_REF }}
+            git push origin ${{ github.ref }}
           else
             echo "No changes to commit."
           fi
@@ -144,8 +144,8 @@ jobs:
             '
             echo "Tests successful, proceeding to create additional tags: ${image_names[$i]}::${{ env.VERSION_TAG }} "
             docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "${image_names[$i]}:${{ env.VERSION_TAG }}"
-            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{ env.VERSION_TAG }}"
-            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{env.SHA_TAG }}"
+            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_names[$i]}:${{ env.VERSION_TAG }}"
+            docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_names[$i]}:${{env.SHA_TAG }}"
             # docker tag "${image_names[$i]}:${{env.SHA_TAG }}" "${image_names[$i]}:latest"
             cd ..
           done
@@ -155,7 +155,7 @@ jobs:
           modules=($MODULES)
           image_names=($IMAGE_NAMES)
           for i in "${!modules[@]}"; do
-            docker image push --all-tags "ghcr.io/${{ env.GITHUB_REPOSITORY }}/${image_names[$i]}:${{env.SHA_TAG }}""
+            docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_names[$i]}:${{env.SHA_TAG }}""
 
       - name: Tag repository
         run: |
