@@ -128,7 +128,7 @@ jobs:
                 echo "Success:  pyproject.toml file found"
               fi
 
-              if [ ! -d "/app/test" ]; then
+              if [ -d "/app/test" ]; then
                 echo "Error: test folder not found in folder /app"
                 exit 1
               else
