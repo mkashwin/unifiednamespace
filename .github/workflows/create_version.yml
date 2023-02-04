@@ -65,6 +65,37 @@ jobs:
           image_names=($IMAGE_NAMES)
           for i in "${!modules[@]}"; do
             cd "${modules[$i]}"
+            echo "Validating Docker Entry prior to build"
+            entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
+            if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
+              echo "Error: Entry point should be in the format [\"poetry\", \"run\", \"<script_name>\"]"
+              exit 1
+            fi
+            script_name="$(echo "${entry_point}" | awk '{print $4}' | tr -d '"]')"
+            if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
+              echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
+              exit 1
+            fi
+            if ! grep -q "^${script_name} =" ./pyproject.toml; then
+              echo "Error: Script entry for ${script_name} not found in [tool.poetry.scripts] section of pyproject.toml"
+              exit 1
+            fi
+            main_entry=$(grep "^${script_name} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
+            echo "Validate if ${main_entry} points to a valid python function"
+            module=${main_entry%:*}
+            function=${main_entry##*:}
+            if ! ${function} == "main"; then
+              echo "Error: '${main_entry}' should map to main function of python module"
+              exit 1
+            fi
+
+            if ! poetry run python -c "
+              import ${module} as module
+              return '${function}' in dir (module)
+              " &> /dev/null; then
+              echo "Error: Invalid main entry '${main_entry}'"
+              exit 1
+            fi
 
             echo "Creating Docker: ${image_names[$i]}:${{env.SHA_TAG }}"
             docker build -t "${image_names[$i]}:${{env.SHA_TAG }}" -f ./Dockerfile ..
