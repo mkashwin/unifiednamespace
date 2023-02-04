@@ -38,16 +38,12 @@ jobs:
           find . -name 'pyproject.toml' -type f -exec sed -i "s/^version.*/version = \"${{ env.VERSION }}\"/g" {} +
 
       - name: Commit and push modified files
-        uses: actions/github-script@0.9.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          script: |
-            git config --global user.email "actions@github.com"
-            git config --global user.name "Github Actions"
-            git add .
-            git commit -m "Update version number to ${{ env.VERSION }}"
-            git push origin main
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Actions"
+          git add .
+          git commit -m "Update version number to ${{ env.VERSION }}"
+          git push origin main
 
       - name: Login to Github Container Registry
         uses: docker/login-action@v1
