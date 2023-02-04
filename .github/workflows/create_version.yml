@@ -135,9 +135,9 @@ jobs:
                 echo "Success:  test folder was not copied to the Docker"
               fi
               
-              poetry run python -m compileall /app || (echo "Error: compileall failed" && exit 1)
+              poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
 
-              if ! $(poetry run python -c "import ${python_module} as module;print('${function}' in dir(module))"); then
+              if ! $(poetry run python -c "import '${python_module}' as module;print('${function}' in dir(module))"); then
                 echo "Error: Invalid main entry '${main_entry}'"
                 exit 1
               fi
