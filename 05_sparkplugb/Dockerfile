@@ -33,6 +33,7 @@ COPY ./02_mqtt-cluster/README.md /02_mqtt-cluster/
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
 
 # Install the required dependencies for the project using poetry
+RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry add /02_mqtt-cluster -n  --lock
 RUN poetry install --only main -n
