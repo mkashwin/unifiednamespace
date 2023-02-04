@@ -43,7 +43,7 @@ jobs:
           git config --global user.name "Github Actions"
           git add .
           git commit -m "Update version number to ${{ env.VERSION }}"
-          git push origin main
+          git push origin ${{ env.GITHUB_REF }}
 
       - name: Login to Github Container Registry
         uses: docker/login-action@v1
