@@ -149,28 +149,29 @@ class UnsMqttGraphDb:
                 node_types=node_types,
                 attr_node_type=self.graphdb_nested_attribute_node_type)
         except SystemError as se:
-            LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
-                         str(se),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error(
+                "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
+                str(se),
+                msg.topic,
+                msg.payload,
+                stack_info=True,
+                exc_info=True)
             raise se
         except Exception as ex:
-            LOGGER.error("Error persisting the message to the Graph DB: %s",
-                         str(ex),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error(
+                "Error persisting the message to the Graph DB: %s \nTopic: %s \nMessage:%s",
+                str(ex),
+                msg.topic,
+                msg.payload,
+                stack_info=True,
+                exc_info=True)
 
     # end of on_message----------------------------------------------------------------------------
 
     def on_disconnect(self, client, userdata, result_code, properties=None):
         """
         Callback function executed every time the client is disconnected from the MQTT broker
-        Used to clean up all database connections
         """
-        # Close the database connection when the MQTT broker gets disconnected
-        if self.graph_db_handler is not None:
-            self.graph_db_handler.close()
-            self.graph_db_handler = None
         if result_code != 0:
             LOGGER.error("Unexpected disconnection.:%s",
                          str(result_code),
