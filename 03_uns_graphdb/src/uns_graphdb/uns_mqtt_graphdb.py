@@ -81,7 +81,7 @@ class UnsMqttGraphDb:
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
                                                "timestamp")
         if self.mqtt_host is None:
-            raise ValueError(
+            raise SystemError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
 
@@ -109,12 +109,12 @@ class UnsMqttGraphDb:
         self.graphdb_nested_attribute_node_type: str = settings.get(
             "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
         if self.graphdb_url is None:
-            raise ValueError(
+            raise SystemError(
                 "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'"
             )
 
         if (self.graphdb_user is None) or (self.graphdb_password is None):
-            raise ValueError(
+            raise SystemError(
                 "GraphDB Username & Password not provided."
                 "Update keys 'graphdb.username' and 'graphdb.password' "
                 "in '../../conf/.secrets.yaml'")
@@ -148,12 +148,17 @@ class UnsMqttGraphDb:
                                                time.time()),
                 node_types=node_types,
                 attr_node_type=self.graphdb_nested_attribute_node_type)
+        except SystemError as se:
+            LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
+                         str(se),
+                         stack_info=True,
+                         exc_info=True)
+            raise se
         except Exception as ex:
             LOGGER.error("Error persisting the message to the Graph DB: %s",
                          str(ex),
                          stack_info=True,
                          exc_info=True)
-            raise ex
 
     # end of on_message----------------------------------------------------------------------------
 

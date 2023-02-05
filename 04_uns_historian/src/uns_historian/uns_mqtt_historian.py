@@ -78,7 +78,7 @@ class UnsMqttHistorian:
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
                                                "timestamp")
         if self.mqtt_host is None:
-            raise ValueError(
+            raise SystemError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
 
@@ -97,22 +97,22 @@ class UnsMqttHistorian:
         self.historian_table: str = settings.historian["table"]
 
         if self.historian_hostname is None:
-            raise ValueError((
+            raise SystemError((
                 "Historian Url not provided. "
                 "Update key 'historian.hostname' in '../../conf/settings.yaml'"
             ))
         if self.historian_database is None:
-            raise ValueError((
+            raise SystemError((
                 "Historian Database name  not provided. "
                 "Update key 'historian.database' in '../../conf/settings.yaml'"
             ))
         if self.historian_table is None:
-            raise ValueError(
+            raise SystemError(
                 f"""Table in Historian Database {self.historian_database} not provided.
                 Update key 'historian.table' in '../../conf/settings.yaml'""")
         if ((self.historian_user is None)
                 or (self.historian_password is None)):
-            raise ValueError(
+            raise SystemError(
                 "Historian DB  Username & Password not provided."
                 "Update keys 'historian.username' and 'historian.password' "
                 "in '../../conf/.secrets.yaml'")
@@ -141,13 +141,18 @@ class UnsMqttHistorian:
                     filtered_message.get(self.mqtt_timestamp_key,
                                          time.time())),
                 message=filtered_message)
+        except SystemError as se:
+            LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
+                         str(se),
+                         stack_info=True,
+                         exc_info=True)
+            raise se
         except Exception as ex:
             LOGGER.error(
                 "Error persisting the message to the Historian DB: %s",
                 str(ex),
                 stack_info=True,
                 exc_info=True)
-            raise ex
 
     def on_disconnect(self, client, userdata, result_code, properties=None):
         """
