@@ -11,11 +11,6 @@ on:
       - main
       - release/*
       - docker_support
-env:
-  MODULES_IMAGE_NAMES: |
-    03_uns_graphdb, uns/graphdb
-    04_uns_historian, uns/historian
-    05_sparkplugb, uns/spb_mapper
 
 jobs:
   update-version:
@@ -64,7 +59,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module_and_image: ${{ env.MODULES_IMAGE_NAMES }}
+        include:
+          - { module: 03_uns_graphdb, image: uns/graphdb }
+          - { module: 04_uns_historian, image: uns/historian }
+          - { module: 05_sparkplugb, image: uns/spb_mapper }
+
     env:
       SHA_TAG: ${{ needs.update-version.outputs.SHA_TAG }}
       VERSION_TAG: ${{ needs.update-version.outputs.VERSION_TAG }}
@@ -84,8 +83,8 @@ jobs:
       - name: Build & Test Docker Image for module
         run: |
           IFS=$'\n'
-          module=${{ matrix.module_and_image[0] }}
-          image_name=${{ matrix.module_and_image[1] }}
+          module=${{ matrix.module }}
+          image_name=${{ matrix.image }}
 
           cd "${module}"
           echo "Validating Docker Entry prior to build"
