@@ -62,12 +62,12 @@ jobs:
     name: Build docker images, test images and push to Github container registry
     needs: update-version
     runs-on: ubuntu-latest
-    env:
-      SHA_TAG: ${{ needs.update-version.outputs.SHA_TAG }}
-      VERSION_TAG: ${{ needs.update-version.outputs.VERSION_TAG }}
     strategy:
       matrix:
         module_and_image: ${{ env.MODULES_IMAGE_NAMES }}
+    env:
+      SHA_TAG: ${{ needs.update-version.outputs.SHA_TAG }}
+      VERSION_TAG: ${{ needs.update-version.outputs.VERSION_TAG }}
     steps:
       - name: Login to Github Container Registry
         uses: docker/login-action@v2
