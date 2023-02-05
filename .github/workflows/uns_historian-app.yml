@@ -67,5 +67,6 @@ jobs:
       - name: Test with pytest
         run: |
           # change to current directory of module        
-          cd ./04_uns_historian        
-          poetry run pytest -m "not integrationtest" ./test/
+          cd ./04_uns_historian
+          # run all tests including integration tests
+          poetry run pytest ./test
