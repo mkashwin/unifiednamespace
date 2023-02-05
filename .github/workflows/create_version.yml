@@ -170,7 +170,10 @@ jobs:
           docker tag "${image_name}:${{env.SHA_TAG }}" "${image_name}:${{ env.VERSION_TAG }}"
           docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
           docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
-          docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:latest"
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:latest"
+          else
+            docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{ github.ref_name }}"
 
       - name: Push docker image to Github Container Registry
         run: |
@@ -190,12 +193,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
-
-      - name: Install GnuPG
-        run: sudo apt-get update && sudo apt-get install -y gnupg2
-
-      - name: Import GitHub's GPG Key
-        run: gpg --recv-keys --keyserver keyserver.ubuntu.com 0x9769B6D60A7B1B6E
 
       - name: Tag repository
         run: |
