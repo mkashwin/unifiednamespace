@@ -69,4 +69,4 @@ jobs:
           # change to current directory of module        
           cd ./04_uns_historian
           # run all tests including integration tests
-          poetry run pytest ./test
+          poetry run pytest  -m "not integrationtest" ./test

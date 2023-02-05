@@ -59,4 +59,4 @@ jobs:
         run: |
           # change to current directory of module        
           cd ./02_mqtt-cluster  
-          poetry run pytest -m "not integrationtest" ./test/
+          poetry run pytest ./test/
