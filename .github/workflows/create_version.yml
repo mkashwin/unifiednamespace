@@ -174,8 +174,8 @@ jobs:
 
       - name: Push docker image to Github Container Registry
         run: |
-          module=${{ matrix.module_and_image[0] }}
-          image_name=${{ matrix.module_and_image[1] }}
+          module=${{ matrix.module }}
+          image_name=${{ matrix.image }}
 
           cd "${module}"
           docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_name}"
