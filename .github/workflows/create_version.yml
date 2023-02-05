@@ -179,7 +179,6 @@ jobs:
 
           cd "${module}"
           docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_name}"
-          docker image push --all-tags "${image_name}"
 
   create_tag:
     name: Tag the repository
