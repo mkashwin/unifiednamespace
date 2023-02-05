@@ -17,8 +17,8 @@ jobs:
     name: Update version
     runs-on: ubuntu-latest
     outputs:
-      sha_tag: ${{ steps.set_outputs_for_next_jobs.SHA_TAG }}
-      version_tag: ${{ steps.set_outputs_for_next_jobs.VERSION_TAG }}
+      sha_tag: ${{ steps.set_outputs_for_next_jobs.sha_value }}
+      version_tag: ${{ steps.set_outputs_for_next_jobs.version_value }}
     env:
       SHA_TAG: ${{ github.sha }}
 
@@ -53,8 +53,8 @@ jobs:
       - name: Set output for next jobs
         id: set_outputs_for_next_jobs
         run: |
-          echo "version_tag=${{ env.VERSION_TAG}}" >> $GITHUB_OUTPUT
-          echo "sha_tag=${{ env.SHA_TAG }}" >> $GITHUB_OUTPUT
+          echo "version_value=${{ env.VERSION_TAG}}" >> $GITHUB_OUTPUT
+          echo "sha_value=${{ env.SHA_TAG }}" >> $GITHUB_OUTPUT
 
   build-test-docker-images:
     name: Build docker images, test images and push to Github container registry
