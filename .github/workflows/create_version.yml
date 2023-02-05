@@ -1,5 +1,4 @@
 name: Update Version and Build Docker Image
-
 on:
   push:
     branches:
@@ -7,6 +6,18 @@ on:
     paths:
       - version.txt
   workflow_dispatch:
+    branches:
+      - main
+      - release/*
+      - docker_support
+    inputs:
+      force_tag:
+        description: "Force tag creation"
+        type: string
+        default: "no"
+        options:
+          - no
+          - yes
 
 env:
   SHA_TAG: ${{ env.GITHUB_SHA }}
