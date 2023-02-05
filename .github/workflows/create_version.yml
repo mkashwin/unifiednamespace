@@ -7,9 +7,12 @@ on:
     paths:
       - version.txt
   workflow_dispatch:
-
+    branches:
+      - main
+      - release/*
+      - docker_support
 env:
-  MODULES_IMAGE-NAMES: |
+  MODULES_IMAGE_NAMES: |
     03_uns_graphdb, uns/graphdb
     04_uns_historian, uns/historian
     05_sparkplugb, uns/spb_mapper
@@ -64,7 +67,7 @@ jobs:
       VERSION_TAG: ${{ needs.update-version.outputs.VERSION_TAG }}
     strategy:
       matrix:
-        module_and_image: ${{ env.MODULES_IMAGE-NAMES }}
+        module_and_image: ${{ env.MODULES_IMAGE_NAMES }}
     steps:
       - name: Login to Github Container Registry
         uses: docker/login-action@v2
@@ -176,7 +179,7 @@ jobs:
           docker image push --all-tags "${image_name}"
 
   create_tag:
-    name: tags the repository
+    name: Tag the repository
     needs: [update-version, build-test-docker-images]
     runs-on: ubuntu-latest
 
