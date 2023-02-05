@@ -14,11 +14,11 @@ on:
     inputs:
       force_tag:
         description: "Force tag creation"
-        type: string
+        type: choice
         default: "no"
         options:
-          - no
-          - yes
+          - "no"
+          - "yes"
 
 jobs:
   update-version:
