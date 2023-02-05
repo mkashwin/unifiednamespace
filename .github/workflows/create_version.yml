@@ -174,6 +174,7 @@ jobs:
             docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:latest"
           else
             docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{ github.ref_name }}"
+          fi
 
       - name: Push docker image to Github Container Registry
         run: |
