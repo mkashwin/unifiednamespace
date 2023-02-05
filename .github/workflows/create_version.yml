@@ -17,8 +17,9 @@ jobs:
     name: Update version
     runs-on: ubuntu-latest
     outputs:
-      sha_tag: ${{ steps.set_outputs_for_next_jobs.sha }}
-      version_tag: ${{ steps.set_outputs_for_next_jobs.version }}
+      sha_tag: ${{ steps.set_outputs_for_next_jobs.outputs.sha }}
+      version_tag: ${{ steps.set_outputs_for_next_jobs.outputs.version }}
+
     env:
       SHA_TAG: ${{ github.sha }}
 
@@ -50,8 +51,8 @@ jobs:
             echo "No changes to commit."
 
           fi
-      - name: Set output for next jobs
-        id: set_outputs_for_next_jobs
+      - id: set_outputs_for_next_jobs
+        name: Set output for next jobs
         run: |
           echo "version=${{ env.VERSION_TAG}}" >> $GITHUB_OUTPUT
           echo "sha=${{ env.SHA_TAG }}" >> $GITHUB_OUTPUT
