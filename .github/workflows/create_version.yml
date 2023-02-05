@@ -18,9 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHA_TAG: ${{ github.sha }}
-    outputs:
-      SHA_TAG: ${{ steps.commit_new_version.SHA_TAG }}
-      VERSION_TAG: ${{ steps.read_version.VERSION_TAG }}
 
     steps:
       - name: Checkout code
@@ -52,6 +49,10 @@ jobs:
             echo "No changes to commit."
             echo "SHA_TAG=${{ env.SHA_TAG }}" >> $GITHUB_OUTPUT
           fi
+
+    outputs:
+      SHA_TAG: ${{ steps.commit_new_version.SHA_TAG }}
+      VERSION_TAG: ${{ steps.read_version.VERSION_TAG }}
 
   build-test-docker-images:
     name: Build docker images, test images and push to Github container registry
