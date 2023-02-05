@@ -8,13 +8,17 @@ on:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
       - ".github/workflows/uns_mqtt-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
       - ".github/workflows/uns_mqtt-app.yml"
 permissions:
   contents: read

@@ -9,15 +9,17 @@ on:
       - "**"
     paths:
       - "**/*.py"
-      - "**/*.toml"
-      - "**/*.yml"
+      - "**/pyproject.toml"
+      - "**/poetry.lock"
+      - ".github/workflows/*.yml"
   pull_request:
     branches:
       - "**"
     paths:
       - "**/*.py"
-      - "**/*.toml"
-      - "**/*.yml"
+      - "**/pyproject.toml"
+      - "**/poetry.lock"
+      - ".github/workflows/*.yml"
 permissions:
   contents: read
 

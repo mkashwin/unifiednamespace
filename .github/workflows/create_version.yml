@@ -170,7 +170,7 @@ jobs:
           docker tag "${image_name}:${{env.SHA_TAG }}" "${image_name}:${{ env.VERSION_TAG }}"
           docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
           docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
-          # docker tag "${image_name}:${{env.SHA_TAG }}" "${image_name}:latest"
+          docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:latest"
 
       - name: Push docker image to Github Container Registry
         run: |
@@ -182,7 +182,7 @@ jobs:
 
   create_tag:
     name: Tag the repository
-    needs: [update-version, build-test-docker-images]
+    needs: [update-version]
     runs-on: ubuntu-latest
 
     steps:
@@ -191,11 +191,17 @@ jobs:
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
 
+      - name: Install GnuPG
+        run: sudo apt-get update && sudo apt-get install -y gnupg2
+
+      - name: Import GitHub's GPG Key
+        run: gpg --recv-keys --keyserver keyserver.ubuntu.com 0x9769B6D60A7B1B6E
+
       - name: Tag repository
         run: |
           version=${{ needs.update-version.outputs.version_tag }}
           git config --global user.email "actions@github.com"
           git config --global user.name "Github Actions"
 
-          git tag "v$version"
+          git tag -s "v$version" -m "Tagging v$version"
           git push origin "v$version"

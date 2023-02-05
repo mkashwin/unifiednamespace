@@ -8,15 +8,25 @@ on:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
-      - "04_uns_historian/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
+      - "04_uns_historian/**/*.py"
+      - "04_uns_historian/pyproject.toml"
+      - "04_uns_historian/poetry.lock"
+      - "04_uns_historian/Dockerfile"
       - ".github/workflows/uns_historian-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
-      - "04_uns_historian/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
+      - "04_uns_historian/**/*.py"
+      - "04_uns_historian/pyproject.toml"
+      - "04_uns_historian/poetry.lock"
+      - "04_uns_historian/Dockerfile"
       - ".github/workflows/uns_historian-app.yml"
 permissions:
   contents: read

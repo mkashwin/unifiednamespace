@@ -8,15 +8,25 @@ on:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
-      - "05_sparkplugb/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
+      - "05_sparkplugb/**/*.py"
+      - "05_sparkplugb/pyproject.toml"
+      - "05_sparkplugb/poetry.lock"
+      - "05_sparkplugb/Dockerfile"
       - ".github/workflows/uns_sparkplugb-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
-      - "05_sparkplugb/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
+      - "05_sparkplugb/**/*.py"
+      - "05_sparkplugb/pyproject.toml"
+      - "05_sparkplugb/poetry.lock"
+      - "05_sparkplugb/Dockerfile"
       - ".github/workflows/uns_sparkplugb-app.yml"
 permissions:
   contents: read
