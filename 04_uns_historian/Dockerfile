@@ -14,6 +14,9 @@ FROM python:3.11-slim-bullseye
 # Set the environment variable for the entrypoint command
 ENV UNS_MODULE="04_uns_historian"
 
+LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/04_uns_historian
+LABEL org.opencontainers.image.description="Stores MQTT Messages to the historian database. Supports both UNS and SparkplugB"
+LABEL org.opencontainers.image.licenses=MIT
 
 # Set the working directory in the container to /
 WORKDIR /app

@@ -13,6 +13,9 @@ FROM python:3.11-slim-bullseye
 # Set the environment variable for the entrypoint command
 ENV UNS_MODULE="03_uns_graphdb"
 
+LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/03_uns_graphdb
+LABEL org.opencontainers.image.description="Stores MQTT messages to the graph database. Supports both UNS and SparkplugB"
+LABEL org.opencontainers.image.licenses=MIT
 
 # Set the working directory in the container to /
 WORKDIR /app

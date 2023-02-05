@@ -14,6 +14,9 @@ FROM python:3.11-slim-bullseye
 # Set the environment variable for the entrypoint command
 ENV UNS_MODULE="05_sparkplugb"
 
+LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/05_sparkplugb
+LABEL org.opencontainers.image.description="Listens to the SparkplugB name space and translates them to UNS messages, then publishes to the UNS Namespace"
+LABEL org.opencontainers.image.licenses=MIT
 
 # Set the working directory in the container to /
 WORKDIR /app
