@@ -16,6 +16,9 @@ jobs:
   update-version:
     name: Update version
     runs-on: ubuntu-latest
+    outputs:
+      SHA_TAG: ${{ steps.set_outputs_for_next_jobs.SHA_TAG }}
+      VERSION_TAG: ${{ steps.set_outputs_for_next_jobs.VERSION_TAG }}
     env:
       SHA_TAG: ${{ github.sha }}
 
@@ -27,7 +30,6 @@ jobs:
         id: read_version
         run: |
           echo "VERSION_TAG=$(cat version.txt)" >> $GITHUB_ENV
-          echo "VERSION_TAG=$(cat version.txt)" >> $GITHUB_OUTPUT
 
       - name: Update version in pyproject.toml
         run: |
@@ -44,15 +46,17 @@ jobs:
             git commit -m "Update version number to ${{ env.VERSION_TAG}}"
             git push origin ${{ github.ref }}
             echo "SHA_TAG=$(git rev-parse HEAD)" >> $GITHUB_ENV
-            echo "SHA_TAG=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           else
             echo "No changes to commit."
-            echo "SHA_TAG=${{ env.SHA_TAG }}" >> $GITHUB_OUTPUT
-          fi
 
-    outputs:
-      SHA_TAG: ${{ steps.commit_new_version.SHA_TAG }}
-      VERSION_TAG: ${{ steps.read_version.VERSION_TAG }}
+          fi
+      - name: Set output for next jobs
+        id: set_outputs_for_next_jobs
+        run: |
+          echo "VERSION_TAG$={{ env.VERSION_TAG}}"
+          echo "SHA_TAG=${{ env.SHA_TAG }}"
+          echo "VERSION_TAG=${{ env.VERSION_TAG}}" >> $GITHUB_OUTPUT
+          echo "SHA_TAG=${{ env.SHA_TAG }}" >> $GITHUB_OUTPUT
 
   build-test-docker-images:
     name: Build docker images, test images and push to Github container registry
