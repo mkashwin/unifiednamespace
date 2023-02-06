@@ -248,3 +248,90 @@ def test_get_node_birth_payload():
     assert metric.get("timestamp") is not None
     assert metric.get("datatype") == sparkplug_b_pb2.Int64
     assert int(metric.get("longValue")) == 1
+
+
+@pytest.mark.parametrize(
+    "timestamp, metrics", [(
+        1671554024644, [
+            {
+                'name': 'Inputs/A', 'timestamp': 1486144502122,
+                'datatype': 11, 'value': False
+            }, {
+                'name': 'Inputs/B', 'timestamp': 1486144502122,
+                'datatype': 11, 'value': False
+            }, {
+                'name': 'Outputs/E', 'timestamp': 1486144502122,
+                'datatype': 11, 'value': False
+            }, {
+                'name': 'Outputs/F', 'timestamp': 1486144502122,
+                'datatype': 11, 'value': False
+            }, {
+                'name': 'Properties/Hardware Make', 'timestamp': 1486144502122,
+                'datatype': 12, 'value': 'Sony'
+            }, {
+                'name': 'Properties/Weight', 'timestamp': 1486144502122,
+                'datatype': 3, 'value': 200
+            }]
+    )]
+    )
+def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
+    """
+    Test converting a JSON dict into a SPB DDATA payload
+    """
+    sparkplug_message = uns_spb_helper.SpBMessageGenerator()
+    payload = sparkplug_message.get_device_data_payload(timestamp=timestamp)
+    alias = 0
+    for metric in metrics:
+        name: str = metric["name"]
+        datatype: int = metric["datatype"]
+        value = metric.get("value", None)
+        metric_timestamp = metric.get("timestamp", None)
+        if metric_timestamp is None:
+            metric_timestamp = timestamp
+        sparkplug_message.add_metric(payload=payload, name=name,
+                                     alias=alias, datatype=datatype,
+                                     value=value, timestamp=metric_timestamp)
+        alias = alias + 1
+
+    print(payload.SerializeToString())
+    parsed_payload: dict = MessageToDict(payload)
+
+    if timestamp is not None:
+        assert int(parsed_payload["timestamp"]) == int(timestamp)
+
+    parsed_payload_metrics: list[dict] = parsed_payload["metrics"]
+    assert len(parsed_payload_metrics) == len(metrics)
+
+    for parsed_metric, metric in zip(parsed_payload_metrics, metrics):
+        assert parsed_metric["name"] == metric["name"]
+        metric_timestamp = metric.get("timestamp", None)
+        if metric_timestamp is None:
+            metric_timestamp = timestamp
+        # FIXME for some reason the timestamp attribute is being returned as a string instead of float
+        assert int(parsed_metric["timestamp"]) == int(metric_timestamp)
+        assert parsed_metric["datatype"] == metric["datatype"]
+        parsed_value = None
+        match parsed_metric["datatype"]:
+            case sparkplug_b_pb2.Int8: parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.Int16: parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.Int32: parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.Int64: parsed_value = parsed_metric["longValue"]
+            case sparkplug_b_pb2.UInt8: parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.UInt16: parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.UInt32: parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.UInt64: parsed_value = parsed_metric["longValue"]
+            case sparkplug_b_pb2.Float: parsed_value = parsed_metric["floatValue"]
+            case sparkplug_b_pb2.Double: parsed_value = parsed_metric["doubleValue"]
+            case sparkplug_b_pb2.Boolean: parsed_value = parsed_metric["booleanValue"]
+            case sparkplug_b_pb2.String: parsed_value = parsed_metric["stringValue"]
+            case sparkplug_b_pb2.DateTime: parsed_value = parsed_metric["longValue"]
+            case sparkplug_b_pb2.Text: parsed_value = parsed_metric["stringValue"]
+            case sparkplug_b_pb2.UUID: parsed_value = parsed_metric["stringValue"]
+            case sparkplug_b_pb2.Bytes: parsed_value = parsed_metric["bytesValue"]
+            case sparkplug_b_pb2.File: parsed_value = parsed_metric["bytesValue"]
+            case sparkplug_b_pb2.DataSet:
+                continue
+            case sparkplug_b_pb2.Template:
+                continue
+
+        assert parsed_value == metric["value"]

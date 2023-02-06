@@ -151,7 +151,30 @@ pytest -m "not integrationtest" test/
 # runs all tests
 pytest test/
 ```
+# Deploying the docker container image created for this module 
+The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fhistorian">Github Container Registry</a>
+
+The way to run the container  is
+```bash
+# docker pull ghcr.io/mkashwin/unifiednamespace/uns/historian:<tag>
+# e.g.
+docker pull ghcr.io/mkashwin/unifiednamespace/uns/historian:latest
+# docker run --name <container name> -d s-v <full path to conf>/:/app/conf uns/historian:<tag>
+docker run --name uns_mqtt_historian -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/unifiednamespace/uns/historian:latest
+```
+**Note**: Remember to update the following before executing 
+*  **\<container name\>** (optional): Identifier for the container so you can work with the same container instance using 
+   ```bash
+   docker start <container name>
+   docker stop <container name>
+   ```
+* **\<full path to conf\>** (Mandatory): Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
+
+* If you are running this image on the host as the MQTT broker  and/or timescaledb pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 ## Limitations 
-1. Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
-1. Add and improve automated test coverage 
+1. [x] ~~Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers~~
+  
+  Dockerize module published to  <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fhistorian">Github Container Registry</a>
+1. [x] Add and improve automated test coverage 
+1. [ ] Currently all messages are stored in the same table. Should we create separate tables per topic or topic type?

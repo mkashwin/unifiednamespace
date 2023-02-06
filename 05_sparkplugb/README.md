@@ -131,7 +131,7 @@ Ensure that the [configuration files](./conf/) are correctly updated to your MQT
 # Ensure that the poetry shell is activated
 poetry shell 
 poetry install
-python ./src/uns_historian/uns_mqtt_historian.py
+python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
 ```
 ## Running tests
 The set of test for this module is executed by
@@ -143,15 +143,35 @@ pytest -m "not integrationtest" test/
 # runs all tests
 pytest test/
 ```
-# Reference
-* [Eclipse Sparkplug B Specification](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
-* [Cirrus Link Sparkplug B MQTT Tutorials](https://docs.chariot.io/display/CLD79/B%3A+Example+Python+Client)
-* [Github Eclipse Tahu project](https://github.com/eclipse/tahu)
-* [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
+# Deploying the docker container image created for this module 
+The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fspb_mapper">Github Container Registry</a>
 
+The way to run the container  is
+```bash
+# docker pull ghcr.io/mkashwin/unifiednamespace/uns/spb_mapper:<tag>
+# e.g.
+docker pull ghcr.io/mkashwin/unifiednamespace/uns/spb_mapper:latest
+# docker run --name <container name> -d s-v <full path to conf>/:/app/conf uns/spb_mapper:<tag>
+docker run --name spb_to_uns_mqtt -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/unifiednamespace/uns/spb_mapper:latest
+```
+**Note**: Remember to update the following before executing 
+*  **\<container name\>** (optional): Identifier for the container so you can work with the same container instance using 
+   ```bash
+   docker start <container name>
+   docker stop <container name>
+   ```
+* **\<full path to conf\>** (Mandatory): Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
+
+* If you are running this image on the host as the MQTT broker pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 # Limitations 
-1. The application assumes the the MQTT broker for SparkPlugB and the UNS are one and the same as it does not sense to have separate brokers for the same. This can be enhanced easily if there is a requirement for the same. Please create issue on the Github project
-1. Need to understand how to handle NBIRTH, NDEATH, DBIRTH, DDEATH, STATE message types
-1. Need to understand how to handle metric types DataSet, Template 
-1. Need to understand how to handle metadata, properties, is_multi_part etc.
+1. [ ] The application assumes the the MQTT broker for SparkPlugB and the UNS are one and the same as it does not sense to have separate brokers for the same. This can be enhanced easily if there is a requirement for the same. Please create issue on the Github project
+1. [ ] Need to understand how to handle NDEATH, DDEATH, ~~STATE~~ message types
+   * STATE messages are not Protobuf messages but rather JSON messages. They cannot be mapped to the UNS as they have no metrics 
+1. [*] ~~Handle non compliant messages~~
+   * non compliant messages will be logged as an error and ignored  
+1. [ ] Need to understand how to handle metric types DataSet, Template 
+1. [ ] Need to understand how to handle metadata, properties, is_multi_part etc.
+1. [x] ~~Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers~~
+  
+  Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fspb_mapper">Github Container Registry</a>

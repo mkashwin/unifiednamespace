@@ -7,10 +7,19 @@ on:
   push:
     branches:
       - "**"
+    paths:
+      - "**/*.py"
+      - "**/pyproject.toml"
+      - "**/poetry.lock"
+      - ".github/workflows/*.yml"
   pull_request:
     branches:
       - "**"
-
+    paths:
+      - "**/*.py"
+      - "**/pyproject.toml"
+      - "**/poetry.lock"
+      - ".github/workflows/*.yml"
 permissions:
   contents: read
 
@@ -18,7 +27,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: dev
-
+    strategy:
+      matrix:
+        module:
+          [
+            "./02_mqtt-cluster",
+            "./03_uns_graphdb",
+            "./04_uns_historian",
+            "./05_sparkplugb",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
@@ -35,14 +52,15 @@ jobs:
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          poetry run flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test ./05_sparkplugb/src ./05_sparkplugb/test --count --select=E9,F63,F7,F82 --show-source --statistics 
+          poetry run flake8 ${{ matrix.module }}/src ${{ matrix.module }}/test  --count --select=E9,F63,F7,F82 --show-source --statistics 
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          poetry run flake8 ./02_mqtt-cluster/src ./02_mqtt-cluster/test ./03_uns_graphdb/src ./03_uns_graphdb/test ./04_uns_historian/src ./04_uns_historian/test ./05_sparkplugb/src ./05_sparkplugb/test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          poetry run flake8 ${{ matrix.module }}/src ${{ matrix.module }}/test  --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Test for security vulnerabilities
+        run: |
+          poetry run safety check
 
       - name: Test with pytest
 
         run: |
-          poetry run pytest -m "not integrationtest" ./02_mqtt-cluster/test/
-          poetry run pytest -m "not integrationtest" ./03_uns_graphdb/test/
-          poetry run pytest -m "not integrationtest" ./04_uns_historian/test/
-          poetry run pytest -m "not integrationtest" ./05_sparkplugb/test/
+          poetry run pytest -m "not integrationtest" ${{ matrix.module }}/test/

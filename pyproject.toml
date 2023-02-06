@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Unified Name Space"
-version = "0.1.0"
+version = "0.6.0"
 description = "Set of modules / tools to realize an UNS for your organization"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -52,6 +52,7 @@ dynaconf = "^3.1.9"
 pytest = "^7.2.1"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
+safety = "^2.3.5"
 
 
 [tool.poetry.group.dev.dependencies]

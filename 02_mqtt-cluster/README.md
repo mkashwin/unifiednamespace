@@ -162,6 +162,11 @@ pytest -m "not integrationtest" test/
 # runs all tests
 pytest test/
 ```
+# Reference
+* [Eclipse Sparkplug B Specification](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
+* [Cirrus Link Sparkplug B MQTT Tutorials](https://docs.chariot.io/display/CLD79/B%3A+Example+Python+Client)
+* [Github Eclipse Tahu project](https://github.com/eclipse/tahu)
+* [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
 
 # Known Limitations / workarounds
 1. MQTTv3.1 appears not to be supported by EMQX. While testing client code using `paho.mqtt.client` against [broker.emqx.io](https://www.emqx.com/en/mqtt/public-mqtt5-broker) observed that the connection was not happening and neither the `on_connect()` nor the `on_connect_fail()` callbacks were invoked. Since most clients would be either MQTTv3.1.1 or MQTTv5.0 this should not be a problem. In local testing and implementations I have chosen to go with MQTT 5

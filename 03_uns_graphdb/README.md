@@ -62,7 +62,7 @@ In a production environment we should download the APOC release matching our Neo
 * \<password\> : is the password needed to connect to the DB. Needs to be updated in [./.secrets.yaml](#key-configurations-to-provide) 
 
 Depending on your context you may need to change the other properties like port, directories etc. 
-Once the docker container is deployed you can work on 
+Once the docker container is deployed you can work on the same container instance by 
 ```bash
 docker start  uns_graphdb #<container_name>
 docker stop  uns_graphdb #<container_name>
@@ -203,16 +203,42 @@ pytest -m "not integrationtest" test/
 # runs all tests
 pytest test/
 ```
+# Deploying the docker container image created for this module 
+The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fgraphdb">Github Container Registry</a>
+
+The way to run the container  is
+```bash
+# docker pull ghcr.io/mkashwin/unifiednamespace/uns/graphdb:<tag>
+# e.g.
+docker pull ghcr.io/mkashwin/unifiednamespace/uns/graphdb:latest
+
+# docker run --name <container name> -d -v <full path to conf>:/app/conf uns/graphdb:<tag>
+# e.g.
+docker run --name uns_mqtt_historian -d -v $PWD/conf:/app/conf uns/graphdb:latest
+
+```
+**Note**: Remember to update the following before executing 
+*  **\<container name\>** : Identifier for the container so you can work with the same container instance using 
+   ```bash
+   docker start <container name>
+   docker stop <container name>
+   ```
+* **\<full path to conf\>**: Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
+
+* If you are running this image on the host as the MQTT broker  and/or neo4j pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 # Limitations / workarounds 
-* [x] ~~Handle nested JSON messages.~~ 
+1. [x] ~~Handle nested JSON messages.~~ 
   Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
   Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
   See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)
   ~~If your message contains nested data the current logic will flatten the JSON object. See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)~~
-* [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
+1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
   If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. 
-* [ ] Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers
-* [x] Add and improve automated test coverage
-* [ ] Enhancing ACLs on the nodes for the various nodes to secure access
-* [ ] Securing the Neo4j database 
+1. [x] ~~Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers~~
+  
+  Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fgraphdb">Github Container Registry</a>
+
+1. [x] Add and improve automated test coverage
+1. [ ] Enhancing ACLs on the nodes for the various nodes to secure access
+1. [ ] Securing the Neo4j database 

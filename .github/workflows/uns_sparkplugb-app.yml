@@ -8,15 +8,25 @@ on:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
-      - "05_sparkplugb/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
+      - "05_sparkplugb/**/*.py"
+      - "05_sparkplugb/pyproject.toml"
+      - "05_sparkplugb/poetry.lock"
+      - "05_sparkplugb/Dockerfile"
       - ".github/workflows/uns_sparkplugb-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
-      - "05_sparkplugb/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
+      - "05_sparkplugb/**/*.py"
+      - "05_sparkplugb/pyproject.toml"
+      - "05_sparkplugb/poetry.lock"
+      - "05_sparkplugb/Dockerfile"
       - ".github/workflows/uns_sparkplugb-app.yml"
 permissions:
   contents: read
@@ -48,8 +58,13 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           poetry run flake8 ./src ./test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+      - name: Test for security vulnerabilities
+        run: |
+          cd ./05_sparkplugb
+          poetry run safety check
+
       - name: Test with pytest
         run: |
           # change to current directory of module                
           cd ./05_sparkplugb
-          poetry run pytest -m "not integrationtest" ./test
+          poetry run pytest ./test
