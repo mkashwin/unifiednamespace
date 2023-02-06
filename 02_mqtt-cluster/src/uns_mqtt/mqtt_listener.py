@@ -29,6 +29,7 @@ class UnsMQTTClient(mqtt_client.Client):
     MQTTv31 = mqtt_client.MQTTv31
 
     SPARKPLUG_NS = "spBv1.0/"
+    SPB_STATE_MSG_TYPE = "spBv1.0/+/STATE"
 
     def __init__(self,
                  client_id: str,
@@ -71,7 +72,7 @@ class UnsMQTTClient(mqtt_client.Client):
 
         if (protocol not in (mqtt_client.MQTTv5, mqtt_client.MQTTv311,
                              mqtt_client.MQTTv31)):
-            raise ValueError(f"Unknown MQTT Protocol Id:{protocol}")
+            raise SystemError(f"Unknown MQTT Protocol Id:{protocol}")
         # Need these values in the connect operation
         self.protocol = protocol
         self.clean_session = clean_session
@@ -188,7 +189,7 @@ class UnsMQTTClient(mqtt_client.Client):
                          str(ex),
                          stack_info=True,
                          exc_info=True)
-            raise ConnectionError(ex) from ex
+            raise SystemError(ex) from ex
 
     def setup_tls(self, tls):
         """
@@ -246,13 +247,16 @@ class UnsMQTTClient(mqtt_client.Client):
         Returns:
             dict: The payload as a dictionary.
         """
-        if topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
+
+        if (topic.startswith(UnsMQTTClient.SPARKPLUG_NS)
+                and not UnsMQTTClient.is_topic_matched(
+                    UnsMQTTClient.SPB_STATE_MSG_TYPE, topic)):
             # This message was to the sparkplugB namespace in protobuf format
             inbound_payload = sparkplug_b_pb2.Payload()
             inbound_payload.ParseFromString(payload)
             decoded_payload = MessageToDict(inbound_payload)
         else:
-            # TODO Assuming all messages to UNS are json hence convertible to dict
+            # TODO Assuming all messages to UNS or the STATE message type in sparkplugB are json hence convertible to dict
             decoded_payload = json.loads(payload.decode("utf-8"))
 
         filtered_message = UnsMQTTClient.filter_ignored_attributes(
@@ -310,9 +314,9 @@ class UnsMQTTClient(mqtt_client.Client):
             regex_exp = ""
             for value in regex_list:
                 if value == "+":
-                    regex_exp += "[^/]*"
+                    regex_exp += "[^/]*/"
                 elif value == "#":
-                    regex_exp += "(.)*"
+                    regex_exp += "(.)*/"
                 else:
                     regex_exp += value + "/"
             if (len(regex_exp) > 1 and regex_exp[-1] == "/"):

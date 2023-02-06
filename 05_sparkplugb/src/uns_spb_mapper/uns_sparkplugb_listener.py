@@ -72,7 +72,7 @@ class UNSSparkPlugBMapper:
         self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
                                                "timestamp")
         if self.mqtt_host is None:
-            raise ValueError(
+            raise SystemError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
             )
 
@@ -113,13 +113,17 @@ class UNSSparkPlugBMapper:
             else:
                 raise ValueError(
                     f"Unknown SparkplugB topic received: {msg.topic}")
-
+        except SystemError as se:
+            LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
+                         str(se),
+                         stack_info=True,
+                         exc_info=True)
+            raise se
         except Exception as ex:
             LOGGER.error("Error parsing SparkplugB message payload: %s",
                          str(ex),
                          stack_info=True,
                          exc_info=True)
-            raise ex
 
     def on_disconnect(self, client, userdata, result_code, properties=None):
         """

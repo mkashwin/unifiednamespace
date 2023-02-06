@@ -232,7 +232,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
         sparkplug_message.add_metric(payload=spb_data_payload,
                                      name=metric_data[0],
                                      alias=metric_data[1],
-                                     data_type=metric_data[2],
+                                     datatype=metric_data[2],
                                      value=metric_data[3])
     parsed_payload: dict = Spb2UNSPublisher.get_payload(
         spb_data_payload.SerializeToString())

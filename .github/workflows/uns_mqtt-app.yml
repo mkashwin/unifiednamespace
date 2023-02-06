@@ -8,13 +8,17 @@ on:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
       - ".github/workflows/uns_mqtt-app.yml"
   pull_request:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**"
+      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/pyproject.toml"
+      - "02_mqtt-cluster/poetry.lock"
       - ".github/workflows/uns_mqtt-app.yml"
 permissions:
   contents: read
@@ -40,14 +44,19 @@ jobs:
       - name: Lint with flake8
         run: |
           # change to current directory of module        
-          cd ./02_mqtt-cluster    
+          cd ./02_mqtt-cluster 
           # stop the build if there are Python syntax errors or undefined names
           poetry run flake8 ./src ./test --count --select=E9,F63,F7,F82 --show-source --statistics 
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           poetry run flake8 ./src ./test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+      - name: Test for security vulnerabilities
+        run: |
+          cd ./02_mqtt-cluster   
+          poetry run safety check
+
       - name: Test with pytest
         run: |
           # change to current directory of module        
           cd ./02_mqtt-cluster  
-          poetry run pytest -m "not integrationtest" ./test/
+          poetry run pytest ./test/

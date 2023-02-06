@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns-mqtt"
-version = "0.1.0"
+version = "0.6.0"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -38,6 +38,7 @@ yapf = "^0.32.0"
 pytest = "^7.2.1"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
+safety = "^2.3.5"
 
 [build-system]
 requires = ["poetry-core"]
