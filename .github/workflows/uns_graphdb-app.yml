@@ -111,4 +111,5 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install dependencies
         run: |
+          cd ./03_uns_graphdb
           docker build -t "uns/graphdb:${{ github.sha }}" -f ./Dockerfile ..
