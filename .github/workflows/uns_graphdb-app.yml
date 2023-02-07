@@ -65,31 +65,31 @@ jobs:
           poetry run safety check
 
       - name: Test with pytest
+        env:
+          UNS_mqtt.host: "localhost"
+          UNS_mqtt.port: 1883
+          UNS_graphdb.url: "bolt://localhost:7687"
+          UNS_graphdb.username: "neo4j"
+          UNS_graphdb.password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
+
         run: |
           # Step 1: change to current directory of module
           cd ./03_uns_graphdb
 
-          # Step 2: Set thr various environment variables
-          export UNS_mqtt.host=localhost
-          export UNS_mqtt.port=1883
-          export UNS_graphdb.url=bolt://localhost:7687
-          export UNS_graphdb.username=neo4j
-          export UNS_graphdb.password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
-
-          # Step 3: Run the required docker files
+          # Step 2: Run the required docker files
           docker run  --name  uns_mqtt -d -p 1883:1883 -p 8083:8083 emqx/emqx:latest
           docker run \
             --name  uns_graphdb \
             -p7474:7474 -p7687:7687 \
             -d \
-            --env NEO4J_AUTH=neo4j/$UNS_graphdb.password \
+            --env NEO4J_AUTH=neo4j/${{ env.UNS_graphdb.password }}\
             --env apoc.export.file.enabled=true \
             --env apoc.import.file.enabled=true \
             --env apoc.import.file.use_neo4j_config=true \
             --env NEO4J_PLUGINS=\[\"apoc\"\] \
             neo4j:latest
 
-          # Step 4: wait for containers to be running
+          # Step 3: wait for containers to be running
           until [ "`docker inspect -f {{.State.Running}} uns_mqtt`"=="true" ]; do
               sleep 1;
           done;
@@ -97,10 +97,10 @@ jobs:
               sleep 1;
           done;
 
-          # Step 5: Run tests
+          # Step 4: Run tests
           poetry run pytest ./test
 
-          # Step 6: Stop the docker container
+          # Step 5: Stop the docker container
           docker stop  uns_mqtt
           docker stop  uns_graphdb
 
