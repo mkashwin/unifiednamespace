@@ -62,7 +62,7 @@ jobs:
           --health-timeout 10s
           --health-retries 20
           --health-interval 10s
-          --health-start-period 30
+          --health-start-period 30s
 
     steps:
       - uses: actions/checkout@v3
