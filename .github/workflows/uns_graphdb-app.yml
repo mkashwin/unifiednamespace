@@ -66,9 +66,9 @@ jobs:
 
       - name: Test with pytest
         env:
-          UNS_mqtt.host: "0.0.0.0"
+          UNS_mqtt.host: "127.0.0.1"
           UNS_mqtt.port: 1883
-          UNS_graphdb.url: "bolt://0.0.0.0:7687"
+          UNS_graphdb.url: "bolt://127.0.0.1:7687"
           UNS_graphdb.username: "neo4j"
           UNS_graphdb.password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
 
