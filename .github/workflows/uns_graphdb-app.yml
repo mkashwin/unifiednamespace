@@ -34,7 +34,29 @@ permissions:
 jobs:
   build_code:
     runs-on: ubuntu-latest
-    environment: dev
+    env:
+      UNS_mqtt.host: "localhost"
+      UNS_mqtt.port: 1883
+      UNS_graphdb.url: "bolt://localhost:7687"
+      UNS_graphdb.username: "neo4j"
+      UNS_graphdb.password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
+    services:
+      uns_mqtt:
+        image: emqx/emqx:latest
+        ports:
+          - "1883:1883"
+          - "8083:8083"
+      uns_graphdb:
+        image: neo4j:latest
+        ports:
+          - "7474:7474"
+          - "7687:7687"
+        env:
+          NEO4J_AUTH: neo4j/${{ env.UNS_graphdb.password }}
+          apoc.export.file.enabled: true
+          apoc.import.file.enabled: true
+          apoc.import.file.use_neo4j_config: true
+          NEO4J_PLUGINS: \[\"apoc\"\] \
 
     steps:
       - uses: actions/checkout@v3
@@ -65,46 +87,12 @@ jobs:
           poetry run safety check
 
       - name: Test with pytest
-        env:
-          UNS_mqtt.host: "172.17.0.1"
-          UNS_mqtt.port: 1883
-          UNS_graphdb.url: "bolt://localhost:7687"
-          UNS_graphdb.username: "neo4j"
-          UNS_graphdb.password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
-
         run: |
-          # Step 1: change to current directory of module
           cd ./03_uns_graphdb
 
-          # Step 2: Run the required docker files
-          docker run  --name  uns_mqtt -d -p 1883:1883 -p 8083:8083 emqx/emqx:latest
-          docker run \
-            --name  uns_graphdb \
-            -p7474:7474 -p7687:7687 \
-            -d \
-            --env NEO4J_AUTH=neo4j/${{ env.UNS_graphdb.password }}\
-            --env apoc.export.file.enabled=true \
-            --env apoc.import.file.enabled=true \
-            --env apoc.import.file.use_neo4j_config=true \
-            --env NEO4J_PLUGINS=\[\"apoc\"\] \
-            neo4j:latest
-
-          # Step 3: wait for containers to be running
-          until [ "`docker inspect -f {{.State.Running}} uns_mqtt`"=="true" ]; do
-              sleep 1;
-          done;
-          until [ "`docker inspect -f {{.State.Running}} uns_graphdb`"=="true" ]; do
-              sleep 1;
-          done;
-
-          # Step 4: Run tests
           poetry run pytest ./test
 
-          # Step 5: Stop the docker container
-          docker stop  uns_mqtt
-          docker stop  uns_graphdb
-
-  build_docker:
+  build_docker_image:
     runs-on: ubuntu-latest
 
     steps:
