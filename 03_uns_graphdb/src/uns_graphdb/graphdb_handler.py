@@ -59,12 +59,15 @@ class GraphDBHandler:
         self.driver: neo4j.Driver = None
         try:
             self.connect()
+
+        except SystemError as ex:
+            raise ex
         except Exception as ex:
             LOGGER.error("Failed to create the driver: %s",
                          str(ex),
                          stack_info=True,
                          exc_info=True)
-            raise ex
+            raise SystemError(ex) from ex
 
     def connect(self, retry: int = 0) -> neo4j.Driver:
         """
@@ -99,7 +102,7 @@ class GraphDBHandler:
                              str(self.max_retry),
                              stack_info=True,
                              exc_info=True)
-                raise ex
+                raise SystemError(ex) from ex
             else:
                 retry += 1
                 LOGGER.error("Error Connecting to %s.\n Error: %s",
@@ -116,7 +119,7 @@ class GraphDBHandler:
                          str(ex),
                          stack_info=True,
                          exc_info=True)
-            raise ex
+            raise SystemError(ex) from ex
         return self.driver
 
     def close(self):
@@ -158,13 +161,7 @@ class GraphDBHandler:
             Node type used to depict nested attributes which will be child nodes
             by default `"NESTED_ATTRIBUTE"`
         """
-        # attributes = None
 
-        # Neo4j supports only flat messages.
-        # Also need to ensure that the message doesn't contain
-        # any attribute with the name "node_name"
-        # if message is not None:
-        #     attributes = GraphDBHandler.flatten_json_for_neo4j(message)
         try:
             with self.connect(retry) as driver:
                 with driver.session(database=self.database) as session:
@@ -281,11 +278,11 @@ class GraphDBHandler:
                 for child_key in composite_attributes:
                     child_value = composite_attributes[child_key]
                     # Fix to handle blank values which were give error unhashable type: 'dict'
-                    if (isinstance(child_value, list) or isinstance(child_value, dict)) and len(child_value) == 0:
+                    if (isinstance(child_value, list) or isinstance(
+                            child_value, dict)) and len(child_value) == 0:
                         child_value = None
                     response = GraphDBHandler.save_attribute_nodes(
-                        session, last_attr_node_id,
-                        {child_key, child_value},
+                        session, last_attr_node_id, {child_key, child_value},
                         attr_node_type, timestamp)
 
     # method Ends

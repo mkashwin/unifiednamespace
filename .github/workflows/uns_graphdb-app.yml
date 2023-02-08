@@ -56,7 +56,13 @@ jobs:
           apoc.export.file.enabled: true
           apoc.import.file.enabled: true
           apoc.import.file.use_neo4j_config: true
-          NEO4J_PLUGINS: \[\"apoc\"\] \
+          NEO4J_PLUGINS: '["apoc"]'
+        options: >-
+          --health-cmd "cypher-shell 'match (n) return count(n)'"
+          --health-timeout 10s
+          --health-retries 20
+          --health-interval 10s
+          --health-start-period 30
 
     steps:
       - uses: actions/checkout@v3
