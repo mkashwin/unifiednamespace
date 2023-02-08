@@ -34,6 +34,16 @@ permissions:
 jobs:
   build_code:
     runs-on: ubuntu-latest
+    env:
+      UNS_mqtt.host: "localhost"
+      UNS_mqtt.port: 1883
+
+    services:
+      uns_mqtt:
+        image: emqx/emqx:latest
+        ports:
+          - "1883:1883"
+          - "8083:8083"
 
     steps:
       - uses: actions/checkout@v3
@@ -64,27 +74,10 @@ jobs:
           poetry run safety check
 
       - name: Test with pytest
-        env:
-          UNS_mqtt.host: "localhost"
-          UNS_mqtt.port: 1883
 
         run: |
-          # Step 1: change to current directory of module       
           cd ./05_sparkplugb
-
-          # Step 2: Run the required docker files
-          docker run  --name  uns_mqtt -d -p 1883:1883 -p 8083:8083 emqx/emqx:latest
-
-          # Step 3: wait for containers to be running
-          until [ "`docker inspect -f {{.State.Running}} uns_mqtt`"=="true" ]; do
-              sleep 1;
-          done;
-
-          # Step 4: Run tests
           poetry run pytest ./test
-
-          # Step 5: Stop the docker container
-          docker stop  uns_mqtt
 
   build_docker:
     runs-on: ubuntu-latest
