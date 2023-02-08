@@ -17,3 +17,12 @@ services:
       - ./conf:/app/conf
     environment:
       UNS_MODULE: 04_uns_historian
+
+  spb_mapper:
+    build:
+      context: .
+      dockerfile: ./05_sparkplugb/Dockerfile
+    volumes:
+      - ./conf:/app/conf
+    environment:
+      UNS_MODULE: 05_sparkplugb
