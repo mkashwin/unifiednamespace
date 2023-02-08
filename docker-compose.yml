@@ -1,0 +1,19 @@
+version: '3'
+services:
+  graphdb:
+    build:
+      context: .
+      dockerfile: ./03_uns_graphdb/Dockerfile
+    volumes:
+      - ./conf:/app/conf
+    environment:
+      UNS_MODULE: 03_uns_graphdb
+
+  historian:
+    build:
+      context: .
+      dockerfile: ./04_uns_historian/Dockerfile
+    volumes:
+      - ./conf:/app/conf
+    environment:
+      UNS_MODULE: 04_uns_historian
