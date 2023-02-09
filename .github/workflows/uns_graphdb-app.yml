@@ -35,11 +35,11 @@ jobs:
   build_code:
     runs-on: ubuntu-latest
     env:
-      UNS_mqtt.host: "localhost"
-      UNS_mqtt.port: 1883
-      UNS_graphdb.url: "bolt://localhost:7687"
-      UNS_graphdb.username: "neo4j"
-      UNS_graphdb.password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
+      UNS_mqtt__host: "localhost"
+      UNS_mqtt__port: 1883
+      UNS_graphdb__url: "bolt://localhost:7687"
+      UNS_graphdb__username: "neo4j"
+      UNS_graphdb__password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
     services:
       uns_mqtt:
         image: emqx/emqx:latest
@@ -52,17 +52,11 @@ jobs:
           - "7474:7474"
           - "7687:7687"
         env:
-          NEO4J_AUTH: neo4j/${{ env.UNS_graphdb.password }}
+          NEO4J_AUTH: neo4j/${{ env.UNS_graphdb__password }}
           apoc.export.file.enabled: true
           apoc.import.file.enabled: true
           apoc.import.file.use_neo4j_config: true
           NEO4J_PLUGINS: '["apoc"]'
-        options: >-
-          --health-cmd "cypher-shell 'match (n) return count(n)'"
-          --health-timeout 10s
-          --health-retries 20
-          --health-interval 10s
-          --health-start-period 30s
 
     steps:
       - uses: actions/checkout@v3
