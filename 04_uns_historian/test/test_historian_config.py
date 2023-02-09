@@ -165,9 +165,6 @@ def test_timescale_db_configs():
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 def test_connectivity_to_mqtt():
     """
     Test if the provided configurations for the MQTT server are valid and
@@ -182,9 +179,6 @@ def test_connectivity_to_mqtt():
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 def test_connectivity_to_historian():
     """
     Test if the provided configurations for the Historian DB Server are valid and

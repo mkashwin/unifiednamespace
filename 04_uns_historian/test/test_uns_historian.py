@@ -29,9 +29,6 @@ is_configs_provided: bool = (os.path.exists(
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 def test_uns_mqtt_historian():
     """
     Test case for UnsMqttHistorian#init()
@@ -57,9 +54,6 @@ def test_uns_mqtt_historian():
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
