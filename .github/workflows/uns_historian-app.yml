@@ -32,9 +32,28 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build_code:
     runs-on: ubuntu-latest
-
+    env:
+      UNS_mqtt__host: "localhost"
+      UNS_mqtt__port: 1883
+      UNS_historian__hostname: "localhost"
+      UNS_historian__database: "uns_historian"
+      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__username: "uns_dbuser"
+      UNS_historian__password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
+      POSTGRES_PASSWORD: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
+    services:
+      uns_mqtt:
+        image: emqx/emqx:latest
+        ports:
+          - "1883:1883"
+      uns_timescaledb:
+        image: timescale/timescaledb:latest-pg14
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: $POSTGRES_PASSWORD
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
@@ -64,9 +83,48 @@ jobs:
           cd ./04_uns_historian    
           poetry run safety check
 
+      - name: Create Database for Integration Testing
+        run: |
+          docker exec -t \
+          -e UNS_DB=${UNS_historian__database} \
+          -e UNS_TABLE=${UNS_historian__table}  \
+          -e UNS_USER=${UNS_historian__username} \
+          -e UNS_USER_PWD=${UNS_historian__password} \
+          uns_timescaledb su postgres bash -c 'psql <<-EOL
+          CREATE database $UNS_DB;
+
+          \c $UNS_DB;
+
+          CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+          CREATE ROLE $UNS_USER
+          LOGIN
+          PASSWORD '\''$UNS_USER_PWD'\'' ;
+
+          \c $UNS_DB $UNS_USER;
+
+          CREATE TABLE $UNS_TABLE (
+          time TIMESTAMPTZ NOT NULL,
+          topic text NOT NULL,
+          client_id text,
+          mqtt_msg JSONB
+          );
+
+          SELECT create_hypertable('\''$UNS_TABLE'\'', '\''time'\'');
+          EOLs
+          '
+
       - name: Test with pytest
         run: |
-          # change to current directory of module        
           cd ./04_uns_historian
-          # run all tests including integration tests
-          poetry run pytest  -m "not integrationtest" ./test
+          poetry run pytest ./test
+
+  build_docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          cd ./04_uns_historian
+          docker build -t "uns/historian:${{ github.sha }}" -f ./Dockerfile ..
