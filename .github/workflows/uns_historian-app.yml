@@ -41,6 +41,7 @@ jobs:
       UNS_historian__database: "uns_historian"
       UNS_historian__table: "UnifiedNamespace"
       UNS_historian__username: "uns_dbuser"
+      UNS_historian__password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
       POSTGRES_PASSWORD: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
     services:
       uns_mqtt:
@@ -84,23 +85,13 @@ jobs:
 
       - name: Create Database for Integration Testing
         run: |
-          UNS_historian__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
-          echo "UNS_historian__password=${UNS_historian__password}" >> $GITHUB_ENV
-          docker exec -t \
-          -e UNS_DB=${UNS_historian__database} \
-          -e UNS_TABLE=${UNS_historian__table}  \
-          -e UNS_USER=${UNS_historian__username} \
-          -e UNS_USER_PWD=${UNS_historian__password} \
-          uns_timescaledb su postgres bash -c 'psql <<-EOL
-          CREATE database $UNS_DB;
-
+          echo "CREATE database $UNS_DB;
           \c $UNS_DB;
-
           CREATE EXTENSION IF NOT EXISTS timescaledb;
 
           CREATE ROLE $UNS_USER
           LOGIN
-          PASSWORD '\''$UNS_USER_PWD'\'' ;
+          PASSWORD '$UNS_USER_PWD'
 
           \c $UNS_DB $UNS_USER;
 
@@ -111,9 +102,8 @@ jobs:
           mqtt_msg JSONB
           );
 
-          SELECT create_hypertable('\''$UNS_TABLE'\'', '\''time'\'');
-          EOLs
-          '
+          SELECT create_hypertable('$UNS_TABLE', 'time');
+          " | PGPASSWORD=${POSTGRES_PASSWORD} psql -U postgres
 
       - name: Test with pytest
         run: |
