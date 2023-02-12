@@ -54,12 +54,14 @@ jobs:
           - "5432:5432"
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
       - name: Create Database for Integration Testing
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
@@ -84,13 +86,6 @@ jobs:
 
           SELECT create_hypertable('$UNS_historian__table', 'time');
           " | PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${UNS_historian__hostname} -U postgres  -p 5432
-
-      - uses: actions/checkout@v3
-
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
 
       - name: Install dependencies
         run: |
