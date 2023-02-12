@@ -122,6 +122,28 @@ jobs:
           );
 
           SELECT create_hypertable('$UNS_historian__table', 'time');
+          "
+
+          echo "CREATE database $UNS_historian__database;
+          \c $UNS_DB;
+          CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+          CREATE ROLE $UNS_historian__username
+          LOGIN
+          PASSWORD '$UNS_historian__password';
+
+          \du
+
+          \c $UNS_historian__database $UNS_historian__username;
+
+          CREATE TABLE $UNS_historian__table (
+          time TIMESTAMPTZ NOT NULL,
+          topic text NOT NULL,
+          client_id text,
+          mqtt_msg JSONB
+          );
+
+          SELECT create_hypertable('$UNS_historian__table', 'time');
           " | PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${UNS_historian__hostname} -U postgres  -p 5432
 
       - name: Test with pytest
