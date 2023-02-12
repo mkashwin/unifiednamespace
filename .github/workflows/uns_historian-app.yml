@@ -53,7 +53,7 @@ jobs:
         ports:
           - "5432:5432"
         env:
-          POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
@@ -84,6 +84,8 @@ jobs:
           poetry run safety check
 
       - name: Create Database for Integration Testing
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
           echo "CREATE database $UNS_DB;
           \c $UNS_DB;
