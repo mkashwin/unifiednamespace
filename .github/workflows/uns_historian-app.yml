@@ -41,8 +41,8 @@ jobs:
       UNS_historian__database: "uns_historian"
       UNS_historian__table: "UnifiedNamespace"
       UNS_historian__username: "uns_dbuser"
-      UNS_historian__password: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
-      POSTGRES_PASSWORD: $(openssl rand -base64 32 | tr -dc '[:alnum:]')
+      UNS_historian__password: "$(openssl rand -base64 32 | tr -dc '[:alnum:]')"
+      POSTGRES_PASSWORD: "$(openssl rand -base64 32 | tr -dc '[:alnum:]')"
     services:
       uns_mqtt:
         image: emqx/emqx:latest
