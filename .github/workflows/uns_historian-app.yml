@@ -55,11 +55,38 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
     steps:
+      - name: Create Database for Integration Testing
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          UNS_historian__password=${{ env.UNS_historian__password }}
+          echo "CREATE database $UNS_historian__database;
+          \c $UNS_DB;
+          CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+          CREATE ROLE $UNS_historian__username
+          LOGIN
+          PASSWORD '${{ env.UNS_historian__password }}'
+
+          \c $UNS_historian__database $UNS_historian__username;
+
+          CREATE TABLE $UNS_historian__table (
+          time TIMESTAMPTZ NOT NULL,
+          topic text NOT NULL,
+          client_id text,
+          mqtt_msg JSONB
+          );
+
+          SELECT create_hypertable('$UNS_historian__table', 'time');
+          " | PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${UNS_historian__hostname} -U postgres  -p 5432
+
       - uses: actions/checkout@v3
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - name: Install dependencies
         run: |
           # change to current directory of module        
@@ -82,31 +109,6 @@ jobs:
           # change to current directory of module        
           cd ./04_uns_historian    
           poetry run safety check
-
-      - name: Create Database for Integration Testing
-        env:
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-        run: |
-          UNS_historian__password=${{ env.UNS_historian__password }}
-          echo "CREATE database $UNS_historian__database;
-          \c $UNS_DB;
-          CREATE EXTENSION IF NOT EXISTS timescaledb;
-
-          CREATE ROLE $UNS_historian__username
-          LOGIN
-          PASSWORD '$UNS_historian__password'
-
-          \c $UNS_historian__database $UNS_historian__username;
-
-          CREATE TABLE $UNS_historian__table (
-          time TIMESTAMPTZ NOT NULL,
-          topic text NOT NULL,
-          client_id text,
-          mqtt_msg JSONB
-          );
-
-          SELECT create_hypertable('$UNS_historian__table', 'time');
-          " | PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${UNS_historian__hostname} -U postgres  -p 5432
 
       - name: Test with pytest
         run: |
