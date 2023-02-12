@@ -103,7 +103,7 @@ jobs:
           UNS_historian__password: ${{ env.UNS_historian__password }}
         run: |
           echo "CREATE database $UNS_historian__database;
-          \c $UNS_DB;
+          \c $UNS_historian__database;
           CREATE EXTENSION IF NOT EXISTS timescaledb;
 
           CREATE ROLE $UNS_historian__username
@@ -125,7 +125,7 @@ jobs:
           "
 
           echo "CREATE database $UNS_historian__database;
-          \c $UNS_DB;
+          \c $UNS_historian__database;
           CREATE EXTENSION IF NOT EXISTS timescaledb;
 
           CREATE ROLE $UNS_historian__username
