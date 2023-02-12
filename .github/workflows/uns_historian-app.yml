@@ -87,7 +87,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
-          UNS_historian__password = ${{ env.UNS_historian__password }}
+          UNS_historian__password=${{ env.UNS_historian__password }}
           echo "CREATE database $UNS_historian__database;
           \c $UNS_DB;
           CREATE EXTENSION IF NOT EXISTS timescaledb;
