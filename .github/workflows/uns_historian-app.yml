@@ -110,6 +110,8 @@ jobs:
           LOGIN
           PASSWORD '$UNS_historian__password';
 
+          \du
+
           \c $UNS_historian__database $UNS_historian__username;
 
           CREATE TABLE $UNS_historian__table (
