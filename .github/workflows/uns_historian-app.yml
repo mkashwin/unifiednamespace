@@ -96,7 +96,7 @@ jobs:
 
           CREATE ROLE $UNS_historian__username
           LOGIN
-          PASSWORD '$UNS_historian__password'
+          PASSWORD '$UNS_historian__password';
 
           \c $UNS_historian__database $UNS_historian__username;
 
