@@ -32,8 +32,20 @@ permissions:
   contents: read
 
 jobs:
+  generate_random_password:
+    runs-on: ubuntu-latest
+    outputs:
+      postgres_pwd: ${{ steps.random_strings.outputs.postgres_pwd }}
+      uns_historian_pwd: ${{ steps.random_strings.outputs.uns_historian_pwd}}
+    steps:
+      - id: random_strings
+        run: |
+          echo "postgres_pwd=$(openssl rand -base64 32 | tr -dc '[:alnum:]')" >> $GITHUB_OUTPUT
+          echo "uns_historian_pwd=$(openssl rand -base64 32 | tr -dc '[:alnum:]')" >> $GITHUB_OUTPUT
+
   build_code:
     runs-on: ubuntu-latest
+    needs: generate_random_password
     env:
       UNS_mqtt__host: "localhost"
       UNS_mqtt__port: 1883
@@ -41,8 +53,8 @@ jobs:
       UNS_historian__database: "uns_historian"
       UNS_historian__table: "UnifiedNamespace"
       UNS_historian__username: "uns_dbuser"
-      UNS_historian__password: "$(openssl rand -base64 32 | tr -dc '[:alnum:]')"
-      POSTGRES_PASSWORD: "$(openssl rand -base64 32 | tr -dc '[:alnum:]')"
+      UNS_historian__password: ${{ needs.generate_random_password.outputs.uns_historian_pwd }}
+      POSTGRES_PASSWORD: ${{ needs.generate_random_password.outputs.postgres_pwd }}
     services:
       uns_mqtt:
         image: emqx/emqx:latest
