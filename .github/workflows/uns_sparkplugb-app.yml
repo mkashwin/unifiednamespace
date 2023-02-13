@@ -89,6 +89,7 @@ jobs:
           module="05_sparkplugb"
           image_name="uns/spb_mapper"
           SHA_TAG=${{ github.sha }}
+          echo "SHA_TAG=${SHA_TAG}
 
           cd "${module}"
           echo "Validating Docker Entry prior to build"
@@ -123,11 +124,11 @@ jobs:
             exit 1
           fi
 
-          echo "Creating Docker: ${image_name}:${{env.SHA_TAG }}"
-          docker build -t "${image_name}:${{env.SHA_TAG }}" -f ./Dockerfile ..
+          echo "Creating Docker: ${image_name}:${SHA_TAG}"
+          docker build -t "${image_name}:${SHA_TAG}" -f ./Dockerfile ..
 
           # Run the Docker tests
-          echo "Running tests for Docker image: ${image_name}::${{ env.SHA_TAG }}"
+          echo "Running tests for Docker image: ${image_name}::${SHA_TAG}"
           docker run --entrypoint "/bin/bash" -e python_module="$python_module" -e function="$function" "${image_name}:${{ env.SHA_TAG }}" -c '
             if [ ! -d "/02_mqtt-cluster" ]; then
               echo "Error: Folder /02_mqtt-cluster not found in Docker image"
