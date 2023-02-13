@@ -717,14 +717,14 @@ gitlab = ["python-gitlab (>=1.3.0)"]
 
 [[package]]
 name = "setuptools"
-version = "67.1.0"
+version = "67.2.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.1.0-py3-none-any.whl", hash = "sha256:a7687c12b444eaac951ea87a9627c4f904ac757e7abdc5aac32833234af90378"},
-    {file = "setuptools-67.1.0.tar.gz", hash = "sha256:e261cdf010c11a41cb5cb5f1bf3338a7433832029f559a6a7614bd42a967c300"},
+    {file = "setuptools-67.2.0-py3-none-any.whl", hash = "sha256:16ccf598aab3b506593c17378473978908a2734d7336755a8769b480906bec1c"},
+    {file = "setuptools-67.2.0.tar.gz", hash = "sha256:b440ee5f7e607bb8c9de15259dba2583dd41a38879a7abc1d43a71c59524da48"},
 ]
 
 [package.extras]
@@ -758,7 +758,7 @@ files = [
 
 [[package]]
 name = "uns-graphdb"
-version = "0.1.0"
+version = "0.6.1"
 description = "Graph Database implementation for a UNS setup"
 category = "main"
 optional = false
@@ -778,7 +778,7 @@ url = "03_uns_graphdb"
 
 [[package]]
 name = "uns-historian"
-version = "0.1.0"
+version = "0.6.1"
 description = "Historian implementation for a UNS setup"
 category = "main"
 optional = false
@@ -798,7 +798,7 @@ url = "04_uns_historian"
 
 [[package]]
 name = "uns-mqtt"
-version = "0.6.0"
+version = "0.6.1"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 category = "main"
 optional = false
@@ -817,7 +817,7 @@ url = "02_mqtt-cluster"
 
 [[package]]
 name = "uns-spb-mapper"
-version = "0.1.0"
+version = "0.6.1"
 description = "SparkplugB decoder to parse and unpack  SparkplugB messages to the UNS structure"
 category = "main"
 optional = false
