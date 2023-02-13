@@ -23,6 +23,7 @@ jobs:
     outputs:
       sha_tag: ${{ steps.set_outputs_for_next_jobs.outputs.sha }}
       version_tag: ${{ steps.set_outputs_for_next_jobs.outputs.version }}
+      branch_name: ${{ steps.commit_new_version.outputs.branch_name }}
 
     env:
       SHA_TAG: ${{ github.sha }}
@@ -44,17 +45,26 @@ jobs:
       - name: Commit and push modified files
         id: commit_new_version
         run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "Github Actions"
-          git add .
-          if ! git diff-index --quiet HEAD ; then
-            git commit -m "Update version number to ${{ env.VERSION_TAG}}"
-            git push origin ${{ github.ref }}
-            echo "SHA_TAG=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          else
+          MODIFIED_FILES=$(git diff --name-only HEAD)
+          if [ -z "$MODIFIED_FILES" ]; then
             echo "No changes to commit."
-
+          else
+            git config --global user.email "actions@github.com"
+            git config --global user.name "Github Actions"
+            # TODO check to see that only **/pyproject.toml or ./version.txt were modified
+            git add .
+            if ${{ github.ref_name }} == "main"; then
+              BRANCH_NAME="${{ github.ref_name }}_v${{ env.VERSION_TAG}}"
+              git checkout -b $BRANCH_NAME
+              git commit -m "Update version number to ${{ env.VERSION_TAG}} by creating new branch: $BRANCH_NAME "
+            else
+              BRANCH_NAME=${{ github.ref_name }}
+              git commit -m "Update version number to ${{ env.VERSION_TAG}} on ${{ github.ref_name }}"
+            fi
+            git push origin $BRANCH_NAME
+            echo "SHA_TAG=$(git rev-parse HEAD)" >> $GITHUB_ENV
           fi
+          echo "branch_name=$BRANCH_NAME >> $GITHUB_OUTPUT"
       - id: set_outputs_for_next_jobs
         name: Set output for next jobs
         run: |
@@ -88,7 +98,7 @@ jobs:
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
 
-      - name: Build & Test Docker Image for module
+      - name: Docker image tests
         run: |
           IFS=$'\n'
           module=${{ matrix.module }}
@@ -170,26 +180,42 @@ jobs:
             fi
             echo "Docker image tests passed successfully"
           '
-          echo "Tests successful, proceeding to create additional tags: ${image_name}::${{ env.VERSION_TAG }} "
-          docker tag "${image_name}:${{env.SHA_TAG }}" "${image_name}:${{ env.VERSION_TAG }}"
-          docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
-          docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:latest"
-          else
-            docker tag "${image_name}:${{env.SHA_TAG }}" "ghcr.io/${{ github.repository }}/${image_name}:${{ github.ref_name }}"
-          fi
 
-      - name: Push docker image to Github Container Registry
-        run: |
-          module=${{ matrix.module }}
-          image_name=${{ matrix.image }}
+      - # Add support for more platforms with QEMU (optional)
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-          cd "${module}"
-          docker image push --all-tags "ghcr.io/${{ github.repository }}/${image_name}"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Image - Branches
+        if: not(startsWith( github.head_ref , 'main'))
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          tags: |
+            "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
+            "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
+          Dockerfile: ./${{ matrix.module }}/Dockerfile
+
+      - name: Build Docker Image - Main
+        if: startsWith( github.head_ref , 'main')
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          tags: |
+            "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
+            "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
+            "ghcr.io/${{ github.repository }}/${image_name}:latest"
+          Dockerfile: ./${{ matrix.module }}/Dockerfile
 
   create_tag:
-    name: Tag the repository
+    name: Tag the repository and raise PR to merge
     needs: [update-version]
     runs-on: ubuntu-latest
 
@@ -201,13 +227,33 @@ jobs:
 
       - name: Tag repository
         run: |
-          version=${{ needs.update-version.outputs.version_tag }}
+          echo "ref_name: ${{ github.ref_name }},  
+          branch name:  ${{ needs.update-version.outputs.branch_name }}
+          "
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            # No changes made. We just need to tag (probably force tag)
+            version=v${{ needs.update-version.outputs.version_tag }}
+          elif [ "${{ github.ref_name }}" == "main_v${{ needs.update-version.outputs.version_tag }}" ]; then
+            version= "v${{  needs.update-version.outputs.version_tag }}"
+          else
+            version=${{ github.ref_name }}_v{{  needs.update-version.outputs.version_tag }}"
+          fi
           git config --global user.email "actions@github.com"
           git config --global user.name "Github Actions"
           if [[ "${{ inputs.force_tag }}" == "yes" ]]; then
-            git tag "v$version" -m "Forced Tagging v$version"
-            git push origin "v$version"  --force
+            git tag "$version" -m "Forced Tagging $version"
+            git push origin "$version"  --force
           else
-            git tag "v$version" -m "Tagging v$version"
-            git push origin "v$version"           
+            git tag "$version" -m "Tagging $version"
+            git push origin "$version"           
           fi
+
+      - name: Raise Pull Request
+        if: startsWith(needs.update-version.outputs.branch_name, 'main')
+        uses: peter-evans/create-pull-request@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Updating version to ${{ needs.update-version.outputs.version_tag }} "
+          body: "This is a Pull Request to update version of artifacts"
+          head: ${{ github.head_ref }}
+          base: main
