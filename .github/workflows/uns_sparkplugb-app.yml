@@ -89,7 +89,7 @@ jobs:
           module="05_sparkplugb"
           image_name="uns/spb_mapper"
           SHA_TAG=${{ github.sha }}
-          echo "SHA_TAG=${SHA_TAG}
+          echo "SHA_TAG=${SHA_TAG}"
 
           cd "${module}"
           echo "Validating Docker Entry prior to build"

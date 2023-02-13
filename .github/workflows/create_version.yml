@@ -228,8 +228,8 @@ jobs:
       - name: Tag repository
         run: |
           echo "ref_name: ${{ github.ref_name }},  
-          branch name:  ${{ needs.update-version.outputs.branch_name }}
-          "
+          branch name=${{ needs.update-version.outputs.branch_name }}
+
           if [ "${{ github.ref_name }}" == "main" ]; then
             # No changes made. We just need to tag (probably force tag)
             version=v${{ needs.update-version.outputs.version_tag }}
