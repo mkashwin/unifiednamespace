@@ -190,7 +190,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Image - Branches
-        if: not(startsWith( github.head_ref , 'main'))
+        if: ! startsWith( github.head_ref , 'main')
         uses: docker/build-push-action@v4
         with:
           context: .
