@@ -90,8 +90,6 @@ jobs:
           image_name="uns/spb_mapper"
 
           cd "${module}"
-          docker build -t "${image_name}:${{ github.sha }}" -f ./Dockerfile ..
-          cd "${module}"
           echo "Validating Docker Entry prior to build"
           entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
           if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
