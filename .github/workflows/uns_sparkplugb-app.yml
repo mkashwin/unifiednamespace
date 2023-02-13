@@ -88,6 +88,7 @@ jobs:
         run: |
           module="05_sparkplugb"
           image_name="uns/spb_mapper"
+          SHA_TAG=${{ github.sha }}
 
           cd "${module}"
           echo "Validating Docker Entry prior to build"
