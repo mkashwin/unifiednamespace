@@ -216,7 +216,7 @@ jobs:
 
   create_tag:
     name: Tag the repository and raise PR to merge
-    needs: [update-version]
+    needs: [update-version, build-test-docker-images]
     runs-on: ubuntu-latest
 
     steps:
@@ -227,15 +227,13 @@ jobs:
 
       - name: Tag repository
         run: |
-          branch_name=${{ needs.update-version.outputs.branch_name }}
-
           if [ "${{ github.ref_name }}" == "main" ]; then
             # No changes made. We just need to tag (probably force tag)
             version=v${{ needs.update-version.outputs.version_tag }}
           elif [ "${{ github.ref_name }}" == "main_v${{ needs.update-version.outputs.version_tag }}" ]; then
             version= "v${{  needs.update-version.outputs.version_tag }}"
           else
-            version=${{ github.ref_name }}_v${{  needs.update-version.outputs.version_tag }}"
+            version=${{ github.ref_name }}_v${{  needs.update-version.outputs.version_tag }}
           fi
           git config --global user.email "actions@github.com"
           git config --global user.name "Github Actions"
