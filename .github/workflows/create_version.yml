@@ -42,8 +42,8 @@ jobs:
           echo "Updating all pyproject.toml with version ${{ env.VERSION_TAG}}"
           find . -name 'pyproject.toml' -type f -exec sed -i "s/^version.*/version = \"${{ env.VERSION_TAG}}\"/g" {} +
 
-      - name: Commit and push modified files
-        id: commit_new_version
+      - id: commit_new_version
+        name: Commit and push modified files
         run: |
           MODIFIED_FILES=$(git diff --name-only HEAD)
           if [ -z "$MODIFIED_FILES" ]; then
@@ -53,7 +53,7 @@ jobs:
             git config --global user.name "Github Actions"
             # TODO check to see that only **/pyproject.toml or ./version.txt were modified
             git add .
-            if ${{ github.ref_name }} == "main"; then
+            if [ "${{ github.ref_name }}" == "main" ]; then
               BRANCH_NAME="${{ github.ref_name }}_v${{ env.VERSION_TAG}}"
               git checkout -b $BRANCH_NAME
               git commit -m "Update version number to ${{ env.VERSION_TAG}} by creating new branch: $BRANCH_NAME "
@@ -64,7 +64,7 @@ jobs:
             git push origin $BRANCH_NAME
             echo "SHA_TAG=$(git rev-parse HEAD)" >> $GITHUB_ENV
           fi
-          echo "branch_name=$BRANCH_NAME >> $GITHUB_OUTPUT"
+          echo "branch_name=${BRANCH_NAME} >> $GITHUB_OUTPUT"
       - id: set_outputs_for_next_jobs
         name: Set output for next jobs
         run: |
@@ -199,7 +199,7 @@ jobs:
           tags: |
             "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
             "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
-          Dockerfile: ./${{ matrix.module }}/Dockerfile
+          file: ./${{ matrix.module }}/Dockerfile
 
       - name: Build Docker Image - Main
         if: ${{ startsWith( github.head_ref , 'main') }}
@@ -212,7 +212,7 @@ jobs:
             "ghcr.io/${{ github.repository }}/${image_name}:${{ env.VERSION_TAG }}"
             "ghcr.io/${{ github.repository }}/${image_name}:${{env.SHA_TAG }}"
             "ghcr.io/${{ github.repository }}/${image_name}:latest"
-          Dockerfile: ./${{ matrix.module }}/Dockerfile
+          file: ./${{ matrix.module }}/Dockerfile
 
   create_tag:
     name: Tag the repository and raise PR to merge
