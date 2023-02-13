@@ -207,7 +207,7 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64 # linux/arm/v7 not working, causes error: command 'gcc' failed: No such file or directory
           tags: |
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ env.VERSION_TAG }}"
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{env.SHA_TAG }}"
