@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "aarch",
+        "alnum",
+        "buildx",
         "compileall",
         "DBIRTH",
         "DCMD",
@@ -30,6 +32,7 @@
         "openebs",
         "packettypes",
         "paho",
+        "PGPASSWORD",
         "ppcle",
         "propertyset",
         "propertysets",
@@ -44,6 +47,7 @@
         "storageclass",
         "Tahu",
         "timescaledb",
+        "TIMESTAMPTZ",
         "unifiednamespace",
         "unspublisher",
         "userdata",

@@ -23,16 +23,8 @@ WORKDIR /app
 
 # Copy the contents of the project into the container
 COPY ./${UNS_MODULE}/src ./src/
-COPY ./${UNS_MODULE}/pyproject.toml ./
-COPY ./${UNS_MODULE}/poetry.lock ./
-COPY ./${UNS_MODULE}/README.md ./
-
-
-# Need to do this because despite only installing main by poetry it looks for this folder
-RUN mkdir ../02_mqtt-cluster
-COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/
-COPY ./02_mqtt-cluster/poetry.lock /02_mqtt-cluster/
-COPY ./02_mqtt-cluster/README.md /02_mqtt-cluster/
+COPY ./${UNS_MODULE}/pyproject.toml ./poetry.lock ./README.md ./
+COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/README.md /02_mqtt-cluster/
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
 
 # Install the required dependencies for the project using poetry

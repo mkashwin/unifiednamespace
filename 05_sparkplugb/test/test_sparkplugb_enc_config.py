@@ -109,9 +109,6 @@ def test_mqtt_config():
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 def test_connectivity_to_mqtt():
     """
     Test if the provided configurations for the MQTT server are valid and

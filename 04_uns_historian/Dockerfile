@@ -15,7 +15,7 @@ FROM python:3.11-slim-bullseye
 ENV UNS_MODULE="04_uns_historian"
 
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/04_uns_historian
-LABEL org.opencontainers.image.description="Stores MQTT Messages to the historian database. Supports both UNS and SparkplugB"
+LABEL org.opencontainers.image.description="Stores MQTT messages to the historian database. Supports both UNS and SparkplugB"
 LABEL org.opencontainers.image.licenses=MIT
 
 # Set the working directory in the container to /
@@ -24,9 +24,7 @@ WORKDIR /app
 # Copy the contents of the project into the container
 COPY ./${UNS_MODULE}/src ./src/
 COPY ./${UNS_MODULE}/pyproject.toml ./poetry.lock ./README.md ./
-COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/
-COPY ./02_mqtt-cluster/poetry.lock /02_mqtt-cluster/
-COPY ./02_mqtt-cluster/README.md /02_mqtt-cluster/
+COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/README.md /02_mqtt-cluster/
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
 
 # Install the required dependencies for the project using poetry

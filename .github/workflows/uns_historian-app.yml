@@ -32,15 +32,48 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  generate_random_password:
     runs-on: ubuntu-latest
+    outputs:
+      postgres_pwd: ${{ steps.random_strings.outputs.postgres_pwd }}
+      uns_historian_pwd: ${{ steps.random_strings.outputs.uns_historian_pwd}}
+    steps:
+      - id: random_strings
+        run: |
+          echo "postgres_pwd=$(openssl rand -base64 32 | tr -dc '[:alnum:]')" >> $GITHUB_OUTPUT
+          echo "uns_historian_pwd=$(openssl rand -base64 32 | tr -dc '[:alnum:]')" >> $GITHUB_OUTPUT
 
+  build_code:
+    runs-on: ubuntu-latest
+    needs: generate_random_password
+    env:
+      UNS_mqtt__host: "localhost"
+      UNS_mqtt__port: 1883
+      UNS_historian__hostname: "localhost"
+      UNS_historian__database: "uns_historian"
+      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__username: "uns_dbuser"
+      UNS_historian__password: ${{ needs.generate_random_password.outputs.uns_historian_pwd }}
+      POSTGRES_PASSWORD: ${{ needs.generate_random_password.outputs.postgres_pwd }}
+    services:
+      uns_mqtt:
+        image: emqx/emqx:latest
+        ports:
+          - "1883:1883"
+      uns_timescaledb:
+        image: timescale/timescaledb:latest-pg14
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - name: Install dependencies
         run: |
           # change to current directory of module        
@@ -64,9 +97,119 @@ jobs:
           cd ./04_uns_historian    
           poetry run safety check
 
+      - name: Create Database for Integration Testing
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          UNS_historian__password: ${{ env.UNS_historian__password }}
+        run: |
+          echo "CREATE database $UNS_historian__database;
+          \c $UNS_historian__database;
+          CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+          CREATE ROLE $UNS_historian__username
+          LOGIN
+          PASSWORD '$UNS_historian__password';
+          " | PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${UNS_historian__hostname} -U postgres  -p 5432
+
+          echo "CREATE TABLE $UNS_historian__table (
+          time TIMESTAMPTZ NOT NULL,
+          topic text NOT NULL,
+          client_id text,
+          mqtt_msg JSONB
+          );
+
+          SELECT create_hypertable('$UNS_historian__table', 'time');
+          " | PGPASSWORD=${UNS_historian__password} psql -h ${UNS_historian__hostname} -U $UNS_historian__username -d $UNS_historian__database  -p 5432
+
       - name: Test with pytest
         run: |
-          # change to current directory of module        
           cd ./04_uns_historian
-          # run all tests including integration tests
-          poetry run pytest  -m "not integrationtest" ./test
+          poetry run pytest ./test
+
+  build_docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          module="04_uns_historian"
+          image_name="uns/historian"
+          SHA_TAG=${{ github.sha }}
+
+          cd "${module}"
+          echo "Validating Docker Entry prior to build"
+          entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
+          if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
+            echo "Error: Entry point should be in the format [\"poetry\", \"run\", \"<script_name>\"]"
+            exit 1
+          else
+            echo "Entrypoint for docker is: ${entry_point}"
+          fi
+
+          script_name="$(echo "${entry_point}" | awk '{print $4}' | tr -d '"]')"
+          if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
+            echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
+            exit 1
+          fi
+
+          if ! grep -q "^${script_name} =" ./pyproject.toml; then
+            echo "Error: Script entry for ${script_name} not found in [tool.poetry.scripts] section of pyproject.toml"
+            exit 1
+          else            
+            echo "[tool.poetry.scripts] entry is: ${script_name}"
+          fi
+
+          main_entry=$(grep "^${script_name} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
+          echo "Validate if ${main_entry} points to a valid python function"
+
+          python_module=${main_entry%:*}
+          function=${main_entry##*:}
+          if [[ ! "${function}" == "main" ]]; then
+            echo "Error: '${main_entry}' should map to a main function of python python_module"
+            exit 1
+          fi
+
+          echo "Creating Docker: ${image_name}:${SHA_TAG}"
+          docker build -t "${image_name}:${SHA_TAG}" -f ./Dockerfile ..
+
+          # Run the Docker tests
+          echo "Running tests for Docker image: ${image_name}:${SHA_TAG}"
+          docker run --entrypoint "/bin/bash" -e python_module="$python_module" -e function="$function" "${image_name}:${SHA_TAG}" -c '
+            if [ ! -d "/02_mqtt-cluster" ]; then
+              echo "Error: Folder /02_mqtt-cluster not found in Docker image"
+              exit 1
+            else
+              echo "Success:  Folder /02_mqtt-cluster is present"
+            fi
+
+            if [ ! "$(ls -AR /app/src | grep -E ".py$" | wc -l)" -gt "0" ]; then
+              echo "Error: No .py files found in folder /app/src"
+              exit 1
+            else
+              echo "Success:  Python Files are present"
+            fi
+
+            if [ ! -f "/app/pyproject.toml" ]; then
+              echo "Error: pyproject.toml file not found in folder /app"
+              exit 1
+            else
+              echo "Success:  pyproject.toml file found"
+            fi
+
+            if [ -d "/app/test" ]; then
+              echo "Error: test folder not found in folder /app"
+              exit 1
+            else
+              echo "Success:  test folder was not copied to the Docker"
+            fi
+            
+            poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
+
+            entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
+            if [ ! "$entry_valid" == "True" ];then
+              echo "Error: Invalid main entry ${python_module}:${function}"
+              exit 1
+            fi
+            echo "Docker image tests passed successfully"
+          '

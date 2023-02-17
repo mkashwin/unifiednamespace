@@ -28,9 +28,6 @@ is_configs_provided: bool = (os.path.exists(
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 def test_uns_mqtt_graph_db():
     """
     Test the constructor of the class Uns_MQTT_GraphDb
@@ -56,9 +53,6 @@ def test_uns_mqtt_graph_db():
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
@@ -76,7 +70,11 @@ def test_uns_mqtt_graph_db():
         ("test/uns/ar2/ln4", {
             "timestamp": 1486144500000,
             "TestMetric2": "TestUNSwithNestedLists",
-            "dict_list": [{"a": "b"}, {"x": "y"}, {}],
+            "dict_list": [{
+                "a": "b"
+            }, {
+                "x": "y"
+            }, {}],
         }),
         # ("test/uns/ar2/ln4", { # currently failing. validate if such a structure needs to be supported
         #     "timestamp": 1486144500000,
@@ -84,18 +82,20 @@ def test_uns_mqtt_graph_db():
         #     "dict_list": [{"a": "b"}, {"x": "y"}, ],
         #     "nested_dict": [[1, 2, 3], ["q", "w", "r"], ["a", "b", "d"]]
         # }),
-        ("spBv1.0/group1/NBIRTH/eon1",
-            b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-            b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-            b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-            b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-            b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'),
-        ("spBv1.0/group1/NDATA/eon1",
-            b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-            b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-            b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-            b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-            b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00')
+        ("spBv1.0/uns_group/NBIRTH/eon1",
+         b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
+         b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
+         b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
+         b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
+         b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
+         ),
+        ("spBv1.0/uns_group/NDATA/eon1",
+         b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
+         b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
+         b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
+         b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
+         b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
+         )
     ])
 def test_mqtt_graphdb_persistance(topic: str, message):
     """

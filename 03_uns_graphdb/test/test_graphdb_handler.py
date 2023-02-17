@@ -200,9 +200,6 @@ def test_separate_plain_composite_attributes(message: dict, plain: dict,
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xfail(
-    not is_configs_provided,
-    reason="Configurations absent, or these are not integration tests")
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
