@@ -190,7 +190,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Image - Branches
-        if: ${{ ! startsWith(github.head_ref , 'main') }}
+        if: ${{ ! startsWith( github.ref_name , 'main') }}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -202,7 +202,7 @@ jobs:
           file: ./${{ matrix.module }}/Dockerfile
 
       - name: Build Docker Image - Main
-        if: ${{ startsWith( github.head_ref , 'main') }}
+        if: ${{ startsWith( github.ref_name , 'main') }}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -242,15 +242,17 @@ jobs:
             git push origin "$version"  --force
           else
             git tag "$version" -m "Tagging $version"
-            git push origin "$version"           
+            git push origin "$version"            
           fi
+          echo " Branch: ${{ github.ref_name }}"
+          echo " Source branch of the pull request: ${{ github.head_ref }}"
 
       - name: Raise Pull Request
         if: startsWith(needs.update-version.outputs.branch_name, 'main')
-        uses: peter-evans/create-pull-request@v2
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Updating version to ${{ needs.update-version.outputs.version_tag }} "
           body: "This is a Pull Request to update version of artifacts"
-          head: ${{ github.head_ref }}
+          labels: "v${{  needs.update-version.outputs.version_tag }}"
           base: main
