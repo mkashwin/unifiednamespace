@@ -255,5 +255,5 @@ jobs:
           title: "Updating version to ${{ needs.update-version.outputs.version_tag }} "
           body: "This is a Pull Request to update version of artifacts"
           labels: "v${{  needs.update-version.outputs.version_tag }}"
-          branch: "${{ needs.update-version.outputs.branch_name }}"
-          base: main
+          base: "${{ needs.update-version.outputs.branch_name }}"
+          branch: main
