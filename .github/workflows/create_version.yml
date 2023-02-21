@@ -257,3 +257,4 @@ jobs:
           labels: "v${{  needs.update-version.outputs.version_tag }}"
           base: "${{ needs.update-version.outputs.branch_name }}"
           branch: main
+          reviewers: '*'
