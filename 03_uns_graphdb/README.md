@@ -36,7 +36,6 @@ sudo usermod -aG docker $USER
 docker run \
     --name  uns_graphdb \
     -p7474:7474 -p7687:7687 \
-    --user="$(id -u):$(id -g)" \
     -d \
     -v $HOME/neo4j/data:/data \
     -v $HOME/neo4j/logs:/logs \
