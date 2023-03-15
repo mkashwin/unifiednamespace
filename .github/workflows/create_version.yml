@@ -246,7 +246,7 @@ jobs:
           fi
 
   create_pull_req:
-    name: Tag the repository
+    name: Create Pull Request if the tag was on main branch
     needs: [update-version, build-test-docker-images]
     runs-on: ubuntu-latest
     steps:
