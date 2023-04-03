@@ -333,13 +333,13 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.6.0"
+version = "5.7.0"
 description = "Neo4j Bolt driver for Python"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.6.0.tar.gz", hash = "sha256:99ba8321195a114a870704dd00463a0429c364c97dde603b39841e78ac05b97c"},
+    {file = "neo4j-5.7.0.tar.gz", hash = "sha256:bf5acb70d25abc7b49261ac503fd3eb513d61d9df1a46657f5c1727a4b30f041"},
 ]
 
 [package.dependencies]
@@ -705,14 +705,14 @@ gitlab = ["python-gitlab (>=1.3.0)"]
 
 [[package]]
 name = "setuptools"
-version = "67.6.0"
+version = "67.6.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.6.0-py3-none-any.whl", hash = "sha256:b78aaa36f6b90a074c1fa651168723acbf45d14cb1196b6f02c0fd07f17623b2"},
-    {file = "setuptools-67.6.0.tar.gz", hash = "sha256:2ee892cd5f29f3373097f5a814697e397cf3ce313616df0af11231e2ad118077"},
+    {file = "setuptools-67.6.1-py3-none-any.whl", hash = "sha256:e728ca814a823bf7bf60162daf9db95b93d532948c4c0bea762ce62f60189078"},
+    {file = "setuptools-67.6.1.tar.gz", hash = "sha256:257de92a9d50a60b8e22abfcbb771571fde0dbf3ec234463212027a4eeecbe9a"},
 ]
 
 [package.extras]
@@ -853,4 +853,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "7db9d32d06358a9ebc864f393d791ac25d6e9b41095e4ec6e73556a1ba2d3583"
+content-hash = "ef392d3aebbc6988aeb7ce6fd86d8fd9f05194880caeb5ed0cab7ae7fc54d65e"
