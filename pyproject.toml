@@ -40,7 +40,7 @@ paho-mqtt = "^1.6.1"
 dynaconf = "^3.1.12"
 
 [tool.poetry.group.04_uns_historian.dependencies]
-psycopg2-binary = "^2.9.3"
+psycopg2-binary = "^2.9.6"
 pytz = "^2022.1"
 dynaconf = "^3.1.12"
 
@@ -49,7 +49,7 @@ dynaconf = "^3.1.12"
 # All other dependencies fulfilled by uns_mqtt
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.2.2"
+pytest = "^7.3.0"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
 safety = "^2.3.5"
