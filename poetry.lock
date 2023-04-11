@@ -717,7 +717,7 @@ files = [
 
 [[package]]
 name = "uns-graphdb"
-version = "0.6.4"
+version = "0.6.5"
 description = "Graph Database implementation for a UNS setup"
 category = "main"
 optional = false
@@ -726,9 +726,9 @@ files = []
 develop = true
 
 [package.dependencies]
-dynaconf = "^3.1.9"
+dynaconf = "^3.1.12"
 logger = "^1.4"
-neo4j = "^5.5"
+neo4j = "^5.7"
 paho-mqtt = "^1.6.1"
 
 [package.source]
@@ -737,7 +737,7 @@ url = "03_uns_graphdb"
 
 [[package]]
 name = "uns-historian"
-version = "0.6.4"
+version = "0.6.5"
 description = "Historian implementation for a UNS setup"
 category = "main"
 optional = false
@@ -746,9 +746,9 @@ files = []
 develop = true
 
 [package.dependencies]
-dynaconf = "^3.1.9"
+dynaconf = "^3.1.12"
 logger = "^1.4"
-psycopg2-binary = "^2.9.3"
+psycopg2-binary = "^2.9.6"
 pytz = "^2022.1"
 
 [package.source]
@@ -757,7 +757,7 @@ url = "04_uns_historian"
 
 [[package]]
 name = "uns-mqtt"
-version = "0.6.4"
+version = "0.6.5"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 category = "main"
 optional = false
@@ -776,7 +776,7 @@ url = "02_mqtt-cluster"
 
 [[package]]
 name = "uns-spb-mapper"
-version = "0.6.4"
+version = "0.6.5"
 description = "SparkplugB decoder to parse and unpack  SparkplugB messages to the UNS structure"
 category = "main"
 optional = false
@@ -785,7 +785,7 @@ files = []
 develop = true
 
 [package.dependencies]
-dynaconf = "^3.1.9"
+dynaconf = "^3.1.12"
 logger = "^1.4"
 
 [package.source]
