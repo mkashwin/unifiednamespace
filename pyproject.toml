@@ -29,6 +29,7 @@ uns_mqtt = { path = "./02_mqtt-cluster", develop = true }
 uns_graphdb = { path = "./03_uns_graphdb", develop = true }
 uns_historian = { path = "./04_uns_historian", develop = true }
 uns_spb_mapper = { path = "./05_sparkplugb", develop = true }
+uns_kafka_mapper = { path = "./06_uns_kafka", develop = true }
 
 [tool.poetry.group.02_mqtt-cluster.dependencies]
 paho-mqtt = "^1.6.1"
@@ -46,6 +47,9 @@ dynaconf = "^3.1.12"
 
 [tool.poetry.group.05_sparkplugb.dependencies]
 dynaconf = "^3.1.12"
+
+[tool.poetry.group.06_uns_kafka.dependencies]
+confluent-kafka = "^2.0.2"
 # All other dependencies fulfilled by uns_mqtt
 
 [tool.poetry.group.test.dependencies]
@@ -66,4 +70,5 @@ testpaths = [
     "03_uns_graphdb/test",
     "04_uns_historian/test",
     "05_sparkplugb/test",
+    "06_uns_kafka/test",
 ]

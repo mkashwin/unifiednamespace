@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "uns_kafka_mapper"
+version = "0.6.4"
+description = "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka"
+# documentation = ""
+keywords = ["uns", "mqtt", "kafka"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: UNS to Kafka ",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: UNS to Kafka Mapper Client"
+# ]
+packages = [{ include = "uns_kafka", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+logger = "^1.4"
+dynaconf = "^3.1.9"
+confluent-kafka = "^2.0.2"
+
+
+[tool.poetry.group.dev.dependencies]
+yapf = "^0.32.0"
+uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+flake8 = "^6.0.0"
+pytest-cov = "^4.0.0"
+safety = "^2.3.5"
+
+[tool.poetry.scripts] #TODO fix
+uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]

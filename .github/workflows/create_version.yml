@@ -81,6 +81,7 @@ jobs:
           - { module: 03_uns_graphdb, image: uns/graphdb }
           - { module: 04_uns_historian, image: uns/historian }
           - { module: 05_sparkplugb, image: uns/spb_mapper }
+          - { module: 06_uns_kafka, image: uns/kafka_mapper }
 
     env:
       SHA_TAG: ${{ needs.update-version.outputs.sha_tag }}
