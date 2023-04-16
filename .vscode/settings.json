@@ -41,6 +41,7 @@
         "psycopg",
         "pytest",
         "pytz",
+        "sasl",
         "SCADA",
         "sparkplugb",
         "sslmode",
@@ -63,7 +64,8 @@
         "./02_mqtt-cluster/test",
         "./03_uns_graphdb/test",
         "./04_uns_historian/test",
-        "./05_sparkplugb/test"
+        "./05_sparkplugb/test",
+        "./06_uns_kafka/test"
     ],
     "python.analysis.extraPaths": [
         "./02_mqtt-cluster/src",
@@ -74,6 +76,8 @@
         "./04_uns_historian/test",
         "./05_sparkplugb/src",
         "./05_sparkplugb/test",
+        "./06_uns_kafka/src",
+        "./06_uns_kafka/test"
     ],
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
