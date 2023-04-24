@@ -56,7 +56,7 @@ safety = "^2.3.5"
 
 
 [tool.poetry.group.dev.dependencies]
-yapf = "^0.32.0"
+yapf = "^0.33.0"
 
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
