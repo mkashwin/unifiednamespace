@@ -35,7 +35,7 @@ class UNSKafkaMapper:
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.kafka_handler: KafkaHandler = KafkaHandler()
+        self.kafka_handler: KafkaHandler = KafkaHandler(self.kafka_config_map)
 
         self.uns_client.run(host=self.mqtt_host,
                             port=self.mqtt_port,
@@ -82,6 +82,30 @@ class UNSKafkaMapper:
         Read the Kafka configurations required to connect to the Kafka broker
         """
         self.kafka_config_map: dict = settings.mqtt["kafka.config"]
+
+    def on_message(self, client, userdata, msg):
+        """
+        Callback function executed every time a message is received by the subscriber
+        """
+        LOGGER.debug("{"
+                     "Client: %s,"
+                     "Userdata: %s,"
+                     "Message: %s,"
+                     "}", str(client), str(userdata), str(msg))
+        # Connect to Kakfa, convert the MQTT topic to Kafka topic and send the message
+
+    def on_disconnect(self, client, userdata, result_code, properties=None):
+        """
+        Callback function executed every time the client is disconnected from the MQTT broker
+        """
+        # Cleanup when the MQTT broker gets disconnected
+        # Cleanup when the MQTT broker gets disconnected
+        LOGGER.debug("Kafka connector got disconnected")
+        if result_code != 0:
+            LOGGER.error("Unexpected disconnection.:%s",
+                         str(result_code),
+                         stack_info=True,
+                         exc_info=True)
 
 
 def main():
