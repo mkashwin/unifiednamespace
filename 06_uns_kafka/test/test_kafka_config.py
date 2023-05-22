@@ -1,5 +1,5 @@
 """
-Test cases for uns_historian_config
+Test cases for uns_kafka_config
 """
 import inspect
 import os
