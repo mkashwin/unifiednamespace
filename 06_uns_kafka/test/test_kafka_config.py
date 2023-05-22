@@ -1,5 +1,5 @@
 """
-Test cases for historian_config
+Test cases for uns_historian_config
 """
 import inspect
 import os
@@ -7,7 +7,7 @@ import re
 import socket
 
 import pytest
-from uns_historian.historian_config import settings
+from uns_kafka.uns_kafka_config import settings
 
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
