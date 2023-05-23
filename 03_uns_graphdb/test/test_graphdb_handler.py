@@ -320,14 +320,17 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
 
 def read_list_attr_nodes(session, db_attr_list, attr_node_type, parent_id,
                          attr_key, value):
+    """
+    Reads a list of attribute nodes to check values
+    """
     counter: int = 0
     is_only_primitive = True
     for item in value:
         name_key = attr_key + "_" + str(counter)
         if isinstance(item, list) or isinstance(item, tuple):
             is_only_primitive = False
-            read_list_attr_nodes(session, attr_node_type, parent_id, name_key,
-                                 item)
+            read_list_attr_nodes(session, db_attr_list, attr_node_type,
+                                 parent_id, name_key, item)
         elif isinstance(item, dict):
             is_only_primitive = False
             # special handling. if there is a sub attribute "name", use it for the node name
