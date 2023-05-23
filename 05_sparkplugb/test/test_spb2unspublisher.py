@@ -373,6 +373,7 @@ def test_publish_to_uns_not_connected(clean_session, protocol,
         spb_2_uns_pub.publish_to_uns(all_uns_messages)
 
 
+@pytest.mark.integrationtest
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311)])
