@@ -5,10 +5,14 @@ import time
 from types import SimpleNamespace
 
 import pytest
+import os
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
+
+MQTT_HOST: str = os.environ.get("UNS_mqtt__host", "localhost")
+MQTT_PORT: int = os.environ.get("UNS_mqtt__port", 1883)
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -30,13 +34,13 @@ def test_spb_2_uns_publisher_init(clean_session, protocol,
     # Connection not made to broker
     spb_to_uns_publisher = Spb2UNSPublisher(uns_client)
     if protocol == UnsMQTTClient.MQTTv5:
-        assert (spb_to_uns_publisher.is_mqtt_v5 is
-                True), ("Spb2UNSPublisher#isMQTTv5 should have been True"
-                        f"but was {spb_to_uns_publisher.is_mqtt_v5}")
+        assert (spb_to_uns_publisher.is_mqtt_v5
+                is True), ("Spb2UNSPublisher#isMQTTv5 should have been True"
+                           f"but was {spb_to_uns_publisher.is_mqtt_v5}")
     else:
-        assert (spb_to_uns_publisher.is_mqtt_v5 is
-                False), ("Spb2UNSPublisher#isMQTTv5 should have been False "
-                         f" but was {spb_to_uns_publisher.is_mqtt_v5}")
+        assert (spb_to_uns_publisher.is_mqtt_v5
+                is False), ("Spb2UNSPublisher#isMQTTv5 should have been False "
+                            f" but was {spb_to_uns_publisher.is_mqtt_v5}")
 
     assert spb_to_uns_publisher.mqtt_client == uns_client, (
         "Spb2UNSPublisher#mqtt_client should "
@@ -369,11 +373,12 @@ def test_publish_to_uns_not_connected(clean_session, protocol,
         spb_2_uns_pub.publish_to_uns(all_uns_messages)
 
 
+@pytest.mark.integrationtest
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311)])
 @pytest.mark.parametrize("transport,host, port, tls",
-                         [("tcp", "broker.emqx.io", 1883, None)])
+                         [("tcp", MQTT_HOST, MQTT_PORT, None)])
 @pytest.mark.parametrize("qos", [(1), (2)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True)])
 @pytest.mark.parametrize("all_uns_messages", [({
