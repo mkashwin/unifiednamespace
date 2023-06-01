@@ -20,7 +20,7 @@ cmd_subfolder = os.path.realpath(
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
         os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_graphdb.username")))
+            os.getenv("UNS_graphdb__username")))
 
 
 @pytest.mark.parametrize(
