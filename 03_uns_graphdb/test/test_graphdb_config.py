@@ -19,7 +19,7 @@ cmd_subfolder = os.path.realpath(
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
         os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_graphdb.username")))
+            os.getenv("UNS_graphdb__username")))
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
@@ -76,8 +76,8 @@ def test_mqtt_config():
     password = settings.get("mqtt.password")
     assert (username is None and password is None) or (
         isinstance(username, str) and len(username) > 0
-        and isinstance(password, str) and len(password) > 0
-    ), "Either both username & password need to be specified or neither"
+        and isinstance(password, str) and len(password)
+        > 0), "Either both username & password need to be specified or neither"
 
     tls: dict = settings.get("mqtt.tls", None)
     assert (tls is None) or (
@@ -97,8 +97,8 @@ def test_mqtt_config():
 
     keep_alive: float = settings.get("mqtt.keep_alive", 60)
     assert (keep_alive is None) or (
-        keep_alive >
-        0), f"'mqtt.keep_alive'{keep_alive} must be a positive number"
+        keep_alive
+        > 0), f"'mqtt.keep_alive'{keep_alive} must be a positive number"
 
     ignored_attributes: dict = settings.get("mqtt.ignored_attributes")
     assert (ignored_attributes is None) or (
