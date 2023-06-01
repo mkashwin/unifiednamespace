@@ -7,6 +7,7 @@ import re
 import socket
 
 import pytest
+from confluent_kafka import Producer
 from uns_kafka.uns_kafka_config import settings
 
 cmd_subfolder = os.path.realpath(
@@ -18,7 +19,7 @@ cmd_subfolder = os.path.realpath(
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
         os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_kafka.config")))
+            os.getenv("UNS_kafka__config")))
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
@@ -69,13 +70,13 @@ def test_mqtt_config():
     password = settings.get("mqtt.password")
     assert (username is None and password is None) or (
         isinstance(username, str) and len(username) > 0
-        and isinstance(password, str) and len(password) > 0
-    ), "Either both username & password need to be specified or neither"
+        and isinstance(password, str) and len(password)
+        > 0), "Either both username & password need to be specified or neither"
 
     assert (username is None and password is None) or (
         isinstance(username, str) and len(username) > 0
-        and isinstance(password, str) and len(password) > 0
-    ), "Either both username & password need to be specified or neither"
+        and isinstance(password, str) and len(password)
+        > 0), "Either both username & password need to be specified or neither"
 
     tls: dict = settings.get("mqtt.tls", None)
     assert (tls is None) or (
@@ -95,8 +96,8 @@ def test_mqtt_config():
 
     keep_alive: float = settings.get("mqtt.keep_alive", 60)
     assert (keep_alive is None) or (
-        keep_alive >
-        0), f"'mqtt.keep_alive'{keep_alive} must be a positive number"
+        keep_alive
+        > 0), f"'mqtt.keep_alive'{keep_alive} must be a positive number"
 
     ignored_attributes: dict = settings.get("mqtt.ignored_attributes")
     assert (ignored_attributes is None) or (
@@ -113,11 +114,19 @@ def test_mqtt_config():
 
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
-def test_kafka_configs():
+def test_kafka_config():
     """
-    Test if the historian database configurations are valid
+    Test if the Kafka configurations are valid
     """
-    # TBD
+    config: dict = settings.kafka["config"]
+
+    assert "client.id" in config, f"Kafka configurations missing mandatory client.id: {config}"
+
+    assert ("bootstrap.servers" in config) or (
+        "metadata.broker.list" in config
+    ), f"Kafka configurations missing mandatory server config: {config}"
+
+    # assert "group.id" in config, f"Kafka configurations missing mandatory server config: {config}"
 
 
 @pytest.mark.integrationtest
@@ -140,4 +149,10 @@ def test_connectivity_to_kafka():
     Test if the provided configurations for the Kafka Server are valid and
     there is connectivity to the Kafka cluster
     """
-    # TBD
+    config: dict = settings.kafka["config"]
+
+    producer = Producer(config)
+    assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {config}"
+    assert producer.list_topics(
+        timeout=10
+    ) is not None, f"Kafka configurations did allow connectivity to broker: {config}"

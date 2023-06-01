@@ -1,5 +1,5 @@
 mqtt:
-  host: "broker.emqx.io" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
+  host: "localhost" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
   port: 1883 # Default value 1883 if not specified
   topics: ["test/uns/#"] #
   qos: 1 # Default value is 1. Recommend 1 or 2. Do not use 0
@@ -19,11 +19,10 @@ kafka:
   # see https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
   config: {
       client.id: "uns_kafka_client", # mandatory
-      bootstrap.servers: "", # mandatory
+      bootstrap.servers: "localhost:9092", # mandatory. can also use the key metadata.broker.list
       enable.idempotence: True,
       retries: 10,
       compression.type: "gzip",
-      group.id: "uns", # mandatory
       session.timeout.ms: 6000,
       default.topic.config: { "auto.offset.reset": "smallest" },
     }

@@ -27,10 +27,12 @@ class KafkaHandler:
         topic: Topic to publish the message to
         message: Message to be published
         """
-        self.producer.produce(topic, message, callback=self.delivery_callback)
+        self.producer.produce(KafkaHandler.convert_MQTT_KAFKA_topic(topic),
+                              message,
+                              callback=self.delivery_callback)
         self.producer.flush()
 
-    def delivery_callback(err, msg):
+    def delivery_callback(self, err: Exception, msg: dict):
         """
         Callback for the kafka producer to deliver the message
         err: Error message
@@ -40,3 +42,18 @@ class KafkaHandler:
             LOGGER.error("Failed to deliver message: %s: %s", err, msg)
         else:
             LOGGER.info("Message delivered to topic: %s", msg.topic())
+
+    def close(self):
+        """
+        Closes the connection to the kafka broker
+        """
+        self.producer.close()
+        LOGGER.info("Kafka connection closed")
+
+    @staticmethod
+    def convert_MQTT_KAFKA_topic(mqtt_topic: str) -> str:
+        """
+        Converts the MQTT topic to the correct kafka topic
+        topic: MQTT topic
+        """
+        return mqtt_topic.replace("/", "_")
