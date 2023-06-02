@@ -37,6 +37,8 @@ jobs:
     env:
       UNS_mqtt.host: "localhost"
       UNS_mqtt.port: 1883
+      UNS_kafka.config.bootstrap.servers: "localhost:9092"
+      UNS_kafka.config.client.id: "uns_kafka_client"
 
     services:
       uns_mqtt:
@@ -44,6 +46,12 @@ jobs:
         ports:
           - "1883:1883"
           - "8083:8083"
+      uns_kafka:
+        image: bitnami/kafka:latest
+        ports:
+          - "9092:9092"
+        env:
+          ALLOW_PLAINTEXT_LISTENER: "yes"
 
     steps:
       - uses: actions/checkout@v3
