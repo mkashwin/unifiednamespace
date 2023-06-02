@@ -74,7 +74,7 @@ I finally choose to go ahead with ***MicroK8s*** because
 
 * Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting. As a K8s noob this really helped.
 
-However microk8s did show up some limitations as well as bugs. Details of these are in **[01_k8scluster](./01_k8scluster/Readme.md)**. The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albeit in a different manner.
+However microk8s did show up some limitations as well as bugs. Details of these are in **[01_k8scluster](./01_k8scluster/README.md)**. The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albeit in a different manner.
 
 
 Some key limitations to bear in mind
@@ -96,21 +96,24 @@ I evaluated and read the user guides of the following brokers (open source versi
 3. [HIVEMQ](https://www.hivemq.com)
 
 While HIVEMQ has the best documentation and community support I decided try out EMQX for the following reasons
-* EMQX is written in erlang which has a lower footprint than java (HIVEMQ). They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment.
-The details of setting up the MQTT cluster are provided in **[02_mqtt-cluster](./02_mqtt-cluster/Readme.md)**. The link provides the guidance to install EMQX on a K8s cluster using helm.
+* EMQX is written in erlang which has a lower footprint than java (HIVEMQ). 
+* They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment.
+
+The details of setting up the MQTT cluster are provided in **[02_mqtt-cluster](./02_mqtt-cluster/README.md)**. The link provides the guidance to install EMQX on a K8s cluster using helm.
 
 ***Having said that, any of the above three would be perfectly good selections because***
 * All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages. Also EMQX seems to be supporting the ability to create plugins in multiple languages
 * All three deploy very easily on K8s and all three have community (free) as well as commercial offering 
-* All three support **MQTT 5** which is critical for manufacturers and **Sparkplug B** support
+* All three support **MQTT 5** which is critical for manufacturers. e.g. The concept of [Shared  Subscriptions](https://www.hivemq.com/blog/mqtt5-essentials-part7-shared-subscriptions/) enables clustering of the subscribers in order to better scale message processing if needed)
+* All three support  **Sparkplug B** 
 * All three support MQTT bridging allowing copying data between edge to cloud instances
 * Both [HiveMQ](hivemq.com/mqtt-cloud-broker/) and [EMQX](https://www.emqx.com/en/cloud) provide fully managed cloud services which might be interesting offer to explore for your cloud / enterprise MQTT Cluster
 
 #### <a id="broker_plugin"> </a>
 >**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database. You can further optimize this by subscribing to a subset e.g. `"<enterprise>/#"`
-However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases) provided here for better performance. But for most scenarios, an MQTT client should suffice and be broker independent.
+However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-databases) provided here for better performance. But for most scenarios, an MQTT client should suffice and be broker independent.
 
-Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-data-bases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
+Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-databases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
 
 ### **GraphDB**
 Normally I configured the MQTT publishers  to publish messages with retain flag so that consumers are able to get the latest message even if they weren't connected with broker at the time of publishing.
@@ -139,10 +142,11 @@ For production systems you might want to consider the cloud versions of the hist
 
 
 ### **Plugin / MQTT Client to subscribe and write to the above databases**
-Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it is not as performant as the Broker plugin/module).
-* The MQTT listener to persist UNS messages & SPB messages to the GraphDB can be found at [03_uns_graphdb](./03_uns_graphdb/Readme.md) 
-* The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/Readme.md) 
-* The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at  [05_sparkplugb](./05_sparkplugb/Readme.md)
+Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it may not be as performant as the Broker plugin/module).
+* The MQTT listener to persist UNS messages & SPB messages to the GraphDB can be found at [03_uns_graphdb](./03_uns_graphdb/README.md) 
+* The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/README.md) 
+* The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at  [05_sparkplugb](./05_sparkplugb/README.md)
+* The MQTT listener to persist UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
 
 I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because 
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
@@ -155,18 +159,17 @@ Sparkplug B consist of three primary features in its definition.
 3. The final is the payload data format.
 As the  messages are published in the Sparkplug Namespace , they are not visible in the UNS hierarchy which is based on ISA-95 part 2. Also given that they are packaged in protocol buffers, these message payloads are not easily understandable and need some parsing / transformation to a JSON structure.
 This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages  
-The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/Readme.md)
-
+The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/README.md)
 
 
 # **Setting up the development environment**
 The current project contains the following microservices
-1. [01_k8scluster](./01_k8scluster/Readme.md): Scripts and utilities to create a K8s cluster (on the edge and in the cloud)
-1. [02_mqtt-cluster](./02_mqtt-cluster/Readme.md): Scripts and utilities to create a MQTT cluster (on the edge and in the cloud). Common python package for all uns mqtt listeners and  sparkplugB generated code and helper code 
-1. [03_uns_graphdb](./03_uns_graphdb/Readme.md): Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a GraphDB. Spb messages are translated from protocol buffers to JSON prior to persisting 
-1. [04_uns_historian](./04_uns_historian/Readme.md):  Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a Historian. Spb messages are translated from protocol buffers to JSON prior to persisting  
-1. [05_sparkplugb](./05_sparkplugb/Readme.md):  Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace 
-Each microservice can be independently imported into VSCode by going into the specific microservice folder. Instructions on setting up the python pip & virtual environments are provided in the respective ´Readme.md´ within that folder 
+1. [01_k8scluster](./01_k8scluster/README.md): Scripts and utilities to create a K8s cluster (on the edge and in the cloud)
+1. [02_mqtt-cluster](./02_mqtt-cluster/README.md): Scripts and utilities to create a MQTT cluster (on the edge and in the cloud). Common python package for all uns mqtt listeners and  sparkplugB generated code and helper code 
+1. [03_uns_graphdb](./03_uns_graphdb/README.md): Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a GraphDB. Spb messages are translated from protocol buffers to JSON prior to persisting 
+1. [04_uns_historian](./04_uns_historian/README.md):  Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a Historian. Spb messages are translated from protocol buffers to JSON prior to persisting  
+1. [05_sparkplugb](./05_sparkplugb/README.md):  Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace 
+Each microservice can be independently imported into VSCode by going into the specific microservice folder. Instructions on setting up the python pip & virtual environments are provided in the respective ´README.md´ within that folder 
 However to import all  microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
 
 
@@ -200,12 +203,14 @@ pytest -m "not integrationtest" ./02_mqtt-cluster
 pytest -m "not integrationtest" ./03_uns_graphdb
 pytest -m "not integrationtest" ./04_uns_historian
 pytest -m "not integrationtest" ./05_sparkplugb
+pytest -m "not integrationtest" ./06_uns_kafka
 
 #run all tests
 pytest ./02_mqtt-cluster
 pytest ./03_uns_graphdb
 pytest ./04_uns_historian
 pytest ./05_sparkplugb
+pytest ./06_uns_kafka
 ```
 
 # Known Limitations / workarounds
