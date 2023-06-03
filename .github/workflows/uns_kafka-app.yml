@@ -37,9 +37,7 @@ jobs:
     env:
       UNS_mqtt.host: "localhost"
       UNS_mqtt.port: 1883
-      UNS_kafka.config.bootstrap.servers: "localhost:9092"
-      UNS_kafka.config.client.id: "uns_kafka_client"
-
+      UNS_kafka.config: "{ 'client.id' = 'uns_kafka_client', 'bootstrap.servers' ='localhost:9092' }"
     services:
       uns_mqtt:
         image: emqx/emqx:latest
