@@ -1,4 +1,4 @@
-[!Kafka bridge](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_kafka-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_kafka-app.yml)
+[![Kafka bridge](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_kafka-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_kafka-app.yml)
 
 # MQTT to Kafka Bridge
 This module provides a bridge between an MQTT (Message Queuing Telemetry Transport) server and a Kafka broker, allowing messages received on the MQTT server to be published to the Kafka broker. 
