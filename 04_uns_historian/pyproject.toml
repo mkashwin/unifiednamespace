@@ -32,7 +32,7 @@ dynaconf = "^3.1.12"
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
-yapf = "^0.32.0"
+yapf = "^0.40.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.3.2"
