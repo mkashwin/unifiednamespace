@@ -693,13 +693,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "yapf"
-version = "0.40.0"
+version = "0.40.1"
 description = "A formatter for Python code."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "yapf-0.40.0-py3-none-any.whl", hash = "sha256:63386557876c2686cb29d8c422b2d1e484f29f7a278821f91515b5c5adf569a7"},
-    {file = "yapf-0.40.0.tar.gz", hash = "sha256:7eeb8c404e386f16e24cbd785103dbc573f51cbb68e65a35f4392e0233f3d7bc"},
+    {file = "yapf-0.40.1-py3-none-any.whl", hash = "sha256:b8bfc1f280949153e795181768ca14ef43d7312629a06c43e7abd279323af313"},
+    {file = "yapf-0.40.1.tar.gz", hash = "sha256:958587eb5c8ec6c860119a9c25d02addf30a44f75aa152a4220d30e56a98037c"},
 ]
 
 [package.dependencies]
@@ -725,4 +725,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "256cd452d0e08a2c62cc93f05f9b2bb238afe44000902849d50a6e0ef17c158d"
+content-hash = "bd8df00b527c28ac77fe07894aa1a8563c8b048b4dd3ffd0c4d267998c62b280"
