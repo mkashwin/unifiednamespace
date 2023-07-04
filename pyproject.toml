@@ -30,6 +30,7 @@ uns_graphdb = { path = "./03_uns_graphdb", develop = true }
 uns_historian = { path = "./04_uns_historian", develop = true }
 uns_spb_mapper = { path = "./05_sparkplugb", develop = true }
 uns_kafka_mapper = { path = "./06_uns_kafka", develop = true }
+urllib3 = "1.26.16"
 
 [tool.poetry.group.02_mqtt-cluster.dependencies]
 paho-mqtt = "^1.6.1"

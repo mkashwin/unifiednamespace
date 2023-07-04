@@ -25,12 +25,12 @@ packages = [{ include = "uns_kafka", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-dynaconf = "^3.1.9"
+dynaconf = "^3.1.12"
 confluent-kafka = "^2.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
-yapf = "^0.32.0"
+yapf = "^0.40.1"
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
