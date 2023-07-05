@@ -3,9 +3,9 @@ Test cases for uns_kafka.kafka_handler#KafkaHandler
 """
 
 import json
-from typing import Any
 import pytest
 import os
+from confluent_kafka.admin import AdminClient
 from confluent_kafka import Producer
 from confluent_kafka import Consumer
 from confluent_kafka import OFFSET_BEGINNING
@@ -95,18 +95,20 @@ def test_convert_MQTT_KAFKA_topic(mqtt_topic: str, kafka_topic: str):
              "intValue": "200"
          }],
          "seq":"0" }""")])
-def test_publish(mqtt_topic: str, message: Any):
+def test_publish(mqtt_topic: str, message):
     """
     KafkaHandler#publish
     """
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
+
+    admin_client = AdminClient(KAFKA_CONFIG)
 
     consumer_config: dict = {}
     consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get(
         "bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_test_consumer"
     consumer_config["group.id"] = "uns_kafka_test_consumers"
-    consumer_config["auto.offset.reset"] = "earliest"
+    consumer_config["auto.offset.reset"] = "latest"
     kafka_handler.publish(mqtt_topic, message)
     kafka_handler.flush()
 
@@ -118,9 +120,8 @@ def test_publish(mqtt_topic: str, message: Any):
             p.offset = OFFSET_BEGINNING
         consumer.assign(partitions)
 
-    kafka_listener.subscribe(
-        [KafkaHandler.convert_MQTT_KAFKA_topic(mqtt_topic)],
-        on_assign=reset_offset)
+    kafka_topic = KafkaHandler.convert_MQTT_KAFKA_topic(mqtt_topic)
+    kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
     try:
         while True:
             msg = kafka_listener.poll(1.0)
@@ -139,4 +140,5 @@ def test_publish(mqtt_topic: str, message: Any):
         pass
     finally:
         # Leave group and commit final offsets
+        admin_client.delete_topics([kafka_topic])
         kafka_listener.close()

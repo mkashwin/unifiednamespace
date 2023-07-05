@@ -61,12 +61,12 @@ class UNSKafkaMapper:
             "mqtt.reconnect_on_failure", True)
         self.clean_session: bool = settings.get("mqtt.clean_session", None)
 
-        self.mqtt_host: str = settings.mqtt["mqtt.host"]
+        self.mqtt_host: str = settings.mqtt["host"]
         self.mqtt_port: int = settings.get("mqtt.port", 1883)
         self.mqtt_username: str = settings.get("mqtt.username")
         self.mqtt_password: str = settings.get("mqtt.password")
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topics: list = settings.get("mqtt.topics", ["spBv1.0/#"])
+        self.topics: list = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
@@ -81,7 +81,7 @@ class UNSKafkaMapper:
         """
         Read the Kafka configurations required to connect to the Kafka broker
         """
-        self.kafka_config_map: dict = settings.mqtt["kafka.config"]
+        self.kafka_config_map: dict = settings.kafka["config"]
 
     def on_message(self, client, userdata, msg):
         """
