@@ -25,16 +25,16 @@ packages = [{ include = "uns_graphdb", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-neo4j = "^5.7"
+neo4j = "^5.10"
 paho-mqtt = "^1.6.1"
 dynaconf = "^3.1.12"
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
-yapf = "^0.40.0"
+yapf = "^0.40.1"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.3.2"
+pytest = "^7.4.0"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
 safety = "^2.3.5"

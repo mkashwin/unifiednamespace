@@ -32,11 +32,11 @@ protobuf = "^4.23.3"
 urllib3 = "1.26.16"
 
 [tool.poetry.group.dev.dependencies]
-yapf = "^0.40.0"
+yapf = "^0.40.1"
 
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.3.2"
+pytest = "^7.4.0"
 flake8 = "^6.0.0"
 pytest-cov = "^4.1.0"
 safety = "^2.3.5"
