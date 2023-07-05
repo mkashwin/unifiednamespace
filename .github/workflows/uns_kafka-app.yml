@@ -50,6 +50,7 @@ jobs:
           - "9092:9092"
         env:
           ALLOW_PLAINTEXT_LISTENER: "yes"
+          KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
 
     steps:
       - uses: actions/checkout@v3

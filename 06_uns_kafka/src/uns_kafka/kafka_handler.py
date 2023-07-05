@@ -18,8 +18,8 @@ class KafkaHandler:
         Constructor
         config: Configuration for the Kafka producer
         """
-        self.config = config
-        self.producer = Producer(config)
+        self.config: dict = config
+        self.producer: Producer = Producer(config)
 
     def publish(self, topic: str, message: str):
         """
@@ -27,10 +27,14 @@ class KafkaHandler:
         topic: Topic to publish the message to
         message: Message to be published
         """
-        self.producer.produce(KafkaHandler.convert_MQTT_KAFKA_topic(topic),
-                              message,
-                              callback=self.delivery_callback)
-        self.producer.flush()
+        # Check if Kafka Producer is valid else try creating new Producer to connect to Kafka.
+        # Configure Retry
+        if self.producer is None:
+            self.producer = Producer(self.config)
+        else:
+            self.producer.produce(KafkaHandler.convert_MQTT_KAFKA_topic(topic),
+                                  message,
+                                  callback=self.delivery_callback)
 
     def delivery_callback(self, err: Exception, msg: dict):
         """
@@ -43,12 +47,11 @@ class KafkaHandler:
         else:
             LOGGER.info("Message delivered to topic: %s", msg.topic())
 
-    def close(self):
+    def flush(self) -> int:
         """
-        Closes the connection to the kafka broker
+        Flush the publisher queue to the broker
         """
-        self.producer.close()
-        LOGGER.info("Kafka connection closed")
+        self.producer.flush()
 
     @staticmethod
     def convert_MQTT_KAFKA_topic(mqtt_topic: str) -> str:

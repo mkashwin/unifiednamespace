@@ -1,0 +1,142 @@
+"""
+Test cases for uns_kafka.kafka_handler#KafkaHandler
+"""
+
+import json
+from typing import Any
+import pytest
+import os
+from confluent_kafka import Producer
+from confluent_kafka import Consumer
+from confluent_kafka import OFFSET_BEGINNING
+
+from uns_kafka.kafka_handler import KafkaHandler
+
+KAFKA_CONFIG: dict = json.loads(
+    os.environ.get(
+        "UNS_kafka__config",
+        '{"client.id": "uns_kafka_client", "bootstrap.servers": "localhost:9092"}'
+    ))
+MQTT_HOST: str = os.environ.get("UNS_mqtt__host", "localhost")
+MQTT_PORT: int = os.environ.get("UNS_mqtt__port", 1883)
+
+
+def test_kafka_handler_init():
+    """
+    KafkaHandler#init
+    """
+    kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
+    assert (kafka_handler.config == KAFKA_CONFIG
+            ), f"""The kafka configuration was not properly initialized.\n
+            Expected config:{KAFKA_CONFIG}, received {kafka_handler.config}"""
+    assert kafka_handler.producer is not None and isinstance(
+        kafka_handler.producer, Producer)
+
+
+@pytest.mark.parametrize("mqtt_topic, kafka_topic", [(
+    "a/b/c",
+    "a_b_c",
+), (
+    "abc",
+    "abc",
+)])
+def test_convert_MQTT_KAFKA_topic(mqtt_topic: str, kafka_topic: str):
+    assert KafkaHandler.convert_MQTT_KAFKA_topic(
+        mqtt_topic
+    ) == kafka_topic, "Topic name in Kafka shouldn't have any '/'"
+
+
+@pytest.mark.integrationtest
+@pytest.mark.parametrize(
+    "mqtt_topic, message", [(
+        "a/b/c",
+        '{"timestamp": 12345678, "message": "test message1"}',
+    ), (
+        "abc",
+        '{"timestamp": 12345678, "message": "test message2"}',
+    ),
+                            ("spBv1.0/uns_group/NBIRTH/eon1", """{
+         "timestamp":"1671554024644",
+         "metrics": [{
+             "name": "Inputs/A",
+             "timestamp": "1486144502122",
+             "alias": "0",
+             "datatype": "11",
+             "booleanValue": "False"
+         }, {
+             "name": "Inputs/B",
+             "timestamp": "1486144502122",
+             "alias": "1",
+             "datatype": "11",
+             "booleanValue": "False"
+         }, {
+             "name": "Outputs/E",
+             "timestamp": "1486144502122",
+             "alias": "2",
+             "datatype": "11",
+             "booleanValue": "False"
+         }, {
+             "name": "Outputs/F",
+             "timestamp": "1486144502122",
+             "alias": "3",
+             "datatype": "11",
+             "booleanValue": "False"
+         }, {
+             "name": "Properties/Hardware Make",
+             "timestamp": "1486144502122",
+             "alias": "4",
+             "datatype": "12",
+             "stringValue": "Sony"
+         }, {
+             "name": "Properties/Weight",
+             "timestamp": "1486144502122",
+             "alias": "5",
+             "datatype": "3",
+             "intValue": "200"
+         }],
+         "seq":"0" }""")])
+def test_publish(mqtt_topic: str, message: Any):
+    """
+    KafkaHandler#publish
+    """
+    kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
+
+    consumer_config: dict = {}
+    consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get(
+        "bootstrap.servers")
+    consumer_config["client.id"] = "uns_kafka_test_consumer"
+    consumer_config["group.id"] = "uns_kafka_test_consumers"
+    consumer_config["auto.offset.reset"] = "earliest"
+    kafka_handler.publish(mqtt_topic, message)
+    kafka_handler.flush()
+
+    kafka_listener: Consumer = Consumer(consumer_config)
+
+    # Set up a callback to handle the '--reset' flag.
+    def reset_offset(consumer, partitions):
+        for p in partitions:
+            p.offset = OFFSET_BEGINNING
+        consumer.assign(partitions)
+
+    kafka_listener.subscribe(
+        [KafkaHandler.convert_MQTT_KAFKA_topic(mqtt_topic)],
+        on_assign=reset_offset)
+    try:
+        while True:
+            msg = kafka_listener.poll(1.0)
+            if msg is None:
+                # wait
+                print("Waiting...")
+                pass
+            elif msg.error():
+                assert pytest.fail(), msg.error()
+            else:
+                assert json.loads(
+                    msg.value().decode("utf-8")) == json.loads(message)
+                break
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Leave group and commit final offsets
+        kafka_listener.close()
