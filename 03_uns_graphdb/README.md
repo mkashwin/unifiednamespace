@@ -8,7 +8,7 @@ We will be publishing messages as per the ISA-95 part 2 specifications
 We choose a graph database in this case because it allows us to define and maintain relationships and connections across our enterprise as well as merge messages to the same topic.
 e.g. the ERP system which is publishing to the Enterprise node can have a relationship with a device allowing us to easily correlate identifiers across the various systems.
 
-The GraphDB is not a store for historical data, this decision is done for performance purposes and the ability to define relationships easily across the entities. For the historian capability refer to the [historian](./../04_uns_historian/Readme.md) module.
+The GraphDB is not a store for historical data, this decision is done for performance purposes and the ability to define relationships easily across the entities. For the historian capability refer to the [historian](./../04_uns_historian/README.md) module.
 
 The GraphDB is also deployed both at the factory level and enterprise level. 
 Devices can query the GraphDB if they need merged data. If they just need the latest message published it would be more efficient to subscribe to the topic ( assuming that MQTT messages are published with retain flag as true).
@@ -46,7 +46,7 @@ docker run \
     --env apoc.import.file.enabled=true \
     --env apoc.import.file.use_neo4j_config=true \
     --env NEO4J_PLUGINS=\[\"apoc\"\] \
-    neo4j:5.7.0
+    neo4j:latest
 # --name : <container_name> . Needed 
 # -p : # Ports of operation 7687 is the DB server, 7474 is the Neo4j browser( not recommended for production)
 # -v : volume to persist data,logs, import file directory and plugins

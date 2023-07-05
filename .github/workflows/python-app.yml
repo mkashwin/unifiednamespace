@@ -35,6 +35,7 @@ jobs:
             "./03_uns_graphdb",
             "./04_uns_historian",
             "./05_sparkplugb",
+            "./06_uns_kafka",
           ]
     steps:
       - uses: actions/checkout@v3

@@ -1,5 +1,5 @@
 """
-Test cases for sparkplugb_enc_config
+Test cases for uns_kafka_config
 """
 import inspect
 import os
@@ -7,7 +7,8 @@ import re
 import socket
 
 import pytest
-from uns_spb_mapper.sparkplugb_enc_config import settings
+from confluent_kafka import Producer
+from uns_kafka.uns_kafka_config import settings
 
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
@@ -15,10 +16,10 @@ cmd_subfolder = os.path.realpath(
             os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
             'src')))
 
-is_configs_provided: bool = (
-    os.path.exists(os.path.join(cmd_subfolder, "../conf/.secrets.yaml"))
-    and os.path.exists(os.path.join(cmd_subfolder, "../conf/settings.yaml"))
-    or (bool(os.getenv("UNS_mqtt__host"))))
+is_configs_provided: bool = (os.path.exists(
+    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
+        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
+            os.getenv("UNS_kafka__config")))
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
@@ -67,6 +68,10 @@ def test_mqtt_config():
 
     username = settings.get("mqtt.username")
     password = settings.get("mqtt.password")
+    assert (username is None and password is None) or (
+        isinstance(username, str) and len(username) > 0
+        and isinstance(password, str) and len(password)
+        > 0), "Either both username & password need to be specified or neither"
 
     assert (username is None and password is None) or (
         isinstance(username, str) and len(username) > 0
@@ -77,14 +82,13 @@ def test_mqtt_config():
     assert (tls is None) or (
         isinstance(tls, dict) and not bool(tls)
         and tls.get("ca_certs") is not None
-    ), ("Check the configuration provided for tls connection to the broker."
-        "The property ca_certs is missing")
+    ), ("Check the configuration provided for tls connection to the broker. "
+        "the property ca_certs is missing")
 
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
-    topics: str = settings.get("mqtt.topics", ["spBv1.0/#"])
-
+    topics: str = settings.get("mqtt.topics", ["#"])
     for topic in topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
@@ -108,6 +112,23 @@ def test_mqtt_config():
     ), f"Configuration 'mqtt.timestamp_attribute':{timestamp_attribute} is not a valid JSON key"
 
 
+@pytest.mark.xfail(not is_configs_provided,
+                   reason="Configurations have not been provided")
+def test_kafka_config():
+    """
+    Test if the Kafka configurations are valid
+    """
+    config: dict = settings.kafka["config"]
+
+    assert "client.id" in config, f"Kafka configurations missing mandatory client.id: {config}"
+
+    assert ("bootstrap.servers" in config) or (
+        "metadata.broker.list" in config
+    ), f"Kafka configurations missing mandatory server config: {config}"
+
+    # assert "group.id" in config, f"Kafka configurations missing mandatory server config: {config}"
+
+
 @pytest.mark.integrationtest
 def test_connectivity_to_mqtt():
     """
@@ -120,3 +141,18 @@ def test_connectivity_to_mqtt():
     assert sock.connect_ex(
         (host,
          port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+
+
+@pytest.mark.integrationtest
+def test_connectivity_to_kafka():
+    """
+    Test if the provided configurations for the Kafka Server are valid and
+    there is connectivity to the Kafka cluster
+    """
+    config: dict = settings.kafka["config"]
+
+    producer = Producer(config)
+    assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {config}"
+    assert producer.list_topics(
+        timeout=10
+    ) is not None, f"Kafka configurations did allow connectivity to broker: {config}"

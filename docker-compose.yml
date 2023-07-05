@@ -26,3 +26,45 @@ services:
       - ./conf:/app/conf
     environment:
       UNS_MODULE: 05_sparkplugb
+
+  kafka_mapper:
+    build:
+      context: .
+      dockerfile: ./06_uns_kafka/Dockerfile
+    volumes:
+      - ./conf:/app/conf
+    environment:
+      UNS_MODULE: 06_uns_kafka
+
+  uns_mqtt:
+    image: emqx/emqx:latest
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+
+  uns_timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+
+  uns_graphdb:
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/${{ env.UNS_graphdb__password }}
+      apoc.export.file.enabled: true
+      apoc.import.file.enabled: true
+      apoc.import.file.use_neo4j_config: true
+      NEO4J_PLUGINS: '["apoc"]'
+
+  uns_kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"

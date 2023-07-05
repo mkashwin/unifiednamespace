@@ -52,7 +52,7 @@ The executables and the generated code are checked into the repository
 
 # The MQTT Cluster 
 The MQTT Cluster from EMQX is easily setup on a cluster. *There are other ways like within a docker or directly via the executable, but I choose to use the K8s setup to be able to leverage the benefits of scaling up, failover and other orchestration benefits.*
-Before proceeding ensure that you have setup your K8s Cluster as described in [01_k8scluster](./../01_k8scluster/Readme.md)
+Before proceeding ensure that you have setup your K8s Cluster as described in [01_k8scluster](./../01_k8scluster/README.md)
 
 ```bash
 microk8s helm3 repo add emqx https://repos.emqx.io/charts

@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "uns-mqtt"
-version = "0.6.5"
-description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
+name = "uns_kafka_mapper"
+version = "0.6.4"
+description = "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
 maintainers = [
@@ -10,36 +10,37 @@ maintainers = [
 ]
 readme = "README.md"
 # homepage = ""
-repository = "https://github.com/mkashwin/unifiednamespace/tree/main/02_mqtt-cluster"
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka"
 # documentation = ""
-keywords = ["uns", "mqtt", "sparkplugB"]
+keywords = ["uns", "mqtt", "kafka"]
 #classifiers = [
 #   "License :: OSI Approved :: MIT License",
 #   "Intended Audience :: Manufacturing",
-#   "Topic :: Software Development :: Libraries :: MQTT"
-#   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client"
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: UNS to Kafka ",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: UNS to Kafka Mapper Client"
 # ]
-packages = [
-    { include = "uns_mqtt", from = "src" },
-    { include = "uns_sparkplugb", from = "src" },
-]
+packages = [{ include = "uns_kafka", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-paho-mqtt = "^1.6.1"
-protobuf = "^4.23.3"
-urllib3 = "1.26.16"
+dynaconf = "^3.1.12"
+confluent-kafka = "^2.0.2"
+
 
 [tool.poetry.group.dev.dependencies]
 yapf = "^0.40.1"
-
+uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.4.0"
+pytest = "^7.2.1"
 flake8 = "^6.0.0"
-pytest-cov = "^4.1.0"
+pytest-cov = "^4.0.0"
 safety = "^2.3.5"
+
+[tool.poetry.scripts] #TODO fix
+uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
 
 [build-system]
 requires = ["poetry-core"]
