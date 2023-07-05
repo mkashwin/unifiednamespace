@@ -46,7 +46,7 @@ docker run \
     --env apoc.import.file.enabled=true \
     --env apoc.import.file.use_neo4j_config=true \
     --env NEO4J_PLUGINS=\[\"apoc\"\] \
-    neo4j:5.7.0
+    neo4j:latest
 # --name : <container_name> . Needed 
 # -p : # Ports of operation 7687 is the DB server, 7474 is the Neo4j browser( not recommended for production)
 # -v : volume to persist data,logs, import file directory and plugins
