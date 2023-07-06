@@ -910,7 +910,7 @@ files = [
 
 [[package]]
 name = "uns-graphdb"
-version = "0.6.5"
+version = "0.7.1"
 description = "Graph Database implementation for a UNS setup"
 optional = false
 python-versions = "^3.8.1"
@@ -920,7 +920,7 @@ develop = true
 [package.dependencies]
 dynaconf = "^3.1.12"
 logger = "^1.4"
-neo4j = "^5.7"
+neo4j = "^5.10"
 paho-mqtt = "^1.6.1"
 
 [package.source]
@@ -929,7 +929,7 @@ url = "03_uns_graphdb"
 
 [[package]]
 name = "uns-historian"
-version = "0.6.5"
+version = "0.7.1"
 description = "Historian implementation for a UNS setup"
 optional = false
 python-versions = "^3.8.1"
@@ -948,7 +948,7 @@ url = "04_uns_historian"
 
 [[package]]
 name = "uns-kafka-mapper"
-version = "0.6.4"
+version = "0.7.1"
 description = "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
 optional = false
 python-versions = "^3.8.1"
@@ -966,7 +966,7 @@ url = "06_uns_kafka"
 
 [[package]]
 name = "uns-mqtt"
-version = "0.6.5"
+version = "0.7.1"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 optional = false
 python-versions = "^3.8.1"
@@ -977,6 +977,7 @@ develop = true
 logger = "^1.4"
 paho-mqtt = "^1.6.1"
 protobuf = "^4.23.3"
+urllib3 = "1.26.16"
 
 [package.source]
 type = "directory"
@@ -984,7 +985,7 @@ url = "02_mqtt-cluster"
 
 [[package]]
 name = "uns-spb-mapper"
-version = "0.6.5"
+version = "0.7.1"
 description = "SparkplugB decoder to parse and unpack  SparkplugB messages to the UNS structure"
 optional = false
 python-versions = "^3.8.1"
@@ -1133,5 +1134,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-
-content-hash = "819f6c6e63a67cd4f30ce193d74af8de6b94cb27996b08baf6878297ce2285af"
+content-hash = "ff38c8df469664580bcf53e080fcd21403a0bbe80396537528ca27afbd79a784"
