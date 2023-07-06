@@ -1,7 +1,6 @@
 """
 Test cases for sparkplugb_enc_config
 """
-import inspect
 import os
 import re
 import socket
@@ -9,16 +8,7 @@ import socket
 import pytest
 from uns_spb_mapper.sparkplugb_enc_config import settings
 
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
-
-is_configs_provided: bool = (
-    os.path.exists(os.path.join(cmd_subfolder, "../conf/.secrets.yaml"))
-    and os.path.exists(os.path.join(cmd_subfolder, "../conf/settings.yaml"))
-    or (bool(os.getenv("UNS_mqtt__host"))))
+is_configs_provided: bool = settings.mqtt["host"] is not None
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"

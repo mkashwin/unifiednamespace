@@ -161,7 +161,7 @@ def test_graph_db_configs():
         "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
     assert re.fullmatch(
         REGEX_FOR_NODE_TYPES, nested_attribute_node_type
-    ), f"configuration {nested_attribute_node_type} at key: 'graphdb.nested_attribute_node_type' is not a valid node name"
+    ), f"{nested_attribute_node_type} at key: 'graphdb.nested_attribute_node_type' isn't a valid node name"
 
 
 @pytest.mark.integrationtest

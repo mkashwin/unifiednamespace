@@ -278,8 +278,8 @@ class GraphDBHandler:
                 for child_key in composite_attributes:
                     child_value = composite_attributes[child_key]
                     # Fix to handle blank values which were give error unhashable type: 'dict'
-                    if (isinstance(child_value, list) or isinstance(
-                            child_value, dict)) and len(child_value) == 0:
+                    if (isinstance(child_value, (list, dict, tuple))
+                            and len(child_value) == 0):
                         child_value = None
                     response = GraphDBHandler.save_attribute_nodes(
                         session, last_attr_node_id, {child_key, child_value},
@@ -295,8 +295,8 @@ class GraphDBHandler:
         """
         if current_depth < len(node_types):
             return node_types[current_depth]
-        else:
-            return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
+
+        return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
 
     # static method ends
 
@@ -419,8 +419,7 @@ RETURN value.child
                 # iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
                     flatten(json_object[items], name + items + '_')
-            elif (isinstance(json_object, list)
-                  or isinstance(json_object, tuple)):
+            elif isinstance(json_object, (list, tuple)):
                 i = 0
                 # iterate through the list. recursively call the flattening function for each item
                 for items in json_object:
@@ -468,17 +467,15 @@ RETURN value.child
                 # if the value is type dict then add it to the complex_attributes
                 complex_attr[key] = attr_val
 
-            elif isinstance(attr_val, list) or isinstance(attr_val, tuple):
+            elif isinstance(attr_val, (list, tuple)):
                 counter: int = 0
                 temp_dict: dict = {}
                 is_only_simple_arr: bool = True
                 for item in attr_val:
                     name_key = key + "_" + str(counter)
-                    if isinstance(item, dict) or isinstance(
-                            item, list) or isinstance(item, tuple):
+                    if isinstance(item, (dict, list, tuple)):
                         # special handling. if there is a sub attribute "name", use it for the node name
-                        if isinstance(item,
-                                      dict) and "name" in item is not None:
+                        if isinstance(item, dict) and "name" in item:
                             name_key = item["name"]
                         is_only_simple_arr = False
                     temp_dict[name_key] = item

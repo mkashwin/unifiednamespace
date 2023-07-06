@@ -87,15 +87,20 @@ class UnsMQTTClient(mqtt_client.Client):
         self.qos: int = 0
 
         # call back methods
-        def on_uns_connect(client, userdata, flags, rc, properties=None):
+        def on_uns_connect(client,
+                           userdata,
+                           flags,
+                           return_code,
+                           properties=None):
             """
             Call back method when a mqtt connection happens
             """
             LOGGER.debug("{ Client: %s, Userdata: %s, Flags: %s, rc: %s}",
-                         str(client), str(userdata), str(flags), str(rc))
-            if rc == 0:
+                         str(client), str(userdata), str(flags),
+                         str(return_code))
+            if return_code == 0:
                 LOGGER.debug("Connection established. Returned code=%s",
-                             str(rc))
+                             str(return_code))
                 for topic in self.topics:
                     self.subscribe(topic,
                                    self.qos,
@@ -105,7 +110,8 @@ class UnsMQTTClient(mqtt_client.Client):
                 LOGGER.info("Successfully connected %s to MQTT Broker",
                             str(self))
             else:
-                LOGGER.error("Bad connection. Returned code=%s", str(rc))
+                LOGGER.error("Bad connection. Returned code=%s",
+                             str(return_code))
                 client.bad_connection_flag = True
 
         def on_uns_subscribe(client: mqtt_client,
@@ -256,7 +262,8 @@ class UnsMQTTClient(mqtt_client.Client):
             inbound_payload.ParseFromString(payload)
             decoded_payload = MessageToDict(inbound_payload)
         else:
-            # TODO Assuming all messages to UNS or the STATE message type in sparkplugB are json hence convertible to dict
+            # TODO Assuming all messages to UNS or the STATE message type in sparkplugB
+            # are json hence convertible to dict
             decoded_payload = json.loads(payload.decode("utf-8"))
 
         filtered_message = UnsMQTTClient.filter_ignored_attributes(
@@ -290,8 +297,7 @@ class UnsMQTTClient(mqtt_client.Client):
                         UnsMQTTClient.del_key_from_dict(
                             resulting_message, ignored_attr_list.split("."))
                     # if the attribute is a list of keys
-                    elif (isinstance(ignored_attr_list, list)
-                          or isinstance(ignored_attr_list, tuple)):
+                    elif isinstance(ignored_attr_list, (list, tuple)):
                         for ignored_attr in ignored_attr_list:
                             UnsMQTTClient.del_key_from_dict(
                                 resulting_message, ignored_attr.split("."))

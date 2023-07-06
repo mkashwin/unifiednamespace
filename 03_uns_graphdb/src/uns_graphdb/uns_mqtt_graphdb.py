@@ -148,15 +148,15 @@ class UnsMqttGraphDb:
                                                time.time()),
                 node_types=node_types,
                 attr_node_type=self.graphdb_nested_attribute_node_type)
-        except SystemError as se:
+        except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
-                str(se),
+                str(system_error),
                 msg.topic,
                 msg.payload,
                 stack_info=True,
                 exc_info=True)
-            raise se
+            # raise se
         except Exception as ex:
             LOGGER.error(
                 "Error persisting the message to the Graph DB: %s \nTopic: %s \nMessage:%s",
@@ -172,6 +172,7 @@ class UnsMqttGraphDb:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
+        # pylint: disable=unused-argument
         if result_code != 0:
             LOGGER.error("Unexpected disconnection.:%s",
                          str(result_code),

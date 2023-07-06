@@ -81,5 +81,10 @@
     ],
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
-    "python.analysis.typeCheckingMode": "off"
+    "python.linting.pylintArgs": [
+        "\"--max-line-length= 120\""
+    ],
+    "pylint.args": [
+        " --max-line-length= 120"
+    ]
 }

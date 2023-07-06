@@ -1,9 +1,6 @@
 """
 Tests for GraphDBHandler
 """
-import inspect
-import os
-
 import pytest
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from neo4j import Session, exceptions
@@ -11,16 +8,7 @@ from uns_graphdb.graphdb_config import settings
 from uns_graphdb.graphdb_handler import GraphDBHandler
 from uns_graphdb.graphdb_handler import NODE_RELATION_NAME
 
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
-
-is_configs_provided: bool = (os.path.exists(
-    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
-        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_graphdb__username")))
+is_configs_provided: bool = settings.graphdb.get("username") is not None
 
 
 @pytest.mark.parametrize(
@@ -309,7 +297,8 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
                     is_only_primitive = False
                     read_dict_attr_node(session, attr_node_type, parent_id,
                                         attr_key, value)
-                elif isinstance(value, list) or isinstance(value, tuple):
+                # elif isinstance(value, list) or isinstance(value, tuple):
+                elif isinstance(value, (list, tuple)):
                     is_only_primitive = read_list_attr_nodes(
                         session, db_node_properties.get(attr_key),
                         attr_node_type, parent_id, attr_key, value)

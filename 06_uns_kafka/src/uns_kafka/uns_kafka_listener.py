@@ -105,8 +105,8 @@ class UNSKafkaMapper:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
+        # pylint: disable=unused-argument
         # Cleanup when the MQTT broker gets disconnected
-
         LOGGER.debug("MQTT to Kafka connector got disconnected")
         if result_code != 0:
             LOGGER.error("Unexpected disconnection.:%s",

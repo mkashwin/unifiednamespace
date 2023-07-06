@@ -51,7 +51,7 @@ class HistorianHandler:
         SLEEP_BTW_ATTEMPT seconds between retry attempts
         This is required because psycopg2 doesn't support reconnecting connections which time out / expire
         """
-        if (self.timescale_db_conn is None):
+        if self.timescale_db_conn is None:
             try:
                 self.timescale_db_conn = psycopg2.connect(
                     host=self.hostname,
@@ -77,7 +77,7 @@ class HistorianHandler:
                                  stack_info=True,
                                  exc_info=True)
                     time.sleep(SLEEP_BTW_ATTEMPT)
-                    self.connect(retry=retry)
+                    return self.connect(retry=retry)
             except Exception as ex:
                 LOGGER.error(
                     "Error Connecting to %s. Unable to retry. Error:%s",
@@ -88,15 +88,21 @@ class HistorianHandler:
                 raise ex
 
     def get_cursor(self):
+        """
+        Get the cursor for the Timescale DB
+        """
         if (self.timescale_db_cursor is None
                 or self.timescale_db_cursor.closed):
-            if (self.timescale_db_conn is None):
+            if self.timescale_db_conn is None:
                 self.connect()
             self.timescale_db_cursor = self.timescale_db_conn.cursor()
         return self.timescale_db_cursor
 
     def close(self):
-        if (self.timescale_db_cursor is not None):
+        """
+        Close the database connection
+        """
+        if self.timescale_db_cursor is not None:
             try:
                 self.timescale_db_cursor.close()
             except Exception as ex:
@@ -105,7 +111,7 @@ class HistorianHandler:
                              stack_info=True,
                              exc_info=True)
         # in case there was any error in closing the cursor, attempt closing the connection too
-        if (self.timescale_db_conn is not None):
+        if self.timescale_db_conn is not None:
             try:
                 self.timescale_db_conn.close()
                 self.timescale_db_conn = None
@@ -155,7 +161,7 @@ class HistorianHandler:
                     str(ex),
                     stack_info=True,
                     exc_info=True)
-                if (retry >= MAX_RETRIES):
+                if retry >= MAX_RETRIES:
                     raise ex
                 else:
                     retry += 1

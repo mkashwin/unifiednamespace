@@ -113,12 +113,12 @@ class UNSSparkPlugBMapper:
             else:
                 raise ValueError(
                     f"Unknown SparkplugB topic received: {msg.topic}")
-        except SystemError as se:
+        except SystemError as system_error:
             LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
-                         str(se),
+                         str(system_error),
                          stack_info=True,
                          exc_info=True)
-            raise se
+            # raise system_error
         except Exception as ex:
             LOGGER.error("Error parsing SparkplugB message payload: %s",
                          str(ex),
@@ -129,6 +129,7 @@ class UNSSparkPlugBMapper:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
+        # pylint: disable=unused-argument
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("SparkplugB listener got disconnected")
         if result_code != 0:

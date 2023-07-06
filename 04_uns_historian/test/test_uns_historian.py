@@ -164,7 +164,7 @@ def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
                         topic = %s AND
                         client_id=%s;"""
 
-        with cursor as cursor:
+        with cursor:
             cursor.execute(sql_command, (query_timestamp, topic, client_id))
             data = cursor.fetchone()
             assert data is not None, "No data found in the database"

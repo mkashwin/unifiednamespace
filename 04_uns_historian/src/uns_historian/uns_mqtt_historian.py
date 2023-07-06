@@ -141,15 +141,15 @@ class UnsMqttHistorian:
                     filtered_message.get(self.mqtt_timestamp_key,
                                          time.time())),
                 message=filtered_message)
-        except SystemError as se:
+        except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
-                str(se),
+                str(system_error),
                 msg.topic,
                 msg.payload,
                 stack_info=True,
                 exc_info=True)
-            raise se
+            # raise system_error
         except Exception as ex:
             LOGGER.error(
                 "Error persisting the message to the Historian DB: %s\nTopic: %s \nMessage:%s",
@@ -163,6 +163,7 @@ class UnsMqttHistorian:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
+        # pylint: disable=unused-argument
         if result_code != 0:
             LOGGER.error("Unexpected disconnection.:%s",
                          str(result_code),

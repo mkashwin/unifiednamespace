@@ -12,10 +12,13 @@ from uns_kafka.uns_kafka_config import settings
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
-is_configs_provided: bool = (settings.kafka["config"] is not None
+is_configs_provided: bool = (settings.kafka["config"] is not None and
+                             "bootstrap.servers" in settings.kafka["config"]
                              and settings.mqtt["host"] is not None)
 
 
+@pytest.mark.xfail(not is_configs_provided,
+                   reason="Configurations have not been provided")
 @pytest.mark.integrationtest
 def test_uns_kafka_mapper_init():
     """
@@ -41,6 +44,8 @@ def test_uns_kafka_mapper_init():
             uns_kafka_mapper.uns_client.disconnect()
 
 
+@pytest.mark.xfail(not is_configs_provided,
+                   reason="Configurations have not been provided")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "mqtt_topic, mqtt_message,kafka_topic,expected_kafka_msg",
@@ -99,7 +104,12 @@ def test_uns_kafka_mapper_init():
       })])
 def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
                                      kafka_topic: str, expected_kafka_msg):
+    """
+    End to End testing of the listener by publishing to MQTT and validating correct message on KAFKA 
+    
+    """
     uns_kafka_mapper: UNSKafkaMapper = None
+    admin_client = None
 
     try:
         uns_kafka_mapper = UNSKafkaMapper()
@@ -127,8 +137,8 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
 
             # Set up a callback to handle the '--reset' flag.
             def reset_offset(consumer, partitions):
-                for p in partitions:
-                    p.offset = OFFSET_END
+                for part in partitions:
+                    part.offset = OFFSET_END
                 consumer.assign(partitions)
 
             kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
@@ -153,9 +163,10 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
             "Connection to either the MQTT Broker or Kafka broker did not happen"
             f" Exception {ex}")
     finally:
-        admin_client.delete_topics([kafka_topic])
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
+        if admin_client is not None:
+            admin_client.delete_topics([kafka_topic])
 
 
 def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
@@ -172,13 +183,16 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
 
 
 def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
+    """
+    checks the kafka topic for teh expected message
+    """
     try:
         while True:
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait
                 print("Waiting...")
-                pass
+
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:

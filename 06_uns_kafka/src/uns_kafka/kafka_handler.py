@@ -32,7 +32,7 @@ class KafkaHandler:
         if self.producer is None:
             self.producer = Producer(self.config)
         else:
-            self.producer.produce(KafkaHandler.convert_MQTT_KAFKA_topic(topic),
+            self.producer.produce(KafkaHandler.convert_mqtt_kafka_topic(topic),
                                   message,
                                   callback=self.delivery_callback)
 
@@ -54,7 +54,7 @@ class KafkaHandler:
         self.producer.flush()
 
     @staticmethod
-    def convert_MQTT_KAFKA_topic(mqtt_topic: str) -> str:
+    def convert_mqtt_kafka_topic(mqtt_topic: str) -> str:
         """
         Converts the MQTT topic to the correct kafka topic
         topic: MQTT topic

@@ -5,14 +5,15 @@ import time
 from types import SimpleNamespace
 
 import pytest
-import os
+
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
+from uns_spb_mapper.sparkplugb_enc_config import settings
 
-MQTT_HOST: str = os.environ.get("UNS_mqtt__host", "localhost")
-MQTT_PORT: int = os.environ.get("UNS_mqtt__port", 1883)
+MQTT_HOST: str = settings.mqtt["host"]
+MQTT_PORT: int = settings.get("mqtt.port", 1883)
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -411,11 +412,19 @@ def test_publish_to_uns_connected(clean_session, protocol, transport, host,
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
 
     def on_publish(client, userdata, result):
+        """
+        Call back for publish to MQTT
+        """
+        # pylint: disable=unused-argument
         msg_published.append(True)
         if len(msg_published) == len(all_uns_messages):
             client.disconnect()
 
     def on_connect(client, userdata, flags, return_code, properties=None):
+        """
+        Call back for connection to MQTT
+        """
+        # pylint: disable=unused-argument
         spb_to_uns_pub.publish_to_uns(all_uns_messages)
 
     uns_client.on_connect = on_connect

@@ -4,23 +4,27 @@ Test cases for uns_kafka.kafka_handler#KafkaHandler
 
 import json
 import pytest
-import os
+
 from confluent_kafka.admin import AdminClient
 from confluent_kafka import Producer
 from confluent_kafka import Consumer
 from confluent_kafka import OFFSET_BEGINNING
+from uns_kafka.uns_kafka_config import settings
 
 from uns_kafka.kafka_handler import KafkaHandler
 
-KAFKA_CONFIG: dict = json.loads(
-    os.environ.get(
-        "UNS_kafka__config",
-        '{"client.id": "uns_kafka_client", "bootstrap.servers": "localhost:9092"}'
-    ))
-MQTT_HOST: str = os.environ.get("UNS_mqtt__host", "localhost")
-MQTT_PORT: int = os.environ.get("UNS_mqtt__port", 1883)
+KAFKA_CONFIG: dict = settings.kafka["config"]
+is_configs_provided: bool = "bootstrap.servers" in KAFKA_CONFIG
+
+# json.loads(
+#     os.environ.get(
+#         "UNS_kafka__config",
+#         '{"client.id": "uns_kafka_client", "bootstrap.servers": "localhost:9092"}'
+#     ))
 
 
+@pytest.mark.xfail(not is_configs_provided,
+                   reason="Configurations have not been provided")
 def test_kafka_handler_init():
     """
     KafkaHandler#init
@@ -40,12 +44,17 @@ def test_kafka_handler_init():
     "abc",
     "abc",
 )])
-def test_convert_MQTT_KAFKA_topic(mqtt_topic: str, kafka_topic: str):
-    assert KafkaHandler.convert_MQTT_KAFKA_topic(
+def test_convert_mqtt_kafka_topic(mqtt_topic: str, kafka_topic: str):
+    """
+    Test conversion of MQTT Topics to Kafka
+    """
+    assert KafkaHandler.convert_mqtt_kafka_topic(
         mqtt_topic
     ) == kafka_topic, "Topic name in Kafka shouldn't have any '/'"
 
 
+@pytest.mark.xfail(not is_configs_provided,
+                   reason="Configurations have not been provided")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "mqtt_topic, message", [(
@@ -116,11 +125,11 @@ def test_publish(mqtt_topic: str, message):
 
     # Set up a callback to handle the '--reset' flag.
     def reset_offset(consumer, partitions):
-        for p in partitions:
-            p.offset = OFFSET_BEGINNING
+        for part in partitions:
+            part.offset = OFFSET_BEGINNING
         consumer.assign(partitions)
 
-    kafka_topic = KafkaHandler.convert_MQTT_KAFKA_topic(mqtt_topic)
+    kafka_topic = KafkaHandler.convert_mqtt_kafka_topic(mqtt_topic)
     kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
     try:
         while True:
@@ -128,7 +137,6 @@ def test_publish(mqtt_topic: str, message):
             if msg is None:
                 # wait
                 print("Waiting...")
-                pass
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:
