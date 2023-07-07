@@ -66,7 +66,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
         old_on_connect(client=client,
                        userdata=userdata,
                        flags=flags,
-                       rc=result_code,
+                       return_code=result_code,
                        properties=properties)
         if result_code != 0:
             assert pytest.fail(
@@ -140,7 +140,7 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
         old_on_connect(client=client,
                        userdata=userdata,
                        flags=flags,
-                       rc=result_code,
+                       return_code=result_code,
                        properties=properties)
         if result_code != 0:
             assert pytest.fail(
