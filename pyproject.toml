@@ -39,15 +39,15 @@ protobuf = "^4.23.4"
 [tool.poetry.group.03_uns_graphdb.dependencies]
 neo4j = "^5.10"
 paho-mqtt = "^1.6.1"
-dynaconf = "^3.1.12"
+dynaconf = "^3.2.0"
 
 [tool.poetry.group.04_uns_historian.dependencies]
 psycopg2-binary = "^2.9.6"
 pytz = "^2023.3"
-dynaconf = "^3.1.12"
+dynaconf = "^3.2.0"
 
 [tool.poetry.group.05_sparkplugb.dependencies]
-dynaconf = "^3.1.12"
+dynaconf = "^3.2.0"
 
 [tool.poetry.group.06_uns_kafka.dependencies]
 confluent-kafka = "^2.0.2"
