@@ -125,7 +125,7 @@ jobs:
           fi
 
           echo "Creating Docker: ${image_name}:${SHA_TAG}"
-          docker build -t "${image_name}:${SHA_TAG}" -f ./Dockerfile ..
+          docker build -t "${image_name}:${SHA_TAG}" --build-arg GIT_HASH=${SHA_TAG::7} -f ./Dockerfile ..
 
           # Run the Docker tests
           echo "Running tests for Docker image: ${image_name}:${SHA_TAG}"
