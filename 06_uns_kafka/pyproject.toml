@@ -25,8 +25,8 @@ packages = [{ include = "uns_kafka", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-dynaconf = "^3.1.12"
-confluent-kafka = "^2.0.2"
+dynaconf = "^3.2.0"
+confluent-kafka = "^2.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

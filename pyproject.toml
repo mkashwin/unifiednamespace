@@ -50,6 +50,7 @@ dynaconf = "^3.2.0"
 dynaconf = "^3.2.0"
 
 [tool.poetry.group.06_uns_kafka.dependencies]
+dynaconf = "^3.2.0"
 confluent-kafka = "^2.2.0"
 # All other dependencies fulfilled by uns_mqtt
 
