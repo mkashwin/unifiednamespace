@@ -35,7 +35,7 @@ yapf = "^0.40.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"
-flake8 = "^6.0.0"
+flake8 = "^6.1.0"
 pytest-cov = "^4.0.0"
 safety = "^2.3.5"
 
