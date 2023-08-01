@@ -470,12 +470,12 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.10.0"
+version = "5.11.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.10.0.tar.gz", hash = "sha256:90616b2de1dc5a5e0ab17b72f0762f3496ac9f21c58bc0067f44d40c41db6a4e"},
+    {file = "neo4j-5.11.0.tar.gz", hash = "sha256:81d425ef9a53279c6909ec8d33e7dc913acc840292f0f3a047f3c3c5b74bccb5"},
 ]
 
 [package.dependencies]
@@ -1134,4 +1134,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "cc99db82a074f6e5fd5c56185142d7420a4cfcaaaf24ae7f77abacc8211fc664"
+content-hash = "a69307ce042182a479ff8d86888526a3ac2bfb8279ba71310f3738fd52cd6fee"
