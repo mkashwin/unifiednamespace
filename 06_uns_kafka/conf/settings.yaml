@@ -23,7 +23,5 @@ kafka:
       enable.idempotence: True,
       retries: 10,
       compression.type: "gzip",
-      session.timeout.ms: 6000,
-      default.topic.config: { "auto.offset.reset": "smallest" },
     }
 dynaconf_merge: true
