@@ -109,8 +109,11 @@ def test_publish(mqtt_topic: str, message):
     KafkaHandler#publish
     """
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
-
-    admin_client = AdminClient(KAFKA_CONFIG)
+    assert kafka_handler is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKA_CONFIG}"
+    assert kafka_handler.producer.list_topics(
+        timeout=10
+    ) is not None, f"Kafka configurations did allow connectivity to broker: {KAFKA_CONFIG}"
+    admin_client: AdminClient = AdminClient(KAFKA_CONFIG)
 
     consumer_config: dict = {}
     consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get(
@@ -132,7 +135,8 @@ def test_publish(mqtt_topic: str, message):
     kafka_topic = KafkaHandler.convert_mqtt_kafka_topic(mqtt_topic)
     kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
     try:
-        while True:
+        # Run tests only when connectivity to broker is there
+        while kafka_handler.producer.list_topics(timeout=10) is not None:
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait

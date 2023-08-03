@@ -105,8 +105,7 @@ def test_uns_kafka_mapper_init():
 def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
                                      kafka_topic: str, expected_kafka_msg):
     """
-    End to End testing of the listener by publishing to MQTT and validating correct message on KAFKA 
-    
+    End to End testing of the listener by publishing to MQTT and validating correct message on KAFKA
     """
     uns_kafka_mapper: UNSKafkaMapper = None
     admin_client = None
