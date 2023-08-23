@@ -85,7 +85,7 @@ Some key limitations to bear in mind
 The backbone of the ***Unified Name Space*** is the MQTT broker. 
 #### **Why MQTT**
 The overall structure of the UNS is based on the hierarchical structure as defined in ISA-95 part 2.
-> \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
+> \<enterprise\>/\<facility\>/\<area\>/\<line\>/\<device\>
 
 The level at which the message is published has a direct implication on it's time sensitivity as well as guidance on being processed  at the edge or on the cloud.<br/>
 ![ISA-95 Part 2](./images/ISA-95-part2.png)
