@@ -34,7 +34,7 @@ urllib3 = "1.26.16"
 
 [tool.poetry.group.02_mqtt-cluster.dependencies]
 paho-mqtt = "^1.6.1"
-protobuf = "^4.24.1"
+protobuf = "^4.24.2"
 
 [tool.poetry.group.03_uns_graphdb.dependencies]
 neo4j = "^5.11"
