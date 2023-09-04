@@ -25,7 +25,7 @@ packages = [{ include = "uns_graphdb", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-neo4j = "^5.11"
+neo4j = "^5.12"
 paho-mqtt = "^1.6.1"
 dynaconf = "^3.2.2"
 
