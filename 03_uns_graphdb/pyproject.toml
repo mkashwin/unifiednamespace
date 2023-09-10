@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_graphdb"
-version = "0.7.5"
+version = "0.7.7"
 description = "Graph Database implementation for a UNS setup"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
