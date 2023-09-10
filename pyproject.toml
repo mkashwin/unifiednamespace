@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Unified Name Space"
-version = "0.7.5"
+version = "0.7.7"
 description = "Set of modules / tools to realize an UNS for your organization"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
