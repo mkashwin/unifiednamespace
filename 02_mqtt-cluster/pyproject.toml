@@ -28,7 +28,7 @@ packages = [
 python = "^3.8.1"
 logger = "^1.4"
 paho-mqtt = "^1.6.1"
-protobuf = "^4.24.2"
+protobuf = "^4.24.3"
 urllib3 = "1.26.16"
 
 [tool.poetry.group.dev.dependencies]
