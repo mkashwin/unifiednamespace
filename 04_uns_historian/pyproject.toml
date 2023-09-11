@@ -35,7 +35,7 @@ uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
 yapf = "^0.40.1"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.4.1"
+pytest = "^7.4.2"
 flake8 = "^6.1.0"
 pytest-cov = "^4.1.0"
 safety = "^2.3.5"
