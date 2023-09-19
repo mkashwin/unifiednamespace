@@ -27,7 +27,7 @@ python = "^3.8.1"
 logger = "^1.4"
 neo4j = "^5.12"
 paho-mqtt = "^1.6.1"
-dynaconf = "^3.2.2"
+dynaconf = "^3.2.3"
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
