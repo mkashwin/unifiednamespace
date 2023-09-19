@@ -25,7 +25,7 @@ packages = [{ include = "uns_spb_mapper", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 logger = "^1.4"
-dynaconf = "^3.2.2"
+dynaconf = "^3.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
