@@ -254,13 +254,13 @@ pipenv = ["pipenv (<=2022.12.19)"]
 
 [[package]]
 name = "dynaconf"
-version = "3.2.2"
+version = "3.2.3"
 description = "The dynamic configurator for your Python Project"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dynaconf-3.2.2-py2.py3-none-any.whl", hash = "sha256:0d62e51af6e9971e8e45cabee487ec70467d6c5065a9f070beac973bedaf1d54"},
-    {file = "dynaconf-3.2.2.tar.gz", hash = "sha256:2f98ec85a2b8edb767b3ed0f82c6d605d30af116ce4622932a719ba70ff152fc"},
+    {file = "dynaconf-3.2.3-py2.py3-none-any.whl", hash = "sha256:df4af8d0f3b068cc6419ceceaae572070a6b8fec38fa51a1f5eb8ea4883e53de"},
+    {file = "dynaconf-3.2.3.tar.gz", hash = "sha256:8a37ba3b16df64cb1db383eaad9c733aece218413be0fad5d785f7a907612106"},
 ]
 
 [package.extras]
@@ -724,4 +724,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "79a1c2c4531cf1f485cee4a4e5db50af0c5111f8bf7b53c771ac488de0736078"
+content-hash = "0acf0dc9d1ba0e51082b03592bf72c63969d7e0c5bfcc4dda9023b0f4784f512"
