@@ -11,7 +11,7 @@ I also used this, as an opportunity to learn Python.
 If you are looking for an alternative Unified Namespace implementation with enterprise support, check out the [United Manufacturing Hub](https://learn.umh.app/), which is an Open-Source Helm Chart for Kubernetes. 
 
 ## What is the Unified Name Space?
-A unified namespace is a ***software solution*** that acts as a ***centralized repository*** of data, information, and context where any application or device can consume or publish data needed for a specific action via an ***event driven*** and ***loosely coupled architecture***. ​
+A unified namespace is an ***architecture*** that establishes a ***centralized repository*** of data, events,  information, and context ***across all IT and OT systems*** where any application or device can consume or publish data needed for a specific action via an ***event-driven*** and ***loosely coupled architecture*** ​along with the ***relevant context and history*** 
 
 This is a critical concept to allow scalability by preventing point to point connectivity.
 ![Credit Walter Reynolds -- IIOT University](./images/UNS.png)
