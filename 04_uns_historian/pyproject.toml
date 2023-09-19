@@ -27,7 +27,7 @@ python = "^3.8.1"
 logger = "^1.4"
 psycopg2-binary = "^2.9.7"
 pytz = "^2023.3"
-dynaconf = "^3.2.2"
+dynaconf = "^3.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
