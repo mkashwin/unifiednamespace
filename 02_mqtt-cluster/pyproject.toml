@@ -32,7 +32,7 @@ protobuf = "^4.24.3"
 urllib3 = "1.26.16"
 
 [tool.poetry.group.dev.dependencies]
-yapf = "^0.40.1"
+yapf = "^0.40.2"
 
 
 [tool.poetry.group.test.dependencies]
