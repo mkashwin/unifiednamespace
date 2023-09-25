@@ -30,7 +30,7 @@ confluent-kafka = "^2.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
-yapf = "^0.40.1"
+yapf = "^0.40.2"
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
