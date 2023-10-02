@@ -42,7 +42,7 @@ paho-mqtt = "^1.6.1"
 dynaconf = "^3.2.3"
 
 [tool.poetry.group.04_uns_historian.dependencies]
-psycopg2-binary = "^2.9.7"
+psycopg2-binary = "^2.9.8"
 pytz = "^2023.3"
 dynaconf = "^3.2.3"
 
