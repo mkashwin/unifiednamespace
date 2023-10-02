@@ -2,13 +2,13 @@
 
 [[package]]
 name = "astroid"
-version = "2.15.7"
+version = "2.15.8"
 description = "An abstract syntax tree for Python with inference support."
 optional = false
 python-versions = ">=3.7.2"
 files = [
-    {file = "astroid-2.15.7-py3-none-any.whl", hash = "sha256:958f280532e36ca84a13023f15cb1556fb6792d193acb87e1f3ca536b6fa6bd2"},
-    {file = "astroid-2.15.7.tar.gz", hash = "sha256:c522f2832a900e27a7d284b9b6ef670d2495f760ede3c8c0b004a5641d3c5987"},
+    {file = "astroid-2.15.8-py3-none-any.whl", hash = "sha256:1aa149fc5c6589e3d0ece885b4491acd80af4f087baafa3fb5203b113e68cd3c"},
+    {file = "astroid-2.15.8.tar.gz", hash = "sha256:6c107453dffee9055899705de3c9ead36e74119cee151e5a9aaf7f0b0e020a6a"},
 ]
 
 [package.dependencies]
@@ -583,12 +583,12 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.12.0"
+version = "5.13.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.12.0.tar.gz", hash = "sha256:00a776a687267150f9e1950017316b751cf63db7b734a699b1405ac20fd4a731"},
+    {file = "neo4j-5.13.0.tar.gz", hash = "sha256:44e60e2b4946340a60b5ba13710d599615f7432612af2bdefc29f44169004de5"},
 ]
 
 [package.dependencies]
@@ -1231,4 +1231,5 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "8530ac15ddf1bf2978c91c47ada87bc22173e92d4f0bde97ab2f8c55d3abcd48"
+content-hash = "a2b69dfa10fb1aff247036d996de0828ea9bb8470c60c95d0ac12dd437164c97"
+
