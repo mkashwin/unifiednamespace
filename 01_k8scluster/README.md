@@ -1,3 +1,5 @@
+The following module was how I setup my K8s cluster locally using VMs. For production instances there are adequate guides on setting up a K8s cluster on the internet and I recommend referring to those
+
 # Preparing the nodes for setting up a kubernetes cluster
 This module has two scripts in `bash` and configuration file.
 >* ./pre_setup_nodes.sh
