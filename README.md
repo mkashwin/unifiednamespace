@@ -168,9 +168,6 @@ As the  messages are published in the Sparkplug Namespace , they are not visible
 This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages  
 The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/README.md)
 
-### **Plugin / MQTT Client to publish to KAFKA**
-
-
 # **Setting up the development environment**
 The current project contains the following microservices
 1. [01_k8scluster](./01_k8scluster/README.md): Scripts and utilities to create a K8s cluster (on the edge and in the cloud)
