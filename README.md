@@ -31,19 +31,26 @@ The overall architecture and the deployment setup is as follows
     * MQTT edge installed on K8s
     * Bridge between Factory1 and the Enterprise MQTT clusters
     * Graph DB installed and running on docker
-    * SparkplugB client to translate message from SparkPlug to UNS 
+    * UNS graphdb client to persist messages to the Graph DB  instance 
+    * UNS SparkplugB client to translate message from SparkPlug to UNS 
 
 1. K8s Cluster on the edge - Factory2
     * K8s Cluster on the edge
     * MQTT edge installed on K8s
-    * Bridge between Factory1 and the Enterprise MQTT clusters
+    * Bridge between Factory2 and the Enterprise MQTT clusters
     * Graph DB installed and running on docker
+    * UNS graphdb client to persist messages to the Graph DB  instance     
+    * UNS SparkplugB client to translate message from SparkPlug to UNS 
 
 1. K8s Cluster on the cloud / enterprise  - Enterprise 
     * K8s Cluster of the enterprise 
     * MQTT Broker installed on K8s
-    * TimescaleDB installed and running on docker
-    * Graph DB installed and running on docker
+    * TimescaleDB installed and running on docker / cluster / K8s
+    * Graph DB installed and running on  docker / cluster / K8s  
+    * Kafka cluster 
+    * UNS graphdb client to persist messages to the Graph DB  instance    
+    * UNS historian client to persist messages to the Graph DB  instance  
+    * UNS Kafka listener to stream/convert MQTT messages to the Kafka instance   
 
 ![Logical Architecture for implementing UNS](./images/UNS-Architecture.png)
 
@@ -146,7 +153,7 @@ Since I did not have the enterprise version of the MQTT brokers, I decided to de
 * The MQTT listener to persist UNS messages & SPB messages to the GraphDB can be found at [03_uns_graphdb](./03_uns_graphdb/README.md) 
 * The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/README.md) 
 * The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at  [05_sparkplugb](./05_sparkplugb/README.md)
-* The MQTT listener to persist UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
+* The MQTT listener to publish UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
 
 I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because 
 * In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
@@ -155,11 +162,13 @@ I choose to wite the client in Python even thought Python is not as performant a
 ### **Plugin / MQTT Client to translate SparkplugB messages to UNS Namespace**
 Sparkplug B consist of three primary features in its definition.  
 1. The first is the MQTT topic namespace definition.  
-2. The second is the definition of the order and flow of MQTT messages to and from various MQTT clients in the system.  
-3. The final is the payload data format.
+1. The second is the definition of the order and flow of MQTT messages to and from various MQTT clients in the system.  
+1. The final is the payload data format.
 As the  messages are published in the Sparkplug Namespace , they are not visible in the UNS hierarchy which is based on ISA-95 part 2. Also given that they are packaged in protocol buffers, these message payloads are not easily understandable and need some parsing / transformation to a JSON structure.
 This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages  
 The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/README.md)
+
+### **Plugin / MQTT Client to publish to KAFKA**
 
 
 # **Setting up the development environment**
@@ -192,7 +201,6 @@ poetry install
 
 ## Running tests
 We  need to execute the tests for each microservice / module separately 
-
 
 ```python
 # Ensure that the poetry shell is activated
