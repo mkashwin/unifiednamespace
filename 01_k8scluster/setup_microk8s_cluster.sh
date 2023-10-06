@@ -79,7 +79,11 @@ done
 microk8s enable dashboard
 microk8s enable helm3
 microk8s enable ingress
-microk8s enable openebs 
+sudo microk8s enable core/mayastor --default-pool-size 20G
+
+microk8s kubectl get pod -n mayastor
+microk8s kubectl get diskpool -n mayastor
+
 # FIXME wait for them to be deployed and running
 microk8s enable metallb:${METALLB_IPRANGE}
 # FIXME which IP address range to use? how to add the routing 198.168.200.100-198.168.200.150

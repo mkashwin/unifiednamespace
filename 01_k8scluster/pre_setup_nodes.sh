@@ -60,6 +60,13 @@ systemctl status iscsid
 sudo systemctl enable --now iscsid
 sudo snap refresh
 
+# Mayastor specific configurations / packagess
+sudo sysctl vm.nr_hugepages=1024
+echo 'vm.nr_hugepages=1024' | sudo tee -a /etc/sysctl.conf
+sudo apt install -y linux-modules-extra-$(uname -r)
+sudo modprobe nvme_tcp
+echo 'nvme-tcp' | sudo tee -a /etc/modules-load.d/microk8s-mayastor.conf
+
 #Install microk8s
 sudo snap install microk8s --classic --channel=latest/stable
 # Adding the current user to Microk8s group

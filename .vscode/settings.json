@@ -21,6 +21,7 @@
         "keepalive",
         "Kubernetes",
         "lastnode",
+        "mayastor",
         "metallb",
         "microk8s",
         "MOSQUITTO",
@@ -57,7 +58,11 @@
         "VERNEMQ",
         "virtualenv"
     ],
-    "python.formatting.provider": "yapf",
+    "[python]": {
+        "editor.formatOnSaveMode": "file",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "eeyore.yapf"
+    },
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": [

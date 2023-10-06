@@ -53,6 +53,7 @@ The executables and the generated code are checked into the repository
 # The MQTT Cluster 
 The MQTT Cluster from EMQX is easily setup on a cluster. *There are other ways like within a docker or directly via the executable, but I choose to use the K8s setup to be able to leverage the benefits of scaling up, failover and other orchestration benefits.*
 Before proceeding ensure that you have setup your K8s Cluster as described in [01_k8scluster](./../01_k8scluster/README.md)
+Also familiarize yourself with the K8s Storage class [Mayastor](https://mayastor.gitbook.io/introduction/quickstart/configure-mayastor#create-mayastor-storageclass-s)
 
 ```bash
 microk8s helm3 repo add emqx https://repos.emqx.io/charts
@@ -60,11 +61,23 @@ microk8s helm3 repo update
 microk8s helm3 search repo emqx
 
 # This command needs to be executed to have persistence available to the MQTT instances
-# Select the storage class available to your cluster openebs-hostpath, openebs-jiva-csi-default etc.
-kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+# Select the storage class available to your cluster 
+microk8s kubectl apply -f - <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: mayastor-2
+parameters:
+  repl: '2'
+  protocol: 'nvmf'
+  ioTimeout: '60'
+  local: 'true'
+provisioner: io.openebs.csi-mayastor
+volumeBindingMode: WaitForFirstConsumer
+EOF
 ```
 > **Important Note:** Validate that you have the correct persistance storage class
-> By default when you install the openebs module for microk8s, you should get  "openebs-hostpath"
+> We are using mayastor which was installed as an addon
 > ```bash
 > # command to view the available storage classes.
 > kubectl get sc
@@ -94,7 +107,7 @@ microk8s helm3 install uns-emqx-corp emqx/emqx  \
             --namespace enterprise \
             --set persistence.enabled=true \
             --set persistence.size=100M \
-            --set persistence.storageClass=openebs-hostpath \
+            --set persistence.storageClass=mayastor-2 \
             --set service.type=LoadBalancer \
             --create-namespace \
             --wait

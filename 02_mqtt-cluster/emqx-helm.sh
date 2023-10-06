@@ -8,7 +8,19 @@ microk8s helm3 search repo emqx
 # kubectl apply -f ./02_emqx-storageclass.yaml
 # kubectl apply -f ./03_emqx-emx-pvc.yaml
 
-# kubectl patch storageclass openebs-jiva-csi-default -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+microk8s kubectl apply -f - <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: mayastor-2
+parameters:
+  repl: '2'
+  protocol: 'nvmf'
+  ioTimeout: '60'
+  local: 'true'
+provisioner: io.openebs.csi-mayastor
+volumeBindingMode: WaitForFirstConsumer
+EOF
 # kubectl apply -f ./emqx-pvc.yaml
 
 ##EMQX
@@ -19,9 +31,9 @@ microk8s helm3 search repo emqx
 
 ##EMQXEdge
 # microk8s helm3 install uns-emqx-edge emqx/emqx -f ./emqx-values.yaml  --namespace factory1
-microk8s helm3 upgrade --install uns-emqx-edge emqx/emqx  --namespace factory1   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-hostpath --set service.type=LoadBalancer --create-namespace --wait
-microk8s helm3 upgrade --install uns-emqx-edge2 emqx/emqx --namespace factory2   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-hostpath --set service.type=LoadBalancer --create-namespace --wait
-microk8s helm3 upgrade --install uns-emqx-corp emqx/emqx  --namespace enterprise --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=openebs-hostpath --set service.type=LoadBalancer --create-namespace --wait
+microk8s helm3 upgrade --install uns-emqx-edge emqx/emqx  --namespace factory1   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=mayastor-2 --set service.type=LoadBalancer --create-namespace --wait
+microk8s helm3 upgrade --install uns-emqx-edge2 emqx/emqx --namespace factory2   --set image.repository=emqx/emqx-edge --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=mayastor-2 --set service.type=LoadBalancer --create-namespace --wait
+microk8s helm3 upgrade --install uns-emqx-corp emqx/emqx  --namespace enterprise --set persistence.enabled=true --set persistence.size=100M --set persistence.storageClass=mayastor-2 --set service.type=LoadBalancer --create-namespace --wait
 
 microk8s kubectl get pods -A
 # kubectl -n <namespace> exec -it <pod name> -- bash -c "emqx_ctl plugins reload emqx_bridge_mqtt"

@@ -76,7 +76,7 @@ This module has two scripts in `bash` and configuration file.
 1. The key ***MicroK8s*** add-ons being used are 
     * helm3
     * ingress
-    * openebs 
+    * mayastor 
     * metallb   : ***Not required if your cluster is deployed on the cloud. Only needed for edge clusters and enterprise clusters***
     * dashboard : ***This is not mandatory. This is just for your convenience should you need it***
 ---
