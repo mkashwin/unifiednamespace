@@ -26,7 +26,7 @@ This is a critical concept to allow scalability by preventing point to point con
 ---
 ## **Architecture**
 The overall architecture and the deployment setup is as follows
-1. K8s Cluster on the edge - Factory1
+1. Factory1
     * K8s Cluster on the edge
     * MQTT edge installed on K8s
     * Bridge between Factory1 and the Enterprise MQTT clusters
@@ -34,7 +34,7 @@ The overall architecture and the deployment setup is as follows
     * UNS graphdb client to persist messages to the Graph DB  instance 
     * UNS SparkplugB client to translate message from SparkPlug to UNS 
 
-1. K8s Cluster on the edge - Factory2
+1. Factory2
     * K8s Cluster on the edge
     * MQTT edge installed on K8s
     * Bridge between Factory2 and the Enterprise MQTT clusters
@@ -42,12 +42,12 @@ The overall architecture and the deployment setup is as follows
     * UNS graphdb client to persist messages to the Graph DB  instance     
     * UNS SparkplugB client to translate message from SparkPlug to UNS 
 
-1. K8s Cluster on the cloud / enterprise  - Enterprise 
+1. Enterprise on Cloud
     * K8s Cluster of the enterprise 
     * MQTT Broker installed on K8s
-    * TimescaleDB installed and running on docker / cluster / K8s
-    * Graph DB installed and running on  docker / cluster / K8s  
-    * Kafka cluster 
+    * TimescaleDB installed and running on docker / cluster / K8s / hosted service
+    * Graph DB installed and running on  docker / cluster / K8s  / hosted service
+    * Kafka cluster/ K8s / hosted service
     * UNS graphdb client to persist messages to the Graph DB  instance    
     * UNS historian client to persist messages to the Graph DB  instance  
     * UNS Kafka listener to stream/convert MQTT messages to the Kafka instance   
