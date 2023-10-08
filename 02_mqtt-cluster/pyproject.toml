@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns-mqtt"
-version = "0.7.7"
+version = "0.7.8"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
