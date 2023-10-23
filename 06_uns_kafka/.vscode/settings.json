@@ -1,8 +1,11 @@
 {
+    "cSpell.words": [
+        "kafka"
+    ],
     "python.analysis.extraPaths": [
         "src",
         "../02_mqtt-cluster/src",
-        "./src/uns_historian"
+        "./src/uns_kafka"
     ],
     "python.testing.pytestArgs": [
         "test"
@@ -13,13 +16,6 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "eeyore.yapf"
     },
-    "cSpell.words": [
-        "createdb",
-        "createrole",
-        "createuser",
-        "hypertable",
-        "timescaledb"
-    ],
     "flake8.args": [
         "--config=../.flake8"
     ],

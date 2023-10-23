@@ -5,7 +5,6 @@
     "python.testing.pytestArgs": [
         "test"
     ],
-    "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "[python]": {
         "editor.formatOnSaveMode": "file",
@@ -41,5 +40,11 @@
         "storageclass",
         "Tahu",
         "userdata"
+    ],
+    "flake8.args": [
+        "--config=.flake8"
+    ],
+    "pylint.args": [
+        "--max-line-length= 120"
     ],
 }
