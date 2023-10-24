@@ -64,13 +64,6 @@
         "editor.defaultFormatter": "eeyore.yapf"
     },
     "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": [
-        "./02_mqtt-cluster/test",
-        "./03_uns_graphdb/test",
-        "./04_uns_historian/test",
-        "./05_sparkplugb/test",
-        "./06_uns_kafka/test"
-    ],
     "python.analysis.extraPaths": [
         "./02_mqtt-cluster/src",
         "./02_mqtt-cluster/test",

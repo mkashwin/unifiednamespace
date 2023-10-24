@@ -4,7 +4,7 @@ Tests for Uns_MQTT_GraphDb
 import inspect
 import json
 import os
-from test.test_graphdb_handler import read_nodes
+import sys
 
 import pytest
 from google.protobuf.json_format import MessageToDict
@@ -14,6 +14,16 @@ from paho.mqtt.properties import Properties
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
+
+test_folder = os.path.realpath(
+    os.path.abspath(
+        os.path.join(
+            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
+            'test')))
+sys.path.insert(0, test_folder)
+# @FIXME Hack done to be able to import utility modules in the tests directories
+# @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
+from test_graphdb_handler import read_nodes
 
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
