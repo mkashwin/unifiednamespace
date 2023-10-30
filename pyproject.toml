@@ -37,7 +37,7 @@ paho-mqtt = "^1.6.1"
 protobuf = "^4.24.3"
 
 [tool.poetry.group.03_uns_graphdb.dependencies]
-neo4j = "^5.13"
+neo4j = "^5.14"
 paho-mqtt = "^1.6.1"
 dynaconf = "^3.2.3"
 
@@ -51,7 +51,7 @@ dynaconf = "^3.2.3"
 
 [tool.poetry.group.06_uns_kafka.dependencies]
 dynaconf = "^3.2.3"
-confluent-kafka = "^2.2.0"
+confluent-kafka = "^2.3.0"
 # All other dependencies fulfilled by uns_mqtt
 
 [tool.poetry.group.test.dependencies]
