@@ -51,7 +51,7 @@ dynaconf = "^3.2.3"
 
 [tool.poetry.group.06_uns_kafka.dependencies]
 dynaconf = "^3.2.3"
-confluent-kafka = "^2.2.0"
+confluent-kafka = "^2.3.0"
 # All other dependencies fulfilled by uns_mqtt
 
 [tool.poetry.group.test.dependencies]
