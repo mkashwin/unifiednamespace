@@ -23,7 +23,7 @@ keywords = ["uns", "mqtt", "timescaledb", "postgres", "historian"]
 packages = [{ include = "uns_historian", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.11"
 logger = "^1.4"
 psycopg2-binary = "^2.9.8"
 pytz = "^2023.3"

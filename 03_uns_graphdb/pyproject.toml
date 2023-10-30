@@ -23,7 +23,7 @@ keywords = ["uns", "mqtt", "neo4j", "graphdb"]
 packages = [{ include = "uns_graphdb", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.11"
 logger = "^1.4"
 neo4j = "^5.14"
 paho-mqtt = "^1.6.1"
