@@ -538,12 +538,12 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.13.0"
+version = "5.14.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.13.0.tar.gz", hash = "sha256:44e60e2b4946340a60b5ba13710d599615f7432612af2bdefc29f44169004de5"},
+    {file = "neo4j-5.14.0.tar.gz", hash = "sha256:6040efca47126c01385f09e550fb7d7671b1853a1e1c34908aa3713cebd285da"},
 ]
 
 [package.dependencies]
@@ -552,6 +552,7 @@ pytz = "*"
 [package.extras]
 numpy = ["numpy (>=1.7.0,<2.0.0)"]
 pandas = ["numpy (>=1.7.0,<2.0.0)", "pandas (>=1.1.0,<3.0.0)"]
+pyarrow = ["pyarrow (>=1.0.0)"]
 
 [[package]]
 name = "packaging"
