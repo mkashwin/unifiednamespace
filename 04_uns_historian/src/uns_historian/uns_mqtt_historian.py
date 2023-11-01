@@ -176,6 +176,7 @@ def main():
     Main function invoked from command line
     """
     try:
+        uns_mqtt_historian = None
         uns_mqtt_historian = UnsMqttHistorian()
         uns_mqtt_historian.uns_client.loop_forever()
     finally:

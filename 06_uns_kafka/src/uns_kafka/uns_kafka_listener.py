@@ -122,6 +122,7 @@ def main():
     Main function invoked from command line
     """
     try:
+        uns_kafka_mapper = None
         uns_kafka_mapper = UNSKafkaMapper()
         uns_kafka_mapper.uns_client.loop_forever()
     finally:
