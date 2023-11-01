@@ -40,15 +40,13 @@ jobs:
         
         run: |
           IFS=$'\n'
-          module=${{ matrix.module }}
-          image_name=${{ matrix.image }}
-          cd "${module}"
-          docker build -t "${image_name}:${{ github.sha }}" -f ./Dockerfile ..
+          cd "${{ matrix.module }}"
+          docker build -t "${{ matrix.image }}:${{ github.sha }}" -f ./Dockerfile ..
 
       - name: Run Trivy vulnerability scanner on Docker Images
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
-          image-ref: '${image_name}:${{ github.sha }}'
+          image-ref: '${{ matrix.image }}:${{ github.sha }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
