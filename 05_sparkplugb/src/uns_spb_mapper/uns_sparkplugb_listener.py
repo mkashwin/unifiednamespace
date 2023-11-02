@@ -92,27 +92,34 @@ class UNSSparkPlugBMapper:
                      "Message: %s,"
                      "}", str(client), str(userdata), str(msg))
         try:
-            topic_path: list[str] = msg.topic.split('/')
-            # sPB topic structure spBv1.0/<group_id>/<message_type>/<edge_node_id>/<[device_id]>
-            # device_id is optional. all others are mandatory
-            if len(topic_path) >= 4:
-                group_id = topic_path[1]
-                message_type = topic_path[2]
-                edge_node_id = topic_path[3]
-                device_id = None
-                if len(topic_path) == 5:
-                    device_id = topic_path[4]
+            if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
+                topic_path: list[str] = msg.topic.split('/')
+                # sPB topic structure spBv1.0/<group_id>/<message_type>/<edge_node_id>/<[device_id]>
+                # device_id is optional. all others are mandatory
+                if len(topic_path) >= 4:
+                    group_id = topic_path[1]
+                    message_type = topic_path[2]
+                    edge_node_id = topic_path[3]
+                    device_id = None
+                    if len(topic_path) == 5:
+                        device_id = topic_path[4]
+                    else:
+                        raise ValueError(
+                            f"Unknown SparkplugB topic received: {msg.topic}."
+                            +
+                            f"Depth of tree should not be more than 5, got {len(topic_path)}"
+                        )
+                    self.spb_2_uns_pub.transform_spb_and_publish_to_uns(
+                        msg.payload, group_id, message_type, edge_node_id,
+                        device_id)
                 else:
-                    raise ValueError(
-                        f"Unknown SparkplugB topic received: {msg.topic}." +
-                        f"Depth of tree should not be more than 5, got {len(topic_path)}"
-                    )
-                self.spb_2_uns_pub.transform_spb_and_publish_to_uns(
-                    msg.payload, group_id, message_type, edge_node_id,
-                    device_id)
+                    LOGGER.error(
+                        "Message received on an Unknown/non compliant SparkplugB topic: %s",
+                        msg.topic)
             else:
-                raise ValueError(
-                    f"Unknown SparkplugB topic received: {msg.topic}")
+                LOGGER.debug(
+                    "Subscribed to a  non SparkplugB topic: %s. Message ignored",
+                    msg.topic)
         except SystemError as system_error:
             LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
                          str(system_error),
@@ -120,6 +127,7 @@ class UNSSparkPlugBMapper:
                          exc_info=True)
             # raise system_error
         except Exception as ex:
+            # pylint: disable=broad-exception-caught
             LOGGER.error("Error parsing SparkplugB message payload: %s",
                          str(ex),
                          stack_info=True,
@@ -144,6 +152,7 @@ def main():
     Main function invoked from command line
     """
     try:
+        uns_spb_mapper = None
         uns_spb_mapper = UNSSparkPlugBMapper()
         uns_spb_mapper.uns_client.loop_forever()
     finally:

@@ -21,7 +21,7 @@ keywords = ["uns", "mqtt", "sparkplugB", "graphDB", "historian"]
 # ]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.11"
 # All modules need the logger
 logger = "^1.4"
 # List of sub modules

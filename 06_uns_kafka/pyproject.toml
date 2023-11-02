@@ -23,7 +23,7 @@ keywords = ["uns", "mqtt", "kafka"]
 packages = [{ include = "uns_kafka", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.11"
 logger = "^1.4"
 dynaconf = "^3.2.3"
 confluent-kafka = "^2.3.0"
