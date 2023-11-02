@@ -77,9 +77,11 @@
         "./06_uns_kafka/test"
     ],
     "flake8.args": [
-        "--config=../.flake8"
+        "--config=.flake8"
     ],
     "pylint.args": [
         "--max-line-length= 120"
     ],
+    "python.languageServer": "Pylance",
+    "python.missingPackage.severity": "Error",
 }

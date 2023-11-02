@@ -163,11 +163,10 @@ class GraphDBHandler:
         """
 
         try:
-            with self.connect(retry) as driver:
-                with driver.session(database=self.database) as session:
-                    session.execute_write(self.save_all_nodes, topic, message,
-                                          timestamp, node_types,
-                                          attr_node_type)
+            driver = self.connect(retry)
+            with driver.session(database=self.database) as session:
+                session.execute_write(self.save_all_nodes, topic, message,
+                                      timestamp, node_types, attr_node_type)
         except (exceptions.TransientError, exceptions.TransactionError,
                 exceptions.SessionExpired) as ex:
             if retry >= self.max_retry:
@@ -275,7 +274,7 @@ class GraphDBHandler:
             # The Label for all nodes created for attributes will be the same `attr_node_type`
             if (composite_attributes is not None
                     and len(composite_attributes) > 0):
-                for child_key in composite_attributes:
+                for child_key in composite_attributes.items():
                     child_value = composite_attributes[child_key]
                     # Fix to handle blank values which were give error unhashable type: 'dict'
                     if (isinstance(child_value, (list, dict, tuple))
