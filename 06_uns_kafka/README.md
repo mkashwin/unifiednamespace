@@ -75,8 +75,14 @@ The following command creates a dev instance of a Kafka broker. **To be used onl
 
 docker run \
     --name uns_kafka \
-    --env KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
-    --env ALLOW_PLAINTEXT_LISTENER=yes \
+    --env KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:9092" \
+    --env ALLOW_PLAINTEXT_LISTENER="yes" \
+    --env KAFKA_CFG_NODE_ID="0" \
+    --env KAFKA_CFG_PROCESS_ROLES="controller,broker" \
+    --env KAFKA_CFG_LISTENERS="PLAINTEXT://:9092,CONTROLLER://:9093" \
+    --env KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP="CONTROLLER:PLAINTEXT, PLAINTEXT:PLAINTEXT" \
+    --env KAFKA_CFG_CONTROLLER_QUORUM_VOTERS="0@localhost:9093" \
+    --env KAFKA_CFG_CONTROLLER_LISTENER_NAMES="CONTROLLER" \
     -p 9092:9092 \
     -d \
     bitnami/kafka:latest
