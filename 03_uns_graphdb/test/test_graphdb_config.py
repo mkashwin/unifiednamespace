@@ -70,7 +70,7 @@ def test_mqtt_config():
         int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
     assert isinstance(
         port, int
-    ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+    ) and 1024 <= port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
 
     username = settings.get("mqtt.username")
     password = settings.get("mqtt.password")

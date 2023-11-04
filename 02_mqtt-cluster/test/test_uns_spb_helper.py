@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 from google.protobuf.json_format import MessageToDict
-import uns_sparkplugb.uns_spb_helper as uns_spb_helper
+from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
 
 # Dict containing value types as key value pair.
@@ -250,30 +250,38 @@ def test_get_node_birth_payload():
     assert int(metric.get("longValue")) == 1
 
 
-@pytest.mark.parametrize(
-    "timestamp, metrics", [(
-        1671554024644, [
-            {
-                'name': 'Inputs/A', 'timestamp': 1486144502122,
-                'datatype': 11, 'value': False
-            }, {
-                'name': 'Inputs/B', 'timestamp': 1486144502122,
-                'datatype': 11, 'value': False
-            }, {
-                'name': 'Outputs/E', 'timestamp': 1486144502122,
-                'datatype': 11, 'value': False
-            }, {
-                'name': 'Outputs/F', 'timestamp': 1486144502122,
-                'datatype': 11, 'value': False
-            }, {
-                'name': 'Properties/Hardware Make', 'timestamp': 1486144502122,
-                'datatype': 12, 'value': 'Sony'
-            }, {
-                'name': 'Properties/Weight', 'timestamp': 1486144502122,
-                'datatype': 3, 'value': 200
-            }]
-    )]
-    )
+@pytest.mark.parametrize("timestamp, metrics",
+                         [(1671554024644, [{
+                             'name': 'Inputs/A',
+                             'timestamp': 1486144502122,
+                             'datatype': 11,
+                             'value': False
+                         }, {
+                             'name': 'Inputs/B',
+                             'timestamp': 1486144502122,
+                             'datatype': 11,
+                             'value': False
+                         }, {
+                             'name': 'Outputs/E',
+                             'timestamp': 1486144502122,
+                             'datatype': 11,
+                             'value': False
+                         }, {
+                             'name': 'Outputs/F',
+                             'timestamp': 1486144502122,
+                             'datatype': 11,
+                             'value': False
+                         }, {
+                             'name': 'Properties/Hardware Make',
+                             'timestamp': 1486144502122,
+                             'datatype': 12,
+                             'value': 'Sony'
+                         }, {
+                             'name': 'Properties/Weight',
+                             'timestamp': 1486144502122,
+                             'datatype': 3,
+                             'value': 200
+                         }])])
 def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
     """
     Test converting a JSON dict into a SPB DDATA payload
@@ -288,9 +296,12 @@ def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
         metric_timestamp = metric.get("timestamp", None)
         if metric_timestamp is None:
             metric_timestamp = timestamp
-        sparkplug_message.add_metric(payload=payload, name=name,
-                                     alias=alias, datatype=datatype,
-                                     value=value, timestamp=metric_timestamp)
+        sparkplug_message.add_metric(payload=payload,
+                                     name=name,
+                                     alias=alias,
+                                     datatype=datatype,
+                                     value=value,
+                                     timestamp=metric_timestamp)
         alias = alias + 1
 
     print(payload.SerializeToString())
@@ -312,23 +323,40 @@ def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
         assert parsed_metric["datatype"] == metric["datatype"]
         parsed_value = None
         match parsed_metric["datatype"]:
-            case sparkplug_b_pb2.Int8: parsed_value = parsed_metric["intValue"]
-            case sparkplug_b_pb2.Int16: parsed_value = parsed_metric["intValue"]
-            case sparkplug_b_pb2.Int32: parsed_value = parsed_metric["intValue"]
-            case sparkplug_b_pb2.Int64: parsed_value = parsed_metric["longValue"]
-            case sparkplug_b_pb2.UInt8: parsed_value = parsed_metric["intValue"]
-            case sparkplug_b_pb2.UInt16: parsed_value = parsed_metric["intValue"]
-            case sparkplug_b_pb2.UInt32: parsed_value = parsed_metric["intValue"]
-            case sparkplug_b_pb2.UInt64: parsed_value = parsed_metric["longValue"]
-            case sparkplug_b_pb2.Float: parsed_value = parsed_metric["floatValue"]
-            case sparkplug_b_pb2.Double: parsed_value = parsed_metric["doubleValue"]
-            case sparkplug_b_pb2.Boolean: parsed_value = parsed_metric["booleanValue"]
-            case sparkplug_b_pb2.String: parsed_value = parsed_metric["stringValue"]
-            case sparkplug_b_pb2.DateTime: parsed_value = parsed_metric["longValue"]
-            case sparkplug_b_pb2.Text: parsed_value = parsed_metric["stringValue"]
-            case sparkplug_b_pb2.UUID: parsed_value = parsed_metric["stringValue"]
-            case sparkplug_b_pb2.Bytes: parsed_value = parsed_metric["bytesValue"]
-            case sparkplug_b_pb2.File: parsed_value = parsed_metric["bytesValue"]
+            case sparkplug_b_pb2.Int8:
+                parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.Int16:
+                parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.Int32:
+                parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.Int64:
+                parsed_value = parsed_metric["longValue"]
+            case sparkplug_b_pb2.UInt8:
+                parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.UInt16:
+                parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.UInt32:
+                parsed_value = parsed_metric["intValue"]
+            case sparkplug_b_pb2.UInt64:
+                parsed_value = parsed_metric["longValue"]
+            case sparkplug_b_pb2.Float:
+                parsed_value = parsed_metric["floatValue"]
+            case sparkplug_b_pb2.Double:
+                parsed_value = parsed_metric["doubleValue"]
+            case sparkplug_b_pb2.Boolean:
+                parsed_value = parsed_metric["booleanValue"]
+            case sparkplug_b_pb2.String:
+                parsed_value = parsed_metric["stringValue"]
+            case sparkplug_b_pb2.DateTime:
+                parsed_value = parsed_metric["longValue"]
+            case sparkplug_b_pb2.Text:
+                parsed_value = parsed_metric["stringValue"]
+            case sparkplug_b_pb2.UUID:
+                parsed_value = parsed_metric["stringValue"]
+            case sparkplug_b_pb2.Bytes:
+                parsed_value = parsed_metric["bytesValue"]
+            case sparkplug_b_pb2.File:
+                parsed_value = parsed_metric["bytesValue"]
             case sparkplug_b_pb2.DataSet:
                 continue
             case sparkplug_b_pb2.Template:

@@ -151,6 +151,7 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
 
 def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
                            topic: str, client_id: str, message_dict: dict):
+    # pylint: disable=too-many-arguments
     """
     Utility method for test case to compare data in the database with the data sent
     """

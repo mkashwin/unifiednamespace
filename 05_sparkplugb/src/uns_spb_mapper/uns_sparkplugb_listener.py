@@ -5,9 +5,9 @@ import logging
 import random
 import time
 
+from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_spb_mapper.sparkplugb_enc_config import settings
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
-from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,6 +15,7 @@ LOGGER = logging.getLogger(__name__)
 # listens to SparkplugB name space for messages and publishes to ISA-95
 # https://www.hivemq.com/solutions/manufacturing/smart-manufacturing-using-isa95-mqtt-sparkplug-and-uns/
 class UNSSparkPlugBMapper:
+    # pylint: disable=too-many-instance-attributes
     """
     MQTT listener that listens to SparkplugB name space for messages and publishes to ISA-95 UNS
     """

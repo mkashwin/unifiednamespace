@@ -178,6 +178,7 @@ class SpBMessageGenerator:
                             types: list[int],
                             alias: int = None,
                             timestamp: float = int(round(time.time() * 1000))):
+        # pylint: disable=too-many-arguments
         """
         Helper method for initializing a dataset metric to a payload
         FIXME Need to enhance to add Row and Elements (DataSet.Row and  DataSet.DataSetValue )
@@ -253,6 +254,7 @@ class SpBMessageGenerator:
                    value=None,
                    alias: int = None,
                    timestamp=int(round(time.time() * 1000))):
+        # pylint: disable=too-many-arguments
         """
         Helper method for adding metrics to a container which can be a payload or a template.
         Parameters
@@ -339,6 +341,7 @@ class SpBMessageGenerator:
         timestamp,
         alias: int = None,
     ):
+        # pylint: disable=too-many-arguments
         """
         Helper method for adding metrics to a container which can be a
         payload or a template

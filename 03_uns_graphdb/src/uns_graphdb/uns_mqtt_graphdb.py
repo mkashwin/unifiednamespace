@@ -15,6 +15,7 @@ SPARKPLUG_NS = "spBv1.0/"
 
 
 class UnsMqttGraphDb:
+    # pylint: disable=too-many-instance-attributes
     """
     Class instantiating MQTT listener that listens to ISA-95 UNS and SparkplugB and
     persists all messages to the GraphDB

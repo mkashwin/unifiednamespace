@@ -29,6 +29,7 @@ class GraphDBHandler:
                  database: str = neo4j.DEFAULT_DATABASE,
                  max_retry: int = 5,
                  sleep_btw_attempts: float = 10):
+        # pylint: disable=too-many-arguments
         """
         Initialize the GraphDBHandler class.
 
@@ -145,6 +146,7 @@ class GraphDBHandler:
                                               "LINE", "DEVICE"),
                          attr_node_type: str = "NESTED_ATTRIBUTE",
                          retry: int = 0):
+        # pylint: disable=too-many-arguments
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -197,6 +199,8 @@ class GraphDBHandler:
     def save_all_nodes(self, session: neo4j.Session, topic: str, message: dict,
                        timestamp: float, node_types: tuple,
                        attr_node_type: str):
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-locals
         """
         Iterate the topics by '/'. create node for each level & merge the messages to the final node
         For the other topics in the hierarchy a node will be created / merged and linked to the
@@ -307,6 +311,7 @@ class GraphDBHandler:
                   attributes: dict = None,
                   parent_id: str = None,
                   timestamp: float = time.time()):
+        # pylint: disable=too-many-arguments
         """
         Creates or Merges the MQTT message as a Graph node. Each level of the topic is also
         persisted as a graph node with appropriate parent relationship

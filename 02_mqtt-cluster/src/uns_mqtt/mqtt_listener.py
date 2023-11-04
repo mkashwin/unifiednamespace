@@ -38,6 +38,7 @@ class UnsMQTTClient(mqtt_client.Client):
                  protocol: int = mqtt_client.MQTTv5,
                  transport: str = "tcp",
                  reconnect_on_failure: bool = True):
+        # pylint: disable=too-many-arguments
         """
         Creates an instance of an MQTT client
         Parameters
@@ -140,6 +141,7 @@ class UnsMQTTClient(mqtt_client.Client):
             keepalive=60,
             topics=None,
             qos=2):
+        # pylint: disable=too-many-arguments
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
         After this function invoke loop_forever() or loop start()

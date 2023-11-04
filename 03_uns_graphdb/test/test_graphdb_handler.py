@@ -259,6 +259,7 @@ def test_persist_mqtt_msg(topic: str, message: dict):
 
 def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
                topic: str, message: dict):
+    # pylint: disable=too-many-locals
     """
         Helper function to read the database and compare the persisted data
     """
@@ -309,6 +310,7 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
 
 def read_list_attr_nodes(session, db_attr_list, attr_node_type, parent_id,
                          attr_key, value):
+    # pylint: disable=too-many-arguments
     """
     Reads a list of attribute nodes to check values
     """

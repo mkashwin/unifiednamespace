@@ -5,14 +5,15 @@ import logging
 import random
 import time
 
+from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_kafka.kafka_handler import KafkaHandler
 from uns_kafka.uns_kafka_config import settings
-from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 LOGGER = logging.getLogger(__name__)
 
 
 class UNSKafkaMapper:
+    # pylint: disable=too-many-instance-attributes
     """
     MQTT listener that listens UNS namespace for messages and publishes to corresponding Kafka topic
     """

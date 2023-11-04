@@ -15,6 +15,7 @@ SLEEP_BTW_ATTEMPT = 10  # seconds to sleep between retries
 
 
 class HistorianHandler:
+    # pylint: disable=too-many-instance-attributes
     """
     Class to encapsulate logic of persisting messages to the historian database
     """
@@ -23,6 +24,7 @@ class HistorianHandler:
 
     def __init__(self, hostname: str, port: int, database: str, table: str,
                  user: str, password: str, sslmode: str):
+        # pylint: disable=too-many-arguments
         """
         Parameters
         -----------
@@ -69,15 +71,14 @@ class HistorianHandler:
                                  stack_info=True,
                                  exc_info=True)
                     raise ex
-                else:
-                    retry += 1
-                    LOGGER.error("Error Connecting to %s. Error: %s",
-                                 self.database,
-                                 str(ex),
-                                 stack_info=True,
-                                 exc_info=True)
-                    time.sleep(SLEEP_BTW_ATTEMPT)
-                    return self.connect(retry=retry)
+                retry += 1
+                LOGGER.error("Error Connecting to %s. Error: %s",
+                             self.database,
+                             str(ex),
+                             stack_info=True,
+                             exc_info=True)
+                time.sleep(SLEEP_BTW_ATTEMPT)
+                return self.connect(retry=retry)
             except Exception as ex:
                 LOGGER.error(
                     "Error Connecting to %s. Unable to retry. Error:%s",
