@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_spb_mapper"
-version = "0.7.8"
+version = "0.7.9"
 description = "SparkplugB decoder to parse and unpack  SparkplugB messages to the UNS structure"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
