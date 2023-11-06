@@ -34,7 +34,7 @@ uns_kafka_mapper = { path = "./06_uns_kafka", develop = true }
 
 [tool.poetry.group.02_mqtt-cluster.dependencies]
 paho-mqtt = "^1.6.1"
-protobuf = "^4.24.3"
+protobuf = "^4.25.0"
 
 [tool.poetry.group.03_uns_graphdb.dependencies]
 neo4j = "^5.14"
