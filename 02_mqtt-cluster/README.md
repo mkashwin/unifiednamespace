@@ -31,7 +31,7 @@ Where in:
 ## Preparation steps required to setup protocol buffer and SparkplugB dependencies
 1. **Step 1**: Download or install protoc. Refer 
     - [Installing on Linux/MacOs](https://grpc.io/docs/protoc-installation/)
-    - [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version  [Protocol Buffers v3.19.4](https://github.com/protocolbuffers/protobuf/releases/tag/v3.19.4) 
+    - [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version  [Protocol Buffers v25.0](https://github.com/protocolbuffers/protobuf/releases/tag/v25.0) 
     and downloaded the pre-compiled versions for  linux-x86_64 and win64. For other platforms please replace with the appropriate runtime or compile the runtime directly
 1. **Step 2**: Copy the [SparkPlugB protocol buffer specification](https://github.com/eclipse/tahu/tree/master/sparkplug_b/sparkplug_b.proto) from [Eclipse Tahu project](https://github.com/eclipse/tahu/tree/master/sparkplug_b) to the folder [./sparkplug_b](./sparkplug_b/)
 1. **Step 3**: Compile the SparkplugB protocol buffer into python class by the following command
@@ -194,11 +194,11 @@ pytest test/
 
 1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification.
    The protoc executable for [Windows](./protobuf/bin/protoc.exe) is for a 64 bit processor.
-   For other architectures please download the appropriate pre compiled version of [Protobuf release v21.12](https://github.com/protocolbuffers/protobuf/releases/tag/v21.12) e.g.
-    - [protoc-21.12-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-aarch_64.zip)
-    - [protoc-21.12-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-ppcle_64.zip)
-    - [protoc-21.12-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_32.zip)
-    - [protoc-21.12-win32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-win32.zip)
+   For other architectures please download the appropriate pre compiled version of [Protobuf release v25.0](https://github.com/protocolbuffers/protobuf/releases/tag/v25.0) e.g.
+    - [protoc-25.0-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protoc-25.0-linux-aarch_64.zip)
+    - [protoc-25.0-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protoc-25.0-linux-ppcle_64.zip)
+    - [protoc-25.0-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protoc-25.0-linux-x86_32.zip)
+    - [protoc-25.0-win32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protoc-25.0-win32.zip)
 
 1. Need to understand how to handle metric types DataSet, Template 
 
