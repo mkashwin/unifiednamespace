@@ -48,3 +48,20 @@ build-backend = "poetry.core.masonry.api"
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
+
+
+[tool.pylint.main]
+# Files or directories to be skipped. They should be base names, not paths.
+ignore = [
+    ".git",
+    "generated",
+    ".github",
+    "__pycache__",
+    "*env*",
+    "build",
+    "dist",
+]
+
+[tool.pylint.format]
+# Maximum number of characters on a single line.
+max-line-length = 127

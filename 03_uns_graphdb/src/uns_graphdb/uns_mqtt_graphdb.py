@@ -5,9 +5,9 @@ import logging
 import random
 import time
 
+from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_graphdb.graphdb_config import settings
 from uns_graphdb.graphdb_handler import GraphDBHandler
-from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 LOGGER = logging.getLogger(__name__)
 
@@ -157,8 +157,9 @@ class UnsMqttGraphDb:
                 msg.payload,
                 stack_info=True,
                 exc_info=True)
-            # raise se
+
         except Exception as ex:
+            # pylint: disable=broad-exception-caught
             LOGGER.error(
                 "Error persisting the message to the Graph DB: %s \nTopic: %s \nMessage:%s",
                 str(ex),

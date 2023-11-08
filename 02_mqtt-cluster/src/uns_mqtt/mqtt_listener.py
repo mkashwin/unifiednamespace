@@ -5,7 +5,7 @@ handle various MQTT versions
 """
 import json
 import logging
-import os.path as path
+from os import path
 import re
 import ssl
 

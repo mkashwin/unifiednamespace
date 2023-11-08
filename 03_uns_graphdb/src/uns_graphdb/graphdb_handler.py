@@ -104,15 +104,15 @@ class GraphDBHandler:
                              stack_info=True,
                              exc_info=True)
                 raise SystemError(ex) from ex
-            else:
-                retry += 1
-                LOGGER.error("Error Connecting to %s.\n Error: %s",
-                             self.database,
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
-                time.sleep(self.sleep_btw_attempts)
-                self.connect(retry=retry)
+
+            retry += 1
+            LOGGER.error("Error Connecting to %s.\n Error: %s",
+                         self.database,
+                         str(ex),
+                         stack_info=True,
+                         exc_info=True)
+            time.sleep(self.sleep_btw_attempts)
+            self.connect(retry=retry)
 
         except Exception as ex:
             LOGGER.error("Error Connecting to %s. Unable to retry. Error: %s",
@@ -132,6 +132,7 @@ class GraphDBHandler:
                 self.driver.close()
                 self.driver = None
             except Exception as ex:
+                # pylint: disable=broad-exception-caught
                 LOGGER.error("Failed to close the driver:%s",
                              str(ex),
                              stack_info=True,
@@ -177,23 +178,23 @@ class GraphDBHandler:
                              stack_info=True,
                              exc_info=True)
                 raise ex
-            else:
-                retry += 1
-                LOGGER.error(
-                    "Error persisting \ntopic:%s \nmessage %s. on Error: %s",
-                    topic,
-                    str(message),
-                    str(ex),
-                    stack_info=True,
-                    exc_info=True)
-                # reset the driver
-                self.close()
-                time.sleep(self.sleep_btw_attempts)
-                self.persist_mqtt_msg(topic=topic,
-                                      message=message,
-                                      timestamp=timestamp,
-                                      attr_node_type=attr_node_type,
-                                      retry=retry)
+
+            retry += 1
+            LOGGER.error(
+                "Error persisting \ntopic:%s \nmessage %s. on Error: %s",
+                topic,
+                str(message),
+                str(ex),
+                stack_info=True,
+                exc_info=True)
+            # reset the driver
+            self.close()
+            time.sleep(self.sleep_btw_attempts)
+            self.persist_mqtt_msg(topic=topic,
+                                  message=message,
+                                  timestamp=timestamp,
+                                  attr_node_type=attr_node_type,
+                                  retry=retry)
 
     # method  starts
     def save_all_nodes(self, session: neo4j.Session, topic: str, message: dict,

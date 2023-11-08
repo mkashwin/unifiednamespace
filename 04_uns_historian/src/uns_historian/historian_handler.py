@@ -87,6 +87,7 @@ class HistorianHandler:
                     stack_info=True,
                     exc_info=True)
                 raise ex
+        return None
 
     def get_cursor(self):
         """
@@ -164,12 +165,11 @@ class HistorianHandler:
                     exc_info=True)
                 if retry >= MAX_RETRIES:
                     raise ex
-                else:
-                    retry += 1
-                    # Close the stale connection.
-                    self.close()
-                    time.sleep(SLEEP_BTW_ATTEMPT)
-                    execute_sql_cmd(retry)
+                retry += 1
+                # Close the stale connection.
+                self.close()
+                time.sleep(SLEEP_BTW_ATTEMPT)
+                execute_sql_cmd(retry)
 
         # ---------------------------------------------------------------------------------------------------
         execute_sql_cmd()

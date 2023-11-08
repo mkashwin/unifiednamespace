@@ -5,9 +5,9 @@ import logging
 import random
 import time
 
+from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_historian.historian_config import settings
 from uns_historian.historian_handler import HistorianHandler
-from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 LOGGER = logging.getLogger(__name__)
 
@@ -150,8 +150,8 @@ class UnsMqttHistorian:
                 msg.payload,
                 stack_info=True,
                 exc_info=True)
-            # raise system_error
         except Exception as ex:
+            # pylint: disable=broad-exception-caught
             LOGGER.error(
                 "Error persisting the message to the Historian DB: %s\nTopic: %s \nMessage:%s",
                 str(ex),
