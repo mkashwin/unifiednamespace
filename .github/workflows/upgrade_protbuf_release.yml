@@ -1,0 +1,103 @@
+# 
+# pipeline to check for new release of Protocol Buffers and update this repository accordingly
+#
+name: Import External Release of Protocol Buffers
+
+on:
+    schedule:
+      - cron: '30 0 1 * *'
+jobs:
+  import_release:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v2
+
+        - name: "Check for New Release"
+          id: check_release
+          run: |
+            latest_release=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | jq -r '.tag_name')
+            current_protobuf_rel=$(cat 02_mqtt-cluster\protobuf\protobuf.version)
+            if [[ "$current_protobuf_rel" != "$latest_release" ]]; then
+                echo "::set-output name=new_release::true"
+                echo "::set-output name=${latest_release}"
+                echo "::set-output name=${current_protobuf_rel}"
+            else
+                echo "::set-output name=new_release::false"
+            fi
+        - name: Create New Branch
+          id: create_branch
+          if: steps.check_release.outputs.new_release == 'true'
+          env:
+            latest_release: ${{ steps.check_release.outputs.latest_release }}
+
+          run: |
+            git config --global user.email "actions@github.com"
+            git config --global user.name "Github Actions"
+            BRANCH_NAME="features/upgrade_protobuf_to_${{env.latest_release}}"
+            git checkout -b $BRANCH_NAME
+            git push origin
+
+        - name: Download and Extract Release
+          if: steps.check_release.outputs.new_release == 'true'
+          env:
+            latest_release: ${{ steps.check_release.outputs.latest_release }}
+            current_protobuf_rel: ${{ steps.check_release.outputs.current_protobuf_rel }}
+          run: |
+            git config --global user.email "actions@github.com"
+            git config --global user.name "Github Actions"
+            cd 02_mqtt-cluster
+            mkdir temp
+            cd temp
+            OLDIFS=$IFS; 
+            IFS=','; 
+            # Download 3 executables, rename them with proper suffix 
+            for i in linux-aarch_64,"" win64,"" osx-aarch_64,_osx; 
+                do set -- $i;
+                echo https://github.com/protocolbuffers/protobuf/releases/download/${latest_release}/protoc-${latest_release:1}-${1}.zip
+                wget -q https://github.com/protocolbuffers/protobuf/releases/download/${latest_release}/protoc-${latest_release:1}-${1}.zip
+                unzip -o protoc-${latest_release:1}-${1}.zip
+                rm protoc-${latest_release:1}-${1}.zip
+
+                #rename the protoc file 
+                if [[ -f bin/protoc ]] ; then
+                    mv bin/protoc bin/protoc${2}
+                fi
+
+            done; 
+            IFS=$OLDIFS
+
+            cp -f bin/*  ../protobuf/bin/
+            cp -rf include/  ../protobuf/ 
+            echo -n ${latest_release} > ../protobuf/protobuf.version           
+            cd ..
+            rm -rf temp
+
+            # Compile the proto file
+            chmod +x ./protobuf/bin/protoc
+
+            ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated --pyi_out=./src/uns_sparkplugb/generate ./sparkplug_b/sparkplug_b.proto
+            
+            # Update README.md with new version
+            sed -i -e s/${current_protobuf_rel}/${latest_release}/g README.md
+            sed -i -e s/-${current_protobuf_rel:1}-/-${latest_release:1}-/g README.md
+
+            # commit changes
+            git add .
+            git commit -m "Import protocol buffer release ${{ env.latest_release }}"
+        
+            
+            
+            
+        - name: Raise Pull Request
+          if: steps.check_release.outputs.new_release == 'true'
+          env:
+            latest_release: ${{ steps.check_release.outputs.latest_release }}
+          uses: devops-infra/action-pull-request@v0.5.5
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            title: "Updating protocol buffers version to ${{env.latest_release}}"
+            label: "${{env.latest_release}}, ProtocolBuffers version-update"
+            source_branch: "features/upgrade_protobuf_to_${{env.latest_release}}"
+            target_branch: main
+            get_diff: true
