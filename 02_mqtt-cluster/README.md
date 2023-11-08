@@ -38,7 +38,7 @@ Where in:
     > 
     ```bash
     # Execute on Linux
-    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated --pyi_out=./src/uns_sparkplugb/generate ./sparkplug_b/sparkplug_b.proto
+    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated --pyi_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
     ```
     >
     ```powershell
