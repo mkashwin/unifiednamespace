@@ -54,25 +54,23 @@ jobs:
             cd 02_mqtt-cluster
             mkdir temp
             cd temp
-            OLDIFS=$IFS; 
-            IFS=','; 
             # Download 3 executables, rename them with proper suffix 
-            for i in linux-x86_64,"" win64,"" osx-aarch_64,_osx; 
-                do set -- $i;
-                echo https://github.com/protocolbuffers/protobuf/releases/download/${latest_release}/protoc-${latest_release:1}-${1}.zip
-                wget -q https://github.com/protocolbuffers/protobuf/releases/download/${latest_release}/protoc-${latest_release:1}-${1}.zip
-                unzip -o protoc-${latest_release:1}-${1}.zip
-                rm protoc-${latest_release:1}-${1}.zip
+            # array of tuples giveing architecture and suffix to be added to protoc executable
+            # currently only being added to osx
+            platforms=("linux-x86_64," "win64," "osx-aarch_64,_osx")
+            for platform_suffix in "${platforms[@]}"; do
+              IFS=',' read -r platform suffix <<< "$platform_suffix"
+              wget -q https://github.com/protocolbuffers/protobuf/releases/download/${latest_release}/protoc-${latest_release:1}-${platform}.zip
+              unzip -o protoc-${latest_release:1}-${platform}.zip
+              rm protoc-${latest_release:1}-${platform}.zip
 
-                #rename the protoc file 
-                if [[ -f bin/protoc && -n ${2}]] ; then
-                  mv bin/protoc bin/protoc${2};
-                fi
-                cp -f bin/*  ../protobuf/bin/
-                cp -rf include/  ../protobuf/ 
-            done; 
-            IFS=$OLDIFS
-
+              #rename the protoc file 
+              if [[ -f bin/protoc && -n ${suffix}]] ; then
+                mv bin/protoc bin/protoc${suffix};
+              fi
+              cp -f bin/*  ../protobuf/bin/
+              cp -rf include/  ../protobuf/ 
+            done;
 
             echo -n ${latest_release} > ../protobuf/protobuf.version           
             cd ..
