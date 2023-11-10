@@ -114,8 +114,7 @@ microk8s helm3 install uns-emqx-corp emqx/emqx  \
 ```
 
 ## Configure MQTT bridge between Edge Cluster and Enterprise
-The guide for setting up the MQTT bride via the dashboard is provided [here]
-(https://www.emqx.io/docs/en/latest/rule/bridge_emqx.html)
+The guide for setting up the MQTT bride via the dashboard is provided [here](https://www.emqx.io/docs/en/latest/data-integration/data-bridge-mqtt.html)
 A simplified guide is given here
 #### Step 1: Log in to the EMQX Dashboard of your edge cluster
 #### Step 2: Create Resource 
