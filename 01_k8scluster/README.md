@@ -87,7 +87,7 @@ There are quite some options and considerations while setting up MetalLB. This s
 **Additional References**
 - [Layer 2 mode](https://metallb.universe.tf/concepts/layer2/): The current setup for the virtual machines is done using Layer 2 mode
 - [BGP mode](https://metallb.universe.tf/concepts/bgp/): Ensure that you refer to the limitations of MetalLB specially with [Calico](https://metallb.universe.tf/configuration/calico/)
-- [Fine Tune L2](https://blog.emptyq.net/a?ID=00004-8833cb83-c0cd-48db-a2d4-1367c7637876) provides further guidance on setting up routing rules to MetalLB using L2 routing
+- [Fine Tune L2](https://metallb.universe.tf/configuration/_advanced_l2_configuration/) provides further guidance on setting up routing rules to MetalLB using L2 routing
 - [Kubernetes Under The Hood](https://mvallim.github.io/kubernetes-under-the-hood/documentation/kube-metallb.html): MetalLB setup
 
 ### VirtualBox Networking

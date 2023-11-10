@@ -9,7 +9,7 @@ Valid characters for Kafka topics are the ASCII alphanumerics, **```.```**, **``
 Valid characters for MQTT topics are similar to above with the exception that **```/```** character is user to denote hierarchy.
 
 Since  **```/```** is not allowed for Kafka topics, we replace all occurrences of  **```/```** in the MQTT topic name with **```_```**
-see [kafka_handler.py.convert_MQTT_KAFKA_topic()](06_uns_kafka/src/uns_kafka/kafka_handler.py#convert_MQTT_KAFKA_topic)
+see [kafka_handler.py.convert_MQTT_KAFKA_topic()](./src/uns_kafka/kafka_handler.py#convert_MQTT_KAFKA_topic)
 
 **IMPORTANT NOTE:** The Kafka broker must be configured to allow producer clients  to create topics in order to ease the operation of converting new MQTT topics to Kafka
 
@@ -128,7 +128,7 @@ pytest -m "not integrationtest" test/
 pytest test/
 ```
 # Deploying the docker container image created for this module 
-The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fkafka_mapper">Github Container Registry</a>
+The docker container image for this module are built and store in the Dockerize module published to [Github Container Registry](https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fkafka_mapper)
 
 The way to run the container  is
 ```bash

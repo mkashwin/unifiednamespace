@@ -203,7 +203,7 @@ pytest -m "not integrationtest" test/
 pytest test/
 ```
 # Deploying the docker container image created for this module 
-The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fgraphdb">Github Container Registry</a>
+The docker container image for this module are built and store in the Dockerize module published to [Github Container Registry](https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fgraphdb)
 
 The way to run the container  is
 ```bash
@@ -227,17 +227,13 @@ docker run --name uns_mqtt_historian -d -v $PWD/conf:/app/conf uns/graphdb:lates
 * If you are running this image on the host as the MQTT broker  and/or neo4j pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 # Limitations / workarounds 
-1. [x] ~~Handle nested JSON messages.~~ 
+1. [x] ~~Handle nested JSON messages.~~ <br/>
   Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
   Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
   See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)
   ~~If your message contains nested data the current logic will flatten the JSON object. See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)~~
-1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
+1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~<br/>
   If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name. 
-1. [x] ~~Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers~~
-  
-  Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fgraphdb">Github Container Registry</a>
-
 1. [x] Add and improve automated test coverage
 1. [ ] Enhancing ACLs on the nodes for the various nodes to secure access
 1. [ ] Securing the Neo4j database 

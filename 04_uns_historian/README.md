@@ -107,7 +107,7 @@ This application has two configuration file.
 ## The Logic for persisting the message into the historian
 The historian will be persisting all the MQTT messages in the raw format directly after extracting the timestamp from the message
 The message format is expected to be in JSON and should have an attribute `timestamp`
-The attribute key name is configurable in [settings.yaml](./settings.yaml)
+The attribute key name is configurable in [settings.yaml](./conf/settings.yaml)
 If this attribute is missing the application will use the current time 
 ```python
 time.time()
@@ -152,7 +152,7 @@ pytest -m "not integrationtest" test/
 pytest test/
 ```
 # Deploying the docker container image created for this module 
-The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fhistorian">Github Container Registry</a>
+The docker container image for this module are built and store in the Dockerize module published to [Github Container Registry](https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fhistorian)
 
 The way to run the container  is
 ```bash
@@ -173,8 +173,5 @@ docker run --name uns_mqtt_historian -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/
 * If you are running this image on the host as the MQTT broker  and/or timescaledb pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 ## Limitations 
-1. [x] ~~Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers~~
-  
-  Dockerize module published to  <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fhistorian">Github Container Registry</a>
-1. [x] Add and improve automated test coverage 
+1. [x] ~~Add and improve automated test coverage~~
 1. [ ] Currently all messages are stored in the same table. Should we create separate tables per topic or topic type?

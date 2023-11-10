@@ -144,7 +144,7 @@ pytest -m "not integrationtest" test/
 pytest test/
 ```
 # Deploying the docker container image created for this module 
-The docker container image for this module are built and store in the Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fspb_mapper">Github Container Registry</a>
+The docker container image for this module are built and store in the Dockerize module published to [Github Container Registry](https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fspb_mapper)
 
 The way to run the container  is
 ```bash
@@ -168,10 +168,7 @@ docker run --name spb_to_uns_mqtt -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/uni
 1. [ ] The application assumes the the MQTT broker for SparkPlugB and the UNS are one and the same as it does not sense to have separate brokers for the same. This can be enhanced easily if there is a requirement for the same. Please create issue on the Github project
 1. [ ] Need to understand how to handle NDEATH, DDEATH, ~~STATE~~ message types
    * STATE messages are not Protobuf messages but rather JSON messages. They cannot be mapped to the UNS as they have no metrics 
-1. [*] ~~Handle non compliant messages~~
+1. [x] ~~Handle non compliant messages~~
    * non compliant messages will be logged as an error and ignored  
 1. [ ] Need to understand how to handle metric types DataSet, Template 
 1. [ ] Need to understand how to handle metadata, properties, is_multi_part etc.
-1. [x] ~~Need to check how to containerize and perhaps deploy this on the same cluster as the MQTT  brokers~~
-  
-  Dockerize module published to <a href="https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fspb_mapper">Github Container Registry</a>
