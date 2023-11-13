@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
         "aarch",
+        "Aiven",
         "alnum",
+        "bitnami",
         "buildx",
+        "cloudkarafka",
         "compileall",
         "DBIRTH",
         "DCMD",
@@ -21,6 +24,7 @@
         "keepalive",
         "Kubernetes",
         "lastnode",
+        "librdkafka",
         "mayastor",
         "metallb",
         "microk8s",
@@ -30,6 +34,7 @@
         "NCMD",
         "NDATA",
         "NDEATH",
+        "nvmf",
         "openebs",
         "packettypes",
         "paho",
@@ -56,7 +61,8 @@
         "usermod",
         "venv",
         "VERNEMQ",
-        "virtualenv"
+        "virtualenv",
+        "Waehner"
     ],
     "[python]": {
         "editor.formatOnSaveMode": "file",
