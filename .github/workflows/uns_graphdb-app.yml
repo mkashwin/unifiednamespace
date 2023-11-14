@@ -77,7 +77,7 @@ jobs:
         run: |
           cd ./03_uns_graphdb
           python -m pip install --upgrade pip poetry
-          poetry install --no-root
+          poetry install
 
       - name: Lint with flake8
         run: |

@@ -218,7 +218,7 @@ pip install poetry
 # Ensure that the poetry shell is activated
 poetry shell
 python -m pip install --upgrade pip poetry
-poetry install --no-root
+poetry install
 ```
 
 While importing the folder into VSCode remember to do the following steps the first time
@@ -229,7 +229,7 @@ While importing the folder into VSCode remember to do the following steps the fi
 >    ```bash
 >    poetry shell
 >    python -m pip install --upgrade pip poetry    
->    poetry install --no-root
+>    poetry install
 >    ```
 >
 > 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)

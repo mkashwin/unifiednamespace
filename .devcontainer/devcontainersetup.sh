@@ -4,7 +4,7 @@
 # 1. setup the python enviornment
 pip3 install --upgrade poetry 
 poetry run pip install --upgrade pip poetry 
-poetry install --no-root
+poetry install
 
 # 2. create minimalistic secret files for all the modules. 
 # 2.1 Neo4j

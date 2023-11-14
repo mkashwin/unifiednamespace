@@ -69,7 +69,7 @@ jobs:
           # change to current directory of module                
           cd ./06_uns_kafka
           python -m pip install --upgrade pip poetry
-          poetry install --no-root
+          poetry install
 
       - name: Lint with flake8
         run: |
