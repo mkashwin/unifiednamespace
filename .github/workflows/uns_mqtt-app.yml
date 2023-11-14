@@ -37,9 +37,8 @@ jobs:
       - name: Install dependencies
         run: |
           cd ./02_mqtt-cluster
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install
+          python -m pip install --upgrade pip poetry
+          poetry install --no-root
 
       - name: Lint with flake8
         run: |

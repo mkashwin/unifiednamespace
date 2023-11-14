@@ -158,22 +158,29 @@ will result in a node in the GraphDB
 
 ### Examples of MQTT Message being persisted to the GraphDB
 
-* By publishing the following message to the MQTT  Broker    <br/>
+* By publishing the following message to the MQTT  Broker
+
   ![MQTT Message to ](../images/Message_2_GraphDBMQTTClient.png)
 
-* We get the following graph created <br/>
+* We get the following graph created
+
   ![Graph View](../images/GraphDB_view.png)
+  
 * Each level of the topic is represented as a node with a relationship also established between the nodes.
   The label to the nodes is also assigned as per the Node Types which were [configured](#key-configurations-to-provide).
 
   e.g. the node `my_device` in this message  has the label `DEVICE` in the GraphDB.
 
-  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB. <br/>
+  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB.  
+
   ![Graph View](../images/GraphDB_view0.png)
-* A Tabular of the same data <br/>
+
+* A Tabular of the same data  
+
   ![Graph View](../images/GraphDB_Textview.png)
 
-* Graph view of UNS and Sparkplug payloads <br/>
+* Graph view of UNS and Sparkplug payloads  
+
   ![Graph View](../images/GraphDB_with_spb_and_uns.png)
 
 ## Setting up the development environment for this module
@@ -187,7 +194,8 @@ python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
 poetry shell 
-poetry install
+python -m pip install --upgrade pip poetry
+poetry install --no-root
 python ./src/uns_graphdb/graphdb_handler.py
 ```
 
@@ -200,7 +208,8 @@ python ./src/uns_graphdb/graphdb_handler.py
 >
 >    ```bash
 >    poetry shell
->    poetry install
+>    python -m pip install --upgrade pip poetry
+>    poetry install --no-root
 >    ```
 >
 > 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
@@ -212,7 +221,7 @@ This function is executed by the following command with the current folder as [`
 ```bash
 # Ensure that the poetry shell is activated
 poetry shell 
-poetry install
+poetry install --no-root
 python ./src/uns_graphdb/graphdb_handler.py
 ```
 
@@ -266,7 +275,7 @@ docker run --name uns_mqtt_graphdb -d -v $PWD/conf:/app/conf uns/graphdb:latest
   Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
   See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)
   ~~If your message contains nested data the current logic will flatten the JSON object. See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)~~
-1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~<br/>
+1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
   If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name.
 1. [x] ~~Add and improve automated test coverage~~
 1. [ ] Enhancing ACLs on the nodes for the various nodes to secure access

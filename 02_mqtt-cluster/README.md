@@ -161,8 +161,10 @@ SELECT * from '#'
 #### Step 7: Add Action Handler
 
 ![Create Resource](../images/MQTT_bridge-setup-07.png)
+>
 > By using the payload template as ${payload} we ensure that the exact same message with no additional attributes is sent over the bridge otherwise EMQX adds a bunch of additional attributes and pushes the entire message to the attribute ´payload´.
 >
+
 #### Step 5: Confirm Rule creation & activation
 
 ![Create Resource](../images/MQTT_bridge-setup-08.png)
@@ -185,7 +187,8 @@ python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
 poetry shell
-poetry install
+python -m pip install --upgrade pip poetry
+poetry install --no-root
 ```
 
 > While importing the folder into VSCode remember to do the following steps the first time
@@ -195,7 +198,7 @@ poetry install
 >
 >      ```bash
 >      poetry shell
->      poetry install
+>      poetry install --no-root
 >      ```
 >
 >   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)

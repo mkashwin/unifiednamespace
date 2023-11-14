@@ -104,7 +104,8 @@ python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
 poetry shell 
-poetry install
+python -m pip install --upgrade pip poetry
+poetry install --no-root
 python ./src/uns_kafka/uns_kafka_listener.py
 ```
 
@@ -117,7 +118,8 @@ python ./src/uns_kafka/uns_kafka_listener.py
 >
 >    ```bash
 >    poetry shell
->    poetry install
+>    python -m pip install --upgrade pip poetry
+>    poetry install --no-root
 >    ```
 >
 > 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
@@ -130,7 +132,7 @@ Ensure that the [configuration files](./conf/) are correctly updated to your MQT
 ```bash
 # Ensure that the poetry shell is activated
 poetry shell 
-poetry install
+poetry install --no-root
 python ./src/uns_kafka/uns_kafka_listener.py
 ```
 

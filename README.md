@@ -92,7 +92,7 @@ I finally choose to go ahead with ***MicroK8s*** because
 
    > **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place.
 
-* Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting. As a K8s noob this really helped.
+* Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting.
 
 However microk8s did show up some limitations as well as bugs. Details of these are in **[01_k8scluster](./01_k8scluster/README.md)**. The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albeit in a different manner.
 
@@ -214,11 +214,11 @@ However to import all  microservices into the same workspace, the following comm
 This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 
 ```bash
-python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
 poetry shell
-poetry install
+python -m pip install --upgrade pip poetry
+poetry install --no-root
 ```
 
 While importing the folder into VSCode remember to do the following steps the first time
@@ -228,7 +228,8 @@ While importing the folder into VSCode remember to do the following steps the fi
 >
 >    ```bash
 >    poetry shell
->    poetry install
+>    python -m pip install --upgrade pip poetry    
+>    poetry install --no-root
 >    ```
 >
 > 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)

@@ -47,7 +47,7 @@ RUN useradd --no-create-home --home /app uns_user && \
 # Install the required dependencies for the project using poetry as that user
 RUN su uns_user -c "poetry lock --no-update \
     && poetry add /02_mqtt-cluster -n  --lock  \
-    && poetry install --only main -n"
+    && poetry install --no-root --only main -n"
 
 USER uns_user
 

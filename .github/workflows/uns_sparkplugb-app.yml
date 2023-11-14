@@ -55,9 +55,8 @@ jobs:
         run: |
           # change to current directory of module                
           cd ./05_sparkplugb
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install
+          python -m pip install --upgrade pip poetry
+          poetry install --no-root
 
       - name: Lint with flake8
         run: |
