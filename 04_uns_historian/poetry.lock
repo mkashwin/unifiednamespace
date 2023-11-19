@@ -789,7 +789,7 @@ files = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.7.9"
+version = "0.7.10"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 optional = false
 python-versions = "^3.11"
