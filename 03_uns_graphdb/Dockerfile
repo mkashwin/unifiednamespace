@@ -9,7 +9,7 @@
 #       docker run --name uns_mqtt_graphdb -v <full path to conf>/:/app/conf --network=host uns/graphdb:<version> 
 
 # Use the official Python image
-FROM python:3.11-slim-bookworm
+FROM python:3.11-alpine3.18
 
 # Set the environment variable for the entrypoint command
 # Don't buffer `stdout`
@@ -35,13 +35,17 @@ COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/poetry.lock ./02_mqtt-clu
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
 COPY ./${UNS_MODULE}/src ./src/
 
-
+# install minimalistic missing packages & security fixes
+RUN apk update && \ 
+    apk add --no-cache libffi-dev libc-dev gcc && \
+    apk upgrade --no-cache libcrypto3 libssl3 && \
+    rm -rf /var/cache/apk/*
 
 # Install pip & poetry
 RUN  pip install --upgrade pip poetry
 
 # create application user
-RUN useradd --no-create-home --home /app uns_user && \
+RUN adduser --no-create-home --home /app --disabled-password uns_user && \
     chown -R uns_user /app 
 
 # Install the required dependencies for the project using poetry as that user
