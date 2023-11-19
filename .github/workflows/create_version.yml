@@ -143,7 +143,7 @@ jobs:
 
           # Run the Docker tests
           echo "Running tests for Docker image: ${image_name}::${{ env.SHA_TAG }}"
-          docker run --entrypoint "/bin/bash" -e python_module="$python_module" -e function="$function" "${image_name}:${{ env.SHA_TAG }}" -c '
+          docker run --entrypoint "sh" -e python_module="$python_module" -e function="$function" "${image_name}:${{ env.SHA_TAG }}" -c '
             if [ ! -d "/02_mqtt-cluster" ]; then
               echo "Error: Folder /02_mqtt-cluster not found in Docker image"
               exit 1
