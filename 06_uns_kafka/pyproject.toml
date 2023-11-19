@@ -30,14 +30,15 @@ confluent-kafka = "^2.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
-yapf = "^0.40.2"
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"
+yapf = "^0.40.2"
 flake8 = "^6.1.0"
 pytest-cov = "^4.0.0"
 safety = "^2.3.5"
+pylint = "^3.0.2"
 
 [tool.poetry.scripts] #TODO fix
 uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"

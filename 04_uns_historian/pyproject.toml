@@ -32,14 +32,14 @@ dynaconf = "^3.2.4"
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
-yapf = "^0.40.2"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"
+yapf = "^0.40.2"
 flake8 = "^6.1.0"
 pytest-cov = "^4.1.0"
 safety = "^2.3.5"
-
+pylint = "^3.0.2"
 
 [tool.poetry.scripts]
 uns_historian = "uns_historian.uns_mqtt_historian:main"
