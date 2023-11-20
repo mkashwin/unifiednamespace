@@ -58,7 +58,7 @@ confluent-kafka = "^2.3.0"
 pytest = "^7.4.3"
 flake8 = "^6.1.0"
 pytest-cov = "^4.1.0"
-safety = "^2.3.5"
+safety = "^2.4.0b2"
 pylint = "^3.0.2"
 
 [tool.poetry.group.dev.dependencies]
