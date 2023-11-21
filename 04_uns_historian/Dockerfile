@@ -8,7 +8,6 @@
 #       e.g.
 #       docker run --name uns_mqtt_historian -v <full path to conf>/:/app/conf  --network=host uns/historian:v0.5.0 
 
-
 # Use the official Python image
 FROM python:3.11-alpine3.18
 
@@ -40,17 +39,15 @@ COPY ./${UNS_MODULE}/src ./src/
 RUN apk update && \ 
     apk add --no-cache libffi-dev libc-dev gcc && \
     apk upgrade --no-cache libcrypto3 libssl3 && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* 
 
 # Install pip & poetry
-RUN  pip install --upgrade pip poetry
-
-# create application user
-RUN adduser --no-create-home --home /app uns_user --disabled-password && \
-    chown -R uns_user /app 
-
-# Install the required dependencies for the project using poetry as that user
-RUN su uns_user -c "poetry lock --no-update \
+RUN  pip install --upgrade pip poetry && \
+    # create application user
+    adduser --home /app --disabled-password uns_user && \
+    chown -R uns_user /app && \
+    # Install the required dependencies for the project using poetry as that user
+    su uns_user -c "poetry lock --no-update \
     && poetry add /02_mqtt-cluster -n  --lock  \
     && poetry install --only main -n"
 

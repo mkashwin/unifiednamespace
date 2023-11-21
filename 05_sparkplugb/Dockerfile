@@ -43,14 +43,12 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 
 # Install pip & poetry
-RUN  pip install --upgrade pip poetry
-
-# create application user
-RUN adduser --no-create-home --home /app --disabled-password uns_user && \
-    chown -R uns_user /app 
-
-# Install the required dependencies for the project using poetry as that user
-RUN su uns_user -c "poetry lock --no-update \
+RUN  pip install --upgrade pip poetry && \
+    # create application user
+    adduser --home /app --disabled-password uns_user && \
+    chown -R uns_user /app && \
+    # Install the required dependencies for the project using poetry as that user
+    su uns_user -c "poetry lock --no-update \
     && poetry add /02_mqtt-cluster -n  --lock  \
     && poetry install --only main -n"
 

@@ -85,10 +85,26 @@ jobs:
     strategy:
       matrix:
         include:
-          - { module: 03_uns_graphdb, image: uns/graphdb }
-          - { module: 04_uns_historian, image: uns/historian }
-          - { module: 05_sparkplugb, image: uns/spb_mapper }
-          - { module: 06_uns_kafka, image: uns/kafka_mapper }
+          - {
+              module: 03_uns_graphdb,
+              image: uns/graphdb,
+              container_description: "Stores MQTT messages to the graph database. Supports both UNS and SparkplugB",
+            }
+          - {
+              module: 04_uns_historian,
+              image: uns/historian,
+              container_description: "Stores MQTT messages to the historian database. Supports both UNS and SparkplugB",
+            }
+          - {
+              module: 05_sparkplugb,
+              image: uns/spb_mapper,
+              container_description: "Listens to the SparkplugB name space and translates them to UNS messages, then publishes to the UNS Namespace",
+            }
+          - {
+              module: 06_uns_kafka,
+              image: uns/kafka_mapper,
+              container_description: "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka",
+            }
 
     env:
       SHA_TAG: ${{ needs.update-version.outputs.sha_tag }}
@@ -199,7 +215,7 @@ jobs:
 
       - name: Build Docker Image - Branches
         if: ${{ ! startsWith( github.ref_name , 'main') }}
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
@@ -207,11 +223,15 @@ jobs:
           tags: |
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ env.VERSION_TAG }}"
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{env.SHA_TAG }}"
+          labels: |
+            "annotations": { "org.opencontainers.image.description": ${{ matrix.container_description }} }
+            "annotations": { "org.opencontainers.image.source" : https://github.com/mkashwin/unifiednamespace/tree/main/${{ matrix.image }} }
+            "annotations": { "org.opencontainers.image.licenses" : MIT }
           file: ./${{ matrix.module }}/Dockerfile
 
       - name: Build Docker Image - Main
         if: ${{ startsWith( github.ref_name , 'main') }}
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
@@ -220,6 +240,10 @@ jobs:
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ env.VERSION_TAG }}"
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{env.SHA_TAG }}"
             "ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest"
+          labels: |
+            "annotations": { "org.opencontainers.image.description": ${{ matrix.container_description }} }
+            "annotations": { "org.opencontainers.image.source" : https://github.com/mkashwin/unifiednamespace/tree/main/${{ matrix.image }} }
+            "annotations": { "org.opencontainers.image.licenses" : MIT }
           file: ./${{ matrix.module }}/Dockerfile
 
   create_tag:

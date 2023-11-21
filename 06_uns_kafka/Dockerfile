@@ -21,7 +21,7 @@ ENV UNS_MODULE="06_uns_kafka"\
     POETRY_NO_INTERACTION=1
 
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka
-LABEL org.opencontainers.image.description="Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka "
+LABEL org.opencontainers.image.description="Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
 LABEL org.opencontainers.image.licenses=MIT
 
 # Set the working directory in the container to /
@@ -38,28 +38,26 @@ COPY ./${UNS_MODULE}/src ./src/
 RUN apk update && \ 
     apk add --no-cache  libffi-dev libc-dev gcc bash g++ make && \
     apk upgrade --no-cache libcrypto3 libssl3 && \
-    rm -rf /var/cache/apk/*
-# Need to install https://github.com/confluentinc/librdkafka/tree/v2.3.0 as alpine does not have this version   
-RUN wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.3.0.zip && \
+    rm -rf /var/cache/apk/* && \
+    # Need to install https://github.com/confluentinc/librdkafka/tree/v2.3.0 as alpine does not have this version   
+    wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.3.0.zip && \
     unzip -o v2.3.0.zip && \
     cd  librdkafka-2.3.0 && \
     bash -c "./configure && \
     ./configure --prefix /usr && \
     make && \
-    make install"
-
-RUN rm v2.3.0.zip && \
+    make install" && \
+    cd .. && \
+    rm v2.3.0.zip && \
     rm -rf librdkafka-2.3.0
 
 # Install pip & poetry
-RUN  pip install --upgrade pip poetry
-
-# create application user
-RUN adduser --no-create-home --home /app --disabled-password uns_user && \
-    chown -R uns_user /app 
-
-# Install the required dependencies for the project using poetry as that user
-RUN su uns_user -c "poetry lock --no-update \
+RUN  pip install --upgrade pip poetry && \
+    # create application user
+    adduser --home /app --disabled-password uns_user && \
+    chown -R uns_user /app && \
+    # Install the required dependencies for the project using poetry as that user
+    su uns_user -c "poetry lock --no-update \
     && poetry add /02_mqtt-cluster -n  --lock  \
     && poetry install --only main -n"
 
