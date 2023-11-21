@@ -39,6 +39,7 @@ jobs:
 
       - name: Update version in pyproject.toml & poetry.lock
         run: |
+          python -m pip install --upgrade pip poetry
           echo "Updating all pyproject.toml with version ${{ env.VERSION_TAG}}"
           find . -name 'pyproject.toml' -type f -exec sed -i "s/^version.*/version = \"${{ env.VERSION_TAG}}\"/g" {} +
           for folder in */; do
