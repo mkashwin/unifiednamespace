@@ -20,10 +20,4 @@
         "hypertable",
         "timescaledb"
     ],
-    "flake8.args": [
-        "--config=../.flake8"
-    ],
-    "pylint.args": [
-        "--max-line-length= 120"
-    ],
 }

@@ -37,10 +37,4 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "eeyore.yapf"
     },
-    "flake8.args": [
-        "--config=../.flake8"
-    ],
-    "pylint.args": [
-        "--max-line-length= 120"
-    ],
 }
