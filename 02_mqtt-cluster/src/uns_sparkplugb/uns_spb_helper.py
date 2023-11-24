@@ -1,6 +1,6 @@
 """
- Helper class to parse & create SparkplugB messages
- @see Tahu Project{https://github.com/eclipse/tahu/blob/master/python/core/sparkplug_b.py}
+Helper class to parse & create SparkplugB messages
+@see Tahu Project{https://github.com/eclipse/tahu/blob/master/python/core/sparkplug_b.py}
 """
 import logging
 import time
@@ -15,6 +15,7 @@ class SpBMessageGenerator:
     """
     Helper class to parse & create SparkplugB messages
     """
+
     # sequence number for messages
     msg_seq_number: int = 0
     # birth/death sequence number
@@ -53,6 +54,7 @@ class SpBMessageGenerator:
         """
         Helper to get the Death Node Payload
         Always request this before requesting the Node Birth Payload
+
         Parameters
         ----------
         payload:  Can be None if blank message is being created
@@ -69,6 +71,7 @@ class SpBMessageGenerator:
         """
         Helper to get the Node Birth Payload
         Always request this after requesting the Node Death Payload
+
         Parameters
         ----------
         payload:  Can be None if blank message is being created
@@ -92,6 +95,7 @@ class SpBMessageGenerator:
                                  timestamp: float = None) -> spbPayload:
         """
         Get the DBIRTH payload
+
         Parameters
         ----------
         payload:  Can be None if blank message is being created
@@ -112,6 +116,7 @@ class SpBMessageGenerator:
                                 timestamp: float = None) -> spbPayload:
         """
         Get a DDATA payload
+
         Parameters
         ----------
         payload:  Can be None if blank message is being created
@@ -124,6 +129,7 @@ class SpBMessageGenerator:
     def get_node_data_payload(self, payload: spbPayload = None) -> spbPayload:
         """
         Get a NDATA payload
+
         Parameters
         ----------
         payload:  Can be none if blank message is being created
@@ -140,6 +146,7 @@ class SpBMessageGenerator:
                            timestamp: float = int(round(time.time() * 1000))):
         """
         Refactored common code of obtaining metrics and initializing common attributes
+
         Parameters
         ----------
         payload:
@@ -182,6 +189,7 @@ class SpBMessageGenerator:
         """
         Helper method for initializing a dataset metric to a payload
         FIXME Need to enhance to add Row and Elements (DataSet.Row and  DataSet.DataSetValue )
+
         Parameters
         ----------
         payload:
@@ -218,6 +226,7 @@ class SpBMessageGenerator:
                              alias: int = None):
         """
         Helper method for adding template metrics to a payload
+
         Parameters
         ----------
         payload:
@@ -257,6 +266,7 @@ class SpBMessageGenerator:
         # pylint: disable=too-many-arguments
         """
         Helper method for adding metrics to a container which can be a payload or a template.
+
         Parameters
         ----------
         payload:
@@ -316,7 +326,7 @@ class SpBMessageGenerator:
                 # FIXME how to support this?
                 raise ValueError(
                     f"MetricType:{sparkplug_b_pb2.DataSet}" +
-                    " Not supported by #add_metric(). Use #init_dataset_metric()"
+                    " Not supported by #add_metric(). Use #init_dataset_metric()",
                 )
             case sparkplug_b_pb2.Bytes:
                 value = set_bytes_value_in_metric(value, metric)
@@ -345,6 +355,7 @@ class SpBMessageGenerator:
         """
         Helper method for adding metrics to a container which can be a
         payload or a template
+
         Parameters
         ----------
         container:
@@ -379,6 +390,7 @@ class SpBMessageGenerator:
                         alias: int = None):
         """
         Helper method for adding null metrics  to a container which can be a payload or a template
+
         Parameters
         ----------
         container:
@@ -407,6 +419,7 @@ class SpBMessageGenerator:
 def set_int_value_in_metric(value: int, metric, factor: int):
     """
     Helper method for setting Int value in metric
+
     Parameters
     ----------
     value:
@@ -427,6 +440,7 @@ def set_int_value_in_metric(value: int, metric, factor: int):
 def set_long_value_in_metric(value: int, metric, factor=0):
     """
     Helper method for setting Long value in metric
+
     Parameters
     ----------
     value:
@@ -446,6 +460,7 @@ def set_long_value_in_metric(value: int, metric, factor=0):
 def set_float_value_in_metric(value: float, metric):
     """
     Helper method for setting float value in metric
+
     Parameters
     ----------
     value:
@@ -460,6 +475,7 @@ def set_float_value_in_metric(value: float, metric):
 def set_double_value_in_metric(value: float, metric):
     """
     Helper method for setting double value in metric
+
     Parameters
     ----------
     value:
@@ -474,6 +490,7 @@ def set_double_value_in_metric(value: float, metric):
 def set_string_value_in_metric(value: str, metric):
     """
     Helper method for setting string value in metric
+
     Parameters
     ----------
     value:
@@ -488,6 +505,7 @@ def set_string_value_in_metric(value: str, metric):
 def set_bytes_value_in_metric(value: bytes, metric):
     """
     Helper method for setting bytes value in metric
+
     Parameters
     ----------
     value:
@@ -502,6 +520,7 @@ def set_bytes_value_in_metric(value: bytes, metric):
 def set_templates_value_in_metric(value, metric):
     """
     Helper method for setting template value in metric
+
     Parameters
     ----------
     value:
@@ -516,6 +535,7 @@ def set_templates_value_in_metric(value, metric):
 def set_boolean_value_in_metric(value: bool, metric):
     """
     Helper method for setting boolean value in metric
+
     Parameters
     ----------
     value:
@@ -530,6 +550,7 @@ def set_boolean_value_in_metric(value: bool, metric):
 def unknown_value_in_metric(datatype, value, metric):
     """
     Helper method handling values of unknown type in metric
+
     Parameters
     ----------
     datatype: int but not matching the sparkplugB specifications for data types

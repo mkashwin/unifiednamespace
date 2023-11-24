@@ -1,7 +1,8 @@
 """
-    Manages connectivity to Kafka broker and publishes message
+Manages connectivity to Kafka broker and publishes message
 """
 import logging
+
 from confluent_kafka import Producer
 
 LOGGER = logging.getLogger(__name__)

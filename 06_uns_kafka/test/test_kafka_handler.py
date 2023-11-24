@@ -3,15 +3,12 @@ Test cases for uns_kafka.kafka_handler#KafkaHandler
 """
 
 import json
+
 import pytest
-
+from confluent_kafka import OFFSET_BEGINNING, Consumer, Producer
 from confluent_kafka.admin import AdminClient
-from confluent_kafka import Producer
-from confluent_kafka import Consumer
-from confluent_kafka import OFFSET_BEGINNING
-from uns_kafka.uns_kafka_config import settings
-
 from uns_kafka.kafka_handler import KafkaHandler
+from uns_kafka.uns_kafka_config import settings
 
 KAFKA_CONFIG: dict = settings.kafka["config"]
 is_configs_provided: bool = "bootstrap.servers" in KAFKA_CONFIG
@@ -49,13 +46,13 @@ def test_convert_mqtt_kafka_topic(mqtt_topic: str, kafka_topic: str):
     Test conversion of MQTT Topics to Kafka
     """
     assert KafkaHandler.convert_mqtt_kafka_topic(
-        mqtt_topic
+        mqtt_topic,
     ) == kafka_topic, "Topic name in Kafka shouldn't have any '/'"
 
 
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "mqtt_topic, message", [(
         "a/b/c",
@@ -111,7 +108,7 @@ def test_publish(mqtt_topic: str, message):
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
     assert kafka_handler is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKA_CONFIG}"
     assert kafka_handler.producer.list_topics(
-        timeout=10
+        timeout=10,
     ) is not None, f"Kafka configurations did allow connectivity to broker: {KAFKA_CONFIG}"
     admin_client: AdminClient = AdminClient(KAFKA_CONFIG)
 

@@ -19,7 +19,7 @@ metric_dict = {
     "bytes_value": None,
     "boolean_value": None,
     "template_value": None,
-    "datatype": None
+    "datatype": None,
 }
 
 
@@ -243,7 +243,7 @@ def test_get_node_birth_payload():
     payload_dict: dict = MessageToDict(payload)
     metric = payload_dict.get("metrics")[0]
 
-    assert getattr(payload, "seq") == 0
+    assert payload.seq == 0
     assert metric.get("name") == "bdSeq"
     assert metric.get("timestamp") is not None
     assert metric.get("datatype") == sparkplug_b_pb2.Int64
@@ -252,35 +252,35 @@ def test_get_node_birth_payload():
 
 @pytest.mark.parametrize("timestamp, metrics",
                          [(1671554024644, [{
-                             'name': 'Inputs/A',
-                             'timestamp': 1486144502122,
-                             'datatype': 11,
-                             'value': False
+                             "name": "Inputs/A",
+                             "timestamp": 1486144502122,
+                             "datatype": 11,
+                             "value": False,
                          }, {
-                             'name': 'Inputs/B',
-                             'timestamp': 1486144502122,
-                             'datatype': 11,
-                             'value': False
+                             "name": "Inputs/B",
+                             "timestamp": 1486144502122,
+                             "datatype": 11,
+                             "value": False,
                          }, {
-                             'name': 'Outputs/E',
-                             'timestamp': 1486144502122,
-                             'datatype': 11,
-                             'value': False
+                             "name": "Outputs/E",
+                             "timestamp": 1486144502122,
+                             "datatype": 11,
+                             "value": False,
                          }, {
-                             'name': 'Outputs/F',
-                             'timestamp': 1486144502122,
-                             'datatype': 11,
-                             'value': False
+                             "name": "Outputs/F",
+                             "timestamp": 1486144502122,
+                             "datatype": 11,
+                             "value": False,
                          }, {
-                             'name': 'Properties/Hardware Make',
-                             'timestamp': 1486144502122,
-                             'datatype': 12,
-                             'value': 'Sony'
+                             "name": "Properties/Hardware Make",
+                             "timestamp": 1486144502122,
+                             "datatype": 12,
+                             "value": "Sony",
                          }, {
-                             'name': 'Properties/Weight',
-                             'timestamp': 1486144502122,
-                             'datatype': 3,
-                             'value': 200
+                             "name": "Properties/Weight",
+                             "timestamp": 1486144502122,
+                             "datatype": 3,
+                             "value": 200,
                          }])])
 def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
     """

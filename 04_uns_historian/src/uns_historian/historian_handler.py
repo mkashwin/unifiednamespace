@@ -19,6 +19,7 @@ class HistorianHandler:
     """
     Class to encapsulate logic of persisting messages to the historian database
     """
+
     timescale_db_conn = None
     timescale_db_cursor = None
 
@@ -27,7 +28,7 @@ class HistorianHandler:
         # pylint: disable=too-many-arguments
         """
         Parameters
-        -----------
+        ----------
         hostname: str,
         port:int,
         database:str,
@@ -149,7 +150,7 @@ class HistorianHandler:
 
         def execute_sql_cmd(retry: int = 0):
             """
-            inline method to enable retry
+            Inline method to enable retry
             """
             try:
                 with self.get_cursor() as cursor:

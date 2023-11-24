@@ -84,7 +84,8 @@ class GraphDBHandler:
         Returns:
             neo4j.Driver: The Neo4j driver object.
 
-        Raises:
+        Raises
+        ------
             neo4j.exceptions.DatabaseError: When there is a general error from the database.
             neo4j.exceptions.TransientError: When there is a problem connecting to the database.
             neo4j.exceptions.DatabaseUnavailable: When the database is unavailable.
@@ -164,7 +165,6 @@ class GraphDBHandler:
             Node type used to depict nested attributes which will be child nodes
             by default `"NESTED_ATTRIBUTE"`
         """
-
         try:
             driver = self.connect(retry)
             with driver.session(database=self.database) as session:
@@ -206,6 +206,7 @@ class GraphDBHandler:
         Iterate the topics by '/'. create node for each level & merge the messages to the final node
         For the other topics in the hierarchy a node will be created / merged and linked to the
         parent topic node
+
         Parameters
         ----------
         session :
@@ -224,7 +225,7 @@ class GraphDBHandler:
         response = None
         count = 0
         lastnode_id = None
-        nodes = topic.split('/')
+        nodes = topic.split("/")
         dict_less_message, child_dict_vals = GraphDBHandler.separate_plain_composite_attributes(
             message)
         for node in nodes:
@@ -258,8 +259,8 @@ class GraphDBHandler:
         """
         This function saves attribute nodes in the graph database.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         session: The session object to interact with the database.
         lastnode_id (str): The element_id of the parent node in the graph. None for top most nodes
         attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples
@@ -316,6 +317,7 @@ class GraphDBHandler:
         """
         Creates or Merges the MQTT message as a Graph node. Each level of the topic is also
         persisted as a graph node with appropriate parent relationship
+
         Parameters
         ----------
         session  : neo4j.Session
@@ -408,6 +410,7 @@ RETURN value.child
         Keys for lists will be of the form <key>_<count>
         Keys for dicts will be of the form <parent key>_<child key>
         if any attribute is named "node_name" it will be replaced by "NODE_NAME"
+
         Parameters
         ----------
         message  : dict
@@ -416,19 +419,19 @@ RETURN value.child
         LOGGER.debug(mqtt_msg)
         output = {}
 
-        def flatten(json_object, name=''):
+        def flatten(json_object, name=""):
             """
             Recursive function to flatten nested dict/json objects
             """
             if isinstance(json_object, dict):
                 # iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
-                    flatten(json_object[items], name + items + '_')
+                    flatten(json_object[items], name + items + "_")
             elif isinstance(json_object, (list, tuple)):
                 i = 0
                 # iterate through the list. recursively call the flattening function for each item
                 for items in json_object:
-                    flatten(items, name + str(i) + '_')
+                    flatten(items, name + str(i) + "_")
                     i += 1
             elif json_object is not None:
                 if name[:-1] == NODE_NAME_KEY:
@@ -448,13 +451,14 @@ RETURN value.child
         Removes a composite values from the attribute object
         Composite values are of instance list, tuple and dict
         Does not recursively go into the value object
+
         Parameters
         ----------
         attributes  : dict
             Message properties which may or may not contain combination of plain and composite values
 
         Returns
-        ----------
+        -------
         1. dict with only simple attribute
         2. dict of remaining composite attributes ( list, dict, tuple)
         """

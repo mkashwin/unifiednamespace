@@ -19,8 +19,8 @@ from uns_sparkplugb.generated import sparkplug_b_pb2
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
+            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
+            "src")))
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
@@ -28,7 +28,7 @@ is_configs_provided: bool = (os.path.exists(
             os.getenv("UNS_historian__username")))
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_uns_mqtt_historian():
     """
     Test case for UnsMqttHistorian#init()
@@ -53,7 +53,7 @@ def test_uns_mqtt_historian():
             uns_mqtt_historian.uns_historian_handler.close()
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
@@ -61,15 +61,15 @@ def test_uns_mqtt_historian():
         # Test UNS message persistance
         ("test/uns/ar1/ln2", {
             "timestamp": 1486144502122,
-            "TestMetric2": "TestUNS"
+            "TestMetric2": "TestUNS",
         }),
         ("spBv1.0/uns_group/NBIRTH/eon1",
-         b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-         b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-         b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
-         )
+         b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+         b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+         b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+         b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+         b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
+         ),
     ])
 def test_uns_mqtt_historian_persistance(topic: str, message):
     """
@@ -82,7 +82,7 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
 
         def on_message_decorator(client, userdata, msg):
             """
-            override / wrap the existing on_message callback so that
+            Override / wrap the existing on_message callback so that
             on_publish is asleep until the message was received
             """
             old_on_message(client, userdata, msg)
@@ -181,7 +181,7 @@ def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
 
     except (psycopg2.DataError, psycopg2.OperationalError) as ex:
         pytest.fail(
-            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
+            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}",
         )
     except AssertionError as ex:
         pytest.fail(f"Assertions did not pass: Exception {ex}")

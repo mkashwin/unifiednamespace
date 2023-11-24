@@ -2,11 +2,10 @@
 Tests for GraphDBHandler
 """
 import pytest
-from uns_mqtt.mqtt_listener import UnsMQTTClient
 from neo4j import Session, exceptions
 from uns_graphdb.graphdb_config import settings
-from uns_graphdb.graphdb_handler import GraphDBHandler
-from uns_graphdb.graphdb_handler import NODE_RELATION_NAME
+from uns_graphdb.graphdb_handler import NODE_RELATION_NAME, GraphDBHandler
+from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 is_configs_provided: bool = settings.graphdb.get("username") is not None
 
@@ -19,29 +18,29 @@ is_configs_provided: bool = settings.graphdb.get("username") is not None
         # test for existing flat dict
         ({
             "a": "value1",
-            "b": "value2"
+            "b": "value2",
         }, {
             "a": "value1",
-            "b": "value2"
+            "b": "value2",
         }),
         # test attribute node_name
         ({
             "a": "value1",
-            "node_name": "toUpper(*)"
+            "node_name": "toUpper(*)",
         }, {
             "a": "value1",
-            "NODE_NAME": "toUpper(*)"
+            "NODE_NAME": "toUpper(*)",
         }),
         # test for existing  dict containing a list
         ({
             "a": "value1",
-            "b": [10, 23, 23, 34]
+            "b": [10, 23, 23, 34],
         }, {
             "a": "value1",
             "b_0": 10,
             "b_1": 23,
             "b_2": 23,
-            "b_3": 34
+            "b_3": 34,
         }),
         # test for existing  dict containing dict and list
         ({
@@ -49,8 +48,8 @@ is_configs_provided: bool = settings.graphdb.get("username") is not None
             "b": [10, 23, 23, 34],
             "c": {
                 "k1": "v1",
-                "k2": 100
-            }
+                "k2": 100,
+            },
         }, {
             "a": "value1",
             "b_0": 10,
@@ -58,7 +57,7 @@ is_configs_provided: bool = settings.graphdb.get("username") is not None
             "b_2": 23,
             "b_3": 34,
             "c_k1": "v1",
-            "c_k2": 100
+            "c_k2": 100,
         }),
         # test for 3 level nested
         ({
@@ -67,17 +66,17 @@ is_configs_provided: bool = settings.graphdb.get("username") is not None
                 "l2": {
                     "l3k1": "va1",
                     "l3k2": [10, 12],
-                    "l3k3": 3.141
+                    "l3k3": 3.141,
                 },
-                "l2kb": 100
-            }
+                "l2kb": 100,
+            },
         }, {
             "a": "value1",
             "l1_l2_l3k1": "va1",
             "l1_l2_l3k2_0": 10,
             "l1_l2_l3k2_1": 12,
             "l1_l2_l3k3": 3.141,
-            "l1_l2kb": 100
+            "l1_l2kb": 100,
         }),
         (None, {}),
     ])
@@ -121,56 +120,56 @@ def test_get_node_name(current_depth: int, expected_result):
     [
         ({
             "a": "value1",
-            "b": "value2"
+            "b": "value2",
         }, {
             "a": "value1",
-            "b": "value2"
+            "b": "value2",
         }, {}),  # test only plain
         ({
             "node_name": "value1",
-            "b": "value2"
+            "b": "value2",
         }, {
             "node_name": "value1",
-            "b": "value2"
+            "b": "value2",
         }, {}),  # test only plain with node name
         ({
             "a": "value1",
             "b": [10, 23],
             "c": {
                 "k1": "v1",
-                "k2": 100
-            }
+                "k2": 100,
+            },
         }, {
             "a": "value1",
-            "b": [10, 23]
+            "b": [10, 23],
         }, {
             "c": {
                 "k1": "v1",
-                "k2": 100
-            }
+                "k2": 100,
+            },
         }),  # test composite
         ({
             "a": "value1",
             "b": [10, 23],
             "c": [{
                 "name": "v1",
-                "k2": 100
+                "k2": 100,
             }, {
                 "name": "v2",
-                "k2": 200
-            }]
+                "k2": 200,
+            }],
         }, {
             "a": "value1",
-            "b": [10, 23]
+            "b": [10, 23],
         }, {
             "v1": {
                 "name": "v1",
-                "k2": 100
+                "k2": 100,
             },
             "v2": {
                 "name": "v2",
-                "k2": 200
-            }
+                "k2": 200,
+            },
         }),  # test composite with name
         ({}, {}, {}),  # test empty
         (None, {}, {}),  # test None
@@ -187,7 +186,7 @@ def test_separate_plain_composite_attributes(message: dict, plain: dict,
     assert result_composite == composite
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
@@ -198,19 +197,19 @@ def test_separate_plain_composite_attributes(message: dict, plain: dict,
         ("test/uns/ar2/ln3", {
             "timestamp": 1486144502144,
             "TestMetric2": "TestUNSwithLists",
-            "list": [1, 2, 3, 4, 5]
+            "list": [1, 2, 3, 4, 5],
         }),
         ("test/uns/ar2/ln4", {
             "timestamp": 1486144500000,
             "TestMetric2": "TestUNSwithNestedLists",
             "dict_list": [
                 {
-                    "a": "b"
+                    "a": "b",
                 },
                 {
-                    "x": "y"
+                    "x": "y",
                 },
-            ]
+            ],
         }),
     ])
 def test_persist_mqtt_msg(topic: str, message: dict):
@@ -261,7 +260,7 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str,
                topic: str, message: dict):
     # pylint: disable=too-many-locals
     """
-        Helper function to read the database and compare the persisted data
+    Helper function to read the database and compare the persisted data
     """
     topic_list: list = topic.split("/")
     records: list = []
@@ -318,7 +317,7 @@ def read_list_attr_nodes(session, db_attr_list, attr_node_type, parent_id,
     is_only_primitive = True
     for item in value:
         name_key = attr_key + "_" + str(counter)
-        if isinstance(item, list) or isinstance(item, tuple):
+        if isinstance(item, (list, tuple)):
             is_only_primitive = False
             read_list_attr_nodes(session, db_attr_list, attr_node_type,
                                  parent_id, name_key, item)

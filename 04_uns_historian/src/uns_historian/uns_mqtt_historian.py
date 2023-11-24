@@ -6,6 +6,7 @@ import random
 import time
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
 from uns_historian.historian_config import settings
 from uns_historian.historian_handler import HistorianHandler
 
@@ -55,7 +56,7 @@ class UnsMqttHistorian:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f'historian-{time.time()}-{random.randint(0, 1000)}'
+        self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"
 
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
@@ -78,7 +79,7 @@ class UnsMqttHistorian:
                                                "timestamp")
         if self.mqtt_host is None:
             raise SystemError(
-                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
+                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
             )
 
     def load_historian_config(self):
@@ -96,15 +97,15 @@ class UnsMqttHistorian:
         self.historian_table: str = settings.historian["table"]
 
         if self.historian_hostname is None:
-            raise SystemError((
+            raise SystemError(
                 "Historian Url not provided. "
-                "Update key 'historian.hostname' in '../../conf/settings.yaml'"
-            ))
+                "Update key 'historian.hostname' in '../../conf/settings.yaml'",
+            )
         if self.historian_database is None:
-            raise SystemError((
+            raise SystemError(
                 "Historian Database name  not provided. "
-                "Update key 'historian.database' in '../../conf/settings.yaml'"
-            ))
+                "Update key 'historian.database' in '../../conf/settings.yaml'",
+            )
         if self.historian_table is None:
             raise SystemError(
                 f"""Table in Historian Database {self.historian_database} not provided.
@@ -188,5 +189,5 @@ def main():
             uns_mqtt_historian.uns_historian_handler.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

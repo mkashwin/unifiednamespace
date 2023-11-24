@@ -19,7 +19,7 @@ is_configs_provided: bool = (settings.kafka["config"] is not None and
 
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_uns_kafka_mapper_init():
     """
     Test case for UNSKafkaMapper#init()
@@ -46,7 +46,7 @@ def test_uns_kafka_mapper_init():
 
 @pytest.mark.xfail(not is_configs_provided,
                    reason="Configurations have not been provided")
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "mqtt_topic, mqtt_message,kafka_topic,expected_kafka_msg",
     [("a/b/c", '{"timestamp": 12345678, "message": "test message1"}', "a_b_c",
@@ -54,53 +54,53 @@ def test_uns_kafka_mapper_init():
      ("abc", '{"timestamp": 12345678, "message": "test message1"}', "abc",
       '{"timestamp": 12345678, "message": "test message2"}'),
      ("spBv1.0/uns_group/NBIRTH/eon1",
-      b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-      b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-      b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-      b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-      b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00',
+      b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+      b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+      b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+      b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+      b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
       "spBv1.0_uns_group_NBIRTH_eon1", {
-          'timestamp':
-          '1671554024644',
-          'metrics': [{
-              'name': 'Inputs/A',
-              'timestamp': '1486144502122',
-              'alias': '0',
-              'datatype': 11,
-              'booleanValue': False
+          "timestamp":
+          "1671554024644",
+          "metrics": [{
+              "name": "Inputs/A",
+              "timestamp": "1486144502122",
+              "alias": "0",
+              "datatype": 11,
+              "booleanValue": False,
           }, {
-              'name': 'Inputs/B',
-              'timestamp': '1486144502122',
-              'alias': '1',
-              'datatype': 11,
-              'booleanValue': False
+              "name": "Inputs/B",
+              "timestamp": "1486144502122",
+              "alias": "1",
+              "datatype": 11,
+              "booleanValue": False,
           }, {
-              'name': 'Outputs/E',
-              'timestamp': '1486144502122',
-              'alias': '2',
-              'datatype': 11,
-              'booleanValue': False
+              "name": "Outputs/E",
+              "timestamp": "1486144502122",
+              "alias": "2",
+              "datatype": 11,
+              "booleanValue": False,
           }, {
-              'name': 'Outputs/F',
-              'timestamp': '1486144502122',
-              'alias': '3',
-              'datatype': 11,
-              'booleanValue': False
+              "name": "Outputs/F",
+              "timestamp": "1486144502122",
+              "alias": "3",
+              "datatype": 11,
+              "booleanValue": False,
           }, {
-              'name': 'Properties/Hardware Make',
-              'timestamp': '1486144502122',
-              'alias': '4',
-              'datatype': 12,
-              'stringValue': 'Sony'
+              "name": "Properties/Hardware Make",
+              "timestamp": "1486144502122",
+              "alias": "4",
+              "datatype": 12,
+              "stringValue": "Sony",
           }, {
-              'name': 'Properties/Weight',
-              'timestamp': '1486144502122',
-              'alias': '5',
-              'datatype': 3,
-              'intValue': 200
+              "name": "Properties/Weight",
+              "timestamp": "1486144502122",
+              "alias": "5",
+              "datatype": 3,
+              "intValue": 200,
           }],
-          'seq':
-          '0'
+          "seq":
+          "0",
       })])
 def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
                                      kafka_topic: str, expected_kafka_msg):
@@ -183,7 +183,7 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
 
 def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
     """
-    checks the kafka topic for teh expected message
+    Checks the kafka topic for teh expected message
     """
     try:
         while True:

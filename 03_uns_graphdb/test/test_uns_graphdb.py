@@ -18,8 +18,8 @@ from uns_sparkplugb.generated import sparkplug_b_pb2
 test_folder = os.path.realpath(
     os.path.abspath(
         os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'test')))
+            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
+            "test")))
 sys.path.insert(0, test_folder)
 # @FIXME Hack done to be able to import utility modules in the tests directories
 # @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
@@ -28,8 +28,8 @@ from test_graphdb_handler import read_nodes
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
+            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
+            "src")))
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
@@ -37,7 +37,7 @@ is_configs_provided: bool = (os.path.exists(
             os.getenv("UNS_graphdb__username")))
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_uns_mqtt_graph_db():
     """
     Test the constructor of the class Uns_MQTT_GraphDb
@@ -51,7 +51,7 @@ def test_uns_mqtt_graph_db():
             "or the Graph DB did not happen")
     except Exception as ex:
         pytest.fail(
-            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
+            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}",
         )
     finally:
         if uns_mqtt_graphdb is not None:
@@ -62,7 +62,7 @@ def test_uns_mqtt_graph_db():
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
@@ -75,15 +75,15 @@ def test_uns_mqtt_graph_db():
         ("test/uns/ar2/ln3", {
             "timestamp": 1486144502144,
             "TestMetric2": "TestUNSwithLists",
-            "list": [1, 2, 3, 4, 5]
+            "list": [1, 2, 3, 4, 5],
         }),
         ("test/uns/ar2/ln4", {
             "timestamp": 1486144500000,
             "TestMetric2": "TestUNSwithNestedLists",
             "dict_list": [{
-                "a": "b"
+                "a": "b",
             }, {
-                "x": "y"
+                "x": "y",
             }, {}],
         }),
         # ("test/uns/ar2/ln4", { # currently failing. validate if such a structure needs to be supported
@@ -93,19 +93,19 @@ def test_uns_mqtt_graph_db():
         #     "nested_dict": [[1, 2, 3], ["q", "w", "r"], ["a", "b", "d"]]
         # }),
         ("spBv1.0/uns_group/NBIRTH/eon1",
-         b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-         b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-         b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
+         b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+         b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+         b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+         b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+         b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
          ),
         ("spBv1.0/uns_group/NDATA/eon1",
-         b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-         b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-         b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
-         )
+         b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+         b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+         b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+         b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+         b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
+         ),
     ])
 def test_mqtt_graphdb_persistance(topic: str, message):
     """
@@ -131,7 +131,7 @@ def test_mqtt_graphdb_persistance(topic: str, message):
 
             try:
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
-                        database=uns_mqtt_graphdb.graph_db_handler.database
+                        database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
                     session.execute_read(read_nodes, node_type, attr_nd_typ,
                                          topic, message_dict)
@@ -170,7 +170,7 @@ def test_mqtt_graphdb_persistance(topic: str, message):
         uns_mqtt_graphdb.uns_client.loop_forever()
     except Exception as ex:
         pytest.fail(
-            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
+            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}",
         )
 
     finally:

@@ -5,9 +5,9 @@ handle various MQTT versions
 """
 import json
 import logging
-from os import path
 import re
 import ssl
+from os import path
 
 import paho.mqtt.client as mqtt_client
 from google.protobuf.json_format import MessageToDict
@@ -24,6 +24,7 @@ class UnsMQTTClient(mqtt_client.Client):
     Wrapper over te paho.mqtt.client to implement most common MQTT related functionality
     The call only needs to implement the callback function on_message
     """
+
     MQTTv5 = mqtt_client.MQTTv5
     MQTTv311 = mqtt_client.MQTTv311
     MQTTv31 = mqtt_client.MQTTv31
@@ -41,6 +42,7 @@ class UnsMQTTClient(mqtt_client.Client):
         # pylint: disable=too-many-arguments
         """
         Creates an instance of an MQTT client
+
         Parameters
         ----------
         client_id: the unique client id string used when connecting to the
@@ -234,7 +236,7 @@ class UnsMQTTClient(mqtt_client.Client):
                     cert_reqs = ssl.CERT_NONE
             else:
                 raise FileNotFoundError(
-                    f"Certificate file for SSL connection not found 'cert_location':{ca_certs} "
+                    f"Certificate file for SSL connection not found 'cert_location':{ca_certs} ",
                 )
 
     def get_payload_as_dict(self, topic: str, payload: any,
@@ -247,15 +249,16 @@ class UnsMQTTClient(mqtt_client.Client):
 
         If any attributes are to be ignored, they will be removed from the returned dictionary.
 
-        Parameters:
+        Parameters
+        ----------
             topic (str): The topic of the message.
             payload (any): The payload of the message.
             mqtt_ignored_attributes (dict): A dictionary of attributes to be ignored.
 
-        Returns:
+        Returns
+        -------
             dict: The payload as a dictionary.
         """
-
         if (topic.startswith(UnsMQTTClient.SPARKPLUG_NS)
                 and not UnsMQTTClient.is_topic_matched(
                     UnsMQTTClient.SPB_STATE_MSG_TYPE, topic)):
@@ -276,7 +279,7 @@ class UnsMQTTClient(mqtt_client.Client):
     def filter_ignored_attributes(topic: str, mqtt_message: dict,
                                   mqtt_ignored_attributes) -> dict:
         """
-        removed the attributes configured to be ignored in the mqtt message and topic
+        Removed the attributes configured to be ignored in the mqtt message and topic
         """
         resulting_message = mqtt_message
         if mqtt_ignored_attributes is not None:
@@ -313,7 +316,7 @@ class UnsMQTTClient(mqtt_client.Client):
              "a/b/c" matches wit "a/#" but not with "a/+"
         """
         if topic_with_wildcard is not None:
-            regex_list = topic_with_wildcard.split('/')
+            regex_list = topic_with_wildcard.split("/")
             # Using Regex to do matching
             # replace all occurrences of "+" wildcard with [^/]*
             #                           -> any set of characters except "/"

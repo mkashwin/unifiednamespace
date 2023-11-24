@@ -13,8 +13,8 @@ from uns_graphdb.graphdb_config import settings
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
+            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
+            "src")))
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
@@ -53,7 +53,9 @@ def test_mqtt_config():
 
     reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure")
     assert reconnect_on_failure in (
-        None, True, False
+        None,
+        True,
+        False,
     ), f"Invalid value for key 'mqtt.reconnect_on_failure'{reconnect_on_failure}"
 
     clean_session: bool = settings.get("mqtt.clean_session")
@@ -67,10 +69,11 @@ def test_mqtt_config():
     port: int = settings.get("mqtt.port", 1883)
     assert isinstance(
         port,
-        int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
+        int) or port is None, f"Invalid value for key 'mqtt.port':{port!s}"
     assert isinstance(
-        port, int
-    ) and 1024 <= port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+        port,
+        int,
+    ) and 1024 <= port <= 49151, f"'mqtt.port':{port!s} must be between 1024 to 49151"
 
     username = settings.get("mqtt.username")
     password = settings.get("mqtt.password")
@@ -92,7 +95,7 @@ def test_mqtt_config():
     topics: str = settings.get("mqtt.topics", ["#"])
     for topic in topics:
         assert bool(
-            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
+            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
         ), f"configuration 'mqtt.topics':{topics} has an valid MQTT topic topic:{topic}"
 
     keep_alive: float = settings.get("mqtt.keep_alive", 60)
@@ -123,7 +126,7 @@ def test_graph_db_configs():
     graphdb_url: str = settings.graphdb["url"]
 
     assert bool(
-        re.fullmatch(REGEX_FOR_NEO4J, graphdb_url)
+        re.fullmatch(REGEX_FOR_NEO4J, graphdb_url),
     ), f"configuration 'graphdb.url':{graphdb_url} is not a valid Neo4j URL"
 
     graphdb_user: str = settings.graphdb["username"]
@@ -154,17 +157,18 @@ def test_graph_db_configs():
 
     for node_type in node_types:
         assert bool(
-            re.fullmatch(REGEX_FOR_NODE_TYPES, node_type)
+            re.fullmatch(REGEX_FOR_NODE_TYPES, node_type),
         ), f"configuration {node_type} in {node_types} is not a valid node name"
 
     nested_attribute_node_type = settings.get(
         "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
     assert re.fullmatch(
-        REGEX_FOR_NODE_TYPES, nested_attribute_node_type
+        REGEX_FOR_NODE_TYPES,
+        nested_attribute_node_type,
     ), f"{nested_attribute_node_type} at key: 'graphdb.nested_attribute_node_type' isn't a valid node name"
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_connectivity_to_mqtt():
     """
     Test if the provided configurations for the MQTT server are valid and
@@ -174,18 +178,17 @@ def test_connectivity_to_mqtt():
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
-        (host,
-         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+        (host, port)) == 0, f"Host: {host} is not reachable at port:{port!s}"
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_connectivity_to_graphdb():
     """
     Test if the provided configurations to connect to  GraphDB Server are valid and
     there is connectivity to the GraphDB
     """
     graphdb_url: str = settings.graphdb["url"]
-    parsed = urlparse(graphdb_url).netloc.split(':')
+    parsed = urlparse(graphdb_url).netloc.split(":")
 
     host: str = parsed[0]
     port: int = None
@@ -195,5 +198,4 @@ def test_connectivity_to_graphdb():
         port = 7687
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
-        (host,
-         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+        (host, port)) == 0, f"Host: {host} is not reachable at port:{port!s}"

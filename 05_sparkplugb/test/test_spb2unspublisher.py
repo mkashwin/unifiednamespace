@@ -5,12 +5,11 @@ import time
 from types import SimpleNamespace
 
 import pytest
-
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
-from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 from uns_spb_mapper.sparkplugb_enc_config import settings
+from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
 MQTT_HOST: str = settings.mqtt["host"]
 MQTT_PORT: int = settings.get("mqtt.port", 1883)
@@ -46,9 +45,9 @@ def test_spb_2_uns_publisher_init(clean_session, protocol,
     assert spb_to_uns_publisher.mqtt_client == uns_client, (
         "Spb2UNSPublisher#mqtt_client should "
         "have correctly initialized")
-    assert len(spb_to_uns_publisher.metric_name_alias_map
+    assert len(spb_to_uns_publisher.metric_name_alias_map,
                ) == 0, "Spb2UNSPublisher#message_alias_map should be empty"
-    assert len(spb_to_uns_publisher.topic_alias
+    assert len(spb_to_uns_publisher.topic_alias,
                ) == 0, "Spb2UNSPublisher#topic_alias should be empty"
 
 
@@ -72,10 +71,10 @@ def test_clear_metric_alias(clean_session, protocol, reconnect_on_failure):
     spb_to_uns_pub.metric_name_alias_map[1] = "value1"
     spb_to_uns_pub.metric_name_alias_map[2] = "value2"
     spb_to_uns_pub.metric_name_alias_map[3] = "value3"
-    assert len(spb_to_uns_pub.metric_name_alias_map
+    assert len(spb_to_uns_pub.metric_name_alias_map,
                ) == 3, "Spb2UNSPublisher#message_alias_map should not be empty"
     spb_to_uns_pub.clear_metric_alias()
-    assert len(spb_to_uns_pub.metric_name_alias_map
+    assert len(spb_to_uns_pub.metric_name_alias_map,
                ) == 0, "Spb2UNSPublisher#message_alias_map should be empty"
 
 
@@ -87,7 +86,7 @@ def test_clear_metric_alias(clean_session, protocol, reconnect_on_failure):
          **{
              Spb2UNSPublisher.SPB_NAME: "metric_name1",
              Spb2UNSPublisher.SPB_ALIAS: 1,
-             Spb2UNSPublisher.SPB_DATATYPE: "Int8"
+             Spb2UNSPublisher.SPB_DATATYPE: "Int8",
          }), "metric_name1")])
 def test_get_metric_name(metric, name: str):
     """
@@ -103,16 +102,16 @@ def test_get_metric_name(metric, name: str):
     # Connection not made to broker
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
     assert spb_to_uns_pub.get_metric_name(
-        metric
+        metric,
     ) == name, f"Incorrect Name: {name} retrieved from metric: {metric}."
 
 
 @pytest.mark.parametrize("metric",
-                         [(SimpleNamespace(**{"no_name": "bad key"})),
-                          (SimpleNamespace(**{})), (None)])
+                         [(SimpleNamespace(no_name="bad key")),
+                          (SimpleNamespace()), (None)])
 def test_negative_get_metric_name(metric):
     """
-    negative tests for Spb2UNSPublisher#get_metric_name()
+    Negative tests for Spb2UNSPublisher#get_metric_name()
     """
     uns_client: UnsMQTTClient = UnsMQTTClient(
         client_id=f"spBv1.0_mapper_tester_{time.time()}",
@@ -131,7 +130,7 @@ def test_negative_get_metric_name(metric):
     **{
         Spb2UNSPublisher.SPB_NAME: "metric_name1",
         Spb2UNSPublisher.SPB_ALIAS: 1,
-        Spb2UNSPublisher.SPB_DATATYPE: "Int8"
+        Spb2UNSPublisher.SPB_DATATYPE: "Int8",
     }), "metric_name1", 1)])
 def test_get_metric_name_from_alias(metric, name: str, alias: int):
     """
@@ -148,7 +147,7 @@ def test_get_metric_name_from_alias(metric, name: str, alias: int):
     spb_2_uns_pub = Spb2UNSPublisher(uns_client)
 
     assert spb_2_uns_pub.get_metric_name(
-        metric
+        metric,
     ) == name, f"Incorrect Name: {name} retrieved from metric: {metric}."
 
     assert spb_2_uns_pub.metric_name_alias_map[alias] == name, (
@@ -159,7 +158,7 @@ def test_get_metric_name_from_alias(metric, name: str, alias: int):
     delattr(metric, Spb2UNSPublisher.SPB_NAME)
 
     assert spb_2_uns_pub.get_metric_name(
-        metric
+        metric,
     ) == name, f"Incorrect Name: {name} retrieved from metric: {metric}."
     assert spb_2_uns_pub.metric_name_alias_map[alias] == name, (
         f"Metric AliasMap was not filled {spb_2_uns_pub.metric_name_alias_map}"
@@ -172,12 +171,12 @@ def test_get_metric_name_from_alias(metric, name: str, alias: int):
         "spBv1.0_group_id": "grp1",
         "spBv1.0_message_type": "DDATA",
         "spBv1.0_edge_node_id": "node1",
-        "spBv1.0_device_id": "dev1"
+        "spBv1.0_device_id": "dev1",
     }),
      ("grp1", "DDATA", "node1", None, {
          "spBv1.0_group_id": "grp1",
          "spBv1.0_message_type": "DDATA",
-         "spBv1.0_edge_node_id": "node1"
+         "spBv1.0_edge_node_id": "node1",
      })])
 def test_get_spb_context(group_id: str, message_type: str, edge_node_id: str,
                          device_id: str, expected_ctx: dict[str, str]):
@@ -201,28 +200,28 @@ def test_get_spb_context(group_id: str, message_type: str, edge_node_id: str,
                 "Temperature",  # name
                 1,  # alias
                 sparkplug_b_pb2.Int32,  # datatype
-                32  # value
+                32,  # value
             ),
             (
                 "Scale",  # name
                 2,  # alias
                 sparkplug_b_pb2.String,  # datatype
-                "Celsius"  # value
-            )
+                "Celsius",  # value
+            ),
         ]),
         ([
             (
                 "Pressure",  # name
                 3,  # alias
                 sparkplug_b_pb2.Float,  # datatype
-                23.20  # value
+                23.20,  # value
             ),
             (
                 "Scale",  # name
                 4,  # alias
                 sparkplug_b_pb2.String,  # datatype
-                "Bar"  # value
-            )
+                "Bar",  # value
+            ),
         ]),
     ])
 def test_get_payload_metrics_ddata(metrics_list: list[dict]):
@@ -272,7 +271,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
 @pytest.mark.parametrize("spb_ctx", [({
     "spBv1.0_group_id": "grp1",
     "spBv1.0_message_type": "DDATA",
-    "spBv1.0_edge_node_id": "node1"
+    "spBv1.0_edge_node_id": "node1",
 })])
 @pytest.mark.parametrize(
     "parsed_msg, tag_name, metric_value, metric_timestamp, is_historical, expected_uns_message",
@@ -288,7 +287,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
                 "timestamp": 1671028163,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
-                "spBv1.0_edge_node_id": "node1"
+                "spBv1.0_edge_node_id": "node1",
             }),
         (
             None,
@@ -301,7 +300,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
-                "spBv1.0_edge_node_id": "node1"
+                "spBv1.0_edge_node_id": "node1",
             }),
         (
             {
@@ -310,7 +309,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
-                "spBv1.0_edge_node_id": "node1"
+                "spBv1.0_edge_node_id": "node1",
             },
             "Grade",
             "B",
@@ -321,7 +320,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
                 "timestamp": 1671008200,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
-                "spBv1.0_edge_node_id": "node1"
+                "spBv1.0_edge_node_id": "node1",
             }),
     ])
 def test_extract_uns_message_for_topic(parsed_msg, tag_name, metric_value,
@@ -363,19 +362,19 @@ def test_publish_to_uns_not_connected(clean_session, protocol,
         "a/b/c": {
             "temperature": 28.0,
             123: "testing value",
-            "pressure": 10.12
+            "pressure": 10.12,
         },
         "x/y/z": {
             "temperature": 28.0,
             123: "testing value",
-            "pressure": 10.12
-        }
+            "pressure": 10.12,
+        },
     }
     with pytest.raises(ConnectionError):
         spb_2_uns_pub.publish_to_uns(all_uns_messages)
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311)])
@@ -387,13 +386,13 @@ def test_publish_to_uns_not_connected(clean_session, protocol,
     "a/b/c": {
         "temperature": 28.0,
         123: "testing value",
-        "pressure": 10.12
+        "pressure": 10.12,
     },
     "x/y/z": {
         "temperature": 28.0,
         78945.12: "Can I have different keys?",
-        "my metric": 200
-    }
+        "my metric": 200,
+    },
 })])
 def test_publish_to_uns_connected(clean_session, protocol, transport, host,
                                   port, tls, qos, reconnect_on_failure,

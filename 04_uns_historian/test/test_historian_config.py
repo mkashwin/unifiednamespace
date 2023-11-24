@@ -12,8 +12,8 @@ from uns_historian.historian_config import settings
 cmd_subfolder = os.path.realpath(
     os.path.abspath(
         os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
+            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
+            "src")))
 
 is_configs_provided: bool = (os.path.exists(
     os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
@@ -46,7 +46,9 @@ def test_mqtt_config():
 
     reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure")
     assert reconnect_on_failure in (
-        None, True, False
+        None,
+        True,
+        False,
     ), f"Invalid value for key 'mqtt.reconnect_on_failure'{reconnect_on_failure}"
 
     clean_session: bool = settings.get("mqtt.clean_session")
@@ -60,10 +62,11 @@ def test_mqtt_config():
     port: int = settings.get("mqtt.port", 1883)
     assert isinstance(
         port,
-        int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
+        int) or port is None, f"Invalid value for key 'mqtt.port':{port!s}"
     assert isinstance(
-        port, int
-    ) and port >= 1024 and port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+        port,
+        int,
+    ) and port >= 1024 and port <= 49151, f"'mqtt.port':{port!s} must be between 1024 to 49151"
 
     username = settings.get("mqtt.username")
     password = settings.get("mqtt.password")
@@ -90,7 +93,7 @@ def test_mqtt_config():
     topics: str = settings.get("mqtt.topics", ["#"])
     for topic in topics:
         assert bool(
-            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
+            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
         ), f"configuration 'mqtt.topics':{topics} has an valid MQTT topic topic:{topic}"
 
     keep_alive: float = settings.get("mqtt.keep_alive", 60)
@@ -125,10 +128,11 @@ def test_timescale_db_configs():
     assert hostname is not None, f"Invalid value for key 'historian.hostname'{hostname}"
 
     assert isinstance(
-        port, int
-    ) or port is None, f"Invalid value for key 'historian.port':{str(port)}"
+        port,
+        int,
+    ) or port is None, f"Invalid value for key 'historian.port':{port!s}"
     assert isinstance(port, int) and port >= 1024 and port <= 49151, (
-        f"'historian.port':{str(port)} "
+        f"'historian.port':{port!s} "
         "must be between 1024 to 49151")
 
     historian_user: str = settings.historian["username"]
@@ -145,8 +149,13 @@ def test_timescale_db_configs():
 
     historian_sslmode: str = settings.get("historian.sslmode")
     assert historian_sslmode in (
-        None, "disable", "allow", "prefer", "require", "verify-ca",
-        "verify-full"
+        None,
+        "disable",
+        "allow",
+        "prefer",
+        "require",
+        "verify-ca",
+        "verify-full",
     ), f"Invalid value for key 'historian.sslmode'{historian_sslmode}"
 
     historian_database: str = settings.historian["database"]
@@ -164,7 +173,7 @@ def test_timescale_db_configs():
          Cannot be None or empty string"""
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_connectivity_to_mqtt():
     """
     Test if the provided configurations for the MQTT server are valid and
@@ -174,11 +183,10 @@ def test_connectivity_to_mqtt():
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
-        (host,
-         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+        (host, port)) == 0, f"Host: {host} is not reachable at port:{port!s}"
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_connectivity_to_historian():
     """
     Test if the provided configurations for the Historian DB Server are valid and
@@ -191,4 +199,4 @@ def test_connectivity_to_historian():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
         (hostname,
-         port)) == 0, f"Host: {hostname} is not reachable at port:{str(port)}"
+         port)) == 0, f"Host: {hostname} is not reachable at port:{port!s}"

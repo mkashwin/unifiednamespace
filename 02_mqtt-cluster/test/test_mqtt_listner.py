@@ -10,14 +10,14 @@ from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
 EMQX_CERT_FILE = os.path.join(
-    os.path.split(inspect.getfile(inspect.currentframe()))[0], 'cert',
-    'broker.emqx.io-ca.crt')
+    os.path.split(inspect.getfile(inspect.currentframe()))[0], "cert",
+    "broker.emqx.io-ca.crt")
 
 MOSQUITTO_HOST = "test.mosquitto.org"  # test the client against the hosted mosquitto broker
 # See https://test.mosquitto.org/
 MOSQUITTO_CERT_FILE = os.path.join(
-    os.path.split(inspect.getfile(inspect.currentframe()))[0], 'cert',
-    'mosquitto.org.crt')
+    os.path.split(inspect.getfile(inspect.currentframe()))[0], "cert",
+    "mosquitto.org.crt")
 
 ONE_TOPIC = ["test/uns/#"]
 
@@ -26,7 +26,7 @@ TWO_TOPICS = ["test/uns/#",
 KEEP_ALIVE = 60
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311)])
 #                                     (UNS_MQTT_Listener.MQTTv31)])
@@ -34,10 +34,10 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("transport,port,tls", [("tcp", 1883, None),
                                                 ("websockets", 8083, None),
                                                 ("tcp", 8883, {
-                                                    "ca_certs": EMQX_CERT_FILE
+                                                    "ca_certs": EMQX_CERT_FILE,
                                                 }),
                                                 ("websockets", 8084, {
-                                                    "ca_certs": EMQX_CERT_FILE
+                                                    "ca_certs": EMQX_CERT_FILE,
                                                 })])
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True), (False)])
@@ -91,7 +91,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 
         assert uns_client.protocol == protocol, "Protocol not matching"
         assert len(
-            callback
+            callback,
         ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
         assert uns_client.is_connected(
         ) is True, "Client should have connected "
@@ -101,17 +101,17 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport,
 
 
 ###############################################################################
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 @pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5),
                                       (UnsMQTTClient.MQTTv311),
                                       (UnsMQTTClient.MQTTv31)])
 @pytest.mark.parametrize("transport,port,tls",
                          [("tcp", 1884, None), ("websockets", 8090, None),
                           ("tcp", 8885, {
-                              "ca_certs": MOSQUITTO_CERT_FILE
+                              "ca_certs": MOSQUITTO_CERT_FILE,
                           }),
                           ("websockets", 8091, {
-                              "ca_certs": MOSQUITTO_CERT_FILE
+                              "ca_certs": MOSQUITTO_CERT_FILE,
                           })])
 @pytest.mark.parametrize("username,password", [("ro", "readonly")])
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -166,7 +166,7 @@ def test_02_authenticated_connections(clean_session, protocol, transport, port,
 
         assert uns_client.protocol == protocol, "Protocol not matching"
         assert len(
-            callback
+            callback,
         ) > 0, f"Connection Callback were not invoked for protocol : {protocol}"
         assert uns_client.is_connected(
         ) is True, "Client should have connected "
@@ -198,64 +198,64 @@ def test_is_topic_matched(topic_with_wildcard: str, topic: str,
 @pytest.mark.parametrize("message, ignored_attr , expected_result", [
     ({}, ["key1"], {}),
     ({
-        "key1": "value1"
+        "key1": "value1",
     }, ["key1"], {}),
     ({
-        "key1": ["value1", "value2", "value3"]
+        "key1": ["value1", "value2", "value3"],
     }, ["key1"], {}),
     ({
         "key1": "value1",
-        "key2": "value2"
+        "key2": "value2",
     }, ["key1"], {
-        "key2": "value2"
+        "key2": "value2",
     }),
     ({
         "key1": "value1",
-        "key2": "value2"
+        "key2": "value2",
     }, ["key1", "key2"], {
         "key1": "value1",
-        "key2": "value2"
+        "key2": "value2",
     }),
     ({
         "key1": {
             "key1": "val",
-            "key2": 100
+            "key2": 100,
         },
         "key2": "value2",
-        "key3": "value3"
+        "key3": "value3",
     }, ["key1", "key2"], {
         "key1": {
-            "key1": "val"
+            "key1": "val",
         },
         "key2": "value2",
-        "key3": "value3"
+        "key3": "value3",
     }),
     ({
-        "key1": "value1"
+        "key1": "value1",
     }, ["key1", "childKey1"], {
-        "key1": "value1"
+        "key1": "value1",
     }),
     ({
         "key1": {
             "child1": "val",
-            "child2": 100
-        }
+            "child2": 100,
+        },
     }, ["key1", "child1"], {
         "key1": {
-            "child2": 100
-        }
+            "child2": 100,
+        },
     }),
     ({
         "key1": {
             "child1": "val",
-            "child2": 100
+            "child2": 100,
         },
-        "child1": "value2"
+        "child1": "value2",
     }, ["key1", "child1"], {
         "key1": {
-            "child2": 100
+            "child2": 100,
         },
-        "child1": "value2"
+        "child1": "value2",
     }),
 ])
 def test_del_key_from_dict(message: dict, ignored_attr: list,
@@ -276,50 +276,50 @@ def test_del_key_from_dict(message: dict, ignored_attr: list,
     "topic,json_dict, mqtt_ignored_attributes, expected_result", [
         ("topic1", {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }, None, {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }),
         ("topic1", {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }, {}, {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }),
         ("topic1", {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }, {
-            "+": "timestamp"
+            "+": "timestamp",
         }, {
-            "val1": 1234
+            "val1": 1234,
         }),
         ("topic1", {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }, {
-            "#": "timestamp"
+            "#": "timestamp",
         }, {
-            "val1": 1234
+            "val1": 1234,
         }),
         ("topic1", {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }, {
-            "topic1": "timestamp"
+            "topic1": "timestamp",
         }, {
-            "val1": 1234
+            "val1": 1234,
         }),
         ("topic1", {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }, {
-            "topic2": "timestamp"
+            "topic2": "timestamp",
         }, {
             "timestamp": 123456,
-            "val1": 1234
+            "val1": 1234,
         }),
     ])
 def test_filter_ignored_attributes(topic: str, json_dict: dict,
@@ -338,62 +338,62 @@ def test_filter_ignored_attributes(topic: str, json_dict: dict,
 @pytest.mark.parametrize("topic, payload_msg, expected_result", [
     ("a/b/c", b'{"timestamp": 123456, "val1": 1234}', {
         "timestamp": 123456,
-        "val1": 1234
+        "val1": 1234,
     }),
     ("spBv1.0/uns_group/STATE",
      b'{"status": "offline", "timestamp": 123456789}', {
          "status": "offline",
-         "timestamp": 123456789
+         "timestamp": 123456789,
      }),
     ("spBv1.0/uns_group/NBIRTH/eon1",
-     b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-     b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-     b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-     b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-     b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00',
+     b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+     b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+     b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+     b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+     b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
      {
-         'timestamp':
-         '1671554024644',
-         'metrics': [{
-             'name': 'Inputs/A',
-             'timestamp': '1486144502122',
-             'alias': '0',
-             'datatype': 11,
-             'booleanValue': False
+         "timestamp":
+         "1671554024644",
+         "metrics": [{
+             "name": "Inputs/A",
+             "timestamp": "1486144502122",
+             "alias": "0",
+             "datatype": 11,
+             "booleanValue": False,
          }, {
-             'name': 'Inputs/B',
-             'timestamp': '1486144502122',
-             'alias': '1',
-             'datatype': 11,
-             'booleanValue': False
+             "name": "Inputs/B",
+             "timestamp": "1486144502122",
+             "alias": "1",
+             "datatype": 11,
+             "booleanValue": False,
          }, {
-             'name': 'Outputs/E',
-             'timestamp': '1486144502122',
-             'alias': '2',
-             'datatype': 11,
-             'booleanValue': False
+             "name": "Outputs/E",
+             "timestamp": "1486144502122",
+             "alias": "2",
+             "datatype": 11,
+             "booleanValue": False,
          }, {
-             'name': 'Outputs/F',
-             'timestamp': '1486144502122',
-             'alias': '3',
-             'datatype': 11,
-             'booleanValue': False
+             "name": "Outputs/F",
+             "timestamp": "1486144502122",
+             "alias": "3",
+             "datatype": 11,
+             "booleanValue": False,
          }, {
-             'name': 'Properties/Hardware Make',
-             'timestamp': '1486144502122',
-             'alias': '4',
-             'datatype': 12,
-             'stringValue': 'Sony'
+             "name": "Properties/Hardware Make",
+             "timestamp": "1486144502122",
+             "alias": "4",
+             "datatype": 12,
+             "stringValue": "Sony",
          }, {
-             'name': 'Properties/Weight',
-             'timestamp': '1486144502122',
-             'alias': '5',
-             'datatype': 3,
-             'intValue': 200
+             "name": "Properties/Weight",
+             "timestamp": "1486144502122",
+             "alias": "5",
+             "datatype": 3,
+             "intValue": 200,
          }],
-         'seq':
-         '0'
-     })
+         "seq":
+         "0",
+     }),
 ])
 def test_get_payload_as_dict(topic: str, payload_msg, expected_result):
     """

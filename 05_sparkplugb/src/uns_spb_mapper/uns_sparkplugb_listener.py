@@ -6,6 +6,7 @@ import random
 import time
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
 from uns_spb_mapper.sparkplugb_enc_config import settings
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
@@ -51,7 +52,7 @@ class UNSSparkPlugBMapper:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f'uns_sparkplugb_listener-{time.time()}-{random.randint(0, 1000)}'
+        self.client_id = f"uns_sparkplugb_listener-{time.time()}-{random.randint(0, 1000)}"
 
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
@@ -74,7 +75,7 @@ class UNSSparkPlugBMapper:
                                                "timestamp")
         if self.mqtt_host is None:
             raise SystemError(
-                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
+                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
             )
 
     def load_sparkplugb_configs(self):
@@ -94,7 +95,7 @@ class UNSSparkPlugBMapper:
                      "}", str(client), str(userdata), str(msg))
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
-                topic_path: list[str] = msg.topic.split('/')
+                topic_path: list[str] = msg.topic.split("/")
                 # sPB topic structure spBv1.0/<group_id>/<message_type>/<edge_node_id>/<[device_id]>
                 # device_id is optional. all others are mandatory
                 if len(topic_path) >= 4:
@@ -108,7 +109,7 @@ class UNSSparkPlugBMapper:
                         raise ValueError(
                             f"Unknown SparkplugB topic received: {msg.topic}."
                             +
-                            f"Depth of tree should not be more than 5, got {len(topic_path)}"
+                            f"Depth of tree should not be more than 5, got {len(topic_path)}",
                         )
                     self.spb_2_uns_pub.transform_spb_and_publish_to_uns(
                         msg.payload, group_id, message_type, edge_node_id,
@@ -161,5 +162,5 @@ def main():
             uns_spb_mapper.uns_client.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -6,6 +6,7 @@ import random
 import time
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
 from uns_graphdb.graphdb_config import settings
 from uns_graphdb.graphdb_handler import GraphDBHandler
 
@@ -58,7 +59,7 @@ class UnsMqttGraphDb:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f'graphdb-{time.time()}-{random.randint(0, 1000)}'
+        self.client_id = f"graphdb-{time.time()}-{random.randint(0, 1000)}"
 
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
@@ -81,7 +82,7 @@ class UnsMqttGraphDb:
                                                "timestamp")
         if self.mqtt_host is None:
             raise SystemError(
-                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
+                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
             )
 
     # --------------------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ class UnsMqttGraphDb:
             "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
         if self.graphdb_url is None:
             raise SystemError(
-                "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'"
+                "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'",
             )
 
         if (self.graphdb_user is None) or (self.graphdb_password is None):
@@ -202,5 +203,5 @@ def main():
 
 # end of main()------------------------------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

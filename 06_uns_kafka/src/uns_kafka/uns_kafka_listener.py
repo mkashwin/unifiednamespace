@@ -6,6 +6,7 @@ import random
 import time
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
 from uns_kafka.kafka_handler import KafkaHandler
 from uns_kafka.uns_kafka_config import settings
 
@@ -52,7 +53,7 @@ class UNSKafkaMapper:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f'uns_kafka_listener-{time.time()}-{random.randint(0, 1000)}'
+        self.client_id = f"uns_kafka_listener-{time.time()}-{random.randint(0, 1000)}"
 
         self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
@@ -75,7 +76,7 @@ class UNSKafkaMapper:
                                                     "timestamp")
         if self.mqtt_host is None:
             raise SystemError(
-                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
+                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
             )
 
     def load_kafka_configs(self):
@@ -131,5 +132,5 @@ def main():
             uns_kafka_mapper.uns_client.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
