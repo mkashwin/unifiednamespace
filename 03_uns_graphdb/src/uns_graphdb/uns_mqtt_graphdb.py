@@ -11,8 +11,6 @@ from uns_graphdb.graphdb_handler import GraphDBHandler
 
 LOGGER = logging.getLogger(__name__)
 
-SPARKPLUG_NS = "spBv1.0/"
-
 
 class UnsMqttGraphDb:
     # pylint: disable=too-many-instance-attributes

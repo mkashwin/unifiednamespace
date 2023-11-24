@@ -11,8 +11,6 @@ from uns_historian.historian_handler import HistorianHandler
 
 LOGGER = logging.getLogger(__name__)
 
-SPARKPLUG_NS = "spBv1.0/"
-
 
 class UnsMqttHistorian:
     # pylint: disable=too-many-instance-attributes

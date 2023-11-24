@@ -358,8 +358,8 @@ def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
             case sparkplug_b_pb2.File:
                 parsed_value = parsed_metric["bytesValue"]
             case sparkplug_b_pb2.DataSet:
-                continue
+                assert pytest.fail(), "DataSet not yet supported"
             case sparkplug_b_pb2.Template:
-                continue
+                assert pytest.fail(), "Template not yet supported"
 
         assert parsed_value == metric["value"]

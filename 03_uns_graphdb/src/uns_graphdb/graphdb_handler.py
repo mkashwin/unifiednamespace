@@ -300,7 +300,7 @@ class GraphDBHandler:
         if current_depth < len(node_types):
             return node_types[current_depth]
 
-        return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
+        return f"{node_types[-1]}_depth_{current_depth - len(node_types) + 1}"
 
     # static method ends
 
