@@ -137,7 +137,7 @@ def test_publish(mqtt_topic: str, message):
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait
-                print("Waiting...")
+                print("Waiting...")  # noqa: T201
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:

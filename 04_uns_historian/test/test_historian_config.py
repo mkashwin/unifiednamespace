@@ -5,6 +5,7 @@ import inspect
 import os
 import re
 import socket
+from typing import Optional
 
 import pytest
 from uns_historian.historian_config import settings
@@ -31,7 +32,7 @@ def test_mqtt_config():
     Test if the mqtt configurations are valid
     """
     # run these tests only if both configuration files exists or mandatory environment vars are set
-    mqtt_transport: str = settings.get("mqtt.transport")
+    mqtt_transport: Optional[str] = settings.get("mqtt.transport")
     assert mqtt_transport in (
         None, "tcp",
         "ws"), f"Invalid value for key 'mqtt.transport':{mqtt_transport}"
@@ -56,7 +57,7 @@ def test_mqtt_config():
         True, False,
         None), f"Invalid value for key 'mqtt.clean_session'{clean_session}"
 
-    host: str = settings.mqtt["host"]
+    host: Optional[str] = settings.mqtt["host"]
     assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
 
     port: int = settings.get("mqtt.port", 1883)
@@ -90,7 +91,7 @@ def test_mqtt_config():
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
-    topics: str = settings.get("mqtt.topics", ["#"])
+    topics: Optional[str] = settings.get("mqtt.topics", ["#"])
     for topic in topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
@@ -106,8 +107,8 @@ def test_mqtt_config():
         isinstance(ignored_attributes, dict)
     ), f"Configuration 'mqtt.ignored_attributes':{ignored_attributes} is not a valid dict"
 
-    timestamp_attribute: str = settings.get("mqtt.timestamp_attribute",
-                                            "timestamp")
+    timestamp_attribute: Optional[str] = settings.get(
+        "mqtt.timestamp_attribute", "timestamp")
     # Should be a valid JSON attribute
     assert (timestamp_attribute is None) or (
         len(timestamp_attribute) > 0
@@ -121,7 +122,7 @@ def test_timescale_db_configs():
     Test if the historian database configurations are valid
     """
     # run these tests only if both configuration files exists or mandatory environment vars are set
-    hostname: str = settings.historian["hostname"]
+    hostname: Optional[str] = settings.historian["hostname"]
     port: int = settings.get(
         "historian.port",
         5432)  # if port not provided use default postgres port
@@ -135,19 +136,19 @@ def test_timescale_db_configs():
         f"'historian.port':{port!s} "
         "must be between 1024 to 49151")
 
-    historian_user: str = settings.historian["username"]
+    historian_user: Optional[str] = settings.historian["username"]
     assert (
         historian_user is not None and isinstance(historian_user, str)
         and len(historian_user) > 0
     ), "Invalid username configured at key: 'historian.username'. Cannot be None or empty string"
 
-    historian_password: str = settings.historian["password"]
+    historian_password: Optional[str] = settings.historian["password"]
     assert (
         historian_password is not None and isinstance(historian_password, str)
         and len(historian_password) > 0
     ), "Invalid password configured at key: 'historian.password'. Cannot be None or empty string"
 
-    historian_sslmode: str = settings.get("historian.sslmode")
+    historian_sslmode: Optional[str] = settings.get("historian.sslmode")
     assert historian_sslmode in (
         None,
         "disable",
@@ -158,14 +159,14 @@ def test_timescale_db_configs():
         "verify-full",
     ), f"Invalid value for key 'historian.sslmode'{historian_sslmode}"
 
-    historian_database: str = settings.historian["database"]
+    historian_database: Optional[str] = settings.historian["database"]
     assert (
         historian_database is not None and isinstance(historian_database, str)
         and len(historian_database) > 0
     ), f"""Invalid database name configured at key: 'historian.database' value:{historian_database}.
          Cannot be None or empty string"""
 
-    historian_table: str = settings.historian["table"]
+    historian_table: Optional[str] = settings.historian["table"]
     assert (
         historian_table is not None and isinstance(historian_table, str)
         and len(historian_table) > 0
@@ -179,7 +180,7 @@ def test_connectivity_to_mqtt():
     Test if the provided configurations for the MQTT server are valid and
     there is connectivity to the MQTT broker
     """
-    host: str = settings.mqtt["host"]
+    host: Optional[str] = settings.mqtt["host"]
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
@@ -192,7 +193,7 @@ def test_connectivity_to_historian():
     Test if the provided configurations for the Historian DB Server are valid and
     there is connectivity to the Historian
     """
-    hostname: str = settings.historian["hostname"]
+    hostname: Optional[str] = settings.historian["hostname"]
     port: int = settings.get(
         "historian.port",
         5432)  # if port not provided use default postgres port

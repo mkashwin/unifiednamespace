@@ -2,6 +2,7 @@
 Test class for uns_sparkplugb.uns_spb_helper
 """
 from types import SimpleNamespace
+from typing import Optional
 
 import pytest
 from google.protobuf.json_format import MessageToDict
@@ -282,7 +283,7 @@ def test_get_node_birth_payload():
                              "datatype": 3,
                              "value": 200,
                          }])])
-def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
+def test_create_ddata_payload_with_data(timestamp: float, metrics: list[dict]):
     """
     Test converting a JSON dict into a SPB DDATA payload
     """
@@ -290,7 +291,7 @@ def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
     payload = sparkplug_message.get_device_data_payload(timestamp=timestamp)
     alias = 0
     for metric in metrics:
-        name: str = metric["name"]
+        name: Optional[str] = metric["name"]
         datatype: int = metric["datatype"]
         value = metric.get("value", None)
         metric_timestamp = metric.get("timestamp", None)
@@ -304,7 +305,6 @@ def test_create_ddata_payload_withData(timestamp: float, metrics: list[dict]):
                                      timestamp=metric_timestamp)
         alias = alias + 1
 
-    print(payload.SerializeToString())
     parsed_payload: dict = MessageToDict(payload)
 
     if timestamp is not None:

@@ -14,6 +14,7 @@
         "DDEATH",
         "EMQX",
         "graphdb",
+        "graphene",
         "HIVEMQ",
         "hostpath",
         "hypertable",
@@ -81,14 +82,12 @@
         "./05_sparkplugb/src",
         "./05_sparkplugb/test",
         "./06_uns_kafka/src",
-        "./06_uns_kafka/test"
-    ],
-    "flake8.args": [
-        "--config=.flake8"
-    ],
-    "pylint.args": [
-        "--max-line-length= 120"
+        "./06_uns_kafka/test",
+        "./07_uns_graphql/src",
+        "./07_uns_graphql/test",
     ],
     "python.languageServer": "Pylance",
     "python.missingPackage.severity": "Error",
+    "ruff.showNotifications": "always",
+    "ruff.trace.server": "messages",
 }

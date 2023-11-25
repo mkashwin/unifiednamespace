@@ -63,13 +63,14 @@ def test_uns_mqtt_historian():
             "timestamp": 1486144502122,
             "TestMetric2": "TestUNS",
         }),
-        ("spBv1.0/uns_group/NBIRTH/eon1",
-         b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
-         b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
-         b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
-         b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
-         b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
-         ),
+        (
+            "spBv1.0/uns_group/NBIRTH/eon1",
+            b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+            b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+            b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+            b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+            b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
+        ),
     ])
 def test_uns_mqtt_historian_persistance(topic: str, message):
     """
@@ -163,7 +164,7 @@ def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
                       WHERE
                         time = %s AND
                         topic = %s AND
-                        client_id=%s;"""
+                        client_id=%s;"""  # noqa: S608
 
         with cursor:
             cursor.execute(sql_command, (query_timestamp, topic, client_id))

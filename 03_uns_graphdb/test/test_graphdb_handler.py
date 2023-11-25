@@ -1,6 +1,8 @@
 """
 Tests for GraphDBHandler
 """
+from typing import Optional
+
 import pytest
 from neo4j import Session, exceptions
 from uns_graphdb.graphdb_config import settings
@@ -217,11 +219,11 @@ def test_persist_mqtt_msg(topic: str, message: dict):
     Testcase for GraphDBHandler.persist_mqtt_msg.
     Validate that the nested dict object is properly split
     """
-    graphdb_url: str = settings.graphdb["url"]
-    graphdb_user: str = settings.graphdb["username"]
+    graphdb_url: Optional[str] = settings.graphdb["url"]
+    graphdb_user: Optional[str] = settings.graphdb["username"]
 
-    graphdb_password: str = settings.graphdb["password"]
-    graphdb_database: str = settings.get("graphdb.database", None)
+    graphdb_password: Optional[str] = settings.graphdb["password"]
+    graphdb_database: Optional[str] = settings.get("graphdb.database", None)
     if topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
         node_types = settings.get(
             "graphdb.spB_node_types",
@@ -231,8 +233,8 @@ def test_persist_mqtt_msg(topic: str, message: dict):
             settings.get("graphdb.uns_node_types",
                          ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
 
-    attr_nd_typ: str = settings.get("graphdb.nested_attribute_node_type",
-                                    "NESTED_ATTRIBUTE")
+    attr_nd_typ: Optional[str] = settings.get(
+        "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
     try:
         graph_db_handler = GraphDBHandler(uri=graphdb_url,
                                           user=graphdb_user,
@@ -340,7 +342,7 @@ def read_dict_attr_node(session, attr_node_type: str, parent_id: str,
     Read and compare node created for nested dict attributes in the message
     """
     # Need to enhance test to handle nested dicts
-    attr_node_query: str = f"""
+    attr_node_query: Optional[str] = f"""
                         MATCH (parent) -[r:PARENT_OF]-> (n:{attr_node_type}{{ node_name: $node_name }})
                         WHERE  elementId(parent)= $parent_id
                         RETURN n

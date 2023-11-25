@@ -4,6 +4,7 @@ MQTT listener that listens to UNS namespace for messages and publishes to corres
 import logging
 import random
 import time
+from typing import Optional
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -53,9 +54,10 @@ class UNSKafkaMapper:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f"uns_kafka_listener-{time.time()}-{random.randint(0, 1000)}"
+        self.client_id = f"uns_kafka_listener-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
 
-        self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
+        self.mqtt_transport: Optional[str] = settings.get(
+            "mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
             "mqtt.version", UnsMQTTClient.MQTTv5)
         self.mqtt_qos: int = settings.get("mqtt.qos", 2)
@@ -63,17 +65,17 @@ class UNSKafkaMapper:
             "mqtt.reconnect_on_failure", True)
         self.clean_session: bool = settings.get("mqtt.clean_session", None)
 
-        self.mqtt_host: str = settings.mqtt["host"]
+        self.mqtt_host: Optional[str] = settings.mqtt["host"]
         self.mqtt_port: int = settings.get("mqtt.port", 1883)
-        self.mqtt_username: str = settings.get("mqtt.username")
-        self.mqtt_password: str = settings.get("mqtt.password")
+        self.mqtt_username: Optional[str] = settings.get("mqtt.username")
+        self.mqtt_password: Optional[str] = settings.get("mqtt.password")
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
         self.topics: list = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
-        self.mqtt_timestamp_key: str = settings.get("mqtt.timestamp_attribute",
-                                                    "timestamp")
+        self.mqtt_timestamp_key: Optional[str] = settings.get(
+            "mqtt.timestamp_attribute", "timestamp")
         if self.mqtt_host is None:
             raise SystemError(
                 "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
@@ -103,7 +105,12 @@ class UNSKafkaMapper:
                 payload=msg.payload,
                 mqtt_ignored_attributes=self.mqtt_ignored_attributes))
 
-    def on_disconnect(self, client, userdata, result_code, properties=None):
+    def on_disconnect(
+            self,
+            client,  # noqa: ARG002
+            userdata,  # noqa: ARG002
+            result_code,
+            properties=None):  # noqa: ARG002
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """

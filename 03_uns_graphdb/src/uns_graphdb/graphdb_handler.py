@@ -3,6 +3,7 @@ Class responsible for persisting the MQTT message into the Graph Database
 """
 import logging
 import time
+from typing import Optional
 
 import neo4j
 from neo4j import exceptions
@@ -26,7 +27,7 @@ class GraphDBHandler:
                  uri: str,
                  user: str,
                  password: str,
-                 database: str = neo4j.DEFAULT_DATABASE,
+                 database: Optional[str] = neo4j.DEFAULT_DATABASE,
                  max_retry: int = 5,
                  sleep_btw_attempts: float = 10):
         # pylint: disable=too-many-arguments
@@ -41,7 +42,7 @@ class GraphDBHandler:
             db user name. Must have write access on the Neo4j database also specified here
         password:
             password for the db user
-        database : str = neo4j.DEFAULT_DATABASE
+        database : Optional[str] = neo4j.DEFAULT_DATABASE
             The Neo4j database in which this data should be persisted
         max_retry: int
                 Must be a positive integer. Default value is 5.
@@ -50,9 +51,9 @@ class GraphDBHandler:
                 Must be a positive float. Default value is 10 seconds.
                 Seconds to sleep between retries
         """
-        self.uri: str = uri
+        self.uri: Optional[str] = uri
         self.auth: tuple = (user, password)
-        self.database: str = database
+        self.database: Optional[str] = database
         if self.database is None or self.database == "":
             self.database = neo4j.DEFAULT_DATABASE
         self.max_retry: int = max_retry
@@ -146,7 +147,7 @@ class GraphDBHandler:
                          timestamp: float = time.time(),
                          node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA",
                                               "LINE", "DEVICE"),
-                         attr_node_type: str = "NESTED_ATTRIBUTE",
+                         attr_node_type: Optional[str] = "NESTED_ATTRIBUTE",
                          retry: int = 0):
         # pylint: disable=too-many-arguments
         """
@@ -236,7 +237,7 @@ class GraphDBHandler:
             if count == len(nodes) - 1:
                 # Save the attributes without nested dicts only for the leaf node of topics
                 node_attr = dict_less_message
-            node_type: str = GraphDBHandler.get_topic_node_type(
+            node_type: Optional[str] = GraphDBHandler.get_topic_node_type(
                 count, node_types)
             response = GraphDBHandler.save_node(session, node, node_type,
                                                 node_attr, lastnode_id,
@@ -310,8 +311,8 @@ class GraphDBHandler:
     def save_node(session: neo4j.Session,
                   nodename: str,
                   nodetype: str,
-                  attributes: dict = None,
-                  parent_id: str = None,
+                  attributes: Optional[dict] = None,
+                  parent_id: Optional[str] = None,
                   timestamp: float = time.time()):
         # pylint: disable=too-many-arguments
         """

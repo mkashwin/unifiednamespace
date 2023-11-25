@@ -8,6 +8,7 @@ import logging
 import re
 import ssl
 from os import path
+from typing import Optional
 
 import paho.mqtt.client as mqtt_client
 from google.protobuf.json_format import MessageToDict
@@ -34,10 +35,10 @@ class UnsMQTTClient(mqtt_client.Client):
 
     def __init__(self,
                  client_id: str,
-                 clean_session: bool = None,
-                 userdata: dict = None,
+                 clean_session: Optional[bool] = None,
+                 userdata: Optional[dict] = None,
                  protocol: int = mqtt_client.MQTTv5,
-                 transport: str = "tcp",
+                 transport: Optional[str] = "tcp",
                  reconnect_on_failure: bool = True):
         # pylint: disable=too-many-arguments
         """
@@ -137,9 +138,9 @@ class UnsMQTTClient(mqtt_client.Client):
     def run(self,
             host,
             port=1883,
-            username: str = None,
-            password: str = None,
-            tls: dict = None,
+            username: Optional[str] = None,
+            password: Optional[str] = None,
+            tls: Optional[dict] = None,
             keepalive=60,
             topics=None,
             qos=2):

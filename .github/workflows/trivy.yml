@@ -32,6 +32,7 @@ jobs:
           - { module: 04_uns_historian, image: uns/historian }
           - { module: 05_sparkplugb, image: uns/spb_mapper }
           - { module: 06_uns_kafka, image: uns/kafka_mapper }
+          - { module: 07_uns_graphql, image: uns/graphql }
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

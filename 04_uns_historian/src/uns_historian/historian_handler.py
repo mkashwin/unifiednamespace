@@ -144,9 +144,9 @@ class HistorianHandler:
             # Timestamp is normally in milliseconds and needs to be converted prior to insertion
             _timestamp = datetime.datetime.fromtimestamp(timestamp / 1000)
 
-        sql_cmd = f"""INSERT INTO {self.table} ( time, topic, client_id, mqtt_msg )
+        sql_cmd = """INSERT INTO %s ( time, topic, client_id, mqtt_msg )
                         VALUES (%s,%s,%s,%s)
-                        RETURNING *;"""
+                        RETURNING *;""", {self.table}
 
         def execute_sql_cmd(retry: int = 0):
             """

@@ -111,6 +111,11 @@ jobs:
               image: uns/kafka_mapper,
               container_description: "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka",
             }
+          - {
+              module: 07_uns_graphql,
+              image: uns/kafka_mapper,
+              container_description: "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka",
+            }            
 
     env:
       SHA_TAG: ${{ needs.update-version.outputs.sha_tag }}

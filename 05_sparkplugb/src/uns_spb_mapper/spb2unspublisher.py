@@ -4,7 +4,7 @@ after correctly decoding the protobuf payloads
 """
 import json
 import logging
-from typing import Any
+from typing import Any, ClassVar, Final, Optional
 
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
@@ -23,10 +23,10 @@ class Spb2UNSPublisher:
     This also temporarily stores the mapping of SparkPlugB Metric aliases
     """
 
-    SPB_NAME: str = "name"
-    SPB_ALIAS: str = "alias"
-    SPB_TIMESTAMP: str = "timestamp"
-    SPB_DATATYPE: str = "datatype"
+    SPB_NAME: Optional[str] = "name"
+    SPB_ALIAS: Optional[str] = "alias"
+    SPB_TIMESTAMP: Optional[str] = "timestamp"
+    SPB_DATATYPE: Optional[str] = "datatype"
     SPB_IS_NULL = "is_null"
     SPB_IS_HISTORICAL = "is_historical"
 
@@ -34,7 +34,7 @@ class Spb2UNSPublisher:
     SPB_METADATA = "metadata"
     SPB_PROPERTIES = "properties"
 
-    SPB_DATATYPE_KEYS = {
+    SPB_DATATYPE_KEYS: Final[str] = {
         sparkplug_b_pb2.Unknown: "Unknown",
         sparkplug_b_pb2.Int8: "int_value",
         sparkplug_b_pb2.Int16: "int_value",
@@ -58,11 +58,11 @@ class Spb2UNSPublisher:
     }
 
     # stores the message aliases as uses in the SparkPlugB message payload
-    metric_name_alias_map: dict[int, str] = {}
+    metric_name_alias_map: ClassVar[dict[int, str]] = {}
     # Flag indicating this an MQTTv5 connection
     is_mqtt_v5: bool = False
     # stores the topic aliases to be used if the protocol is MQTTv5
-    topic_alias: dict[str, str] = {}
+    topic_alias: ClassVar[dict[str, str]] = {}
     # the Mqtt client used to publish the messages
     mqtt_client: UnsMQTTClient = None
     # maximum topic alias
@@ -85,7 +85,7 @@ class Spb2UNSPublisher:
         group_id: str,
         message_type: str,
         edge_node_id: str,
-        device_id: str = None,
+        device_id: Optional[str] = None,
     ) -> dict:
         # pylint: disable=too-many-arguments
         """
@@ -193,7 +193,7 @@ class Spb2UNSPublisher:
         group_id: str,
         message_type: str,
         edge_node_id: str,
-        device_id: str = None,
+        device_id: Optional[str] = None,
     ) -> dict:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
@@ -245,7 +245,7 @@ class Spb2UNSPublisher:
         Extract metric name from metric payload
         Encapsulate metric name alias handling
         """
-        name: str = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
+        name: Optional[str] = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
         try:
             metric_alias: int = int(getattr(metric,
                                             Spb2UNSPublisher.SPB_ALIAS))
@@ -302,7 +302,7 @@ class Spb2UNSPublisher:
         metric_value: Any,
         metric_timestamp: float,
         is_historical: bool = False,
-        spb_context: dict[str, str] = None,
+        spb_context: Optional[dict[str, str]] = None,
     ) -> dict[str, Any]:
         # pylint: disable=too-many-arguments
         """

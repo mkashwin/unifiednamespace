@@ -4,6 +4,7 @@ MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all message
 import logging
 import random
 import time
+from typing import Optional
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -56,9 +57,10 @@ class UnsMqttHistorian:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"
+        self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
 
-        self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
+        self.mqtt_transport: Optional[str] = settings.get(
+            "mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
             "mqtt.version", UnsMQTTClient.MQTTv5)
         self.mqtt_qos: int = settings.get("mqtt.qos", 2)
@@ -66,12 +68,12 @@ class UnsMqttHistorian:
             "mqtt.reconnect_on_failure", True)
         self.clean_session: bool = settings.get("mqtt.clean_session", None)
 
-        self.mqtt_host: str = settings.mqtt["host"]
+        self.mqtt_host: Optional[str] = settings.mqtt["host"]
         self.mqtt_port: int = settings.get("mqtt.port", 1883)
-        self.mqtt_username: str = settings.get("mqtt.username")
-        self.mqtt_password: str = settings.get("mqtt.password")
+        self.mqtt_username: Optional[str] = settings.get("mqtt.username")
+        self.mqtt_password: Optional[str] = settings.get("mqtt.password")
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topics: str = settings.get("mqtt.topics", ["#"])
+        self.topics: Optional[str] = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
@@ -86,15 +88,16 @@ class UnsMqttHistorian:
         """
         Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
         """
-        self.historian_hostname: str = settings.historian["hostname"]
+        self.historian_hostname: Optional[str] = settings.historian["hostname"]
         self.historian_port: int = settings.get("historian.port", None)
-        self.historian_user: str = settings.historian["username"]
-        self.historian_password: str = settings.historian["password"]
-        self.historian_sslmode: str = settings.get("historian.sslmode", None)
+        self.historian_user: Optional[str] = settings.historian["username"]
+        self.historian_password: Optional[str] = settings.historian["password"]
+        self.historian_sslmode: Optional[str] = settings.get(
+            "historian.sslmode", None)
 
-        self.historian_database: str = settings.historian["database"]
+        self.historian_database: Optional[str] = settings.historian["database"]
 
-        self.historian_table: str = settings.historian["table"]
+        self.historian_table: Optional[str] = settings.historian["table"]
 
         if self.historian_hostname is None:
             raise SystemError(
@@ -159,7 +162,12 @@ class UnsMqttHistorian:
                 stack_info=True,
                 exc_info=True)
 
-    def on_disconnect(self, client, userdata, result_code, properties=None):
+    def on_disconnect(
+            self,
+            client,  # noqa: ARG002
+            userdata,  # noqa: ARG002
+            result_code,
+            properties=None):  # noqa: ARG002
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """

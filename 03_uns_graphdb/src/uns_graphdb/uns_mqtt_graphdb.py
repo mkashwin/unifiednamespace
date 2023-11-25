@@ -4,6 +4,7 @@ MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all message
 import logging
 import random
 import time
+from typing import Optional
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -59,9 +60,10 @@ class UnsMqttGraphDb:
         Read the MQTT configurations required to connect to the MQTT broker
         """
         # generate client ID with pub prefix randomly
-        self.client_id = f"graphdb-{time.time()}-{random.randint(0, 1000)}"
+        self.client_id = f"graphdb-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
 
-        self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
+        self.mqtt_transport: Optional[str] = settings.get(
+            "mqtt.transport", "tcp")
         self.mqtt_mqtt_version_code: int = settings.get(
             "mqtt.version", UnsMQTTClient.MQTTv5)
         self.mqtt_qos: int = settings.get("mqtt.qos", 1)
@@ -69,12 +71,12 @@ class UnsMqttGraphDb:
             "mqtt.reconnect_on_failure", True)
         self.clean_session: bool = settings.get("mqtt.clean_session", None)
 
-        self.mqtt_host: str = settings.mqtt["host"]
+        self.mqtt_host: Optional[str] = settings.mqtt["host"]
         self.mqtt_port: int = settings.get("mqtt.port", 1883)
-        self.mqtt_username: str = settings.get("mqtt.username")
-        self.mqtt_password: str = settings.get("mqtt.password")
+        self.mqtt_username: Optional[str] = settings.get("mqtt.username")
+        self.mqtt_password: Optional[str] = settings.get("mqtt.password")
         self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topics: str = settings.get("mqtt.topics", ["#"])
+        self.topics: Optional[str] = settings.get("mqtt.topics", ["#"])
         self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
         self.mqtt_ignored_attributes: dict = settings.get(
             "mqtt.ignored_attributes", None)
@@ -91,12 +93,13 @@ class UnsMqttGraphDb:
         """
         Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'"
         """
-        self.graphdb_url: str = settings.graphdb["url"]
-        self.graphdb_user: str = settings.graphdb["username"]
+        self.graphdb_url: Optional[str] = settings.graphdb["url"]
+        self.graphdb_user: Optional[str] = settings.graphdb["username"]
 
-        self.graphdb_password: str = settings.graphdb["password"]
+        self.graphdb_password: Optional[str] = settings.graphdb["password"]
         # if we want to use a database different from the default
-        self.graphdb_database: str = settings.get("graphdb.database", None)
+        self.graphdb_database: Optional[str] = settings.get(
+            "graphdb.database", None)
 
         self.graphdb_node_types: tuple = tuple(
             settings.get("graphdb.uns_node_types",
@@ -106,7 +109,7 @@ class UnsMqttGraphDb:
             settings.get(
                 "graphdb.spB_node_types",
                 ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
-        self.graphdb_nested_attribute_node_type: str = settings.get(
+        self.graphdb_nested_attribute_node_type: Optional[str] = settings.get(
             "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
         if self.graphdb_url is None:
             raise SystemError(
@@ -169,7 +172,12 @@ class UnsMqttGraphDb:
 
     # end of on_message----------------------------------------------------------------------------
 
-    def on_disconnect(self, client, userdata, result_code, properties=None):
+    def on_disconnect(
+            self,
+            client,  # noqa: ARG002
+            userdata,  # noqa: ARG002
+            result_code,
+            properties=None):  # noqa: ARG002
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """

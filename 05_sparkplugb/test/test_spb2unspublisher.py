@@ -3,6 +3,7 @@ Test cases for uns_spb_mapper.spb2unspublisher#Spb2UNSPublisher
 """
 import time
 from types import SimpleNamespace
+from typing import Optional
 
 import pytest
 from uns_mqtt.mqtt_listener import UnsMQTTClient
@@ -11,7 +12,7 @@ from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_spb_mapper.sparkplugb_enc_config import settings
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
-MQTT_HOST: str = settings.mqtt["host"]
+MQTT_HOST: Optional[str] = settings.mqtt["host"]
 MQTT_PORT: int = settings.get("mqtt.port", 1883)
 
 
@@ -106,9 +107,8 @@ def test_get_metric_name(metric, name: str):
     ) == name, f"Incorrect Name: {name} retrieved from metric: {metric}."
 
 
-@pytest.mark.parametrize("metric",
-                         [(SimpleNamespace(no_name="bad key")),
-                          (SimpleNamespace()), (None)])
+@pytest.mark.parametrize("metric", [(SimpleNamespace(no_name="bad key")),
+                                    (SimpleNamespace()), (None)])
 def test_negative_get_metric_name(metric):
     """
     Negative tests for Spb2UNSPublisher#get_metric_name()
@@ -412,7 +412,7 @@ def test_publish_to_uns_connected(clean_session, protocol, transport, host,
 
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
 
-    def on_publish(client, userdata, result):
+    def on_publish(client, userdata, result):  # noqa: ARG001
         """
         Call back for publish to MQTT
         """
@@ -421,7 +421,12 @@ def test_publish_to_uns_connected(clean_session, protocol, transport, host,
         if len(msg_published) == len(all_uns_messages):
             client.disconnect()
 
-    def on_connect(client, userdata, flags, return_code, properties=None):
+    def on_connect(
+            client,  # noqa: ARG001
+            userdata,  # noqa: ARG001
+            flags,  # noqa: ARG001
+            return_code,  # noqa: ARG001
+            properties=None):  # noqa: ARG001
         """
         Call back for connection to MQTT
         """

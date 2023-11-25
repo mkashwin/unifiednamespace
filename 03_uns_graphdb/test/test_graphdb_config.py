@@ -5,6 +5,7 @@ import inspect
 import os
 import re
 import socket
+from typing import Optional
 from urllib.parse import urlparse
 
 import pytest
@@ -38,7 +39,7 @@ def test_mqtt_config():
     Test if the mqtt configurations are valid
     """
     # run these tests only if both configuration files exists or mandatory environment vars are set
-    mqtt_transport: str = settings.get("mqtt.transport")
+    mqtt_transport: Optional[str] = settings.get("mqtt.transport")
     assert mqtt_transport in (
         None, "tcp",
         "ws"), f"Invalid value for key 'mqtt.transport':{mqtt_transport}"
@@ -63,7 +64,7 @@ def test_mqtt_config():
         True, False,
         None), f"Invalid value for key 'mqtt.clean_session'{clean_session}"
 
-    host: str = settings.mqtt["host"]
+    host: Optional[str] = settings.mqtt["host"]
     assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
 
     port: int = settings.get("mqtt.port", 1883)
@@ -92,7 +93,7 @@ def test_mqtt_config():
     assert (tls is None) or (os.path.isfile(tls.get(
         "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
-    topics: str = settings.get("mqtt.topics", ["#"])
+    topics: Optional[str] = settings.get("mqtt.topics", ["#"])
     for topic in topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
@@ -108,8 +109,8 @@ def test_mqtt_config():
         isinstance(ignored_attributes, dict)
     ), f"Configuration 'mqtt.ignored_attributes':{ignored_attributes} is not a valid dict"
 
-    timestamp_attribute: str = settings.get("mqtt.timestamp_attribute",
-                                            "timestamp")
+    timestamp_attribute: Optional[str] = settings.get(
+        "mqtt.timestamp_attribute", "timestamp")
     # Should be a valid JSON attribute
     assert (timestamp_attribute is None) or (
         len(timestamp_attribute) > 0
@@ -123,19 +124,19 @@ def test_graph_db_configs():
     Test if the provided configurations for GraphDBHandler are valid and
     """
     # run these tests only if both configuration files exists or mandatory environment vars are set
-    graphdb_url: str = settings.graphdb["url"]
+    graphdb_url: Optional[str] = settings.graphdb["url"]
 
     assert bool(
         re.fullmatch(REGEX_FOR_NEO4J, graphdb_url),
     ), f"configuration 'graphdb.url':{graphdb_url} is not a valid Neo4j URL"
 
-    graphdb_user: str = settings.graphdb["username"]
+    graphdb_user: Optional[str] = settings.graphdb["username"]
     assert (
         graphdb_user is not None and isinstance(graphdb_user, str)
         and len(graphdb_user) > 0
     ), "Invalid username configured at key: 'graphdb.username'. Cannot be None or empty string"
 
-    graphdb_password: str = settings.graphdb["password"]
+    graphdb_password: Optional[str] = settings.graphdb["password"]
     assert (
         graphdb_password is not None and isinstance(graphdb_password, str)
         and len(graphdb_password) > 0
@@ -174,7 +175,7 @@ def test_connectivity_to_mqtt():
     Test if the provided configurations for the MQTT server are valid and
     there is connectivity to the MQTT broker
     """
-    host: str = settings.mqtt["host"]
+    host: Optional[str] = settings.mqtt["host"]
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
@@ -187,10 +188,10 @@ def test_connectivity_to_graphdb():
     Test if the provided configurations to connect to  GraphDB Server are valid and
     there is connectivity to the GraphDB
     """
-    graphdb_url: str = settings.graphdb["url"]
+    graphdb_url: Optional[str] = settings.graphdb["url"]
     parsed = urlparse(graphdb_url).netloc.split(":")
 
-    host: str = parsed[0]
+    host: Optional[str] = parsed[0]
     port: int = None
     if len(parsed) == 2:
         port: int = int(parsed[1])
