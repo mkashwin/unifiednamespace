@@ -30,30 +30,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+
+      - name: Setup with python environment
+        uses: ./.github/include/setup_python/
         with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          cd ./02_mqtt-cluster
-          python -m pip install --upgrade pip poetry
-          poetry install
+          module: 02_mqtt-cluster
 
-      - name: Lint with ruff
-        run: |
-          # change to current directory of module        
-          cd ./02_mqtt-cluster 
-          # stop the build if there are Python syntax errors or undefined names
-          poetry run ruff check  . --output-format=github --exit-zero
-
-      - name: Test for security vulnerabilities
-        run: |
-          cd ./02_mqtt-cluster   
-          poetry run safety check
-
-      - name: Test with pytest
-        run: |
-          # change to current directory of module        
-          cd ./02_mqtt-cluster  
-          poetry run pytest ./test/
+      - name: Run all type of tests
+        uses: ./.github/include/execute_tests/
+        with:
+          module: 02_mqtt-cluster
+          integration_tests: true

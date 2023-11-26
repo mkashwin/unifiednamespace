@@ -16,7 +16,7 @@ on:
       - "07_uns_graphql/poetry.lock"
       - "07_uns_graphql/Dockerfile"
       - ".github/workflows/uns_graphql-app.yml"
-      - ".github/workflows/include/*"
+      - ".github/include/*"
 
   pull_request:
     branches:
