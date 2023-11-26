@@ -146,6 +146,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
       - name: Compile and Test Dockerfile
         uses: ./.github/include/test_docker_builds/action.yml
         with:
