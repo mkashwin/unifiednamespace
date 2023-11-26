@@ -137,7 +137,7 @@ jobs:
           " | PGPASSWORD=${UNS_historian__password} psql -h ${UNS_historian__hostname} -U $UNS_historian__username -d $UNS_historian__database  -p 5432
 
       - name: Run all type of tests
-        uses: ./.github/include/setup_python/
+        uses: ./.github/include/execute_tests/
         with:
           module: 07_uns_graphql
           integration_tests: true

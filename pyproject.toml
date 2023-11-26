@@ -80,7 +80,22 @@ select = [
     "LOG",
     "PERF",
 ]
-ignore = ["D200", "D211", "D212", "D213", "S101"]
+ignore = [
+    "D200",
+    "D211",
+    "D212",
+    "D213",
+    "S101",
+    "W191",
+    "E111",
+    "E114",
+    "E117",
+    "D206",
+    "D300",
+    "COM819",
+    "ISC001",
+    "ISC002",
+]
 
 exclude = [
     # No need to traverse our git directories

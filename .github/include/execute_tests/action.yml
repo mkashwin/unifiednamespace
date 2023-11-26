@@ -12,6 +12,16 @@ inputs:
 runs:
     using: "composite"
     steps:
+        - name: Lint with ruff
+          shell: bash
+          run: |
+              # change to current directory of module        
+              cd ./${{ inputs.module }} 
+              # stop the build if there are Python syntax errors or undefined names
+              poetry run ruff check --output-format=github  --select=E9,F63,F7,F82  .
+              # exit-zero treats all errors as warnings. report all other errors but don't fail the job
+              poetry run ruff check --output-format=github --exit-zero .
+
         - name: Test with pytest
           shell: bash
           run: |

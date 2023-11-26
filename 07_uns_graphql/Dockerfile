@@ -69,4 +69,4 @@ ENV GIT_HASH=${GIT_HASH:-dev}
 # Mount the volume /conf
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_graphql module
-ENTRYPOINT ["poetry", "run", "uns_graphql_handler"]
+ENTRYPOINT ["poetry", "run", "uns_graphql_app"]
