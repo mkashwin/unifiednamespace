@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "uns_graphql"
+version = "0.7.10"
+description = "Provide GraphQL capabilities to the UNS across all data sources -MQTT, KAFKA, Historian & GraphDB"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql"
+# documentation = ""
+keywords = ["uns", "graphql", "mqtt", "graphDB", "historian", "kafka"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: UNS GraphQL",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: UNS GraphQL Resolver"
+# ]
+packages = [{ include = "uns_graphql", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+logger = "^1.4"
+dynaconf = "^3.2.4"
+graphene = "^3.3"
+aiohttp = "^3.9"
+neo4j = "^5.14"
+psycopg2-binary = "^2.9.8"
+pytz = "^2023.3"
+confluent-kafka = "^2.3.0"
+
+[tool.poetry.group.dev.dependencies]
+uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.3"
+yapf = "^0.40.2"
+pytest-cov = "^4.0.0"
+safety = "^2.3.5"
+ruff = "^0.1.6"
+
+[tool.poetry.scripts]
+uns_graphql_handler = "uns_graphql.uns_graphql_handler:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]
+
+[tool.ruff]
+# Extend the `pyproject.toml` file in the parent directory...
+extend = "../pyproject.toml"

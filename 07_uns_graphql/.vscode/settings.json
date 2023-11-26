@@ -1,0 +1,20 @@
+{
+    "cSpell.words": [
+        "graphql",
+        "graphene"
+    ],
+    "python.analysis.extraPaths": [
+        "src",
+        "../02_mqtt-cluster/src",
+        "./src/uns_graphql"
+    ],
+    "python.testing.pytestArgs": [
+        "test"
+    ],
+    "python.testing.pytestEnabled": true,
+    "[python]": {
+        "editor.formatOnSaveMode": "file",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "eeyore.yapf"
+    },
+}

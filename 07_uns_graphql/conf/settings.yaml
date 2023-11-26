@@ -1,0 +1,35 @@
+mqtt:
+  host: "localhost" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
+  port: 1883 # Default value 1883 if not specified
+  topics: ["#"] # Default Topic is a wild card #. if required can be tuned to listen subset
+  qos: 1 # Default value is 1. Recommend 1 or 2. Do not use 0
+  keep_alive: 60
+  reconnect_on_failure: True
+  version: 5 # Default is MQTTv5. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31)
+  #clean_session: false # specify this only if the protocol is not MQTTv5
+  transport: "tcp" # Default is tcp. Valid values are: websockets, tcp
+  timestamp_attribute: "timestamp" # the attribute name which should contain the timestamp of the message's publishing
+
+graphdb:
+  url: "bolt://localhost:7687"
+  # database: "Instance01"
+  uns_node_types: ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"] # Based on ISA-95 part 2 the nested depth
+  spB_node_types: ["spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"] # Based on sparkplugB specification
+  nested_attribute_node_type: "NESTED_ATTRIBUTE"
+
+historian:
+  hostname: "localhost"
+  # port: 5432
+  database: "uns_historian"
+  table: "UnifiedNamespace"
+
+kafka:
+  # see https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+  config: {
+      client.id: "uns_kafka_client", # mandatory
+      bootstrap.servers: "localhost:9092", # mandatory. can also use the key metadata.broker.list
+      enable.idempotence: True,
+      retries: 10,
+      compression.type: "gzip",
+    }
+dynaconf_merge: true
