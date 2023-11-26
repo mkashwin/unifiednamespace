@@ -16,6 +16,8 @@ on:
       - "03_uns_graphdb/poetry.lock"
       - "03_uns_graphdb/Dockerfile"
       - ".github/workflows/uns_graphdb-app.yml"
+      - ".github/include/*"
+
   pull_request:
     branches:
       - "**"

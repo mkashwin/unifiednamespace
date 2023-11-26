@@ -12,6 +12,8 @@ on:
       - "02_mqtt-cluster/pyproject.toml"
       - "02_mqtt-cluster/poetry.lock"
       - ".github/workflows/uns_mqtt-app.yml"
+      - ".github/include/*"
+
   pull_request:
     branches:
       - "**"
@@ -20,6 +22,8 @@ on:
       - "02_mqtt-cluster/pyproject.toml"
       - "02_mqtt-cluster/poetry.lock"
       - ".github/workflows/uns_mqtt-app.yml"
+      - ".github/include/*"
+
 permissions:
   contents: read
 
