@@ -147,7 +147,7 @@ jobs:
 
     steps:
       - name: Compile and Test Dockerfile
-        uses: .github/workflows/include/build_test_docker.yml
+        uses: ./.github/include/test_docker_builds/action.yml
         with:
           module: 07_uns_graphql
           image_name: uns/graphql
