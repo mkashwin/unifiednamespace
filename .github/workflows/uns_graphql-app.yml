@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup with python environment
-        uses: ./.github/workflows/include/setup-python.yml
+        uses: ./.github/include/setup_python/action.yml
         with:
           module: 07_uns_graphql
       - name: Create Database for Integration Testing
@@ -136,8 +136,8 @@ jobs:
           SELECT create_hypertable('$UNS_historian__table', 'time');
           " | PGPASSWORD=${UNS_historian__password} psql -h ${UNS_historian__hostname} -U $UNS_historian__username -d $UNS_historian__database  -p 5432
 
-      - name: Test with pytest
-        uses: ./.github/workflows/include/pytest.yml
+      - name: Run all type of tests
+        uses: ./.github/include/setup_python/action.yml
         with:
           module: 07_uns_graphql
           integration_tests: true
@@ -147,6 +147,7 @@ jobs:
 
     steps:
       - name: Compile and Test Dockerfile
-        uses: ./.github/workflows/include/build_test_docker.yml
+        uses: .github/workflows/include/build_test_docker.yml
         with:
           module: 07_uns_graphql
+          image_name: uns/graphql

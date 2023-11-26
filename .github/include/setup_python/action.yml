@@ -1,0 +1,40 @@
+name: Setup UNS Python Environment
+description: Setup Python Environment, dependencies and static checks
+inputs:
+  module:
+    description: 'the actual module on which the tests should run. "" empty for all modules'
+    required: True
+    default: "."
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        # change to current directory of module        
+        cd ./${{ inputs.module }} 
+        python -m pip install --upgrade pip poetry
+        poetry install
+
+    - name: Lint with ruff
+      shell: bash
+      run: |
+        # change to current directory of module        
+        cd ./${{ inputs.module }} 
+        # stop the build if there are Python syntax errors or undefined names
+        poetry run ruff check  . --output-format=github --exit-zero
+
+    - name: Test for security vulnerabilities
+      shell: bash
+      run: |
+        # change to current directory of module        
+        cd ./${{ inputs.module }}  
+        poetry run safety check

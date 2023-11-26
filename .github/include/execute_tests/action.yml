@@ -1,0 +1,30 @@
+name: Execute Tests
+description: Execute all tests
+inputs:
+    module:
+        description: 'the actual module on which the tests should run. "."  for all modules'
+        required: True
+        default: "."
+    integration_tests:
+        description: "Boolean, If True all tests should run. If False skip tests tagged for integration"
+        required: False
+        default: "false"
+runs:
+    using: "composite"
+    steps:
+        - name: Test with pytest
+          shell: bash
+          run: |
+              # change to current directory of module            
+              cd ./${{ inputs.module }}
+              if $integration_tests ; then
+                  poetry run pytest 
+              else 
+                  poetry run pytest -m "not integrationtest"
+
+        - name: Test for security vulnerabilities
+          shell: bash
+          run: |
+              # change to current directory of module        
+              cd ./${{ inputs.module }} 
+              poetry run safety check

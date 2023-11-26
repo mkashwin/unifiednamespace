@@ -1,12 +1,17 @@
 name: Compile Docker file and run Docker specific tests
+description: Compile Docker file and run Docker specific tests
 inputs:
-    module:
-        description: 'the actual module for which the docker should be compiled and tested'
-        required: true
-
-steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
+  module:
+    description: "the actual module for which the docker should be build and verified"
+    required: True
+  image_name:
+    description: "name of the docker image"
+    required: True
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies in the
+      shell: bash
       run: |
         module=${{ inputs.module }} 
         image_name="uns/historian"
@@ -87,4 +92,4 @@ steps:
             exit 1
           fi
           echo "Docker image tests passed successfully"
-        '    
+        '
