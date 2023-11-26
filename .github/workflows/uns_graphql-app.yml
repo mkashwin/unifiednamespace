@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup with python environment
-        uses: ./.github/include/setup_python/action.yml
+        uses: ./.github/include/setup_python/
         with:
           module: 07_uns_graphql
       - name: Create Database for Integration Testing
@@ -137,7 +137,7 @@ jobs:
           " | PGPASSWORD=${UNS_historian__password} psql -h ${UNS_historian__hostname} -U $UNS_historian__username -d $UNS_historian__database  -p 5432
 
       - name: Run all type of tests
-        uses: ./.github/include/setup_python/action.yml
+        uses: ./.github/include/setup_python/
         with:
           module: 07_uns_graphql
           integration_tests: true
@@ -147,8 +147,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Compile and Test Dockerfile
-        uses: ./.github/include/test_docker_builds/action.yml
+        uses: ./.github/include/test_docker_builds/
         with:
           module: 07_uns_graphql
           image_name: uns/graphql
