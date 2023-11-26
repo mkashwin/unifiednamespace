@@ -44,7 +44,7 @@ safety = "^2.3.5"
 ruff = "^0.1.6"
 
 [tool.poetry.scripts]
-uns_graphql_handler = "uns_graphql.uns_graphql_app:main"
+uns_graphql_app = "uns_graphql.uns_graphql_app:main"
 
 [build-system]
 requires = ["poetry-core"]
