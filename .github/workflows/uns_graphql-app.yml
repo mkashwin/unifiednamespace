@@ -83,14 +83,14 @@ jobs:
           apoc.import.file.enabled: true
           apoc.import.file.use_neo4j_config: true
           NEO4J_PLUGINS: '["apoc"]'
-                
+
       uns_timescaledb:
         image: timescale/timescaledb:latest-pg14
         ports:
           - "5432:5432"
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-      
+
       uns_kafka:
         image: bitnami/kafka:latest
         ports:
@@ -104,14 +104,14 @@ jobs:
           KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
           KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@uns_kafka:9093
           KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-          
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Setup with python environment
-        uses: ./.github/workflows/include/setup_python.yml
-
-
+        uses: ./.github/workflows/include/setup-python.yml
+        with:
+          module: 07_uns_graphql
       - name: Create Database for Integration Testing
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
@@ -135,9 +135,9 @@ jobs:
 
           SELECT create_hypertable('$UNS_historian__table', 'time');
           " | PGPASSWORD=${UNS_historian__password} psql -h ${UNS_historian__hostname} -U $UNS_historian__username -d $UNS_historian__database  -p 5432
-      
+
       - name: Test with pytest
-        uses: ./.github/workflows/include/pytest.yml 
+        uses: ./.github/workflows/include/pytest.yml
         with:
           module: 07_uns_graphql
           integration_tests: true
