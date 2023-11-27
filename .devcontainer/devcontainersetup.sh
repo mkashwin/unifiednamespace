@@ -18,7 +18,9 @@ else
   password: "${UNS_graphdb__password}"
 dynaconf_merge: true
   " > ./03_uns_graphdb/conf/.secrets.yaml
-  # 2.1.1 Graph DB used by 03_uns_graphdb
+  # 2.1.1 New instance of Graph DB used by 03_uns_graphdb
+  sudo rm -rf $HOME/neo4j
+  
   docker run \
     --name  uns_graphdb \
     -p7474:7474 -p7687:7687 \
@@ -56,6 +58,7 @@ dynaconf_merge: true
   " > ./04_uns_historian/conf/.secrets.yaml
 
   # 2.2.1 Historian DB used by 04_uns_historian
+  sudo rm -rf $HOME/timescaledb
   docker run \
       --name uns_timescaledb  \
       -p 5432:5432  \
@@ -67,13 +70,14 @@ dynaconf_merge: true
   # first wait for the database to be running
   # Function to check if PostgreSQL is ready
   check_postgres_ready() {
-      docker exec uns_timescaledb pg_isready -q
+      docker exec -it uns_timescaledb bash -c "pg_isready --username=postgres && psql --username=postgres --list"
   }
   # loop to check 
   echo "Waiting for  timescaledb to start ."
   sleep 1
   while [ "True" ] ; do
     if check_postgres_ready; then
+      sleep 5
       break;
     else
       echo -n .;
@@ -134,3 +138,18 @@ else
       bitnami/kafka:latest
 fi
 
+# 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
+# always created
+INPUT_FILES=$(find . -type f -not -path "./07_uns_graphql/*" -name ".secrets.yaml")
+
+# Define the output file
+OUTPUT_FILE=07_uns_graphql/conf/.secrets.yaml
+
+merge_command="docker run --rm -v \"$(pwd)\":/workdir mikefarah/yq eval-all '. as \$item ireduce ({}; . * \$item )'"
+
+# Iterate over the YAML files in the input directory
+for yaml_file in $INPUT_FILES; do
+  merge_command=$(echo "$merge_command" "/workdir/$yaml_file")
+done
+# Execute the merge command and write the output to the file
+eval "$merge_command" > "$OUTPUT_FILE"
