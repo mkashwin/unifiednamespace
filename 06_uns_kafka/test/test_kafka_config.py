@@ -10,7 +10,7 @@ import pytest
 from confluent_kafka import Producer
 from uns_kafka.uns_kafka_config import settings
 
-is_configs_provided: bool = (settings.kafka["config"] is not None and
+is_configs_provided: bool = (settings.get("kafka.config") is not None and
                              "bootstrap.servers" in settings.kafka["config"])
 
 # Constant regex expression to match valid MQTT topics

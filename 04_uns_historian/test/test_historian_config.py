@@ -9,8 +9,8 @@ from typing import Optional
 import pytest
 from uns_historian.historian_config import settings
 
-is_configs_provided: bool = (settings.mqtt["host"] is not None
-                             and settings.historian["username"] is not None)
+is_configs_provided: bool = (settings.get("mqtt.host") is not None and
+                             settings.get("historian.hostname") is not None)
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"

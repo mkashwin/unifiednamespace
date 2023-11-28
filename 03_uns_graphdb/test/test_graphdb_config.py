@@ -10,9 +10,8 @@ from urllib.parse import urlparse
 import pytest
 from uns_graphdb.graphdb_config import settings
 
-is_configs_provided: bool = (settings.graphdb["username"] is not None
-                             and settings.graphdb["url"] is not None
-                             and settings.mqtt["host"] is not None)
+is_configs_provided: bool = (settings.graphdb["url"] is not None
+                             and settings.get("mqtt.host") is not None)
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"

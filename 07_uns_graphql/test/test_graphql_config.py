@@ -11,12 +11,10 @@ import pytest
 from confluent_kafka import Producer
 from uns_graphql.graphql_config import settings
 
-is_configs_provided: bool = (settings.mqtt["host"] is not None
-                             and settings.graphdb["username"] is not None
-                             and settings.graphdb["url"] is not None
-                             and settings.historian["username"] is not None
-                             and settings.historian["hostname"] is not None
-                             and settings.kafka["config"] is not None and
+is_configs_provided: bool = (settings.get("mqtt.host") is not None
+                             and settings.get("graphdb.url") is not None
+                             and settings.get("historian.hostname") is not None
+                             and settings.get("kafka.config") is not None and
                              "bootstrap.servers" in settings.kafka["config"])
 
 # Constant regex expression to match valid MQTT topics
