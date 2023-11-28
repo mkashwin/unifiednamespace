@@ -11,6 +11,7 @@ import pytest
 from uns_graphdb.graphdb_config import settings
 
 is_configs_provided: bool = (settings.graphdb["url"] is not None
+                             and settings.get("graphdb.username") is not None
                              and settings.get("mqtt.host") is not None)
 
 # Constant regex expression to match valid MQTT topics

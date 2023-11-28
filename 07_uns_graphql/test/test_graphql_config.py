@@ -13,7 +13,9 @@ from uns_graphql.graphql_config import settings
 
 is_configs_provided: bool = (settings.get("mqtt.host") is not None
                              and settings.get("graphdb.url") is not None
+                             and settings.get("graphdb.username") is not None
                              and settings.get("historian.hostname") is not None
+                             and settings.get("historian.username") is not None
                              and settings.get("kafka.config") is not None and
                              "bootstrap.servers" in settings.kafka["config"])
 
