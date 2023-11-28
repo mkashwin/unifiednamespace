@@ -1,25 +1,16 @@
 """
 Test cases for historian_config
 """
-import inspect
-import os
 import re
 import socket
+from pathlib import Path
 from typing import Optional
 
 import pytest
 from uns_historian.historian_config import settings
 
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
-            "src")))
-
-is_configs_provided: bool = (os.path.exists(
-    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
-        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_historian__username")))
+is_configs_provided: bool = (settings.mqtt["host"] is not None
+                             and settings.historian["username"] is not None)
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
@@ -88,8 +79,8 @@ def test_mqtt_config():
     ), ("Check the configuration provided for tls connection to the broker. "
         "the property ca_certs is missing")
 
-    assert (tls is None) or (os.path.isfile(tls.get(
-        "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
+    assert (tls is None) or (Path(tls.get("ca_certs")).is_file(
+    )), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
     topics: Optional[str] = settings.get("mqtt.topics", ["#"])
     for topic in topics:

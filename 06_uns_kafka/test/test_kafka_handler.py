@@ -11,17 +11,9 @@ from uns_kafka.kafka_handler import KafkaHandler
 from uns_kafka.uns_kafka_config import settings
 
 KAFKA_CONFIG: dict = settings.kafka["config"]
-is_configs_provided: bool = "bootstrap.servers" in KAFKA_CONFIG
-
-# json.loads(
-#     os.environ.get(
-#         "UNS_kafka__config",
-#         '{"client.id": "uns_kafka_client", "bootstrap.servers": "localhost:9092"}'
-#     ))
 
 
-@pytest.mark.xfail(not is_configs_provided,
-                   reason="Configurations have not been provided")
+@pytest.mark.integrationtest()
 def test_kafka_handler_init():
     """
     KafkaHandler#init
@@ -50,8 +42,6 @@ def test_convert_mqtt_kafka_topic(mqtt_topic: str, kafka_topic: str):
     ) == kafka_topic, "Topic name in Kafka shouldn't have any '/'"
 
 
-@pytest.mark.xfail(not is_configs_provided,
-                   reason="Configurations have not been provided")
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "mqtt_topic, message", [(

@@ -1,11 +1,11 @@
 """
 Configuration reader for mqtt server and Timescale DB server details
 """
-import os
+from pathlib import Path
 
 from dynaconf import Dynaconf
 
-current_folder = os.path.dirname(os.path.abspath(__file__))
+current_folder = Path(__file__).resolve()
 
 settings = Dynaconf(
     envvar_prefix="UNS",

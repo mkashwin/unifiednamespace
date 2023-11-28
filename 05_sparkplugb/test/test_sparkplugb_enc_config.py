@@ -1,9 +1,9 @@
 """
 Test cases for sparkplugb_enc_config
 """
-import os
 import re
 import socket
+from pathlib import Path
 from typing import Optional
 
 import pytest
@@ -74,8 +74,8 @@ def test_mqtt_config():
     ), ("Check the configuration provided for tls connection to the broker."
         "The property ca_certs is missing")
 
-    assert (tls is None) or (os.path.isfile(tls.get(
-        "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
+    assert (tls is None) or (Path(tls.get("ca_certs")).is_file(
+    )), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
     topics: Optional[str] = settings.get("mqtt.topics", ["spBv1.0/#"])
 

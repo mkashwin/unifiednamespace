@@ -1,10 +1,9 @@
 """
 Tests for Uns_MQTT_GraphDb
 """
-import inspect
 import json
-import os
 import sys
+from pathlib import Path
 from typing import Optional
 
 import pytest
@@ -16,26 +15,11 @@ from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
 
-test_folder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
-            "test")))
-sys.path.insert(0, test_folder)
+test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
+sys.path.insert(0, str(test_folder))
 # @FIXME Hack done to be able to import utility modules in the tests directories
 # @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
 from test_graphdb_handler import read_nodes  # noqa: E402
-
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
-            "src")))
-
-is_configs_provided: bool = (os.path.exists(
-    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
-        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_graphdb__username")))
 
 
 @pytest.mark.integrationtest()

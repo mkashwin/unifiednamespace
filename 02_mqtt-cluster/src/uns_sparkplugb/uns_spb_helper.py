@@ -183,14 +183,14 @@ class SpBMessageGenerator:
         return metric
 
     ######################################################################
-    def init_dataset_metric(self,
-                            payload: spbPayload,
-                            name: str,
-                            columns: list[str],
-                            types: list[int],
-                            alias: Optional[int] = None,
-                            timestamp: Optional[float] = int(
-                                round(time.time() * 1000))):
+    def init_dataset_metric(
+        self,
+        payload: spbPayload,
+        name: str,
+        columns: list,  # can be of type int, float, bool or str
+        types: list[int],
+        alias: Optional[int] = None,
+        timestamp: Optional[float] = int(round(time.time() * 1000))):
         # pylint: disable=too-many-arguments
         """
         Helper method for initializing a dataset metric to a payload

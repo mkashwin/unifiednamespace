@@ -8,17 +8,10 @@ from confluent_kafka import OFFSET_END, Consumer
 from confluent_kafka.admin import AdminClient
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_kafka.uns_kafka_config import settings
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
-is_configs_provided: bool = (settings.kafka["config"] is not None and
-                             "bootstrap.servers" in settings.kafka["config"]
-                             and settings.mqtt["host"] is not None)
 
-
-@pytest.mark.xfail(not is_configs_provided,
-                   reason="Configurations have not been provided")
 @pytest.mark.integrationtest()
 def test_uns_kafka_mapper_init():
     """
@@ -44,8 +37,6 @@ def test_uns_kafka_mapper_init():
             uns_kafka_mapper.uns_client.disconnect()
 
 
-@pytest.mark.xfail(not is_configs_provided,
-                   reason="Configurations have not been provided")
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "mqtt_topic, mqtt_message,kafka_topic,expected_kafka_msg",

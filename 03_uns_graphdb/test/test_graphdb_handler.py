@@ -9,8 +9,6 @@ from uns_graphdb.graphdb_config import settings
 from uns_graphdb.graphdb_handler import NODE_RELATION_NAME, GraphDBHandler
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
-is_configs_provided: bool = settings.graphdb.get("username") is not None
-
 
 @pytest.mark.parametrize(
     "nested_dict, expected_result",

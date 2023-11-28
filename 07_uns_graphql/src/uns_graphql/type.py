@@ -204,7 +204,7 @@ class SPBMetric(graphene.ObjectType):
     properties = SPBPropertySet()
     value = graphene.Field(graphene.Union, resolver="resolve_value")
 
-    def resolve_value(self, info):
+    def resolve_value(self, info):  # noqa: ARG002
         """
         Resolve value based on datatype
         """
@@ -271,10 +271,10 @@ class SPBTemplateParameter:
 
     # pylint: disable=too-few-public-methods
     name = graphene.String()
-    type = graphene.NonNull(SPBDataTypeEnum)
+    datatype = graphene.NonNull(SPBDataTypeEnum)
     value = graphene.Field(graphene.Union, resolver="resolve_value")
 
-    def resolve_value(self, info):
+    def resolve_value(self, info):  # noqa: ARG002
         """
         Resolve value based on datatype
         """
@@ -283,7 +283,7 @@ class SPBTemplateParameter:
 
         # Logic to dynamically resolve 'value' based on 'datatype'
 
-        datatype: int = self.type
+        datatype: int = self.datatype
         match datatype:
             case sparkplug_b_pb2.Int8:
                 return graphene.Int(value=int(self.value))
@@ -325,7 +325,7 @@ class SPBTemplateParameter:
                 return SPBTemplate(value=self.value)
             case _:
                 LOGGER.error("Invalid type: %s.\n Trying Value: %s as String",
-                             str(self.type),
+                             str(self.datatype),
                              str(self.value),
                              stack_info=True,
                              exc_info=True)
@@ -399,7 +399,7 @@ class Node(graphene.Union):
         types = (UNSNode, SPBNode, HistoricalUNSNode)
 
     @classmethod
-    def resolve_type(cls, instance, info):
+    def resolve_type(cls, instance, info):  # noqa: ARG003
         if instance["type"] == "UnifiedNameSpace":
             return UNSNode
         if instance["type"] == "SparkplugBv1.0":

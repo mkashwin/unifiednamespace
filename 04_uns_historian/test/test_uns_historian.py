@@ -2,9 +2,7 @@
 Tests for uns_historian.uns_mqtt_historian
 """
 import datetime
-import inspect
 import json
-import os
 
 import psycopg2
 import pytest
@@ -15,17 +13,6 @@ from paho.mqtt.properties import Properties
 from uns_historian.uns_mqtt_historian import UnsMqttHistorian
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
-
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], "..",
-            "src")))
-
-is_configs_provided: bool = (os.path.exists(
-    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
-        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_historian__username")))
 
 
 @pytest.mark.integrationtest()

@@ -1,23 +1,19 @@
 """
 Test class for uns_mqtt.mqtt_listener
 """
-import inspect
-import os
 import time
+from pathlib import Path
 
 import pytest
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
-EMQX_CERT_FILE = os.path.join(
-    os.path.split(inspect.getfile(inspect.currentframe()))[0], "cert",
-    "broker.emqx.io-ca.crt")
+EMQX_CERT_FILE = Path(
+    __file__).resolve().parent / "cert" / "broker.emqx.io-ca.crt"
 
 MOSQUITTO_HOST = "test.mosquitto.org"  # test the client against the hosted mosquitto broker
-# See https://test.mosquitto.org/
-MOSQUITTO_CERT_FILE = os.path.join(
-    os.path.split(inspect.getfile(inspect.currentframe()))[0], "cert",
-    "mosquitto.org.crt")
+MOSQUITTO_CERT_FILE = Path(
+    __file__).resolve().parent / "cert" / "mosquitto.org.crt"
 
 ONE_TOPIC = ["test/uns/#"]
 
