@@ -4,7 +4,7 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mkashwin/unifiednamespace)
 
-This project aims to create an open sourced option for setting up a unified name space for IIOT transformation.
+This project aims to create an open sourced option for setting up a Unified Namespace for IIOT transformation.
 
 My objective is to build an open source, free to use UNS solution for the community which can be enhanced and adapted by other enthusiasts.
 
@@ -15,7 +15,7 @@ If you are looking for an alternative Unified Namespace implementation with ente
 
 ## What is the Unified Name Space?
 
-A unified namespace is an ***architecture*** that establishes a ***centralized repository*** of data, events,  information, and context ***across all IT and OT systems*** where any application or device can consume or publish data needed for a specific action via an ***event-driven*** and ***loosely coupled architecture*** ​along with the ***relevant context and history***
+A Unified Namespace is an ***architecture*** that establishes a ***centralized repository*** of data, events,  information, and context ***across all IT and OT systems*** where any application or device can consume or publish data needed for a specific action via an ***event-driven*** and ***loosely coupled architecture*** ​along with the ***relevant context and history***
 
 This is a critical concept to allow scalability by preventing point to point connectivity.
 ![Credit Walter Reynolds -- IIOT University](./images/UNS.png)
@@ -180,6 +180,7 @@ Since I did not have the enterprise version of the MQTT brokers, I decided to de
 * The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/README.md)
 * The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at  [05_sparkplugb](./05_sparkplugb/README.md)
 * The MQTT listener to publish UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
+* A module which connects with all the data sources; Neo4j, TimescaleDB, Kafka and MQTT to provide GraphQL apis to query the UNS [07_uns_graphql](./07_uns_graphql/README.md)
 
 I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because
 
@@ -197,6 +198,16 @@ As the  messages are published in the Sparkplug Namespace , they are not visible
 This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages
 The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/README.md)
 
+### **GraphQL Support**
+
+GraphQL is a query language for APIs and a runtime for executing those queries with your existing data. It allows clients to request only the data they need and nothing more, enabling precise and efficient data fetching.
+Some key benefits of adding this support to the UNS are:
+
+1. **Simplified Data Access**: A Unified Namespace typically brings together diverse data sources or systems into a single cohesive structure. By integrating GraphQL capabilities, it provides a unified and simplified way to access and query this diverse dataset. GraphQL's flexible querying allows for precise data retrieval, avoiding the need to interact with each individual data source separately.
+1. **Consolidated Querying**: With GraphQL, querying data from different sources becomes seamless. It allows for composing complex queries across multiple data sources within the Unified Namespace, retrieving precisely the required data without unnecessary overhead or complexity.
+1. **Service/Node Discovery**:Given the contextual and hierarchical nature of the UNS, the ability to search for specific Nodes and/or Properties will significantly simplify data discovery and facilitate easier consumption by providing a coherent interface to access the combined data in the Unified Namespace
+1. **Dynamic Data Retrieval**: GraphQL's nature allows for dynamic data retrieval, enabling clients to specify the exact fields, relationships, and data they need. This flexibility aligns well with the diverse nature of data sources within a Unified Namespace, allowing clients to fetch the required information efficiently.
+
 ## **Setting up the development environment**
 
 The current project contains the following microservices
@@ -207,6 +218,7 @@ The current project contains the following microservices
 1. [04_uns_historian](./04_uns_historian/README.md):  Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a Historian. Spb messages are translated from protocol buffers to JSON prior to persisting
 1. [05_sparkplugb](./05_sparkplugb/README.md):  Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace
 1. [06_uns_kafka](./06_uns_kafka/README.md): Python project for mqtt listener that subscribes to the MQTT broker and publishes to the KAFKA broker
+1. [07_uns_graphql](./07_uns_graphql/README.md): Python project for GraphQL server to query the Unified NameSpace
 
 Each microservice can be independently imported into VSCode by going into the specific microservice folder. Instructions on setting up the python pip & virtual environments are provided in the respective ´README.md´ within that folder
 However to import all  microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
@@ -234,27 +246,36 @@ While importing the folder into VSCode remember to do the following steps the fi
 >
 > 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 
-## Running tests
-
-We  need to execute the tests for each microservice / module separately
+### Running tests
 
 ```python
-# Ensure that the poetry shell is activated
-poetry shell
+# run all tests 
+poetry run pytest
+```
 
-#run all tests excluding integration tests
-pytest -m "not integrationtest" ./02_mqtt-cluster
-pytest -m "not integrationtest" ./03_uns_graphdb
-pytest -m "not integrationtest" ./04_uns_historian
-pytest -m "not integrationtest" ./05_sparkplugb
-pytest -m "not integrationtest" ./06_uns_kafka
+```python
+# run all tests excluding integration tests
+poetry run pytest -m "not integrationtest"
+```
 
-#run all tests
-pytest ./02_mqtt-cluster
-pytest ./03_uns_graphdb
-pytest ./04_uns_historian
-pytest ./05_sparkplugb
-pytest ./06_uns_kafka
+```python
+# run all tests for a specific module
+poetry run pytest  ./02_mqtt-cluster
+poetry run pytest  ./03_uns_graphdb
+poetry run pytest  ./04_uns_historian
+poetry run pytest  ./05_sparkplugb
+poetry run pytest  ./06_uns_kafka
+poetry run pytest  ./07_uns_graphql
+```
+
+```python
+# run all tests for a specific module excluding integration test
+poetry run pytest -m "not integrationtest" ./02_mqtt-cluster
+poetry run pytest -m "not integrationtest" ./03_uns_graphdb
+poetry run pytest -m "not integrationtest" ./04_uns_historian
+poetry run pytest -m "not integrationtest" ./05_sparkplugb
+poetry run pytest -m "not integrationtest" ./06_uns_kafka
+poetry run pytest -m "not integrationtest" ./07_uns_graphql
 ```
 
 ## Known Limitations / workarounds

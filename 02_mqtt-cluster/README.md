@@ -203,17 +203,15 @@ poetry install
 >
 >   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 >
-## Running tests
+### Running tests
 
 The set of test for this module is executed after the poetry setup is done
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell
 #run all tests excluding integration tests
-pytest -m "not integrationtest" test/
+poetry run pytest  -m "not integrationtest" test/
 # runs all tests
-pytest test/
+poetry run pytest  test/
 ```
 
 ## Reference

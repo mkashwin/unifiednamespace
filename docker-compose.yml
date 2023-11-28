@@ -1,15 +1,15 @@
 # This is a docker-compose to rapidly deploy all uns modules and assosciates services needed for deployment
 # DO NOT USE FOR PRODUCTION DELPOYMENT
-# This currently ignores the configurations present in the conf folders and uses the defaults for all configurations 
+# This currently ignores the configurations present in the conf folders and uses the defaults for all configurations
 # Except for passwords of the databases which need to be provided as enviorment variables while running this compose file
 # Env Variables which have to be set are
 #   - UNS_graphdb__password
 #   - UNS_historian__password
 #   - PGPASSWORD
 
-# Example for running this would be 
+# Example for running this would be
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose up -d
-# Example for destroying  all the containers and volumes created 
+# Example for destroying  all the containers and volumes created
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose down --volumes
 version: '3'
 services:
@@ -65,7 +65,7 @@ services:
       KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@uns_kakfa_broker:9093
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER 
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
     healthcheck:
       test: kafka-topics.sh --bootstrap-server uns_kakfa_broker:9092 --topic hc --create --if-not-exists && kafka-topics.sh --bootstrap-server uns_kakfa_broker:9092 --topic hc --describe
       start_period: 10s
@@ -85,7 +85,7 @@ services:
     depends_on:
       uns_timescale_db:
         condition: service_healthy
-    command: 
+    command:
       - /bin/bash
       - -c
       - |
@@ -93,7 +93,7 @@ services:
         PGPASSWORD=$${PGPASSWORD} psql -h $${UNS_historian__hostname} -U postgres -p 5432 -d $${UNS_historian__database} -c "CREATE EXTENSION IF NOT EXISTS timescaledb;"
         PGPASSWORD=$${PGPASSWORD} psql -h $${UNS_historian__hostname} -U postgres -p 5432 -c "CREATE ROLE $${UNS_historian__username} LOGIN PASSWORD '$${UNS_historian__password}';"
         PGPASSWORD=$${UNS_historian__password} psql -h $${UNS_historian__hostname} -U $${UNS_historian__username} -d $${UNS_historian__database} -p 5432 -c "CREATE TABLE $${UNS_historian__table} (time TIMESTAMPTZ NOT NULL, topic TEXT NOT NULL, client_id TEXT, mqtt_msg JSONB);"
-        PGPASSWORD=$${UNS_historian__password} psql -h $${UNS_historian__hostname} -U $${UNS_historian__username} -d $${UNS_historian__database} -p 5432 -c "SELECT create_hypertable('$${UNS_historian__table}', 'time');"       
+        PGPASSWORD=$${UNS_historian__password} psql -h $${UNS_historian__hostname} -U $${UNS_historian__username} -d $${UNS_historian__database} -p 5432 -c "SELECT create_hypertable('$${UNS_historian__table}', 'time');"
         echo "Successfully created & configured timescaledb for the UNS"
 
   graphdb_client:
@@ -107,7 +107,7 @@ services:
       UNS_mqtt__host: uns_mqtt_broker
       UNS_graphdb__url: bolt://uns_neo4j_db:7687
       UNS_graphdb__username: neo4j
-      UNS_graphdb__password: ${UNS_graphdb__password}      
+      UNS_graphdb__password: ${UNS_graphdb__password}
     depends_on:
       uns_mqtt_broker:
         condition: service_healthy
@@ -127,7 +127,7 @@ services:
       UNS_historian__database: "uns_historian"
       UNS_historian__table: "UnifiedNamespace"
       UNS_historian__username: uns_dbuser
-      UNS_historian__password: ${UNS_historian__password}     
+      UNS_historian__password: ${UNS_historian__password}
     depends_on:
       uns_mqtt_broker:
         condition: service_healthy
@@ -165,4 +165,30 @@ services:
       uns_kakfa_broker:
         condition: service_healthy
 
+  graphql_server:
+    build:
+      context: .
+      dockerfile: ./07_uns_graphql/Dockerfile
+    # volumes:
+    #   - ./conf:/app/conf
+    environment:
+      UNS_MODULE: 07_uns_graphql
+      UNS_mqtt__host: uns_mqtt_broker
+
+      UNS_graphdb__url: bolt://uns_neo4j_db:7687
+      UNS_graphdb__username: neo4j
+      UNS_graphdb__password: ${UNS_graphdb__password}
+
+      UNS_historian__hostname: uns_timescale_db
+      UNS_historian__database: "uns_historian"
+      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__username: uns_dbuser
+      UNS_historian__password: ${UNS_historian__password}
+
+      UNS_kafka__config: '@json {"client.id": "uns_kafka_client", "bootstrap.servers": "uns_kakfa_broker:9092", "enable.idempotence": true, "retries": 10, "compression.type": "gzip"}'
+    depends_on:
+      uns_mqtt_broker:
+        condition: service_healthy
+      uns_kakfa_broker:
+        condition: service_healthy
 

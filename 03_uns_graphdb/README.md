@@ -23,7 +23,7 @@ We need setup 2 instances of this connector
 There are a number of ways to deploy and run your Neo4j instance.
 I chose to run this as a docker instance to ease the setup and portability.
 
-Refer to the **[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)** for more guidance  
+Refer to the **[Detail Guide](https://neo4j.com/developer/docker-run-neo4j/)** for more guidance
 We will also be using the [APOC plugin](https://neo4j.com/docs/apoc/5/).
 
 Quick command reference
@@ -31,10 +31,10 @@ Quick command reference
 ```bash
 # install docker
 sudo snap install docker
-# add current user to docker group so that we don't need to sudo for docker executions 
+# add current user to docker group so that we don't need to sudo for docker executions
 sudo groupadd docker
 sudo usermod -aG docker $USER
-# you might need to reboot here  
+# you might need to reboot here
 # Run the database docker
 docker run \
     --name  uns_graphdb \
@@ -50,11 +50,11 @@ docker run \
     --env apoc.import.file.use_neo4j_config=true \
     --env NEO4J_PLUGINS=\[\"apoc\"\] \
     neo4j:latest
-# --name : <container_name> . Needed 
+# --name : <container_name> . Needed
 # -p : # Ports of operation 7687 is the DB server, 7474 is the Neo4j browser( not recommended for production)
 # -v : volume to persist data,logs, import file directory and plugins
 #- d : run the container detached
-# --env NEO4J_AUTH=#<username/<password> 
+# --env NEO4J_AUTH=#<username/<password>
 ```
 
 In a production environment we should download the APOC release matching our Neo4j version and, copy it to a local folder, and supply it as a data volume mounted at /plugins. See [APOC Installation Guide](https://neo4j.com/docs/apoc/5/installation/#docker)
@@ -141,13 +141,13 @@ Topic : **erp/**
 *message 1:*
 
 ```json
-    {value1: 202203011130, id1: "identifier"} 
+    {value1: 202203011130, id1: "identifier"}
 ```
 
 *message 2:*
 
 ```json
-    {value1: 202203011145, sensor1: 100} 
+    {value1: 202203011145, sensor1: 100}
 ```
 
 will result in a node in the GraphDB
@@ -165,21 +165,21 @@ will result in a node in the GraphDB
 * We get the following graph created
 
   ![Graph View](../images/GraphDB_view.png)
-  
+
 * Each level of the topic is represented as a node with a relationship also established between the nodes.
   The label to the nodes is also assigned as per the Node Types which were [configured](#key-configurations-to-provide).
 
   e.g. the node `my_device` in this message  has the label `DEVICE` in the GraphDB.
 
-  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB.  
+  e.g. the node `area51` in this message  has the label `AREA` in the GraphDB.
 
   ![Graph View](../images/GraphDB_view0.png)
 
-* A Tabular of the same data  
+* A Tabular of the same data
 
   ![Graph View](../images/GraphDB_Textview.png)
 
-* Graph view of UNS and Sparkplug payloads  
+* Graph view of UNS and Sparkplug payloads
 
   ![Graph View](../images/GraphDB_with_spb_and_uns.png)
 
@@ -193,10 +193,9 @@ This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
-poetry shell 
+poetry shell
 python -m pip install --upgrade pip poetry
 poetry install
-python ./src/uns_graphdb/graphdb_handler.py
 ```
 
 > **Setting up VSCode**
@@ -214,28 +213,25 @@ python ./src/uns_graphdb/graphdb_handler.py
 >
 > 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
 
-## Running the python script
+### Running the python script
 
 This function is executed by the following command with the current folder as [`03_uns_graphdb`](.)
 
 ```bash
 # Ensure that the poetry shell is activated
-poetry shell 
-poetry install
+poetry shell
 python ./src/uns_graphdb/graphdb_handler.py
 ```
 
-## Running tests
+### Running tests
 
 The set of test for this module is executed by
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell 
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
+#run all tests excluding integration tests
+poetry run pytest  -m "not integrationtest" test/
 # runs all tests
-pytest test/
+poetry run pytest test/
 ```
 
 ## Deploying the docker container image created for this module
@@ -270,7 +266,7 @@ docker run --name uns_mqtt_graphdb -d -v $PWD/conf:/app/conf uns/graphdb:latest
 
 ## Limitations / workarounds
 
-1. [x] ~~Handle nested JSON messages.~~  
+1. [x] ~~Handle nested JSON messages.~~
   Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
   Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
   See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)

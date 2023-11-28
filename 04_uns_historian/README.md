@@ -168,12 +168,10 @@ python ./src/uns_historian/uns_mqtt_historian.py
 The set of test for this module is executed by
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell 
 #run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
+poetry run pytest -m "not integrationtest" test/
 # runs all tests
-pytest test/
+poetry run pytest test/
 ```
 
 ## Deploying the docker container image created for this module

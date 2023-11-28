@@ -39,7 +39,7 @@ see [kafka_handler.py.convert_MQTT_KAFKA_topic()](./src/uns_kafka/kafka_handler.
 
 This application has two configuration file.
 
-1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers
+1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as the Kafka brokers
     **key** | **sub key** | **description**  | ***default value*** |
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
@@ -52,10 +52,10 @@ This application has two configuration file.
     mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
     mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  None
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
-    kafka | config  | Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | *None*
+    **kafka** | **config**\*  | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | *None*
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
 
-1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster
+1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect
     This file is not checked into the repository for security purposes. However there is a template file provided [**`.secrets_template.yaml`**](./conf/.secrets_template.yaml) which should be edited and renamed to **`.secrets.yaml`**
     **key** | **sub key** | **sub key** | **description**  | ***default value*** |
     :------ | :------ | :------ | :------ | :------
@@ -103,10 +103,9 @@ This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
-poetry shell 
+poetry shell
 python -m pip install --upgrade pip poetry
 poetry install
-python ./src/uns_kafka/uns_kafka_listener.py
 ```
 
 > **Setting up VSCode**
@@ -131,22 +130,20 @@ Ensure that the [configuration files](./conf/) are correctly updated to your MQT
 
 ```bash
 # Ensure that the poetry shell is activated
-poetry shell 
+poetry shell
 poetry install
 python ./src/uns_kafka/uns_kafka_listener.py
 ```
 
-## Running tests
+### Running tests
 
 The set of test for this module is executed by
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell 
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
+#run all tests excluding integration tests
+poetry run pytest -m "not integrationtest" test/
 # runs all tests
-pytest test/
+poetry run pytest test/
 ```
 
 ## Deploying the docker container image created for this module

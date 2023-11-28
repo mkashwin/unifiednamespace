@@ -58,7 +58,7 @@ The spB payload may contain multiple metrics which belong to different topics he
     - tags for the same topic are merged in to one JSON object
     - if a metric is historical, we create an array of tag values with the latest version being at 0 position
     - if a metric name is duplicated and not historical, the newer tag value will override the older tag value in the JSON object
-    - the overall timestamp for the JSON object is the max of timestamps of all the tags  
+    - the overall timestamp for the JSON object is the max of timestamps of all the tags
 
 This mapping is to be done only for the message types
 
@@ -70,12 +70,12 @@ This mapping is to be done only for the message types
 ***IMPORTANT: The birth and death messages are not mapped to the UNS currently***
 
 <!-- \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
-**SparkplugB Namespace** |  **ISA-95 Namespace** | ***Comments*** 
+**SparkplugB Namespace** |  **ISA-95 Namespace** | ***Comments***
 ------ | ------ | ------
-spBv1.0 | - | Default namespace for sparkplugB. No mapping needed 
+spBv1.0 | - | Default namespace for sparkplugB. No mapping needed
 \<group_id\> | \<enterprise\>/\<facility\> | Map the group id or the alias to the enterprise and facility
 \<message_type\> | - | Provides guidance on handling the payload. Not needed for mapping
-\<edge_node_id\> | \<area\>/\<line\> | Map the edge node id or the alias to the area and the line 
+\<edge_node_id\> | \<area\>/\<line\> | Map the edge node id or the alias to the area and the line
 \<device_id\> | \<device\> | Map the device id to th end device. If the device id is not provided then <br />extract the device(s) from the payload to appropriately map the messages -->
 
 ## Key Configurations to provide
@@ -123,7 +123,7 @@ This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 python -m pip install --upgrade pip
 pip install poetry
 # Ensure that the poetry shell is activated
-poetry shell 
+poetry shell
 python -m pip install --upgrade pip poetry
 poetry install
 python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
@@ -151,22 +151,20 @@ Ensure that the [configuration files](./conf/) are correctly updated to your MQT
 
 ```bash
 # Ensure that the poetry shell is activated
-poetry shell 
+poetry shell
 poetry install
 python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
 ```
 
-## Running tests
+### Running tests
 
 The set of test for this module is executed by
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell 
-#run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
+#run all tests excluding integration tests
+poetry run pytest -m "not integrationtest" test/
 # runs all tests
-pytest test/
+poetry run pytest test/
 ```
 
 ## Deploying the docker container image created for this module
@@ -202,6 +200,6 @@ docker run --name spb_to_uns_mqtt -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/uni
 1. [ ] Need to understand how to handle NDEATH, DDEATH, ~~STATE~~ message types
    - STATE messages are not Protobuf messages but rather JSON messages. They cannot be mapped to the UNS as they have no metrics
 1. [x] ~~Handle non compliant messages~~
-   - non compliant messages will be logged as an error and ignored  
+   - non compliant messages will be logged as an error and ignored
 1. [ ] Need to understand how to handle metric types DataSet, Template
 1. [ ] Need to understand how to handle metadata, properties, is_multi_part etc.
