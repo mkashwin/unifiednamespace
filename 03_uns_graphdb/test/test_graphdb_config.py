@@ -61,12 +61,11 @@ def test_mqtt_config():
 
     port: int = settings.get("mqtt.port", 1883)
     assert isinstance(
-        port,
-        int) or port is None, f"Invalid value for key 'mqtt.port':{port!s}"
+        port, int) or port is None, f"Invalid value for key 'mqtt.port':{port}"
     assert isinstance(
         port,
         int,
-    ) and 1024 <= port <= 49151, f"'mqtt.port':{port!s} must be between 1024 to 49151"
+    ) and 1024 <= port <= 49151, f"'mqtt.port':{port} must be between 1024 to 49151"
 
     username = settings.get("mqtt.username")
     password = settings.get("mqtt.password")
@@ -171,7 +170,7 @@ def test_connectivity_to_mqtt():
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
-        (host, port)) == 0, f"Host: {host} is not reachable at port:{port!s}"
+        (host, port)) == 0, f"Host: {host} is not reachable at port:{port}"
 
 
 @pytest.mark.integrationtest()
@@ -191,4 +190,4 @@ def test_connectivity_to_graphdb():
         port = 7687
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(
-        (host, port)) == 0, f"Host: {host} is not reachable at port:{port!s}"
+        (host, port)) == 0, f"Host: {host} is not reachable at port:{port}"

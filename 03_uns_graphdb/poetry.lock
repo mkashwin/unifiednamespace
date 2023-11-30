@@ -240,13 +240,13 @@ yaml = ["ruamel.yaml"]
 
 [[package]]
 name = "idna"
-version = "3.4"
+version = "3.6"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
-    {file = "idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
+    {file = "idna-3.6-py3-none-any.whl", hash = "sha256:c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f"},
+    {file = "idna-3.6.tar.gz", hash = "sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca"},
 ]
 
 [[package]]
@@ -291,12 +291,12 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.14.1"
+version = "5.15.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.14.1.tar.gz", hash = "sha256:3200be8550ed16622b2fadf4f749d08b9982989c4bfce6f99ab693f104104cb4"},
+    {file = "neo4j-5.15.0.tar.gz", hash = "sha256:5c53eccf5192ac21463d3fac05cf58f1547ed231b953c837aa4393e2fc713ed3"},
 ]
 
 [package.dependencies]
@@ -689,4 +689,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0cb702b6fb82761aaeb9f452c39d02be1b5626329c09264f1dbb608aec8c2207"
+content-hash = "0cd03194d1a9aa329d15b3bb8972cce560242ebae94b5731797c141569160122"

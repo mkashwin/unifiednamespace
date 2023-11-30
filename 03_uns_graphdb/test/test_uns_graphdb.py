@@ -11,6 +11,7 @@ from google.protobuf.json_format import MessageToDict
 from neo4j import exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_graphdb.graphdb_config import GraphDBConfig
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
@@ -109,13 +110,13 @@ def test_mqtt_graphdb_persistance(topic: str, message):
                 inbound_payload = sparkplug_b_pb2.Payload()
                 inbound_payload.ParseFromString(message)
                 message_dict = MessageToDict(inbound_payload)
-                node_type = uns_mqtt_graphdb.graphdb_spb_node_types
+                node_type = GraphDBConfig.graphdb_spb_node_types
             else:
                 message_dict = message
-                node_type = uns_mqtt_graphdb.graphdb_node_types
+                node_type = GraphDBConfig.graphdb_node_types
 
             attr_nd_typ: Optional[
-                str] = uns_mqtt_graphdb.graphdb_nested_attribute_node_type
+                str] = GraphDBConfig.graphdb_nested_attribute_node_type
 
             try:
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
