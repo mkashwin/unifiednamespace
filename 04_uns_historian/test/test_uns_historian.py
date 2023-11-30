@@ -10,6 +10,7 @@ import pytz
 from google.protobuf.json_format import MessageToDict
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_historian.historian_config import MQTTConfig
 from uns_historian.uns_mqtt_historian import UnsMqttHistorian
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
@@ -85,9 +86,8 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
             try:
                 cursor = uns_mqtt_historian.uns_historian_handler.get_cursor()
                 query_timestamp: datetime = datetime.datetime.fromtimestamp(
-                    float(
-                        message_dict.get(
-                            uns_mqtt_historian.mqtt_timestamp_key)) / 1000)
+                    float(message_dict.get(MQTTConfig.mqtt_timestamp_key)) /
+                    1000)
                 compare_with_historian(
                     cursor, uns_mqtt_historian.uns_historian_handler.table,
                     query_timestamp, topic, uns_mqtt_historian.client_id,
