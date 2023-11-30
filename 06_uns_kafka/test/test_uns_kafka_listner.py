@@ -8,6 +8,7 @@ from confluent_kafka import OFFSET_END, Consumer
 from confluent_kafka.admin import AdminClient
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_kafka.uns_kafka_config import KAFKAConfig
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -23,7 +24,7 @@ def test_uns_kafka_mapper_init():
         assert uns_kafka_mapper is not None, (
             "Connection to either the MQTT Broker or Kafka broker did not happen"
         )
-        admin_client = AdminClient(uns_kafka_mapper.kafka_config_map)
+        admin_client = AdminClient(KAFKAConfig.kafka_config_map)
         topics = admin_client.list_topics().topics
 
         assert topics, "Connection to either  Kafka broker did not happen"
@@ -103,7 +104,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
 
     try:
         uns_kafka_mapper = UNSKafkaMapper()
-        admin_client = AdminClient(uns_kafka_mapper.kafka_config_map)
+        admin_client = AdminClient(KAFKAConfig.kafka_config_map)
         publish_properties = None
         if uns_kafka_mapper.uns_client.protocol == UnsMQTTClient.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
@@ -123,7 +124,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
 
             # Create a consumer to read the Kafka broker
             kafka_listener: Consumer = get_kafka_consumer(
-                uns_kafka_mapper.kafka_config_map)
+                KAFKAConfig.kafka_config_map)
 
             # Set up a callback to handle the '--reset' flag.
             def reset_offset(consumer, partitions):

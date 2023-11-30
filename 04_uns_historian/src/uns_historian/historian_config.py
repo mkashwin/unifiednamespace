@@ -25,8 +25,7 @@ class MQTTConfig:
     # generate client ID with pub prefix randomly
 
     mqtt_transport: Optional[str] = settings.get("mqtt.transport", "tcp")
-    mqtt_mqtt_version_code: int = settings.get("mqtt.version",
-                                               UnsMQTTClient.MQTTv5)
+    mqtt_version_code: int = settings.get("mqtt.version", UnsMQTTClient.MQTTv5)
     mqtt_qos: int = settings.get("mqtt.qos", 2)
     reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure",
                                               True)

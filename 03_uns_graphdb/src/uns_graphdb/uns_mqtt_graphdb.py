@@ -28,7 +28,7 @@ class UnsMqttGraphDb:
             client_id=self.client_id,
             clean_session=MQTTConfig.clean_session,
             userdata=None,
-            protocol=MQTTConfig.mqtt_mqtt_version_code,
+            protocol=MQTTConfig.mqtt_version_code,
             transport=MQTTConfig.mqtt_transport,
             reconnect_on_failure=MQTTConfig.reconnect_on_failure)
 
