@@ -86,8 +86,7 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
             try:
                 cursor = uns_mqtt_historian.uns_historian_handler.get_cursor()
                 query_timestamp: datetime = datetime.datetime.fromtimestamp(
-                    float(message_dict.get(MQTTConfig.mqtt_timestamp_key)) /
-                    1000)
+                    float(message_dict.get(MQTTConfig.timestamp_key)) / 1000)
                 compare_with_historian(
                     cursor, uns_mqtt_historian.uns_historian_handler.table,
                     query_timestamp, topic, uns_mqtt_historian.client_id,

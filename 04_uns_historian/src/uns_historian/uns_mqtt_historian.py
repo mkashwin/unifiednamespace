@@ -28,32 +28,32 @@ class UnsMqttHistorian:
             client_id=self.client_id,
             clean_session=MQTTConfig.clean_session,
             userdata=None,
-            protocol=MQTTConfig.mqtt_version_code,
-            transport=MQTTConfig.mqtt_transport,
+            protocol=MQTTConfig.version,
+            transport=MQTTConfig.transport,
             reconnect_on_failure=MQTTConfig.reconnect_on_failure)
 
         # Connect to the database
         self.uns_historian_handler = HistorianHandler(
-            hostname=HistorianConfig.historian_hostname,
-            port=HistorianConfig.historian_port,
-            database=HistorianConfig.historian_database,
-            table=HistorianConfig.historian_table,
-            user=HistorianConfig.historian_user,
-            password=HistorianConfig.historian_password,
-            sslmode=HistorianConfig.historian_sslmode)
+            hostname=HistorianConfig.hostname,
+            port=HistorianConfig.port,
+            database=HistorianConfig.database,
+            table=HistorianConfig.table,
+            user=HistorianConfig.user,
+            password=HistorianConfig.password,
+            sslmode=HistorianConfig.sslmode)
 
         # Callback messages
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.uns_client.run(host=MQTTConfig.mqtt_host,
-                            port=MQTTConfig.mqtt_port,
-                            username=MQTTConfig.mqtt_username,
-                            password=MQTTConfig.mqtt_password,
-                            tls=MQTTConfig.mqtt_tls,
-                            keepalive=MQTTConfig.mqtt_keepalive,
+        self.uns_client.run(host=MQTTConfig.host,
+                            port=MQTTConfig.port,
+                            username=MQTTConfig.username,
+                            password=MQTTConfig.password,
+                            tls=MQTTConfig.tls,
+                            keepalive=MQTTConfig.keepalive,
                             topics=MQTTConfig.topics,
-                            qos=MQTTConfig.mqtt_qos)
+                            qos=MQTTConfig.qos)
 
     def on_message(self, client, userdata, msg):
         """
@@ -70,13 +70,13 @@ class UnsMqttHistorian:
             filtered_message = self.uns_client.get_payload_as_dict(
                 topic=msg.topic,
                 payload=msg.payload,
-                mqtt_ignored_attributes=MQTTConfig.mqtt_ignored_attributes)
+                mqtt_ignored_attributes=MQTTConfig.ignored_attributes)
             # save message
             self.uns_historian_handler.persist_mqtt_msg(
                 client_id=client._client_id.decode(),
                 topic=msg.topic,
                 timestamp=float(
-                    filtered_message.get(MQTTConfig.mqtt_timestamp_key,
+                    filtered_message.get(MQTTConfig.timestamp_key,
                                          time.time())),
                 message=filtered_message)
         except SystemError as system_error:
