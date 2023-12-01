@@ -4,7 +4,7 @@ Test cases for uns_kafka_config
 import re
 import socket
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 from confluent_kafka import Producer
@@ -82,7 +82,7 @@ def test_mqtt_config():
     assert (tls is None) or (Path(tls.get("ca_certs")).is_file(
     )), f"Unable to find certificate at: {tls.get('ca_certs')}"
 
-    topics: Optional[str] = settings.get("mqtt.topics", ["#"])
+    topics: List[str] = settings.get("mqtt.topics", ["#"])
     for topic in topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),

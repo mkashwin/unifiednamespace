@@ -2,7 +2,7 @@
 Configuration reader for mqtt server and Timescale DB server details
 """
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import UnsMQTTClient
@@ -29,14 +29,16 @@ class MQTTConfig:
     qos: int = settings.get("mqtt.qos", 2)
     reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure",
                                               True)
-    clean_session: bool = settings.get("mqtt.clean_session")
+    clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
     host: Optional[str] = settings.mqtt["host"]
     port: int = settings.get("mqtt.port", 1883)
     username: Optional[str] = settings.get("mqtt.username")
     password: Optional[str] = settings.get("mqtt.password")
     tls: dict = settings.get("mqtt.tls", None)
-    topics: Optional[str] = settings.get("mqtt.topics", ["#"])
+    topics: List[str] = settings.get("mqtt.topics", ["#"])
+    if isinstance(topics, str):
+        topics = [topics]
     keepalive: int = settings.get("mqtt.keep_alive", 60)
     ignored_attributes: dict = settings.get("mqtt.ignored_attributes", None)
     timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")

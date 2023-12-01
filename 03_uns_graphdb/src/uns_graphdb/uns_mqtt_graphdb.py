@@ -28,28 +28,27 @@ class UnsMqttGraphDb:
             client_id=self.client_id,
             clean_session=MQTTConfig.clean_session,
             userdata=None,
-            protocol=MQTTConfig.mqtt_version_code,
-            transport=MQTTConfig.mqtt_transport,
+            protocol=MQTTConfig.version,
+            transport=MQTTConfig.transport,
             reconnect_on_failure=MQTTConfig.reconnect_on_failure)
 
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
         # Connect to the database
-        self.graph_db_handler = GraphDBHandler(
-            uri=GraphDBConfig.graphdb_url,
-            user=GraphDBConfig.graphdb_user,
-            password=GraphDBConfig.graphdb_password,
-            database=GraphDBConfig.graphdb_database)
+        self.graph_db_handler = GraphDBHandler(uri=GraphDBConfig.db_url,
+                                               user=GraphDBConfig.user,
+                                               password=GraphDBConfig.password,
+                                               database=GraphDBConfig.database)
 
-        self.uns_client.run(host=MQTTConfig.mqtt_host,
-                            port=MQTTConfig.mqtt_port,
-                            username=MQTTConfig.mqtt_username,
-                            password=MQTTConfig.mqtt_password,
-                            tls=MQTTConfig.mqtt_tls,
-                            keepalive=MQTTConfig.mqtt_keepalive,
+        self.uns_client.run(host=MQTTConfig.host,
+                            port=MQTTConfig.port,
+                            username=MQTTConfig.username,
+                            password=MQTTConfig.password,
+                            tls=MQTTConfig.tls,
+                            keepalive=MQTTConfig.keepalive,
                             topics=MQTTConfig.topics,
-                            qos=MQTTConfig.mqtt_qos)
+                            qos=MQTTConfig.qos)
 
     # end of init
 
@@ -64,24 +63,23 @@ class UnsMqttGraphDb:
                      "}", str(client), str(userdata), str(msg))
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
-                node_types = GraphDBConfig.graphdb_spb_node_types
+                node_types = GraphDBConfig.spb_node_types
             else:
-                node_types = GraphDBConfig.graphdb_node_types
+                node_types = GraphDBConfig.uns_node_types
             # get the payload as a dict object
             filtered_message = self.uns_client.get_payload_as_dict(
                 topic=msg.topic,
                 payload=msg.payload,
-                mqtt_ignored_attributes=MQTTConfig.mqtt_ignored_attributes)
+                mqtt_ignored_attributes=MQTTConfig.ignored_attributes)
 
             # save message
             self.graph_db_handler.persist_mqtt_msg(
                 topic=msg.topic,
                 message=filtered_message,
-                timestamp=filtered_message.get(MQTTConfig.mqtt_timestamp_key,
+                timestamp=filtered_message.get(MQTTConfig.timestamp_key,
                                                time.time()),
                 node_types=node_types,
-                attr_node_type=GraphDBConfig.graphdb_nested_attribute_node_type
-            )
+                attr_node_type=GraphDBConfig.nested_attributes_node_type)
         except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",

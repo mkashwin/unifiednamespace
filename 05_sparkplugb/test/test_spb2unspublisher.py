@@ -3,17 +3,16 @@ Test cases for uns_spb_mapper.spb2unspublisher#Spb2UNSPublisher
 """
 import time
 from types import SimpleNamespace
-from typing import Optional
 
 import pytest
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
-from uns_spb_mapper.sparkplugb_enc_config import settings
+from uns_spb_mapper.sparkplugb_enc_config import MQTTConfig
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
-MQTT_HOST: Optional[str] = settings.mqtt["host"]
-MQTT_PORT: int = settings.get("mqtt.port", 1883)
+MQTT_HOST: str = MQTTConfig.host
+MQTT_PORT: int = MQTTConfig.port
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])

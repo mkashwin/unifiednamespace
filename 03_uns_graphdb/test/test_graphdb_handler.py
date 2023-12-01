@@ -5,7 +5,7 @@ from typing import Optional
 
 import pytest
 from neo4j import Session, exceptions
-from uns_graphdb.graphdb_config import settings
+from uns_graphdb.graphdb_config import GraphDBConfig, settings
 from uns_graphdb.graphdb_handler import NODE_RELATION_NAME, GraphDBHandler
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -217,22 +217,17 @@ def test_persist_mqtt_msg(topic: str, message: dict):
     Testcase for GraphDBHandler.persist_mqtt_msg.
     Validate that the nested dict object is properly split
     """
-    graphdb_url: Optional[str] = settings.graphdb["url"]
-    graphdb_user: Optional[str] = settings.graphdb["username"]
+    graphdb_url: str = GraphDBConfig.db_url
+    graphdb_user: str = GraphDBConfig.user
 
-    graphdb_password: Optional[str] = settings.graphdb["password"]
-    graphdb_database: Optional[str] = settings.get("graphdb.database", None)
+    graphdb_password: str = GraphDBConfig.password
+    graphdb_database: Optional[str] = GraphDBConfig.database
     if topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
-        node_types = settings.get(
-            "graphdb.spB_node_types",
-            ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
+        node_types: tuple = GraphDBConfig.spb_node_types
     else:
-        node_types: tuple = tuple(
-            settings.get("graphdb.uns_node_types",
-                         ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
+        node_types: tuple = GraphDBConfig.uns_node_types
 
-    attr_nd_typ: Optional[str] = settings.get(
-        "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
+    attr_nd_typ: str = GraphDBConfig.nested_attributes_node_type
     try:
         graph_db_handler = GraphDBHandler(uri=graphdb_url,
                                           user=graphdb_user,

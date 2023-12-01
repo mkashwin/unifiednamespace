@@ -33,8 +33,8 @@ class UNSSparkPlugBMapper:
             client_id=self.client_id,
             clean_session=MQTTConfig.clean_session,
             userdata=None,
-            protocol=MQTTConfig.mqtt_version_code,
-            transport=MQTTConfig.mqtt_transport,
+            protocol=MQTTConfig.version_code,
+            transport=MQTTConfig.transport,
             reconnect_on_failure=MQTTConfig.reconnect_on_failure)
 
         self.uns_client.on_message = self.on_message
@@ -42,14 +42,14 @@ class UNSSparkPlugBMapper:
 
         self.spb_2_uns_pub: Spb2UNSPublisher = Spb2UNSPublisher(
             self.uns_client)
-        self.uns_client.run(host=MQTTConfig.mqtt_host,
-                            port=MQTTConfig.mqtt_port,
-                            username=MQTTConfig.mqtt_username,
-                            password=MQTTConfig.mqtt_password,
-                            tls=MQTTConfig.mqtt_tls,
-                            keepalive=MQTTConfig.mqtt_keepalive,
+        self.uns_client.run(host=MQTTConfig.host,
+                            port=MQTTConfig.port,
+                            username=MQTTConfig.username,
+                            password=MQTTConfig.password,
+                            tls=MQTTConfig.tls,
+                            keepalive=MQTTConfig.keepalive,
                             topics=MQTTConfig.topics,
-                            qos=MQTTConfig.mqtt_qos)
+                            qos=MQTTConfig.qos)
 
     def on_message(self, client, userdata, msg):
         """
