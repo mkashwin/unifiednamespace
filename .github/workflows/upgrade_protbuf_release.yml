@@ -65,7 +65,7 @@ jobs:
             rm protoc-${latest_release:1}-${platform}.zip
 
             #rename the protoc file 
-            if [[ -f bin/protoc && -n ${suffix}]] ; then
+            if [[ -f bin/protoc && -n ${suffix} ]] ; then
               mv bin/protoc bin/protoc${suffix};
             fi
             cp -f bin/*  ../protobuf/bin/
