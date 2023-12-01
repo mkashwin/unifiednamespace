@@ -28,7 +28,7 @@ def test_kafka_handler_init():
 
 @pytest.mark.parametrize("mqtt_topic, kafka_topic", [(
     "a/b/c",
-    "a_b_c",
+    "a.b.c",
 ), (
     "abc",
     "abc",

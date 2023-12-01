@@ -59,5 +59,6 @@ class KafkaHandler:
         """
         Converts the MQTT topic to the correct kafka topic
         topic: MQTT topic
+        Does not handle wild cards as that is not expected here
         """
-        return mqtt_topic.replace("/", "_")
+        return mqtt_topic.replace("/", ".")
