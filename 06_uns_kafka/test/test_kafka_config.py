@@ -51,7 +51,7 @@ def test_mqtt_config():
         True, False,
         None), f"Invalid value for key 'mqtt.clean_session'{clean_session}"
 
-    host: Optional[str] = settings.mqtt["host"]
+    host: Optional[str] = settings.get("mqtt.host")
     assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
 
     port: int = settings.get("mqtt.port", 1883)
@@ -131,7 +131,7 @@ def test_connectivity_to_mqtt():
     Test if the provided configurations for the MQTT server are valid and
     there is connectivity to the MQTT broker
     """
-    host: Optional[str] = settings.mqtt["host"]
+    host: Optional[str] = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert sock.connect_ex(

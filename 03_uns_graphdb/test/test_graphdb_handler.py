@@ -5,7 +5,7 @@ from typing import Optional
 
 import pytest
 from neo4j import Session, exceptions
-from uns_graphdb.graphdb_config import GraphDBConfig, settings
+from uns_graphdb.graphdb_config import GraphDBConfig
 from uns_graphdb.graphdb_handler import NODE_RELATION_NAME, GraphDBHandler
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 

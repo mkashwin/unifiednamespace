@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 import pytest
 from uns_graphdb.graphdb_config import GraphDBConfig, MQTTConfig, settings
 
-is_configs_provided: bool = (settings.graphdb["url"] is not None
+is_configs_provided: bool = (settings.get("graphdb.url") is not None
                              and settings.get("graphdb.username") is not None
                              and settings.get("mqtt.host") is not None)
 

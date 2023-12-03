@@ -1,11 +1,15 @@
 """
 Configuration reader for mqtt server and Neo4J DB server details
 """
+import logging
 from pathlib import Path
 from typing import List, Optional
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
+# Logger
+LOGGER = logging.getLogger(__name__)
 
 current_folder = Path(__file__).resolve()
 
@@ -30,7 +34,7 @@ class MQTTConfig:
                                               True)
     clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
-    host: str = settings.mqtt["host"]
+    host: str = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
     username: Optional[str] = settings.get("mqtt.username")
     password: Optional[str] = settings.get("mqtt.password")
@@ -43,19 +47,22 @@ class MQTTConfig:
         "mqtt.ignored_attributes", None)
     timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
-        raise SystemError(
+        LOGGER.error(
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
+
+    def is_config_valid(self) -> bool:
+        return self.host is not None
 
 
 class GraphDBConfig:
     """
     Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'"
     """
-    db_url: str = settings.graphdb["url"]
-    user: str = settings.graphdb["username"]
+    db_url: str = settings.get("graphdb.url")
+    user: str = settings.get("graphdb.username")
 
-    password: str = settings.graphdb["password"]
+    password: str = settings.get("graphdb.password")
     # if we want to use a database different from the default
     database: Optional[str] = settings.get("graphdb.database", None)
 
@@ -69,13 +76,17 @@ class GraphDBConfig:
             ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
     nested_attributes_node_type: str = settings.get(
         "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
+
     if db_url is None:
-        raise SystemError(
+        LOGGER.error(
             "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'",
         )
 
     if (user is None) or (password is None):
-        raise SystemError(
-            "GraphDB Username & Password not provided."
-            "Update keys 'graphdb.username' and 'graphdb.password' "
-            "in '../../conf/.secrets.yaml'")
+        LOGGER.error("GraphDB Username & Password not provided."
+                     "Update keys 'graphdb.username' and 'graphdb.password' "
+                     "in '../../conf/.secrets.yaml'")
+
+    def is_config_valid(self) -> bool:
+        return not ((self.user is None) or
+                    (self.password is None) or self.db_url is None)

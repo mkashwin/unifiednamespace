@@ -31,7 +31,7 @@ class MQTTConfig:
                                               True)
     clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
-    mqtt_host: str = settings.mqtt["host"]
+    mqtt_host: str = settings.get("mqtt.host")
     mqtt_port: int = settings.get("mqtt.port", 1883)
     mqtt_username: str = settings.get("mqtt.username")
     mqtt_password: str = settings.get("mqtt.password")

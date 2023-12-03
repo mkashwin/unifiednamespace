@@ -1,11 +1,14 @@
 """
 Configuration reader for mqtt server where UNS and SparkplugB are published
 """
+import logging
 from pathlib import Path
 from typing import List, Optional
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
+LOGGER = logging.getLogger(__name__)
 
 current_folder = Path(__file__).resolve()
 
@@ -30,7 +33,7 @@ class MQTTConfig:
                                               True)
     clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
-    host: str = settings.mqtt["host"]
+    host: str = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
     username: Optional[str] = settings.get("mqtt.username")
     password: Optional[str] = settings.get("mqtt.password")
@@ -42,6 +45,9 @@ class MQTTConfig:
     ignored_attributes: dict = settings.get("mqtt.ignored_attributes", None)
     timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
-        raise SystemError(
+        LOGGER.error(
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
+
+    def is_config_valid(self) -> bool:
+        return self.host is not None

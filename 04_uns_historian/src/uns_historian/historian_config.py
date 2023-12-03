@@ -1,11 +1,15 @@
 """
 Configuration reader for mqtt server and Timescale DB server details
 """
+import logging
 from pathlib import Path
 from typing import List, Optional
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
+# Logger
+LOGGER = logging.getLogger(__name__)
 
 current_folder = Path(__file__).resolve()
 
@@ -31,7 +35,7 @@ class MQTTConfig:
                                               True)
     clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
-    host: Optional[str] = settings.mqtt["host"]
+    host: Optional[str] = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
     username: Optional[str] = settings.get("mqtt.username")
     password: Optional[str] = settings.get("mqtt.password")
@@ -43,39 +47,46 @@ class MQTTConfig:
     ignored_attributes: dict = settings.get("mqtt.ignored_attributes", None)
     timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
-        raise SystemError(
+        LOGGER.error(
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
+
+    def is_config_valid(self) -> bool:
+        return self.host is not None
 
 
 class HistorianConfig:
     """
     Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
     """
-    hostname: str = settings.historian["hostname"]
+    hostname: str = settings.get("historian.hostname")
     port: int = settings.get("historian.port", None)
-    user: str = settings.historian["username"]
-    password: str = settings.historian["password"]
+    user: str = settings.get("historian.username")
+    password: str = settings.get("historian.password")
     sslmode: Optional[str] = settings.get("historian.sslmode", None)
 
-    database: str = settings.historian["database"]
+    database: str = settings.get("historian.database")
 
-    table: str = settings.historian["table"]
+    table: str = settings.get("historian.table")
 
     if hostname is None:
-        raise SystemError(
+        LOGGER.error(
             "Historian Url not provided. "
             "Update key 'historian.hostname' in '../../conf/settings.yaml'", )
     if database is None:
-        raise SystemError(
+        LOGGER.error(
             "Historian Database name  not provided. "
             "Update key 'historian.database' in '../../conf/settings.yaml'", )
     if table is None:
-        raise SystemError(
-            f"""Table in Historian Database {database} not provided.
+        LOGGER.error(f"""Table in Historian Database {database} not provided.
             Update key 'historian.table' in '../../conf/settings.yaml'""")
     if ((user is None) or (password is None)):
-        raise SystemError(
+        LOGGER.error(
             "Historian DB  Username & Password not provided."
             "Update keys 'historian.username' and 'historian.password' "
             "in '../../conf/.secrets.yaml'")
+
+    def is_config_valid(self) -> bool:
+        return not (self.hostname is None or self.database is None
+                    or self.table is None or self.user is None
+                    or self.password is None)

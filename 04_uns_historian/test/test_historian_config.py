@@ -4,7 +4,6 @@ Test cases for historian_config
 import re
 import socket
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from uns_historian.historian_config import HistorianConfig, MQTTConfig, settings

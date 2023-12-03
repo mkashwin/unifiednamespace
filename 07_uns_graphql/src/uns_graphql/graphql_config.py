@@ -1,10 +1,14 @@
 """
 Configuration reader for mqtt server and Neo4J DB server details
 """
+import logging
 from pathlib import Path
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
+# Logger
+LOGGER = logging.getLogger(__name__)
 
 current_folder = Path(__file__).resolve()
 
@@ -31,7 +35,7 @@ class MQTTConfig:
                                               True)
     clean_session: bool = settings.get("mqtt.clean_session", None)
 
-    host: str = settings.mqtt["host"]
+    host: str = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
     username: str = settings.get("mqtt.username")
     password: str = settings.get("mqtt.password")
@@ -40,19 +44,22 @@ class MQTTConfig:
     keep_alive: int = settings.get("mqtt.keep_alive", 60)
     mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
-        raise SystemError(
+        LOGGER.error(
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
+
+    def is_config_valid(self) -> bool:
+        return self.host is not None
 
 
 class GraphDBConfig:
     """
         Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'"
         """
-    conn_url: str = settings.graphdb["url"]
-    user: str = settings.graphdb["username"]
+    conn_url: str = settings.get("graphdb.url")
+    user: str = settings.get("graphdb.username")
 
-    password: str = settings.graphdb["password"]
+    password: str = settings.get("graphdb.password")
     # if we want to use a database different from the default
     database: str = settings.get("graphdb.database", None)
 
@@ -66,56 +73,65 @@ class GraphDBConfig:
             ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE")))
     nested_attribute_node_type: str = settings.get(
         "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
+
     if conn_url is None:
-        raise SystemError(
+        LOGGER.error(
             "GraphDB Url not provided. Update key 'graphdb.url' in '../../conf/settings.yaml'",
         )
 
     if (user is None) or (password is None):
-        raise SystemError(
-            "GraphDB Username & Password not provided."
-            "Update keys 'graphdb.username' and 'graphdb.password' "
-            "in '../../conf/.secrets.yaml'")
+        LOGGER.error("GraphDB Username & Password not provided."
+                     "Update keys 'graphdb.username' and 'graphdb.password' "
+                     "in '../../conf/.secrets.yaml'")
+
+    def is_config_valid(self) -> bool:
+        return not ((self.user is None) or
+                    (self.password is None) or self.conn_url is None)
 
 
 class KAFKAConfig:
     """
     Read the Kafka configurations required to connect to the Kafka broker
+    from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
     """
-    config_map: dict = settings.kafka["config"]
+    config_map: dict = settings.get("kafka.config")
 
 
 class HistorianConfig:
     """
     Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
     """
-    hostname: str = settings.historian["hostname"]
+    hostname: str = settings.get("historian.hostname")
     port: int = settings.get("historian.port", None)
-    db_user: str = settings.historian["username"]
-    db_password: str = settings.historian["password"]
+    db_user: str = settings.get("historian.username")
+    db_password: str = settings.get("historian.password")
     db_sslmode: str = settings.get("historian.sslmode", None)
 
-    database: str = settings.historian["database"]
+    database: str = settings.get("historian.database")
 
-    table: str = settings.historian["table"]
+    table: str = settings.get("historian.table")
 
     if hostname is None:
-        raise SystemError(
+        LOGGER.error(
             "Historian Url not provided. "
             "Update key 'historian.hostname' in '../../conf/settings.yaml'", )
     if database is None:
-        raise SystemError(
+        LOGGER.error(
             "Historian Database name  not provided. "
             "Update key 'historian.database' in '../../conf/settings.yaml'", )
     if table is None:
-        raise SystemError(
-            f"""Table in Historian Database {database} not provided.
-                Update key 'historian.table' in '../../conf/settings.yaml'""")
+        LOGGER.error(f"""Table in Historian Database {database} not provided.
+            Update key 'historian.table' in '../../conf/settings.yaml'""")
     if ((db_user is None) or (db_password is None)):
-        raise SystemError(
+        LOGGER.error(
             "Historian DB  Username & Password not provided."
             "Update keys 'historian.username' and 'historian.password' "
             "in '../../conf/.secrets.yaml'")
+
+    def is_config_valid(self) -> bool:
+        return not (self.hostname is None or self.database is None
+                    or self.table is None or self.db_user is None
+                    or self.db_password is None)
 
 
 # The regex matches any of the following patterns:
