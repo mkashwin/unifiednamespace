@@ -26,21 +26,25 @@ packages = [{ include = "uns_graphql", from = "src" }]
 python = "^3.11"
 logger = "^1.4"
 dynaconf = "^3.2.4"
-graphene = "^3.3"
+strawberry-graphql = { version = "^0.215", extras = ["fastapi", "cli"] }
 aiohttp = "^3.9"
-neo4j = "^5.14"
+uvicorn = "^0.15"
+
+neo4j = "^5.15"
 psycopg2-binary = "^2.9.8"
 pytz = "^2023.3"
 confluent-kafka = "^2.3.0"
+aiomqtt = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
+strawberry-graphql = { version = "^0.215", extras = ["debug-server"] }
 pytest = "^7.4.3"
 yapf = "^0.40.2"
 pytest-cov = "^4.0.0"
-safety = "^2.3.5"
+safety = "^2.4.0b2"
 ruff = "^0.1.6"
 
 [tool.poetry.scripts]

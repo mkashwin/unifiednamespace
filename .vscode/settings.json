@@ -47,6 +47,7 @@
         "proto",
         "protobuf",
         "psycopg",
+        "pydantic",
         "pytest",
         "pytz",
         "sasl",
@@ -61,6 +62,7 @@
         "unspublisher",
         "userdata",
         "usermod",
+        "uvicorn",
         "venv",
         "VERNEMQ",
         "virtualenv",
@@ -90,4 +92,7 @@
     "python.missingPackage.severity": "Error",
     "ruff.showNotifications": "always",
     "ruff.trace.server": "messages",
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.inlayHints.callArgumentNames": "all",
+    "python.analysis.typeCheckingMode": "off",
 }

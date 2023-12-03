@@ -12,17 +12,18 @@ TBD
 ## Key Configurations to provide
 
 This application has two configuration file.
+All of these configurations are a combination of the configurations of the other modules with the exception of not having the `mqtt.ignored_attributes` and`mqtt.topics`  as these are not relevant for the GraphQL services
 
 1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers
     **key** | **sub key** | **description**  | ***default value*** |
     ------ | ------ | ------ | ------
     **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
     mqtt | port | Port of the mqtt broker (int) | *1883*
-    mqtt | topics | Array of topics to be subscribed to.  | *["#"]*
     mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
     mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
+    mqtt | clean_session | Boolean value to be specified only if MQTT Version is not 5 | *None*
     mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
     **graphdb** | **url**\* | Mandatory. The db connection URL string for your Neo4j instance| *None*
@@ -139,3 +140,11 @@ docker run --name uns_graphql -d -v $PWD/conf:/app/conf uns/graphql:latest
 * If you are running this image on the host as the MQTT broker  and/or neo4j pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 ## Limitations / workarounds
+
+## References
+
+1. [Official GraphQL Documentation](https://graphql.org/): Official website with comprehensive guides, tutorials, and specifications.
+    * [GraphQL Python Support](https://graphql.org/code/#python): list of Python based libraries for GraphQL
+    * [Why Strawberry](https://mobilelive.medium.com/graphql-in-python-a-comprehensive-guide-to-building-apis-59cb0d638c03):
+1. [Code vs Schema Development of GraphQL](https://blog.logrocket.com/code-first-vs-schema-first-development-graphql/): Blog comparing the approaches used for developing GraphQL services
+1. [FastAPI vs Flask](https://www.turing.com/kb/fastapi-vs-flask-a-detailed-comparison)
