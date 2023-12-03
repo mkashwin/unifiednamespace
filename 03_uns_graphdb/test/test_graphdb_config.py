@@ -14,7 +14,9 @@ is_configs_provided: bool = (settings.graphdb["url"] is not None
                              and settings.get("mqtt.host") is not None)
 
 # Constant regex expression to match valid MQTT topics
-REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+REGEX_TO_MATCH_TOPIC = (
+    r"^(?:(?:(?:(?:(?:(?:[.0-9a-zA-Z_-]+)|(?:\+))(?:\/))*)"
+    r"(?:(?:(?:[.0-9a-zA-Z_-]+)|(?:\+)|(?:\#))))|(?:(?:\#)))$")
 
 # Constant regex expression to match valid neo4j database url
 REGEX_FOR_NEO4J = r"^(bolt|neo4j|bolt\+s|neo4j\+s)[\:][/][/][a-zA-Z0-9.]*[\:]*[0-9]*$"
@@ -80,7 +82,7 @@ def test_mqtt_config():
     for topic in MQTTConfig.topics:
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
-        ), f"configuration 'mqtt.topics':{MQTTConfig.topics} has an valid MQTT topic topic:{topic}"
+        ), f"configuration 'mqtt.topics':{MQTTConfig.topics} has an invalid MQTT topic:{topic}"
 
     assert (isinstance(MQTTConfig.keepalive, int)) and (
         MQTTConfig.keepalive > 0
