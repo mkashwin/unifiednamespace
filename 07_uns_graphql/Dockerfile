@@ -36,7 +36,7 @@ COPY ./${UNS_MODULE}/src ./src/
 
 # install minimalistic missing packages
 RUN apk update && \ 
-    apk add --no-cache  libffi-dev libc-dev gcc bash g++ make && \
+    apk add --no-cache  libffi-dev libc-dev gcc bash g++ make musl-dev rust cargo && \
     apk upgrade --no-cache libcrypto3 libssl3 && \
     rm -rf /var/cache/apk/* && \
     # Need to install https://github.com/confluentinc/librdkafka/tree/v2.3.0 as alpine does not have this version   

@@ -18,7 +18,7 @@ is_configs_provided: bool = (settings.get("mqtt.host") is not None
                              and settings.get("historian.hostname") is not None
                              and settings.get("historian.username") is not None
                              and settings.get("kafka.config") is not None and
-                             "bootstrap.servers" in settings.kafka["config"])
+                             "bootstrap.servers" in settings.get("kafka.config"))
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
