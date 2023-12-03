@@ -10,7 +10,7 @@ from confluent_kafka.admin import AdminClient
 from uns_kafka.kafka_handler import KafkaHandler
 from uns_kafka.uns_kafka_config import settings
 
-KAFKA_CONFIG: dict = settings.kafka["config"]
+KAFKA_CONFIG: dict = settings.get("kafka.config")
 
 
 @pytest.mark.integrationtest()

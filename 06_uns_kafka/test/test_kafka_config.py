@@ -10,8 +10,9 @@ import pytest
 from confluent_kafka import Producer
 from uns_kafka.uns_kafka_config import settings
 
-is_configs_provided: bool = (settings.get("kafka.config") is not None and
-                             "bootstrap.servers" in settings.kafka["config"])
+is_configs_provided: bool = (settings.get("kafka.config") is not None
+                             and "bootstrap.servers"
+                             in settings.get("kafka.config"))
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = (
@@ -114,7 +115,7 @@ def test_kafka_config():
     """
     Test if the Kafka configurations are valid
     """
-    config: dict = settings.kafka["config"]
+    config: dict = settings.get("kafka.config")
 
     assert "client.id" in config, f"Kafka configurations missing mandatory client.id: {config}"
 
@@ -144,7 +145,7 @@ def test_connectivity_to_kafka():
     Test if the provided configurations for the Kafka Server are valid and
     there is connectivity to the Kafka cluster
     """
-    config: dict = settings.kafka["config"]
+    config: dict = settings.get("kafka.config")
 
     producer = Producer(config)
     assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {config}"
