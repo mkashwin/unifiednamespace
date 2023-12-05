@@ -29,8 +29,6 @@ kafka:
       client.id: "uns_graphql_server", # mandatory
       group.id: "graphql",
       bootstrap.servers: "localhost:9092", # mandatory. can also use the key metadata.broker.list
-      enable.idempotence: True,
-      retries: 10,
-      compression.type: "gzip",
     }
+  consumer_timeout: 10
 dynaconf_merge: true

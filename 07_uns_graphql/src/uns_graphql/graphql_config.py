@@ -95,6 +95,7 @@ class KAFKAConfig:
     from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
     """
     config_map: dict = settings.get("kafka.config")
+    consumer_poll_timeout: int = settings.get("", 10)
 
 
 class HistorianConfig:

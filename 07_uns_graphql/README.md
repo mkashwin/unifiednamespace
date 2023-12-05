@@ -12,7 +12,11 @@ TBD
 ## Key Configurations to provide
 
 This application has two configuration file.
-All of these configurations are a combination of the configurations of the other modules with the exception of not having the `mqtt.ignored_attributes` and`mqtt.topics`  as these are not relevant for the GraphQL services
+All of these configurations are a combination of the configurations of the other modules with the exception of
+
+- Not having the `mqtt.ignored_attributes` and`mqtt.topics`  as these are not relevant for the GraphQL services
+- Kafka configuration map should be specific to the the consumer configurations and not producer
+- Additional Kafka configuration for controlling consumer poll timeout
 
 1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers
     **key** | **sub key** | **description**  | ***default value*** |
@@ -36,6 +40,7 @@ All of these configurations are a combination of the configurations of the other
     **historian**  | **database**\*  | Mandatory. The database name to write to. | *None*
     **historian** | **table**\*| Mandatory. The hypertable where the time-series of messages is stored.| *None*
     **kafka** | **config**\*  | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | *None*
+    kafka | consumer_timeout |  The port for the instance of your TimescaleDB  instance| *10*
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
 
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect
@@ -143,23 +148,23 @@ docker run --name uns_graphql -d -v $PWD/conf:/app/conf uns/graphql:latest
 
 **Note**: Remember to update the following before executing
 
-* **\<container name\>** : Identifier for the container so you can work with the same container instance using
+- **\<container name\>** : Identifier for the container so you can work with the same container instance using
 
    ```bash
    docker start <container name>
    docker stop <container name>
    ```
 
-* **\<full path to conf\>**: Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
+- **\<full path to conf\>**: Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
 
-* If you are running this image on the host as the MQTT broker  and/or neo4j pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
+- If you are running this image on the host as the MQTT broker  and/or neo4j pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
 ## Limitations / workarounds
 
 ## References
 
 1. [Official GraphQL Documentation](https://graphql.org/): Official website with comprehensive guides, tutorials, and specifications.
-    * [GraphQL Python Support](https://graphql.org/code/#python): list of Python based libraries for GraphQL
-    * [Why Strawberry](https://mobilelive.medium.com/graphql-in-python-a-comprehensive-guide-to-building-apis-59cb0d638c03):
+    - [GraphQL Python Support](https://graphql.org/code/#python): list of Python based libraries for GraphQL
+    - [Why Strawberry](https://mobilelive.medium.com/graphql-in-python-a-comprehensive-guide-to-building-apis-59cb0d638c03):
 1. [Code vs Schema Development of GraphQL](https://blog.logrocket.com/code-first-vs-schema-first-development-graphql/): Blog comparing the approaches used for developing GraphQL services
 1. [FastAPI vs Flask](https://www.turing.com/kb/fastapi-vs-flask-a-detailed-comparison)

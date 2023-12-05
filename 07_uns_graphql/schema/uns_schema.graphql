@@ -31,9 +31,14 @@ type Query {
   resolveSpecificTopics(topics: [String!]!): [UNSNode!]!
 }
 
+type StreamingMessage {
+  topic: String!
+  payload: JSONPayload!
+}
+
 type Subscription {
   getMqttMessages(topics: [MQTTTopicInput!]!): UNSEvent!
-  kafkaMessages(topics: [KAFKATopicInput!]!): UNSEvent!
+  getKafkaMessages(topics: [KAFKATopicInput!]!): StreamingMessage!
 }
 
 type UNSEvent {

@@ -17,8 +17,9 @@ is_configs_provided: bool = (settings.get("mqtt.host") is not None
                              and settings.get("graphdb.username") is not None
                              and settings.get("historian.hostname") is not None
                              and settings.get("historian.username") is not None
-                             and settings.get("kafka.config") is not None and
-                             "bootstrap.servers" in settings.get("kafka.config"))
+                             and settings.get("kafka.config") is not None
+                             and "bootstrap.servers"
+                             in settings.get("kafka.config"))
 
 # Constant regex expression to match valid MQTT topics
 REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
@@ -203,6 +204,11 @@ def test_kafka_config():
     assert ("bootstrap.servers" in KAFKAConfig.config_map) or (
         "metadata.broker.list" in KAFKAConfig.config_map
     ), f"Kafka configurations missing mandatory server config: {KAFKAConfig.config_map}"
+
+    assert (
+        type(KAFKAConfig.consumer_poll_timeout) is int
+        and KAFKAConfig.consumer_poll_timeout > 0
+    ), f"Kafka configurations had illegal value for consumer polling:{KAFKAConfig.consumer_poll_timeout}"
 
 
 @pytest.mark.integrationtest()
