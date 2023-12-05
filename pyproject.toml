@@ -42,12 +42,11 @@ uns_graphql = { path = "./07_uns_graphql", develop = true }
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"
+pytest-asyncio = "^0.23.2"
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
 ruff = "^0.1.6"
 
-[tool.poetry.group.dev.dependencies]
-yapf = "^0.40.2"
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
