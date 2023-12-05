@@ -142,6 +142,26 @@ jobs:
           module: 07_uns_graphql
           integration_tests: true
 
+      - name: Create graphQL schema
+        env:
+          schema_file: "./schema/uns_schema.graphql"
+        run: |
+          # create the schema
+          poetry run strawberry export-schema \
+            uns_graphql.uns_graphql_app:UNSGraphql.schema  \
+            --output $schema_file
+
+          if git diff --quiet -- "$file_path"; then
+            echo "Schema Unchanged"
+          else
+            # check in the modified file
+            git config --global user.email "actions@github.com"
+            git config --global user.name "Github Actions"
+            # Ensure that this check-in does not triggering another build
+            git add $schema_file
+            git commit -m "updated schema file for graphql api"
+          fi
+
   build_docker:
     runs-on: ubuntu-latest
 

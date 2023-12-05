@@ -2,7 +2,7 @@ import json
 
 import pytest
 from uns_graphql.type.basetype import BytesPayload, JSONPayload
-from uns_graphql.type.uns_event import UNSEvent
+from uns_graphql.type.uns_event import UNSMessage
 
 sample_spb_payload: bytes = (
     b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
@@ -30,7 +30,7 @@ sample_spb_payload: bytes = (
 def test_resolve_payload(topic: str, payload: JSONPayload | BytesPayload,
                          expected_type: type[JSONPayload] | type[BytesPayload],
                          expected_data):
-    uns_event = UNSEvent(topic=topic, payload=payload)
+    uns_event = UNSMessage(topic=topic, payload=payload)
     result = uns_event.resolve_payload(None)
     assert isinstance(result, expected_type)
     if isinstance(result, BytesPayload):

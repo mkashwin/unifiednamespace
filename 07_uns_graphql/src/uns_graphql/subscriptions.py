@@ -17,7 +17,7 @@ from uns_graphql.graphql_config import KAFKAConfig, MQTTConfig
 from uns_graphql.input.kafka_subscription import KAFKATopicInput
 from uns_graphql.input.mqtt_subscription import MQTTTopicInput
 from uns_graphql.type.streaming_event import StreamingMessage
-from uns_graphql.type.uns_event import UNSEvent
+from uns_graphql.type.uns_event import UNSMessage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class Subscription:
     """
 
     @strawberry.subscription
-    async def get_mqtt_messages(self, topics: typing.List[MQTTTopicInput]) -> typing.AsyncGenerator[UNSEvent, None]:
+    async def get_mqtt_messages(self, topics: typing.List[MQTTTopicInput]) -> typing.AsyncGenerator[UNSMessage, None]:
         """
         Subscribe to MQTT messages based on provided topics.
 
@@ -37,7 +37,7 @@ class Subscription:
             topics (List of MQTTTopicInput): List of Topics to subscribe to. Supports wildcards
 
         Yields:
-            typing.AsyncGenerator[UNSEvent, None]: Asynchronously generates UNS event messages
+            typing.AsyncGenerator[UNSMessage, None]: Asynchronously generates UNS event messages
         """
         client_id = (f"graphql-{time.time()}-{random.randint(0, 1000)}",)  # noqa: S311
         # Connect to MQTT broker and subscribe to the specified topics
@@ -61,11 +61,11 @@ class Subscription:
             qos=MQTTConfig.qos,
         )
 
-        async def mqtt_listener() -> typing.AsyncGenerator[UNSEvent, None]:
+        async def mqtt_listener() -> typing.AsyncGenerator[UNSMessage, None]:
             queue = asyncio.Queue()
 
             def on_message(client, userdata, msg):  # noqa: ARG001
-                mqtt_message = UNSEvent(topic=msg.topic, payload=msg.payload)
+                mqtt_message = UNSMessage(topic=msg.topic, payload=msg.payload)
                 queue.put_nowait(item=mqtt_message)
 
             client.on_message = on_message
@@ -100,7 +100,7 @@ class Subscription:
         consumer: Consumer = Consumer(KAFKAConfig.config_map)
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
-        async def kafka_listener() -> typing.AsyncGenerator[UNSEvent, None]:
+        async def kafka_listener() -> typing.AsyncGenerator[UNSMessage, None]:
             try:
                 while True:
                     msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)  # Poll for messages

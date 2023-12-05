@@ -1,5 +1,6 @@
 """
 Type of data to be retrieved from the UNS
+Maps to MQTT messages to the UNS
 """
 import json
 import logging
@@ -14,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @strawberry.type
-class UNSEvent:
+class UNSMessage:
     """
     Model of a UNS Events
     """
