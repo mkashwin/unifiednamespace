@@ -37,11 +37,11 @@ type StreamingMessage {
 }
 
 type Subscription {
-  getMqttMessages(topics: [MQTTTopicInput!]!): UNSEvent!
+  getMqttMessages(topics: [MQTTTopicInput!]!): UNSMessage!
   getKafkaMessages(topics: [KAFKATopicInput!]!): StreamingMessage!
 }
 
-type UNSEvent {
+type UNSMessage {
   topic: String!
   payload: JSONPayloadBytesPayload!
 }
