@@ -146,6 +146,7 @@ jobs:
         env:
           schema_file: "./schema/uns_schema.graphql"
         run: |
+          cd 07_uns_graphql
           # create the schema
           poetry run strawberry export-schema \
             uns_graphql.uns_graphql_app:UNSGraphql.schema  \
