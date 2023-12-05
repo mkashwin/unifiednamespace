@@ -152,7 +152,7 @@ jobs:
             uns_graphql.uns_graphql_app:UNSGraphql.schema  \
             --output $schema_file
 
-          if git diff --quiet -- "$file_path"; then
+          if git diff --quiet -- "$schema_file"; then
             echo "Schema Unchanged"
           else
             # check in the modified file
