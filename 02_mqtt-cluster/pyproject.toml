@@ -32,7 +32,6 @@ protobuf = "^4.25.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"
-yapf = "^0.40.2"
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
 ruff = "^0.1.6"

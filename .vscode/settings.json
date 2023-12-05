@@ -72,7 +72,7 @@
     "[python]": {
         "editor.formatOnSaveMode": "file",
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "eeyore.yapf"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
@@ -96,4 +96,6 @@
     "python.analysis.diagnosticMode": "workspace",
     "python.analysis.inlayHints.callArgumentNames": "all",
     "python.analysis.typeCheckingMode": "off",
+    "editor.defaultFoldingRangeProvider": "charliermarsh.ruff",
+    "editor.defaultFormatter": "charliermarsh.ruff",
 }

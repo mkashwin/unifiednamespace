@@ -43,7 +43,6 @@
 				"ms-python.isort",
 				"DavidAnson.vscode-markdownlint",
 				"redhat.vscode-yaml",
-				"eeyore.yapf",
 				"charliermarsh.ruff"
 			]
 		}
