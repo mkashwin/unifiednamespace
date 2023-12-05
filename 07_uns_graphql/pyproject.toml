@@ -28,7 +28,8 @@ logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.215", extras = ["fastapi", "cli"] }
 aiohttp = "^3.9"
-uvicorn = "^0.15"
+#uvicorn = "^0.24"
+uvicorn = { version = "^0.24", extras = ["standard"] }
 
 neo4j = "^5.15"
 psycopg2-binary = "^2.9.8"

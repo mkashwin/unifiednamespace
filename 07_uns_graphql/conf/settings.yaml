@@ -26,7 +26,8 @@ historian:
 kafka:
   # see https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
   config: {
-      client.id: "uns_kafka_client", # mandatory
+      client.id: "uns_graphql_server", # mandatory
+      group.id: "graphql",
       bootstrap.servers: "localhost:9092", # mandatory. can also use the key metadata.broker.list
       enable.idempotence: True,
       retries: 10,

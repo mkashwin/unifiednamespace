@@ -1,17 +1,18 @@
 """
 Type of data to be retrieved from the UNS
+Events map to a single message in the queue or historization of those messages
 """
 import logging
 
 import strawberry
 
-from uns_graphql.type.sparkplugb_node import UNSEvent
+from uns_graphql.type.basetype import JSONPayload
 
 LOGGER = logging.getLogger(__name__)
 
 
 @strawberry.type
-class HistoricalUNSEvent(UNSEvent):
+class HistoricalUNSEvent:
     """
     Model of a UNS Events
     """
@@ -20,3 +21,9 @@ class HistoricalUNSEvent(UNSEvent):
 
     # Timestamp of when this event was published/historied
     timestamp: int
+
+    # Topic
+    topic: str
+
+    # Payload
+    payload: JSONPayload

@@ -8,7 +8,7 @@ import logging
 import re
 import ssl
 from os import path
-from typing import Optional
+from typing import List, Optional
 
 import paho.mqtt.client as mqtt_client
 from google.protobuf.json_format import MessageToDict
@@ -142,8 +142,8 @@ class UnsMQTTClient(mqtt_client.Client):
             password: Optional[str] = None,
             tls: Optional[dict] = None,
             keepalive=60,
-            topics=None,
-            qos=2):
+            topics: Optional[List[str]] = None,
+            qos: int = 2):
         # pylint: disable=too-many-arguments
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener

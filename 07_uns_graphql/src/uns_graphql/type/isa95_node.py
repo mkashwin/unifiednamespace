@@ -1,5 +1,6 @@
 """
 Type of data to be retrieved from the UNS
+Node are formed by the merging of multiple events
 """
 import logging
 

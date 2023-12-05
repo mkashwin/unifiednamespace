@@ -15,6 +15,7 @@
         "EMQX",
         "graphdb",
         "graphene",
+        "historization",
         "HIVEMQ",
         "hostpath",
         "hypertable",

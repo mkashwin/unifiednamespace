@@ -11,8 +11,6 @@ import typing
 
 import strawberry
 from confluent_kafka import Consumer
-from paho.mqtt.packettypes import PacketTypes
-from paho.mqtt.properties import Properties
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 from uns_graphql.graphql_config import KAFKAConfig, MQTTConfig
@@ -53,19 +51,15 @@ class Subscription:
             protocol=MQTTConfig.version,
             transport=MQTTConfig.transport,
             reconnect_on_failure=MQTTConfig.reconnect_on_failure)
-        client.topics = topics.mqtt_topics
-        properties = None
-        if MQTTConfig.protocol == client.MQTTv5:
-            properties = Properties(PacketTypes.CONNECT)
-        client.setup_tls(MQTTConfig.tls)
-        # Set username & password only if it was specified
-        if MQTTConfig.username is not None:
-            client.username_pw_set(MQTTConfig.username, MQTTConfig.password)
-        client.connect(host=MQTTConfig.host,
-                       port=MQTTConfig.port,
-                       keepalive=MQTTConfig.keepalive,
-                       properties=properties)
-        client.connect()
+
+        client.run(host=MQTTConfig.host,
+                   port=MQTTConfig.port,
+                   username=MQTTConfig.username,
+                   password=MQTTConfig.password,
+                   tls=MQTTConfig.tls,
+                   keepalive=MQTTConfig.keep_alive,
+                   topics=[x.topic for x in topics],
+                   qos=MQTTConfig.qos)
 
         async def mqtt_listener() -> typing.AsyncGenerator[UNSEvent, None]:
             queue = asyncio.Queue()
@@ -84,7 +78,7 @@ class Subscription:
             yield message
 
     @strawberry.subscription
-    async def kafka_messages(
+    async def get_kafka_messages(
         self, topics: typing.List[KAFKATopicInput]
     ) -> typing.AsyncGenerator[UNSEvent, None]:
         """
@@ -99,7 +93,7 @@ class Subscription:
         """
         # Connect to Kafka broker and subscribe to the specified topic
         consumer: Consumer = Consumer(KAFKAConfig.config_map)
-        consumer.subscribe(topics.kafka_topics)
+        consumer.subscribe([x.topic for x in topics])
 
         async def kafka_listener() -> typing.AsyncGenerator[UNSEvent, None]:
             for msg in consumer:
