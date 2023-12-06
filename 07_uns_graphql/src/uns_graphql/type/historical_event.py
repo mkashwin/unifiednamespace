@@ -16,6 +16,7 @@ class HistoricalUNSEvent:
     """
     Model of a UNS Events
     """
+
     # Client id of the what/who published this messages
     published_by: str
 

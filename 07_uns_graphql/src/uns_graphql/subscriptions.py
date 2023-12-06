@@ -9,15 +9,15 @@ import random
 import time
 import typing
 
+import aiomqtt
 import strawberry
 from confluent_kafka import OFFSET_BEGINNING, Consumer
-from uns_mqtt.mqtt_listener import UnsMQTTClient
 
 from uns_graphql.graphql_config import KAFKAConfig, MQTTConfig
 from uns_graphql.input.kafka_subscription import KAFKATopicInput
 from uns_graphql.input.mqtt_subscription import MQTTTopicInput
+from uns_graphql.type.mqtt_event import MQTTMessage
 from uns_graphql.type.streaming_event import StreamingMessage
-from uns_graphql.type.uns_event import UNSMessage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,8 +28,10 @@ class Subscription:
     Subscription class providing methods for subscribing to MQTT and Kafka messages.
     """
 
-    @strawberry.subscription
-    async def get_mqtt_messages(self, topics: typing.List[MQTTTopicInput]) -> typing.AsyncGenerator[UNSMessage, None]:
+    @strawberry.subscription(
+        description=" Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported "
+    )
+    async def get_mqtt_messages(self, topics: typing.List[MQTTTopicInput]) -> typing.AsyncGenerator[MQTTMessage, None]:
         """
         Subscribe to MQTT messages based on provided topics.
 
@@ -39,45 +41,34 @@ class Subscription:
         Yields:
             typing.AsyncGenerator[UNSMessage, None]: Asynchronously generates UNS event messages
         """
-        client_id = (f"graphql-{time.time()}-{random.randint(0, 1000)}",)  # noqa: S311
-        # Connect to MQTT broker and subscribe to the specified topics
-        client: UnsMQTTClient = UnsMQTTClient(
-            client_id=client_id,
-            clean_session=MQTTConfig.clean_session,
-            userdata=None,
-            protocol=MQTTConfig.version,
-            transport=MQTTConfig.transport,
-            reconnect_on_failure=MQTTConfig.reconnect_on_failure,
-        )
+        while True:
+            try:
+                client_id = f"graphql-{time.time()}"  # noqa: S311
+                async with aiomqtt.Client(
+                    client_id=client_id,
+                    clean_session=MQTTConfig.clean_session,
+                    protocol=MQTTConfig.version,
+                    transport=MQTTConfig.transport,
+                    hostname=MQTTConfig.host,
+                    port=MQTTConfig.port,
+                    username=MQTTConfig.username,
+                    password=MQTTConfig.password,
+                    keepalive=MQTTConfig.keep_alive,
+                    tls_params=MQTTConfig.tls_params,
+                    tls_insecure=MQTTConfig.tls_insecure,
+                ) as client:
+                    async with client.messages() as messages:
+                        for mqtt_topic in topics:
+                            await client.subscribe(
+                                topic=mqtt_topic.topic, qos=MQTTConfig.qos, properties=MQTTConfig.properties
+                            )
+                        async for msg in messages:
+                            yield MQTTMessage(topic=str(msg.topic), payload=msg.payload)
+            except aiomqtt.MqttError as ex:  # noqa: PERF203,
+                LOGGER.error("Error while connecting to MQTT Broker %s", str(ex), stack_info=True, exc_info=True)
+                await asyncio.sleep(MQTTConfig.retry_interval)
 
-        client.run(
-            host=MQTTConfig.host,
-            port=MQTTConfig.port,
-            username=MQTTConfig.username,
-            password=MQTTConfig.password,
-            tls=MQTTConfig.tls,
-            keepalive=MQTTConfig.keep_alive,
-            topics=[x.topic for x in topics],
-            qos=MQTTConfig.qos,
-        )
-
-        async def mqtt_listener() -> typing.AsyncGenerator[UNSMessage, None]:
-            queue = asyncio.Queue()
-
-            def on_message(client, userdata, msg):  # noqa: ARG001
-                mqtt_message = UNSMessage(topic=msg.topic, payload=msg.payload)
-                queue.put_nowait(item=mqtt_message)
-
-            client.on_message = on_message
-            client.subscribe(topic=topics.mqtt_topics)
-
-            while True:
-                yield await queue.get()
-
-        async for message in mqtt_listener():
-            yield message
-
-    @strawberry.subscription
+    @strawberry.subscription(description="Subscribe to Kafka messages based on provided topics")
     async def get_kafka_messages(self, topics: typing.List[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage, None]:
         """
         Subscribe to Kafka messages based on provided topics.
@@ -100,7 +91,7 @@ class Subscription:
         consumer: Consumer = Consumer(KAFKAConfig.config_map)
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
-        async def kafka_listener() -> typing.AsyncGenerator[UNSMessage, None]:
+        async def kafka_listener() -> typing.AsyncGenerator[MQTTMessage, None]:
             try:
                 while True:
                     msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)  # Poll for messages

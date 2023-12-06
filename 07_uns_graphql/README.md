@@ -14,7 +14,8 @@ TBD
 This application has two configuration file.
 All of these configurations are a combination of the configurations of the other modules with the exception of
 
-- Not having the `mqtt.ignored_attributes` and`mqtt.topics`  as these are not relevant for the GraphQL services
+- Not having the `mqtt.ignored_attributes` , `mqtt.topics`, `mqtt.reconnect_on_failure`  as these are not relevant for the GraphQL services or the aiomqtt.Client being used.
+- Additional mqtt configuration for `retry_interval` in case of MQTT errors
 - Kafka configuration map should be specific to the the consumer configurations and not producer
 - Additional Kafka configuration for controlling consumer poll timeout
 
@@ -25,11 +26,11 @@ All of these configurations are a combination of the configurations of the other
     mqtt | port | Port of the mqtt broker (int) | *1883*
     mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
-    mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
     mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
     mqtt | clean_session | Boolean value to be specified only if MQTT Version is not 5 | *None*
     mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
+    mqtt | retry_interval | Seconds to wait before trying to reconnect when there is an MQTT communication error | *10*
     **graphdb** | **url**\* | Mandatory. The db connection URL string for your Neo4j instance| *None*
     graphdb | database | the data base name to write to. if not provided default db ('') will be used | *''*
     graphdb | uns_node_types | List based on ISA-95 part 2 the nested depth. Nodes will by tagged with the node type depending on their depth. Can be of variable length. Recommended is 5 | ["ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"]
