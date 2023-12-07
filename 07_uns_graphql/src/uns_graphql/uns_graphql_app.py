@@ -9,6 +9,7 @@ from strawberry.fastapi import GraphQLRouter
 
 from uns_graphql.query import Query
 from uns_graphql.subscriptions import Subscription
+from uns_graphql.type.basetype import Int64
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +18,8 @@ class UNSGraphql:
     """
     Class providing the entry point for all GraphQL queries to the UNS & SPB Namespaces
     """
-    schema = strawberry.Schema(query=Query, subscription=Subscription)
+
+    schema = strawberry.Schema(query=Query, subscription=Subscription, scalar_overrides={int: Int64})
     graphql_app = GraphQLRouter(schema)
     app = FastAPI()
     app.include_router(graphql_app, prefix="/graphql")

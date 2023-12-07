@@ -18,16 +18,34 @@ type JSONPayload {
 
 union JSONPayloadBytesPayload = JSONPayload | BytesPayload
 
+"""Valid Kafka Topic to subscribe to. Does not accept wildcards or RegEx"""
 input KAFKATopicInput {
   topic: String!
 }
 
+"""MQTT message which published in the UNS platform"""
+type MQTTMessage {
+  """Fully qualified path of the namespace. i.e. the MQTT Topic"""
+  topic: String!
+
+  """
+  the payload of the MQTT message
+   -JSON for UNS 
+   -bytes for sparkplugB
+  """
+  payload: JSONPayloadBytesPayload!
+}
+
+"""Valid MQTT Topic to subscribe to. Accepts wild cards"""
 input MQTTTopicInput {
   topic: String!
 }
 
 type Query {
+  """"""
   resolveAllTopics: [UNSNode!]!
+
+  """"""
   resolveSpecificTopics(topics: [String!]!): [UNSNode!]!
 }
 
@@ -37,13 +55,12 @@ type StreamingMessage {
 }
 
 type Subscription {
-  getMqttMessages(topics: [MQTTTopicInput!]!): UNSMessage!
-  getKafkaMessages(topics: [KAFKATopicInput!]!): StreamingMessage!
-}
+  """ Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported 
+  """
+  getMqttMessages(topics: [MQTTTopicInput!]!): MQTTMessage!
 
-type UNSMessage {
-  topic: String!
-  payload: JSONPayloadBytesPayload!
+  """Subscribe to Kafka messages based on provided topics"""
+  getKafkaMessages(topics: [KAFKATopicInput!]!): StreamingMessage!
 }
 
 type UNSNode {
@@ -51,6 +68,9 @@ type UNSNode {
   nodeType: String!
   namespace: String!
   payload: JSONPayload!
-  created: Int!
-  lastUpdated: Int!
+  created: Union!
+  lastUpdated: Union!
 }
+
+"""Int 64 field since GraphQL doesn't support int64, only int 32"""
+scalar Union

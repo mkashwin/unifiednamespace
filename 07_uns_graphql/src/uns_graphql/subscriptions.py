@@ -41,32 +41,29 @@ class Subscription:
         Yields:
             typing.AsyncGenerator[UNSMessage, None]: Asynchronously generates UNS event messages
         """
-        while True:
-            try:
-                client_id = f"graphql-{time.time()}"  # noqa: S311
-                async with aiomqtt.Client(
-                    client_id=client_id,
-                    clean_session=MQTTConfig.clean_session,
-                    protocol=MQTTConfig.version,
-                    transport=MQTTConfig.transport,
-                    hostname=MQTTConfig.host,
-                    port=MQTTConfig.port,
-                    username=MQTTConfig.username,
-                    password=MQTTConfig.password,
-                    keepalive=MQTTConfig.keep_alive,
-                    tls_params=MQTTConfig.tls_params,
-                    tls_insecure=MQTTConfig.tls_insecure,
-                ) as client:
-                    async with client.messages() as messages:
-                        for mqtt_topic in topics:
-                            await client.subscribe(
-                                topic=mqtt_topic.topic, qos=MQTTConfig.qos, properties=MQTTConfig.properties
-                            )
-                        async for msg in messages:
-                            yield MQTTMessage(topic=str(msg.topic), payload=msg.payload)
-            except aiomqtt.MqttError as ex:  # noqa: PERF203,
-                LOGGER.error("Error while connecting to MQTT Broker %s", str(ex), stack_info=True, exc_info=True)
-                await asyncio.sleep(MQTTConfig.retry_interval)
+        try:
+            client_id = f"graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
+            async with aiomqtt.Client(
+                client_id=client_id,
+                clean_session=MQTTConfig.clean_session,
+                protocol=MQTTConfig.version,
+                transport=MQTTConfig.transport,
+                hostname=MQTTConfig.host,
+                port=MQTTConfig.port,
+                username=MQTTConfig.username,
+                password=MQTTConfig.password,
+                keepalive=MQTTConfig.keep_alive,
+                tls_params=MQTTConfig.tls_params,
+                tls_insecure=MQTTConfig.tls_insecure,
+            ) as client:
+                async with client.messages() as messages:
+                    for mqtt_topic in topics:
+                        await client.subscribe(topic=mqtt_topic.topic, qos=MQTTConfig.qos, properties=MQTTConfig.properties)
+                    async for msg in messages:
+                        yield MQTTMessage(topic=str(msg.topic), payload=msg.payload)
+        except aiomqtt.MqttError as ex:
+            LOGGER.error("Error while connecting to MQTT Broker %s", str(ex), stack_info=True, exc_info=True)
+            await asyncio.sleep(MQTTConfig.retry_interval)
 
     @strawberry.subscription(description="Subscribe to Kafka messages based on provided topics")
     async def get_kafka_messages(self, topics: typing.List[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage, None]:
