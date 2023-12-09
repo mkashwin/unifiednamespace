@@ -190,6 +190,7 @@ def test_kafka_config():
     """
 
     assert "client.id" in KAFKAConfig.config_map, f"Kafka configurations missing mandatory client.id: {KAFKAConfig.config_map}"
+    assert "group.id" in KAFKAConfig.config_map, f"Kafka configurations missing mandatory group.id: {KAFKAConfig.config_map}"
 
     assert ("bootstrap.servers" in KAFKAConfig.config_map) or (
         "metadata.broker.list" in KAFKAConfig.config_map
