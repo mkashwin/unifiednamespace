@@ -21,18 +21,14 @@ def test_uns_kafka_mapper_init():
     uns_kafka_mapper: UNSKafkaMapper = None
     try:
         uns_kafka_mapper = UNSKafkaMapper()
-        assert uns_kafka_mapper is not None, (
-            "Connection to either the MQTT Broker or Kafka broker did not happen"
-        )
-        admin_client = AdminClient(KAFKAConfig.kafka_config_map)
-        topics = admin_client.list_topics().topics
+        assert uns_kafka_mapper is not None, "Connection to either the MQTT Broker or Kafka broker did not happen"
 
-        assert topics, "Connection to either  Kafka broker did not happen"
+        assert uns_kafka_mapper.kafka_handler.producer, "Connection to Kafka broker did not happen"
+        assert uns_kafka_mapper.kafka_handler.producer.list_topics(), "Connection to Kafka broker did not happen"
+        assert uns_kafka_mapper.uns_client, "Connection to MQTT broker did not happen"
 
     except Exception as ex:
-        pytest.fail(
-            "Connection to either the MQTT Broker or Kafka broker did not happen"
-            f" Exception {ex}")
+        pytest.fail("Connection to either the MQTT Broker or Kafka broker did not happen" f" Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
@@ -41,61 +37,79 @@ def test_uns_kafka_mapper_init():
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "mqtt_topic, mqtt_message,kafka_topic,expected_kafka_msg",
-    [("a/b/c", '{"timestamp": 12345678, "message": "test message1"}', "a_b_c",
-      '{"timestamp": 12345678, "message": "test message1"}'),
-     ("abc", '{"timestamp": 12345678, "message": "test message1"}', "abc",
-      '{"timestamp": 12345678, "message": "test message2"}'),
-     ("spBv1.0/uns_group/NBIRTH/eon1",
-      b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
-      b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
-      b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
-      b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
-      b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
-      "spBv1.0_uns_group_NBIRTH_eon1", {
-          "timestamp":
-          "1671554024644",
-          "metrics": [{
-              "name": "Inputs/A",
-              "timestamp": "1486144502122",
-              "alias": "0",
-              "datatype": 11,
-              "booleanValue": False,
-          }, {
-              "name": "Inputs/B",
-              "timestamp": "1486144502122",
-              "alias": "1",
-              "datatype": 11,
-              "booleanValue": False,
-          }, {
-              "name": "Outputs/E",
-              "timestamp": "1486144502122",
-              "alias": "2",
-              "datatype": 11,
-              "booleanValue": False,
-          }, {
-              "name": "Outputs/F",
-              "timestamp": "1486144502122",
-              "alias": "3",
-              "datatype": 11,
-              "booleanValue": False,
-          }, {
-              "name": "Properties/Hardware Make",
-              "timestamp": "1486144502122",
-              "alias": "4",
-              "datatype": 12,
-              "stringValue": "Sony",
-          }, {
-              "name": "Properties/Weight",
-              "timestamp": "1486144502122",
-              "alias": "5",
-              "datatype": 3,
-              "intValue": 200,
-          }],
-          "seq":
-          "0",
-      })])
-def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
-                                     kafka_topic: str, expected_kafka_msg):
+    [
+        (
+            "a/b/c",
+            '{"timestamp": 12345678, "message": "test message1"}',
+            "a_b_c",
+            '{"timestamp": 12345678, "message": "test message1"}',
+        ),
+        (
+            "abc",
+            '{"timestamp": 12345678, "message": "test message1"}',
+            "abc",
+            '{"timestamp": 12345678, "message": "test message2"}',
+        ),
+        (
+            "spBv1.0/uns_group/NBIRTH/eon1",
+            b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+            b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+            b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+            b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+            b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
+            "spBv1.0_uns_group_NBIRTH_eon1",
+            {
+                "timestamp": "1671554024644",
+                "metrics": [
+                    {
+                        "name": "Inputs/A",
+                        "timestamp": "1486144502122",
+                        "alias": "0",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Inputs/B",
+                        "timestamp": "1486144502122",
+                        "alias": "1",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Outputs/E",
+                        "timestamp": "1486144502122",
+                        "alias": "2",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Outputs/F",
+                        "timestamp": "1486144502122",
+                        "alias": "3",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Properties/Hardware Make",
+                        "timestamp": "1486144502122",
+                        "alias": "4",
+                        "datatype": 12,
+                        "stringValue": "Sony",
+                    },
+                    {
+                        "name": "Properties/Weight",
+                        "timestamp": "1486144502122",
+                        "alias": "5",
+                        "datatype": 3,
+                        "intValue": 200,
+                    },
+                ],
+                "seq": "0",
+            },
+        ),
+    ],
+)
+def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic: str, expected_kafka_msg):
     """
     End to End testing of the listener by publishing to MQTT and validating correct message on KAFKA
     """
@@ -123,8 +137,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
             uns_kafka_mapper.kafka_handler.flush()
 
             # Create a consumer to read the Kafka broker
-            kafka_listener: Consumer = get_kafka_consumer(
-                KAFKAConfig.kafka_config_map)
+            kafka_listener: Consumer = get_kafka_consumer(KAFKAConfig.kafka_config_map)
 
             # Set up a callback to handle the '--reset' flag.
             def reset_offset(consumer, partitions):
@@ -133,8 +146,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
                 consumer.assign(partitions)
 
             kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
-            check_kafka_topics(uns_kafka_mapper.uns_client, kafka_listener,
-                               expected_kafka_msg)
+            check_kafka_topics(uns_kafka_mapper.uns_client, kafka_listener, expected_kafka_msg)
             # ---------------- end of inline method
 
         # Overriding on_message is more reliable that on_publish because some times
@@ -143,16 +155,11 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message,
         uns_kafka_mapper.uns_client.on_message = on_message_decorator
 
         uns_kafka_mapper.uns_client.publish(
-            topic=mqtt_topic,
-            payload=payload,
-            qos=uns_kafka_mapper.uns_client.qos,
-            retain=False,
-            properties=publish_properties)
+            topic=mqtt_topic, payload=payload, qos=uns_kafka_mapper.uns_client.qos, retain=False, properties=publish_properties
+        )
 
     except Exception as ex:
-        pytest.fail(
-            "Connection to either the MQTT Broker or Kafka broker did not happen"
-            f" Exception {ex}")
+        pytest.fail("Connection to either the MQTT Broker or Kafka broker did not happen" f" Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
@@ -165,8 +172,7 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
     Utility method to create a consumer based on producer config
     """
     consumer_config: dict = {}
-    consumer_config["bootstrap.servers"] = kafka_producer_config.get(
-        "bootstrap.servers")
+    consumer_config["bootstrap.servers"] = kafka_producer_config.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_mapper_test_consumer"
     consumer_config["group.id"] = "uns_kafka_mapper_test_consumers"
     consumer_config["auto.offset.reset"] = "latest"
@@ -187,8 +193,7 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:
-                assert json.loads(msg.value().decode("utf-8")) == json.loads(
-                    expected_kafka_msg)
+                assert json.loads(msg.value().decode("utf-8")) == json.loads(expected_kafka_msg)
                 break
 
     finally:
