@@ -9,8 +9,8 @@ import random
 import time
 import typing
 
-import aiomqtt
 import strawberry
+from aiomqtt import Client, MqttError
 from confluent_kafka import OFFSET_BEGINNING, Consumer
 
 from uns_graphql.graphql_config import KAFKAConfig, MQTTConfig
@@ -43,7 +43,7 @@ class Subscription:
         """
         try:
             client_id = f"graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
-            async with aiomqtt.Client(
+            async with Client(
                 client_id=client_id,
                 clean_session=MQTTConfig.clean_session,
                 protocol=MQTTConfig.version,
@@ -61,7 +61,7 @@ class Subscription:
                         await client.subscribe(topic=mqtt_topic.topic, qos=MQTTConfig.qos, properties=MQTTConfig.properties)
                     async for msg in messages:
                         yield MQTTMessage(topic=str(msg.topic), payload=msg.payload)
-        except aiomqtt.MqttError as ex:
+        except MqttError as ex:
             LOGGER.error("Error while connecting to MQTT Broker %s", str(ex), stack_info=True, exc_info=True)
             await asyncio.sleep(MQTTConfig.retry_interval)
 
@@ -101,6 +101,8 @@ class Subscription:
                         raise ValueError(msg.error())
 
                     yield StreamingMessage(topic=msg.topic(), payload=msg.value())
+            except asyncio.CancelledError:
+                pass
             finally:
                 consumer.close()  # Close the consumer when done
 
