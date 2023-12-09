@@ -64,7 +64,7 @@ jobs:
       UNS_historian__username: "uns_dbuser"
       UNS_historian__password: ${{ needs.generate_random_password.outputs.uns_historian_pwd }}
       POSTGRES_PASSWORD: ${{ needs.generate_random_password.outputs.postgres_pwd }}
-      UNS_kafka.config: "{ 'group.id': 'uns_graphql', 'client.id' = 'uns_graphql_client', 'bootstrap.servers' ='localhost:9092' }"
+      UNS_kafka.config: "{ 'group.id' = 'uns_graphql', 'client.id' = 'uns_graphql_client', 'bootstrap.servers' ='localhost:9092' }"
 
     services:
       uns_mqtt:
