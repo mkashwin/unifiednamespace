@@ -40,8 +40,8 @@ All of these configurations are a combination of the configurations of the other
     historian | port |  The port for the instance of your TimescaleDB  instance| *5432*
     **historian**  | **database**\*  | Mandatory. The database name to write to. | *None*
     **historian** | **table**\*| Mandatory. The hypertable where the time-series of messages is stored.| *None*
-    **kafka** | **config**\*  | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | *None*
-    kafka | consumer_timeout |  The port for the instance of your TimescaleDB  instance| *10*
+    **kafka** | **config**\*  | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations for consumer | *None*
+    kafka | consumer_timeout |  Maximum time to block waiting for message in Seconds| *1.0*
     **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
 
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect

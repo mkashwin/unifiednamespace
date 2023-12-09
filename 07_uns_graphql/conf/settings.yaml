@@ -30,5 +30,5 @@ kafka:
       group.id: "graphql",
       bootstrap.servers: "localhost:9092", # mandatory. can also use the key metadata.broker.list
     }
-  consumer_timeout: 10
+  consumer_timeout: 1
 dynaconf_merge: true

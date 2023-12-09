@@ -43,6 +43,7 @@ uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 [tool.poetry.group.test.dependencies]
 strawberry-graphql = { version = "^0.215", extras = ["debug-server"] }
 pytest = "^7.4.3"
+pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
 pytest-asyncio = "^0.23.2"
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
@@ -59,6 +60,7 @@ build-backend = "poetry.core.masonry.api"
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
+addopts="-n auto"
 
 [tool.ruff]
 # Extend the `pyproject.toml` file in the parent directory...

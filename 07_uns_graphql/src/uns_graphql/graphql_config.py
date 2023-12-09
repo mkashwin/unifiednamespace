@@ -115,7 +115,7 @@ class KAFKAConfig:
     """
 
     config_map: dict = settings.get("kafka.config")
-    consumer_poll_timeout: int = settings.get("", 10)
+    consumer_poll_timeout: float = settings.get("", 1.0)
 
 
 class HistorianConfig:

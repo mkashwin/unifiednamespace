@@ -196,7 +196,7 @@ def test_kafka_config():
     ), f"Kafka configurations missing mandatory server config: {KAFKAConfig.config_map}"
 
     assert (
-        type(KAFKAConfig.consumer_poll_timeout) is int and KAFKAConfig.consumer_poll_timeout > 0
+        type(KAFKAConfig.consumer_poll_timeout) is float and KAFKAConfig.consumer_poll_timeout > 0
     ), f"Kafka configurations had illegal value for consumer polling:{KAFKAConfig.consumer_poll_timeout}"
 
 
