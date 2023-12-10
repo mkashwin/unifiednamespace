@@ -61,11 +61,13 @@ async def test_get_kafka_messages_mock(topics: List[KAFKATopicInput], message_va
 
     with patch("uns_graphql.subscriptions.Consumer", return_value=mock_consumer):
         subscription = Subscription()
+        received_messages = []
         try:
             index: int = 0
             async for message in subscription.get_kafka_messages(topics):
                 assert isinstance(message, StreamingMessage)
                 assert message == StreamingMessage(message_vals[index][0], message_vals[index][1])
+                received_messages.append(message)
                 index = index + 1
                 if index == len(message_vals):
                     break
@@ -74,6 +76,11 @@ async def test_get_kafka_messages_mock(topics: List[KAFKATopicInput], message_va
             assert str(ex) == "async generator raised StopIteration"
             pytest.warns(ex)
         assert index == len(message_vals), "Not all messages were processed"
+        for topic, msg in message_vals:
+            # order of messages may not be same hence check after all messages were provided
+            assert any(
+                StreamingMessage(topic=topic, payload=msg) == received_message for received_message in received_messages
+            )
 
 
 @pytest.mark.asyncio
@@ -128,7 +135,7 @@ async def test_get_kafka_messages_integration(kafka_topics: List[KAFKATopicInput
                 index = index + 1
                 if index == len(message_vals):
                     break
-        except RuntimeError as ex:
+        except RuntimeError:
             assert index == len(message_vals), "Not all messages were processed"
 
         # Validate that all published messages were received
