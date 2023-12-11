@@ -3,7 +3,7 @@ Configuration reader for mqtt server and Neo4J DB server details
 """
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from aiomqtt import ProtocolVersion, TLSParameters
 from dynaconf import Dynaconf
@@ -32,12 +32,10 @@ class MQTTConfig:
 
     # generate client ID with pub prefix randomly
 
-    transport: str = settings.get("mqtt.transport", "tcp")
+    transport: Literal["tcp", "websockets"] = settings.get("mqtt.transport", "tcp")
     version: ProtocolVersion = ProtocolVersion(settings.get("mqtt.version", ProtocolVersion.V5))
     properties: Properties = Properties(PacketTypes.CONNECT) if version == ProtocolVersion.V5 else None
-    qos: int = settings.get("mqtt.qos", 1)
-    # reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure",
-    #                                           True)
+    qos: Literal[0, 1, 2] = settings.get("mqtt.qos", 1)
     clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
     host: str = settings.get("mqtt.host")

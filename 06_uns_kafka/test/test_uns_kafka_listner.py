@@ -10,7 +10,7 @@ from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_kafka.uns_kafka_config import KAFKAConfig
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
-from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_mqtt.mqtt_listener import MQTTVersion
 
 
 @pytest.mark.integrationtest()
@@ -120,7 +120,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
         uns_kafka_mapper = UNSKafkaMapper()
         admin_client = AdminClient(KAFKAConfig.kafka_config_map)
         publish_properties = None
-        if uns_kafka_mapper.uns_client.protocol == UnsMQTTClient.MQTTv5:
+        if uns_kafka_mapper.uns_client.protocol == MQTTVersion.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
 
         if mqtt_topic.startswith("spBv1.0/"):

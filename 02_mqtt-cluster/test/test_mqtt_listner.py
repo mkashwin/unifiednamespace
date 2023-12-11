@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 import pytest
-from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
 EMQX_CERT_FILE = Path(__file__).resolve().parent / "cert" / "broker.emqx.io-ca.crt"
@@ -21,7 +21,7 @@ KEEP_ALIVE = 60
 
 
 @pytest.mark.integrationtest()
-@pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5), (UnsMQTTClient.MQTTv311)])
+@pytest.mark.parametrize("protocol", [(MQTTVersion.MQTTv5), (MQTTVersion.MQTTv311)])
 #                                     (UNS_MQTT_Listener.MQTTv31)])
 # There appears to be a bug for MQTTv31. The call backs are not occurring
 @pytest.mark.parametrize(
@@ -100,7 +100,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport, port
 
 ###############################################################################
 @pytest.mark.integrationtest()
-@pytest.mark.parametrize("protocol", [(UnsMQTTClient.MQTTv5), (UnsMQTTClient.MQTTv311), (UnsMQTTClient.MQTTv31)])
+@pytest.mark.parametrize("protocol", [(MQTTVersion.MQTTv5), (MQTTVersion.MQTTv311), (MQTTVersion.MQTTv31)])
 @pytest.mark.parametrize(
     "transport,port,tls",
     [
@@ -496,7 +496,7 @@ def test_get_payload_as_dict(topic: str, payload_msg, expected_result):
     uns_client = UnsMQTTClient(
         client_id=f"test_01_{time.time()}-{random.randint(0, 1000)}",  # noqa: S311
         clean_session=True,
-        protocol=UnsMQTTClient.MQTTv5,
+        protocol=MQTTVersion.MQTTv5,
         transport="tcp",
         reconnect_on_failure=True,
     )

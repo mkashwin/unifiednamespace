@@ -3,10 +3,10 @@ Configuration reader for mqtt server where UNS are read from and the Kafka broke
 """
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from dynaconf import Dynaconf
-from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_mqtt.mqtt_listener import MQTTVersion
 
 # Logger
 LOGGER = logging.getLogger(__name__)
@@ -28,11 +28,12 @@ class MQTTConfig:
     Read the MQTT configurations required to connect to the MQTT broker
     """
 
-    transport: str = settings.get("mqtt.transport", "tcp")
-    version: int = settings.get("mqtt.version", UnsMQTTClient.MQTTv5)
-    qos: int = settings.get("mqtt.qos", 2)
-    reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure",
-                                              True)
+    transport: Literal["tcp", "websockets"] = settings.get("mqtt.transport", "tcp")
+    version: Literal[MQTTVersion.MQTTv5, MQTTVersion.MQTTv311, MQTTVersion.MQTTv31] = settings.get(
+        "mqtt.version", MQTTVersion.MQTTv5
+    )
+    qos: Literal[0, 1, 2] = settings.get("mqtt.qos", 2)
+    reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure", True)
     clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
 
     host: str = settings.get("mqtt.host")
@@ -44,8 +45,7 @@ class MQTTConfig:
     if isinstance(topics, str):
         topics = [topics]
     keep_alive: int = settings.get("mqtt.keep_alive", 60)
-    ignored_attributes: Optional[dict] = settings.get(
-        "mqtt.ignored_attributes", None)
+    ignored_attributes: Optional[dict] = settings.get("mqtt.ignored_attributes", None)
     timestamp_key: str = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
         LOGGER.error(
@@ -58,6 +58,7 @@ class MQTTConfig:
 
 class KAFKAConfig:
     """
-        Read the Kafka configurations required to connect to the Kafka broker
-        """
+    Read the Kafka configurations required to connect to the Kafka broker
+    """
+
     kafka_config_map: dict = settings.get("kafka.config")

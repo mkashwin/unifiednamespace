@@ -13,7 +13,7 @@ from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_graphdb.graphdb_config import GraphDBConfig
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
-from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_mqtt.mqtt_listener import MQTTVersion
 from uns_sparkplugb.generated import sparkplug_b_pb2
 
 test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
@@ -32,9 +32,7 @@ def test_uns_mqtt_graph_db():
     try:
         uns_mqtt_graphdb = UnsMqttGraphDb()
         uns_mqtt_graphdb.uns_client.loop()
-        assert uns_mqtt_graphdb is not None, (
-            "Connection to either the MQTT Broker "
-            "or the Graph DB did not happen")
+        assert uns_mqtt_graphdb is not None, "Connection to either the MQTT Broker or the Graph DB did not happen"
     except Exception as ex:
         pytest.fail(
             f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}",
@@ -43,8 +41,7 @@ def test_uns_mqtt_graph_db():
         if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
 
-        if ((uns_mqtt_graphdb is not None)
-                and (uns_mqtt_graphdb.graph_db_handler is not None)):
+        if (uns_mqtt_graphdb is not None) and (uns_mqtt_graphdb.graph_db_handler is not None):
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
@@ -52,26 +49,38 @@ def test_uns_mqtt_graph_db():
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistance
     [
-
         # Test UNS message persistance
-        ("test/uns/ar1/ln2", {
-            "timestamp": 1486144502122,
-            "TestMetric2": "TestUNS",
-        }),
-        ("test/uns/ar2/ln3", {
-            "timestamp": 1486144502144,
-            "TestMetric2": "TestUNSwithLists",
-            "list": [1, 2, 3, 4, 5],
-        }),
-        ("test/uns/ar2/ln4", {
-            "timestamp": 1486144500000,
-            "TestMetric2": "TestUNSwithNestedLists",
-            "dict_list": [{
-                "a": "b",
-            }, {
-                "x": "y",
-            }, {}],
-        }),
+        (
+            "test/uns/ar1/ln2",
+            {
+                "timestamp": 1486144502122,
+                "TestMetric2": "TestUNS",
+            },
+        ),
+        (
+            "test/uns/ar2/ln3",
+            {
+                "timestamp": 1486144502144,
+                "TestMetric2": "TestUNSwithLists",
+                "list": [1, 2, 3, 4, 5],
+            },
+        ),
+        (
+            "test/uns/ar2/ln4",
+            {
+                "timestamp": 1486144500000,
+                "TestMetric2": "TestUNSwithNestedLists",
+                "dict_list": [
+                    {
+                        "a": "b",
+                    },
+                    {
+                        "x": "y",
+                    },
+                    {},
+                ],
+            },
+        ),
         # ("test/uns/ar2/ln4", { # currently failing. validate if such a structure needs to be supported
         #     "timestamp": 1486144500000,
         #     "TestMetric2": "TestUNSwithNestedLists",
@@ -94,7 +103,8 @@ def test_uns_mqtt_graph_db():
             b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
             b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
         ),
-    ])
+    ],
+)
 def test_mqtt_graphdb_persistance(topic: str, message):
     """
     Test the persistance of message (UNS & SpB) to the database
@@ -115,26 +125,22 @@ def test_mqtt_graphdb_persistance(topic: str, message):
                 message_dict = message
                 node_type = GraphDBConfig.uns_node_types
 
-            attr_nd_typ: Optional[
-                str] = GraphDBConfig.nested_attributes_node_type
+            attr_nd_typ: Optional[str] = GraphDBConfig.nested_attributes_node_type
 
             try:
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
-                        database=uns_mqtt_graphdb.graph_db_handler.database,
+                    database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_read(read_nodes, node_type, attr_nd_typ,
-                                         topic, message_dict)
-            except (exceptions.TransientError,
-                    exceptions.TransactionError) as ex:
-                pytest.fail("Connection to either the MQTT Broker or "
-                            f"the Graph DB did not happen: Exception {ex}")
+                    session.execute_read(read_nodes, node_type, attr_nd_typ, topic, message_dict)
+            except (exceptions.TransientError, exceptions.TransactionError) as ex:
+                pytest.fail("Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
             finally:
                 uns_mqtt_graphdb.uns_client.disconnect()
 
         # --- end of function
 
         publish_properties = None
-        if uns_mqtt_graphdb.uns_client.protocol == UnsMQTTClient.MQTTv5:
+        if uns_mqtt_graphdb.uns_client.protocol == MQTTVersion.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
 
         if topic.startswith("spBv1.0/"):
@@ -150,11 +156,8 @@ def test_mqtt_graphdb_persistance(topic: str, message):
         # publish the messages as non-persistent to allow the tests to be
         # idempotent across multiple runs
         uns_mqtt_graphdb.uns_client.publish(
-            topic=topic,
-            payload=payload,
-            qos=uns_mqtt_graphdb.uns_client.qos,
-            retain=False,
-            properties=publish_properties)
+            topic=topic, payload=payload, qos=uns_mqtt_graphdb.uns_client.qos, retain=False, properties=publish_properties
+        )
 
         uns_mqtt_graphdb.uns_client.loop_forever()
     except Exception as ex:
@@ -166,6 +169,5 @@ def test_mqtt_graphdb_persistance(topic: str, message):
         if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
 
-        if ((uns_mqtt_graphdb is not None)
-                and (uns_mqtt_graphdb.graph_db_handler is not None)):
+        if (uns_mqtt_graphdb is not None) and (uns_mqtt_graphdb.graph_db_handler is not None):
             uns_mqtt_graphdb.graph_db_handler.close()

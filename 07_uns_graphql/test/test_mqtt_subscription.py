@@ -92,5 +92,6 @@ class AsyncContextManagerMock:
 # Function to create an async generator from the provided messages
 async def async_message_generator(messages):
     for msg in messages:
+        # FIXME Extend the graphQL object to also return these
         mqtt_msg = Message(topic=msg[0], payload=msg[1], qos=1, retain=False, mid=1, properties=None)
         yield mqtt_msg
