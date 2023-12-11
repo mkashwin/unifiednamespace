@@ -9,7 +9,7 @@ import re
 import ssl
 from enum import IntEnum
 from os import path
-from typing import Final, List, Literal, Optional
+from typing import Final, Literal, Optional
 
 import paho.mqtt.client as mqtt_client
 from google.protobuf.json_format import MessageToDict
@@ -145,7 +145,7 @@ class UnsMQTTClient(mqtt_client.Client):
         password: Optional[str] = None,
         tls: Optional[dict] = None,
         keepalive: Optional[int] = 60,
-        topics: Optional[List[str]] = None,
+        topics: Optional[list[str]] = None,
         qos: Optional[Literal[0, 1, 2]] = 2,
     ):
         # pylint: disable=too-many-arguments

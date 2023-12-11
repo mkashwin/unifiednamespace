@@ -73,6 +73,7 @@ class SPBDataSetTypeEnum(Enum):
     """
     Enumeration of datatypes possible for DataSetValue
     """
+
     UInt32 = sparkplug_b_pb2.UInt32
     Uint64 = sparkplug_b_pb2.UInt64
     Float = sparkplug_b_pb2.Float
@@ -86,6 +87,7 @@ class SPBMetadata:
     """
     Model of Metadata in SPBv1.0 payload
     """
+
     is_multi_part: bool
     content_type: str
     size: int
@@ -101,8 +103,9 @@ class SPBPropertySet:
     """
     Model of PropertySet in SPBv1.0 payload
     """
-    keys: typing.List[str]
-    values: typing.List['SPBPropertyValue']
+
+    keys: list[str]
+    values: list["SPBPropertyValue"]
 
 
 @strawberry.lazy_type
@@ -110,10 +113,10 @@ class SPBPropertyValue:
     """
     Model of PropertyValue in SPBv1.0 payload
     """
+
     is_null: bool
     datatype: SPBPropertyTypeEnum
-    value: typing.Union[int, float, str, SPBPropertySet,
-                        typing.List[SPBPropertySet]]
+    value: typing.Union[int, float, str, SPBPropertySet, list[SPBPropertySet]]
 
     @strawberry.field(name="value")
     def resolve_value(self, info: Info):  # noqa: ARG002
@@ -141,6 +144,7 @@ class SPBDataSetValue:
     """
     Model of DataSet->Row->Value in SPBv1.0 payload
     """
+
     datatype: SPBDataSetTypeEnum
     value: typing.Union(int, float, bool, str)
 
@@ -166,8 +170,9 @@ class SPBDataSetRow:
     """
     Model of DataSet->Row in SPBv1.0 payload
     """
+
     # pylint: disable=too-few-public-methods
-    elements = typing.List[SPBDataSetValue]
+    elements = list[SPBDataSetValue]
 
 
 @strawberry.type
@@ -180,8 +185,8 @@ class SPBDataSet:
     num_of_columns: int
     columns: int
     # maps to spb data types
-    types: typing.List[int]
-    rows: typing.List[SPBDataSetRow]
+    types: list[int]
+    rows: list[SPBDataSetRow]
 
 
 class SPBTemplateParameter:
@@ -203,7 +208,6 @@ class SPBTemplateParameter:
 
         datatype: int = self.datatype
         match datatype:
-
             case SPBDataTypeEnum.Float | SPBDataTypeEnum.Double:
                 return float(self.value)
 
@@ -225,11 +229,13 @@ class SPBTemplateParameter:
             case SPBDataTypeEnum.Template:
                 return SPBTemplate(value=self.value)
             case _:
-                LOGGER.error("Invalid type: %s.\n Trying Value: %s as String",
-                             str(self.datatype),
-                             str(self.value),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error(
+                    "Invalid type: %s.\n Trying Value: %s as String",
+                    str(self.datatype),
+                    str(self.value),
+                    stack_info=True,
+                    exc_info=True,
+                )
                 return str(self.value)
 
 
@@ -239,10 +245,9 @@ class SPBTemplate:
     Model of Template in SPBv1.0 payload
     """
 
-    # pylint: disable=too-few-public-methods
     version: str
-    metrics: typing.List['SPBMetric']
-    parameters: typing.List[SPBTemplateParameter]
+    metrics: list["SPBMetric"]
+    parameters: list[SPBTemplateParameter]
     template_ref: str
     is_definition: bool
 
@@ -252,6 +257,7 @@ class SPBMetric:
     """
     Model of a SPB Metric, which is within a SPBNode
     """
+
     name: str
     alias: int
     timestamp: int
@@ -261,8 +267,7 @@ class SPBMetric:
     is_null: bool
     metadata: SPBMetadata
     properties: SPBPropertySet
-    value: typing.Union[int, float, bool, str, strawberry.ID, bytes,
-                        SPBDataSet, SPBTemplate]
+    value: typing.Union[int, float, bool, str, strawberry.ID, bytes, SPBDataSet, SPBTemplate]
 
     @strawberry.field(name="value")
     def resolve_value(self, info: Info):  # noqa: ARG002
@@ -275,11 +280,17 @@ class SPBMetric:
         if self.is_null:
             return None
         match datatype:
-            case SPBDataTypeEnum.Int8 | SPBDataTypeEnum.Int16 | \
-                    SPBDataTypeEnum.Int32 | SPBDataTypeEnum.Int64 | \
-                    SPBDataTypeEnum.UInt8 | SPBDataTypeEnum.UInt16 | \
-                    SPBDataTypeEnum.UInt32 | SPBDataTypeEnum.UInt64 | \
-                    SPBDataTypeEnum.DateTime:
+            case (
+                SPBDataTypeEnum.Int8
+                | SPBDataTypeEnum.Int16
+                | SPBDataTypeEnum.Int32
+                | SPBDataTypeEnum.Int64
+                | SPBDataTypeEnum.UInt8
+                | SPBDataTypeEnum.UInt16
+                | SPBDataTypeEnum.UInt32
+                | SPBDataTypeEnum.UInt64
+                | SPBDataTypeEnum.DateTime
+            ):
                 return int(self.value)
 
             case SPBDataTypeEnum.Float | SPBDataTypeEnum.Double:
@@ -302,11 +313,13 @@ class SPBMetric:
             case SPBDataTypeEnum.Template:
                 return SPBTemplate(value=self.value)
             case _:
-                LOGGER.error("Invalid type: %s.\n Trying Value: %s as String",
-                             str(self.datatype),
-                             str(self.value),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error(
+                    "Invalid type: %s.\n Trying Value: %s as String",
+                    str(self.datatype),
+                    str(self.value),
+                    stack_info=True,
+                    exc_info=True,
+                )
                 return str(self.value)
 
 
@@ -337,8 +350,8 @@ class SPBNode:
     # UUID for this message
     uuid: strawberry.ID
     # Metrics published to the spBv1.0 namespace using protobuf payloads
-    metrics: typing.List[SPBMetric]
+    metrics: list[SPBMetric]
     # Properties / message payload for non protobuf messages e.g. STATE
-    properties: typing.Dict
+    properties: dict
     # sequence
     seq: int

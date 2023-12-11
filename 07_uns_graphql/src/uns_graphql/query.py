@@ -3,7 +3,6 @@ Schema for GraphQL apis for the UNS
 """
 
 import logging
-import typing
 
 import strawberry
 from strawberry.types import Info
@@ -18,7 +17,7 @@ class Query:
     """ """
 
     @strawberry.field(description="")
-    def resolve_all_topics(self, info: Info) -> typing.List[UNSNode]:  # noqa: ARG002
+    def resolve_all_topics(self, info: Info) -> list[UNSNode]:  # noqa: ARG002
         # Placeholder logic to fetch all topics from Neo4j
         # Implement actual logic in resolvers.py
         return []
@@ -27,8 +26,8 @@ class Query:
     def resolve_specific_topics(
         self,
         info: Info,  # noqa: ARG002
-        topics: typing.List[str],
-    ) -> typing.List[UNSNode]:
+        topics: list[str],
+    ) -> list[UNSNode]:
         # Placeholder logic to fetch specific topics data from different sources
         # Implement actual logic in resolvers.py
         return []

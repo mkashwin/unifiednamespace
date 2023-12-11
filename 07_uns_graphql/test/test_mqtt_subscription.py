@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -51,7 +50,7 @@ sample_spb_payload: bytes = (
         # Add more test cases as needed
     ],
 )
-async def test_get_mqtt_messages(topics: List[MQTTTopicInput], messages: List[tuple[str, bytes]]):
+async def test_get_mqtt_messages(topics: list[MQTTTopicInput], messages: list[tuple[str, bytes]]):
     # Mock the Client context manager and its return values
     # Create an instance of AsyncContextManagerMock to act as an async context manager
     # Mock necessary components from aiomqtt
@@ -64,7 +63,7 @@ async def test_get_mqtt_messages(topics: List[MQTTTopicInput], messages: List[tu
         "uns_graphql.subscriptions.MQTTMessage", autospec=True
     ):
         subscription = Subscription()
-        received_messages: List[MQTTMessage] = []
+        received_messages: list[MQTTMessage] = []
 
         # Mock the client.messages context manager to return an async generator
         mock_messages = MagicMock()

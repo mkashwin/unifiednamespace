@@ -3,7 +3,7 @@ Configuration reader for mqtt server and Timescale DB server details
 """
 import logging
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import MQTTVersion
@@ -42,7 +42,7 @@ class MQTTConfig:
     username: Optional[str] = settings.get("mqtt.username")
     password: Optional[str] = settings.get("mqtt.password")
     tls: dict = settings.get("mqtt.tls", None)
-    topics: List[str] = settings.get("mqtt.topics", ["#"])
+    topics: list[str] = settings.get("mqtt.topics", ["#"])
     if isinstance(topics, str):
         topics = [topics]
     keepalive: int = settings.get("mqtt.keep_alive", 60)

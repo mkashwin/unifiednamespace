@@ -1,5 +1,4 @@
 import asyncio
-from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -41,11 +40,11 @@ ONE_TOPIC_ONE_MSG = ([KAFKATopicInput(topic="x.y.z")], [("x.y.z", b'{"timestamp"
         ONE_TOPIC_ONE_MSG,
     ],
 )
-async def test_get_kafka_messages_mock(topics: List[KAFKATopicInput], message_vals: tuple):
+async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_vals: tuple):
     # create the input for the subscription
 
     # pick a topic to associate the message with in the mock
-    mock_messages: List[MagicMock] = []
+    mock_messages: list[MagicMock] = []
     for msg_val in message_vals:
         mock_message = MagicMock()
         mock_message.value.return_value = msg_val[1]
@@ -93,7 +92,7 @@ async def test_get_kafka_messages_mock(topics: List[KAFKATopicInput], message_va
         ONE_TOPIC_ONE_MSG,
     ],
 )
-async def test_get_kafka_messages_integration(kafka_topics: List[KAFKATopicInput], message_vals: List[tuple]):
+async def test_get_kafka_messages_integration(kafka_topics: list[KAFKATopicInput], message_vals: list[tuple]):
     kafka_config = {
         "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
     }

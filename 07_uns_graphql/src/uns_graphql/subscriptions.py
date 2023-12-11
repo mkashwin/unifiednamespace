@@ -31,7 +31,7 @@ class Subscription:
     @strawberry.subscription(
         description=" Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported "
     )
-    async def get_mqtt_messages(self, topics: typing.List[MQTTTopicInput]) -> typing.AsyncGenerator[MQTTMessage, None]:
+    async def get_mqtt_messages(self, topics: list[MQTTTopicInput]) -> typing.AsyncGenerator[MQTTMessage, None]:
         """
         Subscribe to MQTT messages based on provided topics.
 
@@ -66,7 +66,7 @@ class Subscription:
             await asyncio.sleep(MQTTConfig.retry_interval)
 
     @strawberry.subscription(description="Subscribe to Kafka messages based on provided topics")
-    async def get_kafka_messages(self, topics: typing.List[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage, None]:
+    async def get_kafka_messages(self, topics: list[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage, None]:
         """
         Subscribe to Kafka messages based on provided topics.
 

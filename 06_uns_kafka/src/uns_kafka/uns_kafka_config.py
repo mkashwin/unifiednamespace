@@ -3,7 +3,7 @@ Configuration reader for mqtt server where UNS are read from and the Kafka broke
 """
 import logging
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import MQTTVersion
@@ -41,7 +41,7 @@ class MQTTConfig:
     username: str = settings.get("mqtt.username")
     password: str = settings.get("mqtt.password")
     tls: Optional[dict] = settings.get("mqtt.tls", None)
-    topics: List[str] = settings.get("mqtt.topics", ["#"])
+    topics: list[str] = settings.get("mqtt.topics", ["#"])
     if isinstance(topics, str):
         topics = [topics]
     keep_alive: int = settings.get("mqtt.keep_alive", 60)
