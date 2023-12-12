@@ -9,7 +9,7 @@ poetry install
 # 2. create minimalistic secret files for all the modules. 
 # 2.1 Neo4j
 if [[ $(docker ps -aq -f name=uns_graphdb) ]]; then
-  docker start uns_graphdb 
+  docker start uns_graphdb && docker exec -it uns_graphdb bash -c "rm /var/lib/neo4j/run/*"
 else
   UNS_graphdb__username=neo4j
   UNS_graphdb__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
