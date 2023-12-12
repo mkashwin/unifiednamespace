@@ -9,7 +9,7 @@ from strawberry.scalars import JSON
 class JSONPayload:
     data: JSON
 
-    def init(self, data: Union[str, dict]):
+    def __init__(self, data: Union[str, dict]):
         if type(data) is str:
             json.loads(data)
             # if it is already a JSON string then assign

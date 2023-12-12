@@ -60,7 +60,7 @@ build-backend = "poetry.core.masonry.api"
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
-addopts = "-n auto"
+addopts = "-n auto --dist loadgroup"
 
 [tool.ruff]
 # Extend the `pyproject.toml` file in the parent directory...
