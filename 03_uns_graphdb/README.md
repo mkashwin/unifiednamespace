@@ -275,5 +275,18 @@ docker run --name uns_mqtt_graphdb -d -v $PWD/conf:/app/conf uns/graphdb:latest
 1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
   If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name.
 1. [x] ~~Add and improve automated test coverage~~
+1. [x] ~~Neo4j Container fails to restart sometimes~~
+
+    Sometimes the neo4j db container is not starting and the container logs give message
+    > `Neo4j is already running (pid:7).`
+
+    This is detailed in the thread [Neo4j container fails to start on next Docker startup if Docker engine was shut down while Neo4j was running](https://github.com/neo4j/neo4j/issues/12908)
+    Try the provided workarounds in the above thread or try running the following hack below to delete the pid
+
+    ```bash
+    docker start uns_graphdb && docker exec -it uns_graphdb bash -c "rm /var/lib/neo4j/run/*"
+    ```
+
 1. [ ] Enhancing ACLs on the nodes for the various nodes to secure access
 1. [ ] Securing the Neo4j database
+1. [ ]
