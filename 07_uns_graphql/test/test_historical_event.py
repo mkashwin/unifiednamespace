@@ -28,7 +28,7 @@ def test_historical_event_topic(sample_historical_event):
 
 def test_historical_event_payload(sample_historical_event):
     assert isinstance(sample_historical_event.payload, JSONPayload)
-    assert sample_historical_event.payload.data == {"key": "value"}
+    assert sample_historical_event.payload.data == '{"key": "value"}'
 
 
 # data validations not implemented on types returning data from back end
