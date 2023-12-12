@@ -34,7 +34,12 @@ class UnsMQTTClient(mqtt_client.Client):
     """
 
     SPARKPLUG_NS: Final[str] = "spBv1.0/"
-    SPB_STATE_MSG_TYPE: Final[str] = "spBv1.0/+/STATE"
+    # TODO What is the name space of STATE messages
+    # Currently following https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
+    #   which states spBv1.0/STATE/+
+    # Contradictory https://github.com/eclipse-sparkplug/sparkplug/blob/master/docs/normative_statements.md#sparkplug-topics
+    #   which states STATE/+
+    SPB_STATE_MSG_TYPE: Final[str] = "spBv1.0/STATE/+"
 
     def __init__(
         self,
@@ -259,16 +264,17 @@ class UnsMQTTClient(mqtt_client.Client):
         -------
             dict: The payload as a dictionary.
         """
-        if topic.startswith(UnsMQTTClient.SPARKPLUG_NS) and not UnsMQTTClient.is_topic_matched(
-            UnsMQTTClient.SPB_STATE_MSG_TYPE, topic
-        ):
+        if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, topic):
+            # This is a State Message in SparkPlugB which is a utf-8 string
+            decoded_payload = {"WILL_MESSAGE": payload.decode("utf-8")}
+        elif topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # This message was to the sparkplugB namespace in protobuf format
             inbound_payload = sparkplug_b_pb2.Payload()
             inbound_payload.ParseFromString(payload)
             decoded_payload = MessageToDict(inbound_payload)
+
         else:
-            # TODO Assuming all messages to UNS or the STATE message type in sparkplugB
-            # are json hence convertible to dict
+            # Assuming all messages to UNS are json hence convertible to dict
             decoded_payload = json.loads(payload.decode("utf-8"))
 
         filtered_message = UnsMQTTClient.filter_ignored_attributes(topic, decoded_payload, mqtt_ignored_attributes)

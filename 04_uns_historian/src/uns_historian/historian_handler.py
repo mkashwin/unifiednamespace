@@ -23,8 +23,7 @@ class HistorianHandler:
     timescale_db_conn = None
     timescale_db_cursor = None
 
-    def __init__(self, hostname: str, port: int, database: str, table: str,
-                 user: str, password: str, sslmode: str):
+    def __init__(self, hostname: str, port: int, database: str, table: str, user: str, password: str, sslmode: str):
         # pylint: disable=too-many-arguments
         """
         Parameters
@@ -62,31 +61,22 @@ class HistorianHandler:
                     database=self.database,
                     user=self.user,
                     password=self.password,
-                    sslmode=self.sslmode)
+                    sslmode=self.sslmode,
+                )
                 self.timescale_db_conn.set_session(autocommit=True)
                 return self.timescale_db_conn
             except psycopg2.OperationalError as ex:
-                if (self.timescale_db_conn is None and retry >= MAX_RETRIES):
-                    LOGGER.error("No. of retries exceeded %s",
-                                 str(MAX_RETRIES),
-                                 stack_info=True,
-                                 exc_info=True)
+                if self.timescale_db_conn is None and retry >= MAX_RETRIES:
+                    LOGGER.error("No. of retries exceeded %s", str(MAX_RETRIES), stack_info=True, exc_info=True)
                     raise ex
                 retry += 1
-                LOGGER.error("Error Connecting to %s. Error: %s",
-                             self.database,
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error("Error Connecting to %s. Error: %s", self.database, str(ex), stack_info=True, exc_info=True)
                 time.sleep(SLEEP_BTW_ATTEMPT)
                 return self.connect(retry=retry)
             except Exception as ex:
                 LOGGER.error(
-                    "Error Connecting to %s. Unable to retry. Error:%s",
-                    self.database,
-                    str(ex),
-                    stack_info=True,
-                    exc_info=True)
+                    "Error Connecting to %s. Unable to retry. Error:%s", self.database, str(ex), stack_info=True, exc_info=True
+                )
                 raise ex
         return None
 
@@ -94,8 +84,7 @@ class HistorianHandler:
         """
         Get the cursor for the Timescale DB
         """
-        if (self.timescale_db_cursor is None
-                or self.timescale_db_cursor.closed):
+        if self.timescale_db_cursor is None or self.timescale_db_cursor.closed:
             if self.timescale_db_conn is None:
                 self.connect()
             self.timescale_db_cursor = self.timescale_db_conn.cursor()
@@ -109,23 +98,16 @@ class HistorianHandler:
             try:
                 self.timescale_db_cursor.close()
             except Exception as ex:
-                LOGGER.error("Error closing the cursor %s",
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error("Error closing the cursor %s", str(ex), stack_info=True, exc_info=True)
         # in case there was any error in closing the cursor, attempt closing the connection too
         if self.timescale_db_conn is not None:
             try:
                 self.timescale_db_conn.close()
                 self.timescale_db_conn = None
             except Exception as ex:
-                LOGGER.error("Error closing the connection %s",
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error("Error closing the connection %s", str(ex), stack_info=True, exc_info=True)
 
-    def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: float,
-                         message: dict):
+    def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: float, message: dict):
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -154,16 +136,10 @@ class HistorianHandler:
             """
             try:
                 with self.get_cursor() as cursor:
-                    cursor.execute(
-                        sql_cmd,
-                        (_timestamp, topic, client_id, json.dumps(message)))
+                    cursor.execute(sql_cmd, (_timestamp, topic, client_id, json.dumps(message)))
             except (psycopg2.DataError, psycopg2.OperationalError) as ex:
                 # handle exception
-                LOGGER.error(
-                    "Error persisting message to the database. Error: %s",
-                    str(ex),
-                    stack_info=True,
-                    exc_info=True)
+                LOGGER.error("Error persisting message to the database. Error: %s", str(ex), stack_info=True, exc_info=True)
                 if retry >= MAX_RETRIES:
                     raise ex
                 retry += 1

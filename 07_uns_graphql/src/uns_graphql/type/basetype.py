@@ -1,3 +1,4 @@
+import json
 from typing import Union
 
 import strawberry
@@ -7,6 +8,15 @@ from strawberry.scalars import JSON
 @strawberry.type
 class JSONPayload:
     data: JSON
+
+    def init(self, data: Union[str, dict]):
+        if type(data) is str:
+            json.loads(data)
+            # if it is already a JSON string then assign
+            self.data = data
+        else:
+            # else convert dict to JSON
+            self.data = json.dumps(data)
 
 
 @strawberry.type

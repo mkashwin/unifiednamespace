@@ -62,14 +62,10 @@ class SpBMessageGenerator:
         """
         if payload is None:
             payload = spbPayload()
-        self.add_metric(payload, "bdSeq", sparkplug_b_pb2.Int64,
-                        self.get_birth_seq_num(), None)
+        self.add_metric(payload, "bdSeq", sparkplug_b_pb2.Int64, self.get_birth_seq_num(), None)
         return payload
 
-    def get_node_birth_payload(
-            self,
-            payload: spbPayload = None,
-            timestamp: Optional[float] = None) -> spbPayload:
+    def get_node_birth_payload(self, payload: spbPayload = None, timestamp: Optional[float] = None) -> spbPayload:
         """
         Helper to get the Node Birth Payload
         Always request this after requesting the Node Death Payload
@@ -83,19 +79,16 @@ class SpBMessageGenerator:
         if payload is None:
             payload = spbPayload()
         if timestamp is None:
+            # timestamp in seconds being converted to milliseconds
             payload.timestamp = int(round(time.time() * 1000))
         else:
             payload.timestamp = timestamp
         payload.seq = self.get_seq_num()
-        # FIXME why was there --self.bdSeq over here ??
-        self.add_metric(payload, "bdSeq", sparkplug_b_pb2.Int64,
-                        self.get_birth_seq_num(), None, payload.timestamp)
+
+        self.add_metric(payload, "bdSeq", sparkplug_b_pb2.Int64, self.get_birth_seq_num(), None, payload.timestamp)
         return payload
 
-    def get_device_birth_payload(
-            self,
-            payload: spbPayload = None,
-            timestamp: Optional[float] = None) -> spbPayload:
+    def get_device_birth_payload(self, payload: spbPayload = None, timestamp: Optional[float] = None) -> spbPayload:
         """
         Get the DBIRTH payload
 
@@ -107,6 +100,7 @@ class SpBMessageGenerator:
         if payload is None:
             payload = spbPayload()
         if timestamp is None:
+            # timestamp in seconds being converted to milliseconds
             payload.timestamp = int(round(time.time() * 1000))
         else:
             payload.timestamp = timestamp
@@ -114,10 +108,7 @@ class SpBMessageGenerator:
         return payload
 
     ######################################################################
-    def get_device_data_payload(
-            self,
-            payload: spbPayload = None,
-            timestamp: Optional[float] = None) -> spbPayload:
+    def get_device_data_payload(self, payload: spbPayload = None, timestamp: Optional[float] = None) -> spbPayload:
         """
         Get a DDATA payload
 
@@ -143,12 +134,13 @@ class SpBMessageGenerator:
 
     ######################################################################
 
-    def get_metric_wrapper(self,
-                           payload: spbPayload,
-                           name: str,
-                           alias: Optional[int] = None,
-                           timestamp: Optional[float] = int(
-                               round(time.time() * 1000))):
+    def get_metric_wrapper(
+        self,
+        payload: spbPayload,
+        name: str,
+        alias: Optional[int] = None,
+        timestamp: Optional[float] = int(round(time.time() * 1000)),
+    ):
         """
         Refactored common code of obtaining metrics and initializing common attributes
 
@@ -177,8 +169,9 @@ class SpBMessageGenerator:
             metric.name = None
         else:
             raise ValueError(
-                f"Alias:{alias} provided for Name:{name} not matching" +
-                f"to previously provided alias:{self.alias_map.get(name)}")
+                f"Alias:{alias} provided for Name:{name} not matching"
+                + f"to previously provided alias:{self.alias_map.get(name)}"
+            )
         metric.timestamp = timestamp
         return metric
 
@@ -190,7 +183,8 @@ class SpBMessageGenerator:
         columns: list,  # can be of type int, float, bool or str
         types: list[int],
         alias: Optional[int] = None,
-        timestamp: Optional[float] = int(round(time.time() * 1000))):
+        timestamp: Optional[float] = int(round(time.time() * 1000)),
+    ):
         # pylint: disable=too-many-arguments
         """
         Helper method for initializing a dataset metric to a payload
@@ -212,10 +206,7 @@ class SpBMessageGenerator:
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
-        metric = self.get_metric_wrapper(payload=payload,
-                                         name=name,
-                                         alias=alias,
-                                         timestamp=timestamp)
+        metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
 
         metric.datatype = sparkplug_b_pb2.DataSet
         # Set up the dataset
@@ -225,11 +216,7 @@ class SpBMessageGenerator:
         return metric.dataset_value
 
     ######################################################################
-    def init_template_metric(self,
-                             payload: spbPayload,
-                             name: str,
-                             template_ref: str,
-                             alias: Optional[int] = None):
+    def init_template_metric(self, payload: spbPayload, name: str, template_ref: str, alias: Optional[int] = None):
         """
         Helper method for adding template metrics to a payload
 
@@ -245,9 +232,7 @@ class SpBMessageGenerator:
             Represents reference to a Template name if this is a Template instance.
             If this is a Template definition this field must be null
         """
-        metric = self.get_metric_wrapper(payload=payload,
-                                         name=name,
-                                         alias=alias)
+        metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias)
         metric.datatype = sparkplug_b_pb2.Template
 
         # Set up the template
@@ -262,13 +247,15 @@ class SpBMessageGenerator:
     ######################################################################
     #
     ######################################################################
-    def add_metric(self,
-                   payload: spbPayload,
-                   name: str,
-                   datatype: int,
-                   value=None,
-                   alias: Optional[int] = None,
-                   timestamp: Optional[int] = None):
+    def add_metric(
+        self,
+        payload: spbPayload,
+        name: str,
+        datatype: int,
+        value=None,
+        alias: Optional[int] = None,
+        timestamp: Optional[int] = None,
+    ):
         # pylint: disable=too-many-arguments
         """
         Helper method for adding metrics to a container which can be a payload or a template.
@@ -291,10 +278,7 @@ class SpBMessageGenerator:
         """
         if timestamp is None:
             timestamp = int(round(time.time() * 1000))
-        metric = self.get_metric_wrapper(payload=payload,
-                                         name=name,
-                                         alias=alias,
-                                         timestamp=timestamp)
+        metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
         if value is None:
             metric.is_null = True
         metric.datatype = datatype
@@ -333,8 +317,7 @@ class SpBMessageGenerator:
             case sparkplug_b_pb2.DataSet:
                 # FIXME how to support this?
                 raise ValueError(
-                    f"MetricType:{sparkplug_b_pb2.DataSet}" +
-                    " Not supported by #add_metric(). Use #init_dataset_metric()",
+                    f"MetricType:{sparkplug_b_pb2.DataSet}" + " Not supported by #add_metric(). Use #init_dataset_metric()",
                 )
             case sparkplug_b_pb2.Bytes:
                 value = set_bytes_value_in_metric(value, metric)
@@ -380,22 +363,13 @@ class SpBMessageGenerator:
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
-        metric = self.add_metric(container,
-                                 name=name,
-                                 alias=alias,
-                                 datatype=datatype,
-                                 value=value,
-                                 timestamp=timestamp)
+        metric = self.add_metric(container, name=name, alias=alias, datatype=datatype, value=value, timestamp=timestamp)
         metric.is_historical = True
         # Return the metric
         return metric
 
     ######################################################################
-    def add_null_metric(self,
-                        container,
-                        name: str,
-                        datatype: int,
-                        alias: Optional[int] = None):
+    def add_null_metric(self, container, name: str, datatype: int, alias: Optional[int] = None):
         """
         Helper method for adding null metrics  to a container which can be a payload or a template
 
@@ -411,10 +385,7 @@ class SpBMessageGenerator:
         datatype:
             Unsigned int depicting the data type
         """
-        metric = self.add_metric(payload=container,
-                                 name=name,
-                                 alias=alias,
-                                 datatype=datatype)
+        metric = self.add_metric(payload=container, name=name, alias=alias, datatype=datatype)
         metric.is_null = True
         return metric
 
@@ -566,9 +537,6 @@ def unknown_value_in_metric(datatype, value, metric):
     metric: Metric object
     """
     metric.datatype = None
-    LOGGER.error("Invalid type: %s.\n Value: %s not added to %s",
-                 str(datatype),
-                 str(value),
-                 str(metric),
-                 stack_info=True,
-                 exc_info=True)
+    LOGGER.error(
+        "Invalid type: %s.\n Value: %s not added to %s", str(datatype), str(value), str(metric), stack_info=True, exc_info=True
+    )

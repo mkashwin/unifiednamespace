@@ -17,26 +17,23 @@ sample_spb_payload: bytes = (
     "topic, payload, expected_type, expected_data",
     [
         ("ent1/fac1/area5", b'{"key": "value"}', JSONPayload, {"key": "value"}),
-        (
-            "spBv1.0/uns_group/STATE",
-            b'{"status": "offline", "timestamp": 123456789}',
-            JSONPayload,
-            {
-                "status": "offline",
-                "timestamp": 123456789,
-            },
-        ),
+        ("spBv1.0/STATE/scada_1", b"OFFLINE", str, "OFFLINE"),
         ("spBv1.0/uns_group/NBIRTH/eon1", sample_spb_payload, BytesPayload, sample_spb_payload),
         ("spBv1.0/uns_group/NDATA/eon1", sample_spb_payload, BytesPayload, sample_spb_payload),
     ],
 )
 def test_resolve_payload(
-    topic: str, payload: JSONPayload | BytesPayload, expected_type: type[JSONPayload] | type[BytesPayload], expected_data
+    topic: str,
+    payload: JSONPayload | BytesPayload | str,
+    expected_type: type[JSONPayload] | type[BytesPayload] | type[str],
+    expected_data,
 ):
     mqtt_event = MQTTMessage(topic=topic, payload=payload)
     result = mqtt_event.resolve_payload(None)
     assert isinstance(result, expected_type)
     if isinstance(result, BytesPayload):
         assert result.data == expected_data
+    elif isinstance(result, str):
+        assert result == expected_data
     else:
         assert json.loads(result.data) == expected_data

@@ -38,15 +38,17 @@ class MQTTMessage:
     def resolve_payload(
         self,
         info,  # noqa: ARG002
-    ) -> typing.Union[JSONPayload, BytesPayload]:
-        if self.topic.startswith(UnsMQTTClient.SPARKPLUG_NS) and not UnsMQTTClient.is_topic_matched(
-            UnsMQTTClient.SPB_STATE_MSG_TYPE, self.topic
-        ):
+    ) -> typing.Union[JSONPayload, BytesPayload, str]:
+        if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, self.topic):
+            # Message to sparkplug STATE message
+            return self._raw_payload.decode("utf-8")
+        elif self.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # Message to sparkplug name space in protobuf i.e. BytesPayload
             return BytesPayload(data=self._raw_payload)
         else:
             # Message to UNS or spb STATE message f i.e. JSONPayload
             try:
                 return JSONPayload(data=self._raw_payload.decode("utf-8"))
-            except json.JSONDecodeError:
-                LOGGER.error("Expected JSON String")
+            except json.JSONDecodeError as ex:
+                LOGGER.error(f"Expected JSON String in payload:{self._raw_payload}")
+                raise ex

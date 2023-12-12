@@ -115,7 +115,7 @@ sample_spb_payload: bytes = (
                     properties=None,
                 ),
                 Message(
-                    topic="spBv1.0/uns_group/STATE",
+                    topic="spBv1.0/STATE/scada_1234",
                     payload=b'{"status": "offline", "timestamp": 123456789}',
                     qos=1,
                     retain=False,
@@ -274,7 +274,7 @@ async def async_message_generator(messages):
                     properties=None,
                 ),
                 Message(
-                    topic="spBv1.0/uns_group/STATE",
+                    topic="spBv1.0/STATE/scada_2345",
                     payload=b'{"status": "offline", "timestamp": 123456789}',
                     qos=1,
                     retain=False,
