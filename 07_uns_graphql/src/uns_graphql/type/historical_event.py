@@ -18,7 +18,7 @@ class HistoricalUNSEvent:
     """
 
     # Client id of the what/who published this messages
-    published_by: str
+    publisher: str
 
     # Timestamp of when this event was published/historied
     timestamp: int

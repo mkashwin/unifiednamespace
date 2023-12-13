@@ -7,7 +7,7 @@ from aiomqtt import Client, Message, MqttError, ProtocolVersion
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_graphql.graphql_config import MQTTConfig
-from uns_graphql.input.mqtt_subscription import MQTTTopicInput
+from uns_graphql.input.mqtt import MQTTTopicInput
 from uns_graphql.subscriptions import Subscription
 from uns_graphql.type.mqtt_event import MQTTMessage
 

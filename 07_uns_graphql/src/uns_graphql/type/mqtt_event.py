@@ -7,9 +7,10 @@ import logging
 import typing
 
 import strawberry
+from strawberry.types import Info
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
-from uns_graphql.type.basetype import BytesPayload, JSONPayload
+from uns_graphql.type.basetype import BytesPayload, JSONPayload, StateString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,17 +32,16 @@ class MQTTMessage:
         self.topic = topic
         self._raw_payload = payload
 
-    # # The payload which was published was either a JSON string or bytes
-    # payload: typing.Union[JSONPayload, BytesPayload]
+    # # The payload which was published was either a JSON, a string or bytes
 
     @strawberry.field(name="payload", description="the payload of the MQTT message\n -JSON for UNS \n -bytes for sparkplugB")
     def resolve_payload(
         self,
-        info,  # noqa: ARG002
-    ) -> typing.Union[JSONPayload, BytesPayload, str]:
+        info: Info,  # noqa: ARG002
+    ) -> typing.Optional[typing.Union[StateString, JSONPayload, BytesPayload]]:
         if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, self.topic):
             # Message to sparkplug STATE message
-            return self._raw_payload.decode("utf-8")
+            return StateString(data=self._raw_payload.decode("utf-8"))
         elif self.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # Message to sparkplug name space in protobuf i.e. BytesPayload
             return BytesPayload(data=self._raw_payload)

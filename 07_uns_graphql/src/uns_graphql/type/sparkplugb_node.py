@@ -6,6 +6,8 @@ import strawberry
 from strawberry.types import Info
 from uns_sparkplugb.generated import sparkplug_b_pb2
 
+from uns_graphql.type.basetype import BytesPayload, JSONPayload
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -145,7 +147,7 @@ class SPBDataSetValue:
     Model of DataSet->Row->Value in SPBv1.0 payload
     """
 
-    datatype: SPBDataSetTypeEnum
+    datatype: strawberry.Private[SPBDataSetTypeEnum]
     value: typing.Union(int, float, bool, str)
 
     @strawberry.field(name="value")
@@ -171,8 +173,15 @@ class SPBDataSetRow:
     Model of DataSet->Row in SPBv1.0 payload
     """
 
-    # pylint: disable=too-few-public-methods
     elements = list[SPBDataSetValue]
+
+    def __init__(self, datatypes: list[SPBDataSetTypeEnum], elements: list[int | float | bool | str]):
+        if len(datatypes) == len(elements):
+            self.elements = list[SPBDataSetValue]
+            for datatype, value in zip(datatypes, elements):
+                self.elements.append(SPBDataSetValue(datatype=datatype, value=value))
+        else:
+            raise ValueError(f"length of datatypes: {len(datatypes)} should match length of  elements: {len(elements)}")
 
 
 @strawberry.type
@@ -181,12 +190,22 @@ class SPBDataSet:
     Model of DataSet in SPBv1.0 payload
     """
 
-    # pylint: disable=too-few-public-methods
     num_of_columns: int
-    columns: int
+    columns: list[str]
     # maps to spb data types
-    types: list[int]
-    rows: list[SPBDataSetRow]
+    types: list[SPBDataTypeEnum]
+    rows: list[SPBDataSetRow(SPBDataSetValue())]
+
+    def __init__(self, columns: list[str], types: list[SPBDataTypeEnum], rows: list[int, float, bool, str]):
+        if len(types) == len(columns):
+            self.types = types
+            self.num_of_columns = len(types)
+            self.columns = columns
+            self.rows = list[SPBDataSetRow]
+            for row in rows:
+                self.rows.append(SPBDataSetRow(datatypes=types, elements=row))
+        else:
+            raise ValueError(f"Length of types array: {len(types)} should be same as length of values:{len(rows)}")
 
 
 class SPBTemplateParameter:
@@ -310,8 +329,10 @@ class SPBMetric:
 
             case SPBDataTypeEnum.DataSet:
                 return SPBDataSet(value=self.value)
+
             case SPBDataTypeEnum.Template:
                 return SPBTemplate(value=self.value)
+
             case _:
                 LOGGER.error(
                     "Invalid type: %s.\n Trying Value: %s as String",
@@ -329,29 +350,26 @@ class SPBNode:
     Model of a SPB Node,
     """
 
-    # pylint: disable=too-few-public-methods
-    # Name of the node. Would also be the leaf of the topic hierarchy
-    name: str
-
-    # Type of the Node depending on the topic hierarchy in accordance with spBv1.0 specification
-    # ["spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"]
-    node_type: str
-
     # Fully qualified path of the namespace including current name
-    # Usually maps to the topic where multiple messages were published
+    # Usually maps to the topic where the messages were published
     # e.g. spBv1.0/[GROUP]/[MESSAGE_TYPE]/[EDGE_NODE]/[DEVICE]
-    namespace: str
+    topic: str
 
     # Merged Composite of all Metric published to this node
 
-    # Timestamp of when this node was last modified
+    # Timestamp of when this node was last modified in milliseconds
     timestamp: int
+
+    # Metrics published to the spBv1.0 namespace using protobuf payloads
+    metrics: list[SPBMetric]
+
+    # Properties / message payload for non protobuf messages e.g. STATE
+    properties: JSONPayload
+
+    # sequence
+    seq: int
 
     # UUID for this message
     uuid: strawberry.ID
-    # Metrics published to the spBv1.0 namespace using protobuf payloads
-    metrics: list[SPBMetric]
-    # Properties / message payload for non protobuf messages e.g. STATE
-    properties: dict
-    # sequence
-    seq: int
+
+    body: list[BytesPayload]

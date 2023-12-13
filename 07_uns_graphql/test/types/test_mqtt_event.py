@@ -1,7 +1,8 @@
 import json
 
 import pytest
-from uns_graphql.type.basetype import BytesPayload, JSONPayload
+import strawberry
+from uns_graphql.type.basetype import BytesPayload, JSONPayload, StateString
 from uns_graphql.type.mqtt_event import MQTTMessage
 
 sample_spb_payload: bytes = (
@@ -17,7 +18,7 @@ sample_spb_payload: bytes = (
     "topic, payload, expected_type, expected_data",
     [
         ("ent1/fac1/area5", b'{"key": "value"}', JSONPayload, {"key": "value"}),
-        ("spBv1.0/STATE/scada_1", b"OFFLINE", str, "OFFLINE"),
+        ("spBv1.0/STATE/scada_1", b"OFFLINE", StateString, "OFFLINE"),
         ("spBv1.0/uns_group/NBIRTH/eon1", sample_spb_payload, BytesPayload, sample_spb_payload),
         ("spBv1.0/uns_group/NDATA/eon1", sample_spb_payload, BytesPayload, sample_spb_payload),
     ],
@@ -31,9 +32,36 @@ def test_resolve_payload(
     mqtt_event = MQTTMessage(topic=topic, payload=payload)
     result = mqtt_event.resolve_payload(None)
     assert isinstance(result, expected_type)
-    if isinstance(result, BytesPayload):
+    if isinstance(result, BytesPayload | StateString):
         assert result.data == expected_data
-    elif isinstance(result, str):
-        assert result == expected_data
     else:
         assert json.loads(result.data) == expected_data
+
+
+@pytest.mark.parametrize(
+    "input_data",
+    [
+        MQTTMessage(topic="ent1/fac1/area5", payload=b'{"key": "value"}'),
+        MQTTMessage(topic="spBv1.0/STATE/scada_1", payload=b"OFFLINE"),
+        MQTTMessage(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=sample_spb_payload),
+    ],
+)
+def test_strawberry_type(input_data: MQTTMessage):
+    @strawberry.type
+    class Query:
+        value: MQTTMessage
+
+    query = """
+    {
+        value {
+            topic,
+            payload {
+                ... on StateString {str: data}
+                ... on JSONPayload {json: data}
+                ... on BytesPayload {bytes: data}
+            }
+        }
+    }"""
+    schema = strawberry.Schema(query=Query, types=[StateString, JSONPayload, BytesPayload])
+    result = schema.execute_sync(query, root_value=Query(value=input_data))
+    assert not result.errors

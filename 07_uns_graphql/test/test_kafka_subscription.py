@@ -5,7 +5,7 @@ import pytest
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient
 from uns_graphql.graphql_config import KAFKAConfig
-from uns_graphql.input.kafka_subscription import KAFKATopicInput
+from uns_graphql.input.kafka import KAFKATopicInput
 from uns_graphql.subscriptions import Subscription
 from uns_graphql.type.streaming_event import StreamingMessage
 

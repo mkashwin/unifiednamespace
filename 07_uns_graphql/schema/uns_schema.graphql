@@ -16,8 +16,6 @@ type JSONPayload {
   data: JSON!
 }
 
-union JSONPayloadBytesPayload = JSONPayload | BytesPayload
-
 """Valid Kafka Topic to subscribe to. Does not accept wildcards or RegEx"""
 input KAFKATopicInput {
   topic: String!
@@ -33,7 +31,7 @@ type MQTTMessage {
    -JSON for UNS 
    -bytes for sparkplugB
   """
-  payload: JSONPayloadBytesPayload!
+  payload: StateStringJSONPayloadBytesPayload
 }
 
 """Valid MQTT Topic to subscribe to. Accepts wild cards"""
@@ -48,6 +46,12 @@ type Query {
   """"""
   resolveSpecificTopics(topics: [String!]!): [UNSNode!]!
 }
+
+type StateString {
+  data: String!
+}
+
+union StateStringJSONPayloadBytesPayload = StateString | JSONPayload | BytesPayload
 
 type StreamingMessage {
   topic: String!

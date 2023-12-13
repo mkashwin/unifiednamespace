@@ -14,8 +14,8 @@ from aiomqtt import Client, MqttError
 from confluent_kafka import OFFSET_BEGINNING, Consumer
 
 from uns_graphql.graphql_config import KAFKAConfig, MQTTConfig
-from uns_graphql.input.kafka_subscription import KAFKATopicInput
-from uns_graphql.input.mqtt_subscription import MQTTTopicInput
+from uns_graphql.input.kafka import KAFKATopicInput
+from uns_graphql.input.mqtt import MQTTTopicInput
 from uns_graphql.type.mqtt_event import MQTTMessage
 from uns_graphql.type.streaming_event import StreamingMessage
 

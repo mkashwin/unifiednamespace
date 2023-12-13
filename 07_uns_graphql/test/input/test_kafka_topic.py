@@ -1,12 +1,12 @@
 import pytest
+import strawberry
 from pydantic import ValidationError
-from uns_graphql.input.kafka_subscription import KAFKATopic, KAFKATopicInput
+from uns_graphql.input.kafka import KAFKATopic, KAFKATopicInput
 
 # Test data for parameterized tests
 test_data_valid = [
     "topic1",
-    "level1level2.level3"
-    "valid_topic_1",
+    "level1.level2.level3" "valid_topic_1",
     "another_valid_topic",
     "topic_123_with_underscores",
 ]
@@ -56,8 +56,7 @@ def test_valid_topics_input(topic):
     - pytest.fail: If a validation error occurs for a valid topic.
     """
     try:
-        kafka_topic_input = KAFKATopicInput.from_pydantic(
-            KAFKATopic(topic=topic))
+        kafka_topic_input = KAFKATopicInput.from_pydantic(KAFKATopic(topic=topic))
         assert kafka_topic_input.topic == topic
     except ValidationError:
         pytest.fail(f"Validation error for valid topic: {topic}")
@@ -96,3 +95,27 @@ def test_invalid_topics_input(topic):
     """
     with pytest.raises(ValidationError):
         KAFKATopicInput.from_pydantic(KAFKATopic(topic=topic))
+
+
+@pytest.mark.parametrize(
+    "topic",
+    test_data_valid,
+)
+def test_strawberry_type(topic: str):
+    @strawberry.type
+    class Query:
+        @strawberry.field
+        def get_topic(self, inputs: KAFKATopicInput) -> str:
+            return inputs.topic
+
+    schema = strawberry.Schema(query=Query, types=[KAFKATopicInput])
+
+    input_data = {"topic": f"{topic}"}
+
+    result = schema.execute_sync(
+        query="query ($inputs: KAFKATopicInput!) { getTopic(inputs: $inputs) }",  # Update the query here
+        root_value=Query(),
+        variable_values={"inputs": input_data},
+    )
+
+    assert not result.errors
