@@ -1,17 +1,34 @@
 """
 Entry point for all GraphQL queries to the UNS
 """
+
 import logging
 
 import strawberry
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
+from strawberry.types import Info
 
-from uns_graphql.query import Query
-from uns_graphql.subscriptions import Subscription
+from uns_graphql.subscriptions.kafka import KAFKASubscription
+from uns_graphql.subscriptions.mqtt import MQTTSubscription
 from uns_graphql.type.basetype import Int64
+from uns_graphql.type.isa95_node import UNSNode
 
 LOGGER = logging.getLogger(__name__)
+
+
+@strawberry.type
+class Query:
+    @strawberry.field(description="")
+    def resolve_all_topics(self, info: Info) -> list[UNSNode]:  # noqa: ARG002
+        # Placeholder logic to fetch all topics from Neo4j
+        # Implement actual logic in resolvers.py
+        return []
+
+
+@strawberry.type
+class Subscription(MQTTSubscription, KAFKASubscription):
+    pass
 
 
 class UNSGraphql:

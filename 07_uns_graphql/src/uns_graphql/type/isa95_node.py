@@ -3,6 +3,7 @@ Type of data to be retrieved from the UNS
 Node are formed by the merging of multiple events
 """
 import logging
+from datetime import datetime
 
 import strawberry
 
@@ -32,7 +33,7 @@ class UNSNode:
     payload: JSONPayload
 
     # Timestamp of when this node was created
-    created: int
+    created: datetime
 
     # Timestamp of when this node was last modified
-    last_updated: int
+    last_updated: datetime

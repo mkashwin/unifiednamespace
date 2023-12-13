@@ -31,11 +31,10 @@ aiohttp = "^3.9"
 #uvicorn = "^0.24"
 uvicorn = { version = "^0.24", extras = ["standard"] }
 
-neo4j = "^5.15"
-psycopg2-binary = "^2.9.8"
-pytz = "^2023.3"
-confluent-kafka = "^2.3.0"
 aiomqtt = "^1.2.1"
+confluent-kafka = "^2.3.0"
+neo4j = "^5.15"
+asyncpg = "^0.29"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }

@@ -3,6 +3,7 @@ Type of data to be retrieved from the UNS
 Events map to a single message in the queue or historization of those messages
 """
 import logging
+from datetime import datetime
 
 import strawberry
 
@@ -21,7 +22,7 @@ class HistoricalUNSEvent:
     publisher: str
 
     # Timestamp of when this event was published/historied
-    timestamp: int
+    timestamp: datetime
 
     # Topic
     topic: str

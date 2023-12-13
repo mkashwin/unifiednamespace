@@ -7,6 +7,9 @@ type BytesPayload {
   data: Base64!
 }
 
+"""Date with time (isoformat)"""
+scalar DateTime
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -42,9 +45,6 @@ input MQTTTopicInput {
 type Query {
   """"""
   resolveAllTopics: [UNSNode!]!
-
-  """"""
-  resolveSpecificTopics(topics: [String!]!): [UNSNode!]!
 }
 
 type StateString {
@@ -72,9 +72,6 @@ type UNSNode {
   nodeType: String!
   namespace: String!
   payload: JSONPayload!
-  created: Union!
-  lastUpdated: Union!
+  created: DateTime!
+  lastUpdated: DateTime!
 }
-
-"""Int 64 field since GraphQL doesn't support int64, only int 32"""
-scalar Union

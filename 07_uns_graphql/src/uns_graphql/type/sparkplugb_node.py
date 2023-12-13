@@ -1,5 +1,6 @@
 import logging
 import typing
+from datetime import datetime
 from enum import Enum
 
 import strawberry
@@ -279,7 +280,7 @@ class SPBMetric:
 
     name: str
     alias: int
-    timestamp: int
+    timestamp: datetime
     datatype: SPBDataTypeEnum
     is_historical: bool
     is_transient: bool
@@ -358,7 +359,7 @@ class SPBNode:
     # Merged Composite of all Metric published to this node
 
     # Timestamp of when this node was last modified in milliseconds
-    timestamp: int
+    timestamp: datetime
 
     # Metrics published to the spBv1.0 namespace using protobuf payloads
     metrics: list[SPBMetric]

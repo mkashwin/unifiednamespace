@@ -6,7 +6,7 @@ from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient
 from uns_graphql.graphql_config import KAFKAConfig
 from uns_graphql.input.kafka import KAFKATopicInput
-from uns_graphql.subscriptions import Subscription
+from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.type.streaming_event import StreamingMessage
 
 TWO_TOPICS_MULTIPLE_MSGS = (
@@ -58,8 +58,8 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
     mock_consumer.subscribe.return_value = True
     mock_consumer.connect.return_value = True
 
-    with patch("uns_graphql.subscriptions.Consumer", return_value=mock_consumer):
-        subscription = Subscription()
+    with patch("uns_graphql.subscriptions.kafka.Consumer", return_value=mock_consumer):
+        subscription = KAFKASubscription()
         received_messages = []
         try:
             index: int = 0
@@ -84,7 +84,6 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
 
 @pytest.mark.asyncio
 @pytest.mark.integrationtest()
-@pytest.mark.xdist_group(name="graphql_kafka")
 @pytest.mark.parametrize(
     "kafka_topics, message_vals",
     [
@@ -126,7 +125,7 @@ async def test_get_kafka_messages_integration(kafka_topics: list[KAFKATopicInput
 
         # Retrieve messages from the subscription
         received_messages = []
-        subscription = Subscription()
+        subscription = KAFKASubscription()
         try:
             index: int = 0
             async for message in subscription.get_kafka_messages(kafka_topics):

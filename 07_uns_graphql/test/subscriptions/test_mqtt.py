@@ -8,7 +8,7 @@ from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_graphql.graphql_config import MQTTConfig
 from uns_graphql.input.mqtt import MQTTTopicInput
-from uns_graphql.subscriptions import Subscription
+from uns_graphql.subscriptions.mqtt import MQTTSubscription
 from uns_graphql.type.mqtt_event import MQTTMessage
 
 sample_spb_payload: bytes = (
@@ -144,7 +144,7 @@ async def test_get_mqtt_messages(topics: list[MQTTTopicInput], expected_messages
     async_context_manager = AsyncContextManagerMock(mock_client)
 
     # Patch Client and mock the messages context manager
-    with patch("uns_graphql.subscriptions.Client", return_value=async_context_manager), patch(
+    with patch("uns_graphql.subscriptions.mqtt.Client", return_value=async_context_manager), patch(
         "uns_graphql.subscriptions.MQTTMessage", autospec=True
     ):
         # Mock the client.messages context manager to return an async generator
@@ -152,7 +152,7 @@ async def test_get_mqtt_messages(topics: list[MQTTTopicInput], expected_messages
         mock_messages.__aenter__.return_value = async_message_generator(expected_messages)
         mock_client.messages.return_value = mock_messages
 
-        subscription = Subscription()
+        subscription = MQTTSubscription()
         received_messages: list[MQTTMessage] = []
         # Await the subscription result directly to collect the messages
         async for message in subscription.get_mqtt_messages(topics):
@@ -319,7 +319,7 @@ async def test_get_mqtt_messages_integration(topics: list[MQTTTopicInput], expec
                 await client.publish(
                     topic=str(msg.topic), payload=msg.payload, qos=msg.qos, retain=True, properties=publish_properties
                 )
-            subscription = Subscription()
+            subscription = MQTTSubscription()
             received_messages: list[MQTTMessage] = []
             # Await the subscription result directly to collect the messages
             async for message in subscription.get_mqtt_messages(topics):
