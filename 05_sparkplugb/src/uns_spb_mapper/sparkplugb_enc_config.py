@@ -52,4 +52,8 @@ class MQTTConfig:
         )
 
     def is_config_valid(self) -> bool:
+        """
+        Checks if mandatory configurations were provided
+        Does not check if the values provided are correct or not
+        """
         return self.host is not None

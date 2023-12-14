@@ -16,13 +16,13 @@ from uns_graphql.type.streaming_event import StreamingMessage
 LOGGER = logging.getLogger(__name__)
 
 
-@strawberry.type
+@strawberry.type(description="Subscribe to all streaming events in the UNS i.e. from KAFKA.")
 class KAFKASubscription:
     """
     Subscription class providing methods for subscribing to Kafka messages.
     """
 
-    @strawberry.subscription(description="Subscribe to Kafka messages based on provided topics")
+    @strawberry.subscription(description="Subscribe to Kafka messages based on provided topics. Wildcards/Regex not supported")
     async def get_kafka_messages(self, topics: list[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage, None]:
         """
         Subscribe to Kafka messages based on provided topics.

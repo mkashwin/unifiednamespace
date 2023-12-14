@@ -30,7 +30,8 @@ class UnsMqttHistorian:
             userdata=None,
             protocol=MQTTConfig.version,
             transport=MQTTConfig.transport,
-            reconnect_on_failure=MQTTConfig.reconnect_on_failure)
+            reconnect_on_failure=MQTTConfig.reconnect_on_failure,
+        )
 
         # Connect to the database
         self.uns_historian_handler = HistorianHandler(
@@ -40,45 +41,46 @@ class UnsMqttHistorian:
             table=HistorianConfig.table,
             user=HistorianConfig.user,
             password=HistorianConfig.password,
-            sslmode=HistorianConfig.sslmode)
+            sslmode=HistorianConfig.sslmode,
+            sslcert=HistorianConfig.sslcert,
+            sslkey=HistorianConfig.sslkey,
+            sslrootcert=HistorianConfig.sslrootcert,
+            sslcrl=HistorianConfig.sslcrl,
+        )
 
         # Callback messages
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.uns_client.run(host=MQTTConfig.host,
-                            port=MQTTConfig.port,
-                            username=MQTTConfig.username,
-                            password=MQTTConfig.password,
-                            tls=MQTTConfig.tls,
-                            keepalive=MQTTConfig.keepalive,
-                            topics=MQTTConfig.topics,
-                            qos=MQTTConfig.qos)
+        self.uns_client.run(
+            host=MQTTConfig.host,
+            port=MQTTConfig.port,
+            username=MQTTConfig.username,
+            password=MQTTConfig.password,
+            tls=MQTTConfig.tls,
+            keepalive=MQTTConfig.keepalive,
+            topics=MQTTConfig.topics,
+            qos=MQTTConfig.qos,
+        )
 
     def on_message(self, client, userdata, msg):
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{"
-                     "Client: %s,"
-                     "Userdata: %s,"
-                     "Message: %s,"
-                     "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
 
         try:
             # get the payload as a dict object
             filtered_message = self.uns_client.get_payload_as_dict(
-                topic=msg.topic,
-                payload=msg.payload,
-                mqtt_ignored_attributes=MQTTConfig.ignored_attributes)
+                topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=MQTTConfig.ignored_attributes
+            )
             # save message
             self.uns_historian_handler.persist_mqtt_msg(
                 client_id=client._client_id.decode(),
                 topic=msg.topic,
-                timestamp=float(
-                    filtered_message.get(MQTTConfig.timestamp_key,
-                                         time.time())),
-                message=filtered_message)
+                timestamp=float(filtered_message.get(MQTTConfig.timestamp_key, time.time())),
+                message=filtered_message,
+            )
         except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
@@ -86,7 +88,8 @@ class UnsMqttHistorian:
                 msg.topic,
                 msg.payload,
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
         except Exception as ex:
             # pylint: disable=broad-exception-caught
             LOGGER.error(
@@ -95,23 +98,22 @@ class UnsMqttHistorian:
                 msg.topic,
                 msg.payload,
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
 
     def on_disconnect(
-            self,
-            client,  # noqa: ARG002
-            userdata,  # noqa: ARG002
-            result_code,
-            properties=None):  # noqa: ARG002
+        self,
+        client,  # noqa: ARG002
+        userdata,  # noqa: ARG002
+        result_code,
+        properties=None,  # noqa: ARG002
+    ) -> None:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
         # pylint: disable=unused-argument
         if result_code != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         str(result_code),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(result_code), stack_info=True, exc_info=True)
 
 
 def main():
@@ -125,9 +127,7 @@ def main():
     finally:
         if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()
-        if (uns_mqtt_historian
-                is not None) and (uns_mqtt_historian.uns_historian_handler
-                                  is not None):
+        if (uns_mqtt_historian is not None) and (uns_mqtt_historian.uns_historian_handler is not None):
             # incase the on_disconnect message is not called
             uns_mqtt_historian.uns_historian_handler.close()
 

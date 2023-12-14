@@ -172,6 +172,20 @@ def test_timescale_db_configs():
     ), f"Invalid value for key 'historian.sslmode'{HistorianConfig.db_sslmode}"
 
     assert (
+        HistorianConfig.db_sslcert is None or Path(HistorianConfig.db_sslcert).is_file()
+    ), f"Unable to find ssl certificate at: {HistorianConfig.db_sslcert}"
+    assert (
+        HistorianConfig.db_sslkey is None or Path(HistorianConfig.db_sslkey).is_file()
+    ), f"Unable to find ssl secret key at: {HistorianConfig.db_sslkey}"
+
+    assert (
+        HistorianConfig.db_sslrootcert is None or Path(HistorianConfig.db_sslrootcert).is_file()
+    ), f"Unable to find ssl certificate authority at: {HistorianConfig.db_sslrootcert}"
+    assert (
+        HistorianConfig.db_sslcrl is None or Path(HistorianConfig.db_sslcrl).is_file()
+    ), f"Unable to find ssl certificate revocation list at: {HistorianConfig.db_sslcrl}"
+
+    assert (
         HistorianConfig.database is not None
         and isinstance(HistorianConfig.database, str)
         and len(HistorianConfig.database) > 0

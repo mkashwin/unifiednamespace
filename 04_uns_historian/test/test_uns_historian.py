@@ -84,6 +84,7 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
                 query_timestamp: datetime = datetime.datetime.fromtimestamp(
                     float(message_dict.get(MQTTConfig.timestamp_key)) / 1000
                 )
+                # FIXME Sometimes this fails when async testing as the previous write may not have completed
                 compare_with_historian(
                     cursor,
                     uns_mqtt_historian.uns_historian_handler.table,

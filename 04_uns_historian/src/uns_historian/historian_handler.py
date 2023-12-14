@@ -5,6 +5,7 @@ import datetime
 import json
 import logging
 import time
+from typing import Optional
 
 import psycopg2
 
@@ -23,8 +24,20 @@ class HistorianHandler:
     timescale_db_conn = None
     timescale_db_cursor = None
 
-    def __init__(self, hostname: str, port: int, database: str, table: str, user: str, password: str, sslmode: str):
-        # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        hostname: str,
+        port: int,
+        database: str,
+        table: str,
+        user: str,
+        password: str,
+        sslmode: Optional[str] = None,
+        sslcert: Optional[str] = None,
+        sslkey: Optional[str] = None,
+        sslrootcert: Optional[str] = None,
+        sslcrl: Optional[str] = None,
+    ):
         """
         Parameters
         ----------
@@ -36,13 +49,18 @@ class HistorianHandler:
         password: str,
         sslmode: str
         """
-        self.hostname = hostname
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
-        self.sslmode = sslmode
-        self.table = table
+        self.hostname: str = hostname
+        self.port: int = port
+        self.database: str = database
+        self.user: str = user
+        self.password: str = password
+        self.table: str = table
+
+        self.sslmode: Optional[str] = sslmode
+        self.sslcert: Optional[str] = sslcert
+        self.sslkey: Optional[str] = sslkey
+        self.sslrootcert: Optional[str] = sslrootcert
+        self.sslcrl: Optional[str] = sslcrl
 
         self.connect()
         LOGGER.debug("Successfully connected to the Historian DB")
@@ -62,6 +80,10 @@ class HistorianHandler:
                     user=self.user,
                     password=self.password,
                     sslmode=self.sslmode,
+                    sslcert=self.sslcert,
+                    sslkey=self.sslkey,
+                    sslrootcert=self.sslrootcert,
+                    sslcrl=self.sslcrl,
                 )
                 self.timescale_db_conn.set_session(autocommit=True)
                 return self.timescale_db_conn

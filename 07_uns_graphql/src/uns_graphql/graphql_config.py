@@ -68,6 +68,10 @@ class MQTTConfig:
         )
 
     def is_config_valid(self) -> bool:
+        """
+        Checks if mandatory configurations were provided
+        Does not check if the values provided are correct or not
+        """
         return self.host is not None
 
 
@@ -103,6 +107,10 @@ class GraphDBConfig:
         )
 
     def is_config_valid(self) -> bool:
+        """
+        Checks if mandatory configurations were provided
+        Does not check if the values provided are correct or not
+        """
         return not ((self.user is None) or (self.password is None) or self.conn_url is None)
 
 
@@ -126,6 +134,11 @@ class HistorianConfig:
     db_user: str = settings.get("historian.username")
     db_password: str = settings.get("historian.password")
     db_sslmode: str = settings.get("historian.sslmode", None)
+
+    db_sslcert: str = settings.get("historian.sslcert", None)
+    db_sslkey: str = settings.get("historian.sslkey", None)
+    db_sslrootcert: str = settings.get("historian.sslrootcert", None)
+    db_sslcrl: str = settings.get("historian.sslcrl", None)
 
     database: str = settings.get("historian.database")
 
@@ -152,6 +165,10 @@ class HistorianConfig:
         )
 
     def is_config_valid(self) -> bool:
+        """
+        Checks if mandatory configurations were provided
+        Does not check if the values provided are correct or not
+        """
         return not (
             self.hostname is None
             or self.database is None

@@ -63,6 +63,10 @@ All of these configurations are a combination of the configurations of the other
    **historian** | **username**\* | | The user id  needed to authenticate with TimescaleDB | *None*
    **historian** | **password**\* | | The password needed to authenticate with TimescaleDB | *None*
    historian | sslmode | | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full | *None*
+   historian | sslcert | | Specifies the file name of the client SSL certificate | *None*
+   historian | sslkey | | Specifies the location for the secret key used for the client certificate| *None*
+   historian | sslrootcert | | Specifies the name of a file containing SSL certificate authority (CA) certificate(s) | *None*
+   historian | sslcrl | | Specifies the file name of the SSL certificate revocation list (CRL)  | *None*
    kafka | config | | Dict. see [kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). Only the security related settings   |  *None*
    **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 

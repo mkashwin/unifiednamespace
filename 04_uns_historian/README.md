@@ -59,7 +59,7 @@ psql -U uns_dbuser  -h localhost -d uns_historian -f './sql_scripts/02_setup_hyp
 **The key parameters you must update for your environment are :**
 
 * \<postgres password\> : password for the super user which is passed to the docker command  `-e POSTGRES_PASSWORD=`
-* \<dba password\> : password for the DBA will be needed for db mgmt. activities
+* \<dba password\> : password for the DBA will be needed for db management activities
 * \<application user password\> : is the password needed to connect to the DB. Needs to also be updated in [./.secrets.yaml](#key-configurations-to-provide)
 
 Depending on your context you may need to change the other properties like container name, port, directories etc.
@@ -111,6 +111,10 @@ This application has two configuration file.
    **historian** | **username**\* | | The user id  needed to authenticate with TimescaleDB | *None*
    **historian** | **password**\* | | The password needed to authenticate with TimescaleDB | *None*
    historian | sslmode | | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full | *None*
+   historian | sslcert | | Specifies the file name of the client SSL certificate | *None*
+   historian | sslkey | | Specifies the location for the secret key used for the client certificate| *None*
+   historian | sslrootcert | | Specifies the name of a file containing SSL certificate authority (CA) certificate(s) | *None*
+   historian | sslcrl | | Specifies the file name of the SSL certificate revocation list (CRL)  | *None*
    **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 
 ## The Logic for persisting the message into the historian

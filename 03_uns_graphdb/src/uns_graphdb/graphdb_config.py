@@ -53,6 +53,10 @@ class MQTTConfig:
         )
 
     def is_config_valid(self) -> bool:
+        """
+        Checks if mandatory configurations were provided
+        Does not check if the values provided are correct or not
+        """
         return self.host is not None
 
 
@@ -88,4 +92,8 @@ class GraphDBConfig:
         )
 
     def is_config_valid(self) -> bool:
+        """
+        Checks if mandatory configurations were provided
+        Does not check if the values provided are correct or not
+        """
         return not ((self.user is None) or (self.password is None) or self.db_url is None)
