@@ -1,5 +1,5 @@
 """
-Test class for uns_mqtt.mqtt_listener
+Test for uns_mqtt.mqtt_listener
 """
 import random
 import time
@@ -192,6 +192,8 @@ def test_02_authenticated_connections(
         (None, "a/b/c", False),
         ("+", "a/b/c", False),
         ("topic1", "topic1", True),
+        ("a/b/c", "a/b/c", True),
+        ("a/b", "a/b/c", False),
     ],
 )
 def test_is_topic_matched(topic_with_wildcard: str, topic: str, expected_result: bool):

@@ -4,7 +4,7 @@ Helper class to parse & create SparkplugB messages
 """
 import logging
 import time
-from typing import ClassVar, Optional
+from typing import Optional
 
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload as spbPayload
@@ -17,17 +17,15 @@ class SpBMessageGenerator:
     Helper class to parse & create SparkplugB messages
     """
 
-    # sequence number for messages
-    msg_seq_number: int = 0
-    # birth/death sequence number
-    birth_death_seq_num: int = 0
-
-    # map of  metric names to alias.
-    # While adding metrics, if an alias exists for that name it will be used instead
-    alias_map: ClassVar[dict[str, str]] = {}
-
     def __init__(self) -> None:
-        self.alias_map = {}
+        # sequence number for messages
+        self.msg_seq_number: int = 0
+        # birth/death sequence number
+        self.birth_death_seq_num: int = 0
+
+        # map of  metric names to alias.
+        # While adding metrics, if an alias exists for that name it will be used instead
+        self.alias_map: dict[str, int] = {}
 
     def get_seq_num(self):
         """

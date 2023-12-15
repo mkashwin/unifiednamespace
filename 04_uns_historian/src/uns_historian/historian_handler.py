@@ -16,13 +16,9 @@ SLEEP_BTW_ATTEMPT = 10  # seconds to sleep between retries
 
 
 class HistorianHandler:
-    # pylint: disable=too-many-instance-attributes
     """
     Class to encapsulate logic of persisting messages to the historian database
     """
-
-    timescale_db_conn = None
-    timescale_db_cursor = None
 
     def __init__(
         self,
@@ -61,6 +57,9 @@ class HistorianHandler:
         self.sslkey: Optional[str] = sslkey
         self.sslrootcert: Optional[str] = sslrootcert
         self.sslcrl: Optional[str] = sslcrl
+
+        self.timescale_db_conn = None
+        self.timescale_db_cursor = None
 
         self.connect()
         LOGGER.debug("Successfully connected to the Historian DB")

@@ -34,6 +34,7 @@ class UnsMQTTClient(mqtt_client.Client):
     """
 
     SPARKPLUG_NS: Final[str] = "spBv1.0/"
+
     # TODO What is the name space of STATE messages
     # Currently following https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
     #   which states spBv1.0/STATE/+
@@ -316,24 +317,29 @@ class UnsMQTTClient(mqtt_client.Client):
              "a/b/c" matches wit "a/#" but not with "a/+"
         """
         if topic_with_wildcard is not None:
-            regex_list = topic_with_wildcard.split("/")
-            # Using Regex to do matching
-            # replace all occurrences of "+" wildcard with [^/]*
-            #                           -> any set of characters except "/"
-            # replace all occurrences of "#" wildcard with (.)*
-            #                           -> any set of characters including "/"
-            regex_exp = ""
-            for value in regex_list:
-                if value == "+":
-                    regex_exp += "[^/]*/"
-                elif value == "#":
-                    regex_exp += "(.)*/"
-                else:
-                    regex_exp += value + "/"
-            if len(regex_exp) > 1 and regex_exp[-1] == "/":
-                regex_exp = regex_exp[:-1]
+            regex_exp = UnsMQTTClient.get_regex_for_topic_with_wildcard(topic_with_wildcard)
             return bool(re.fullmatch(regex_exp, topic))
         return False
+
+    @staticmethod
+    def get_regex_for_topic_with_wildcard(topic_with_wildcard) -> str:
+        regex_list = topic_with_wildcard.split("/")
+        # Using Regex to do matching
+        # replace all occurrences of "+" wildcard with [^/]*
+        #                           -> any set of characters except "/"
+        # replace all occurrences of "#" wildcard with (.)*
+        #                           -> any set of characters including "/"
+        regex_exp = ""
+        for value in regex_list:
+            if value == "+":
+                regex_exp += "[^/]*/"
+            elif value == "#":
+                regex_exp += "(.)*/"
+            else:
+                regex_exp += value + "/"
+        if len(regex_exp) > 1 and regex_exp[-1] == "/":
+            regex_exp = regex_exp[:-1]
+        return regex_exp
 
     @staticmethod
     def del_key_from_dict(message: dict, ignored_attr: list) -> dict:
