@@ -52,8 +52,9 @@ class MQTTConfig:
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
 
-    def is_config_valid(self) -> bool:
-        return self.host is not None
+    @classmethod
+    def is_config_valid(cls) -> bool:
+        return cls.host is not None
 
 
 class KAFKAConfig:

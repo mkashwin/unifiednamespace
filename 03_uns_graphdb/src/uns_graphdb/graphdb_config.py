@@ -52,12 +52,13 @@ class MQTTConfig:
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
 
-    def is_config_valid(self) -> bool:
+    @classmethod
+    def is_config_valid(cls) -> bool:
         """
         Checks if mandatory configurations were provided
         Does not check if the values provided are correct or not
         """
-        return self.host is not None
+        return cls.host is not None
 
 
 class GraphDBConfig:
@@ -91,9 +92,10 @@ class GraphDBConfig:
             "in '../../conf/.secrets.yaml'"
         )
 
-    def is_config_valid(self) -> bool:
+    @classmethod
+    def is_config_valid(cls) -> bool:
         """
         Checks if mandatory configurations were provided
         Does not check if the values provided are correct or not
         """
-        return not ((self.user is None) or (self.password is None) or self.db_url is None)
+        return not ((cls.user is None) or (cls.password is None) or cls.db_url is None)

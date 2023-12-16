@@ -51,9 +51,10 @@ class MQTTConfig:
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
 
-    def is_config_valid(self) -> bool:
+    @classmethod
+    def is_config_valid(cls) -> bool:
         """
         Checks if mandatory configurations were provided
         Does not check if the values provided are correct or not
         """
-        return self.host is not None
+        return cls.host is not None

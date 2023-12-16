@@ -2,6 +2,7 @@
 Configuration reader for mqtt server and Neo4J DB server details
 """
 import logging
+import ssl
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -67,12 +68,13 @@ class MQTTConfig:
             "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'",
         )
 
-    def is_config_valid(self) -> bool:
+    @classmethod
+    def is_config_valid(cls) -> bool:
         """
         Checks if mandatory configurations were provided
         Does not check if the values provided are correct or not
         """
-        return self.host is not None
+        return cls.host is not None
 
 
 class GraphDBConfig:
@@ -106,12 +108,13 @@ class GraphDBConfig:
             "in '../../conf/.secrets.yaml'"
         )
 
-    def is_config_valid(self) -> bool:
+    @classmethod
+    def is_config_valid(cls) -> bool:
         """
         Checks if mandatory configurations were provided
         Does not check if the values provided are correct or not
         """
-        return not ((self.user is None) or (self.password is None) or self.conn_url is None)
+        return not ((cls.user is None) or (cls.password is None) or cls.conn_url is None)
 
 
 class KAFKAConfig:
@@ -133,8 +136,8 @@ class HistorianConfig:
     port: int = settings.get("historian.port", None)
     db_user: str = settings.get("historian.username")
     db_password: str = settings.get("historian.password")
-    db_sslmode: str = settings.get("historian.sslmode", None)
 
+    db_sslmode: str = settings.get("historian.sslmode", None)
     db_sslcert: str = settings.get("historian.sslcert", None)
     db_sslkey: str = settings.get("historian.sslkey", None)
     db_sslrootcert: str = settings.get("historian.sslrootcert", None)
@@ -164,18 +167,44 @@ class HistorianConfig:
             "in '../../conf/.secrets.yaml'"
         )
 
-    def is_config_valid(self) -> bool:
+    @classmethod
+    def is_config_valid(cls) -> bool:
         """
         Checks if mandatory configurations were provided
         Does not check if the values provided are correct or not
         """
         return not (
-            self.hostname is None
-            or self.database is None
-            or self.table is None
-            or self.db_user is None
-            or self.db_password is None
+            cls.hostname is None or cls.database is None or cls.table is None or cls.db_user is None or cls.db_password is None
         )
+
+    @classmethod
+    def get_ssl_context(cls) -> ssl.SSLContext | None:
+        """
+        Creates the SSL Context needed for DB connect based on the SSL Params
+        See https://github.com/MagicStack/asyncpg/issues/737
+        """
+        if cls.db_sslmode:
+            ssl_context: ssl.SSLContext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            ssl_context.options |= {
+                "disable": ssl.OP_NO_SSLv2,
+                "allow": ssl.OP_NO_SSLv3,
+                "prefer": ssl.OP_NO_TLSv1,
+                "require": ssl.OP_NO_TLSv1_1,
+                "verify-ca": ssl.OP_NO_TLSv1_2,
+                "verify-full": ssl.OP_NO_TLSv1_3,
+            }.get(cls.db_sslmode.lower(), 0)
+
+            if cls.db_sslcert:
+                ssl_context.load_cert_chain(certfile=cls.db_sslcert, keyfile=cls.db_sslkey)
+
+            if cls.db_sslrootcert:
+                ssl_context.load_verify_locations(cafile=cls.db_sslrootcert)
+
+            if cls.db_sslcrl:
+                ssl_context.load_verify_locations(cafile=cls.db_sslcrl)
+
+            return ssl_context
+        return None
 
 
 # The regex matches any of the following patterns:
