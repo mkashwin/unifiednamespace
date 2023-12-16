@@ -30,5 +30,5 @@ kafka:
       group.id: "graphql", # mandatory
       bootstrap.servers: "localhost:9092", # mandatory.
     }
-  consumer_timeout: 1
+  consumer_timeout: 0.5
 dynaconf_merge: true

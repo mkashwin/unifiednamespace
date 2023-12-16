@@ -19,7 +19,7 @@ from uns_graphql.type.mqtt_event import MQTTMessage
 LOGGER = logging.getLogger(__name__)
 
 
-@strawberry.type
+@strawberry.type(description="Subscribe to all MQTT events in the UNS")
 class MQTTSubscription:
     """
     Subscription class providing methods for subscribing to MQTT messages.

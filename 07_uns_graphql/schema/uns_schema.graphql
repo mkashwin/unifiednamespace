@@ -10,6 +10,13 @@ type BytesPayload {
 """Date with time (isoformat)"""
 scalar DateTime
 
+type HistoricalUNSEvent {
+  publisher: String!
+  timestamp: DateTime!
+  topic: String!
+  payload: JSONPayload!
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -42,9 +49,15 @@ input MQTTTopicInput {
   topic: String!
 }
 
+"""Query the UNS for current or historic Nodes/Events """
 type Query {
-  """"""
-  resolveAllTopics: [UNSNode!]!
+  """
+  Get all historical published on the given topics and between the time slots.If time slots are not provided then fromDatetime defaults to 0 and toDatetime defaults to current time
+  """
+  getHistoricEventsInTimeRange(topics: [MQTTTopicInput!]!, fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+
+  """Get all historical events published by specified client"""
+  getEventsByPublishers(publishers: [String!]!, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
 }
 
 type StateString {
@@ -58,20 +71,14 @@ type StreamingMessage {
   payload: JSONPayload!
 }
 
+"""Subscribe to UNS Events or Streams"""
 type Subscription {
   """ Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported 
   """
   getMqttMessages(topics: [MQTTTopicInput!]!): MQTTMessage!
 
-  """Subscribe to Kafka messages based on provided topics"""
+  """
+  Subscribe to Kafka messages based on provided topics. Wildcards/Regex not supported
+  """
   getKafkaMessages(topics: [KAFKATopicInput!]!): StreamingMessage!
-}
-
-type UNSNode {
-  nodeName: String!
-  nodeType: String!
-  namespace: String!
-  payload: JSONPayload!
-  created: DateTime!
-  lastUpdated: DateTime!
 }
