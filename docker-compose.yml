@@ -79,7 +79,7 @@ services:
       PGPASSWORD: ${PGPASSWORD}
       UNS_historian__hostname: uns_timescale_db
       UNS_historian__database: "uns_historian"
-      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__table: "unifiednamespace"
       UNS_historian__username: uns_dbuser
       UNS_historian__password: ${UNS_historian__password}
     depends_on:
@@ -125,7 +125,7 @@ services:
       UNS_mqtt__host: uns_mqtt_broker
       UNS_historian__hostname: uns_timescale_db
       UNS_historian__database: "uns_historian"
-      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__table: "unifiednamespace"
       UNS_historian__username: uns_dbuser
       UNS_historian__password: ${UNS_historian__password}
     depends_on:
@@ -181,7 +181,7 @@ services:
 
       UNS_historian__hostname: uns_timescale_db
       UNS_historian__database: "uns_historian"
-      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__table: "unifiednamespace"
       UNS_historian__username: uns_dbuser
       UNS_historian__password: ${UNS_historian__password}
 
