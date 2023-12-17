@@ -14,7 +14,7 @@ runs:
       shell: bash
       run: |
         module=${{ inputs.module }} 
-        image_name="uns/historian"
+        image_name=${{ inputs.image_name }} 
         SHA_TAG=${{ github.sha }}
 
         cd "${module}"
