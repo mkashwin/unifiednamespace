@@ -5,6 +5,7 @@
         "Aiven",
         "alnum",
         "asyncpg",
+        "autouse",
         "bitnami",
         "buildx",
         "cafile",

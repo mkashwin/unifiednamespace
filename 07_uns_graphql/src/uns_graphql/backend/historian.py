@@ -35,6 +35,7 @@ class HistorianDBPool:
         Returns:
             Pool: The shared connection pool.
         """
+        LOGGER.debug("DB Shared connection pool requested")
         if cls._shared_pool is None:
             cls._shared_pool = await cls.create_pool()
         return cls._shared_pool
@@ -189,7 +190,7 @@ class HistorianDBPool:
             param_index = param_index + 1
 
         if to_datetime:
-            conditions.append(f"( time <= ${param_index} ) ")
+            conditions.append(f"( time <= ${param_index} )  ")
             query_params.append(to_datetime)
             param_index = param_index + 1
 
