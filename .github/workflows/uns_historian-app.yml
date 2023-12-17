@@ -55,7 +55,7 @@ jobs:
       UNS_mqtt__port: 1883
       UNS_historian__hostname: "localhost"
       UNS_historian__database: "uns_historian"
-      UNS_historian__table: "UnifiedNamespace"
+      UNS_historian__table: "unifiednamespace"
       UNS_historian__username: "uns_dbuser"
       UNS_historian__password: ${{ needs.generate_random_password.outputs.uns_historian_pwd }}
       POSTGRES_PASSWORD: ${{ needs.generate_random_password.outputs.postgres_pwd }}

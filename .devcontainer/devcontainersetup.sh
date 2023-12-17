@@ -47,7 +47,7 @@ else
   UNS_historian__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
 
   UNS_historian__database=uns_historian
-  UNS_historian__table=UnifiedNamespace
+  UNS_historian__table=unifiednamespace
 
   echo "historian:
   username: "${UNS_historian__username}"

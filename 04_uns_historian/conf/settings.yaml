@@ -19,6 +19,6 @@ historian:
   hostname: "localhost"
   # port: 5432
   database: "uns_historian"
-  table: "UnifiedNamespace"
+  table: "unifiednamespace"
 
 dynaconf_merge: true
