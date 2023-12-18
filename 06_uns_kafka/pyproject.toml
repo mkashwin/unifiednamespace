@@ -38,7 +38,7 @@ yapf = "^0.40.2"
 flake8 = "^6.1.0"
 pytest-cov = "^4.0.0"
 safety = "^2.3.5"
-pylint = "^3.0.2"
+pylint = "^3.0.3"
 
 [tool.poetry.scripts] #TODO fix
 uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
