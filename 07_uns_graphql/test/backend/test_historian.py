@@ -1,6 +1,7 @@
 import asyncio
 import json
 from datetime import datetime
+from typing import Literal
 
 import pytest
 import pytest_asyncio
@@ -10,6 +11,23 @@ from uns_graphql.graphql_config import HistorianConfig
 # model for db entry
 DatabaseRow = tuple[datetime, str, str, dict]
 Query = tuple[list[list[str]], list[str], datetime, datetime]  # topic list, publisher list, from_time, to_time
+
+
+test_data_set: list[DatabaseRow] = [
+    (datetime.fromtimestamp(1701232000), "a/b/c", "client4", json.dumps({"key1": "value1"})),
+    (datetime.fromtimestamp(1701233000), "a/b/c", "client5", json.dumps({"key2": "value2"})),
+    (datetime.fromtimestamp(1701233500), "a/b/c", "client6", json.dumps({"key3": "value3"})),
+    (datetime.fromtimestamp(1701234000), "topic1", "client1", json.dumps({"key4": "value4"})),
+    (datetime.fromtimestamp(1701245000), "topic1/subtopic1", "client1", json.dumps({"key5": "value5.1"})),
+    (datetime.fromtimestamp(1701245000), "topic1/subtopic2", "client2", json.dumps({"key5": "value5.2"})),
+    (datetime.fromtimestamp(1701257000), "topic3", "client1", json.dumps({"key6": "value6"})),
+    (
+        datetime.fromtimestamp(170129000),
+        "test/nested/json",
+        "nested",
+        json.dumps({"a": "value1", "b": [10, 23, 23, 34], "c": {"k1": "v1", "k2": 100}, "k3": "outer_v1"}),
+    ),
+]
 
 query_topic1_hashtag_wildcard: Query = (
     ["topic1/#"],
@@ -33,33 +51,6 @@ query_multiple_topics: Query = (
     datetime.fromtimestamp(1701259000),
 )
 
-test_data_set: list[DatabaseRow] = [
-    (datetime.fromtimestamp(1701232000), "a/b/c", "client4", json.dumps({"key4": "value4"})),
-    (datetime.fromtimestamp(1701233000), "a/b/c", "client5", json.dumps({"key5": "value5"})),
-    (datetime.fromtimestamp(1701233500), "a/b/c", "client6", json.dumps({"key6": "value6"})),
-    (datetime.fromtimestamp(1701234000), "topic1", "client1", json.dumps({"key1": "value1"})),
-    (datetime.fromtimestamp(1701245000), "topic1/subtopic1", "client1", json.dumps({"key2": "value2"})),
-    (datetime.fromtimestamp(1701245000), "topic1/subtopic2", "client2", json.dumps({"key3": "value5"})),
-    (datetime.fromtimestamp(1701257000), "topic3", "client1", json.dumps({"key3": "value3"})),
-]
-"""
-Test Data
-Session fixture is equivalent to running SQL commands
-    INSERT INTO unifiednamespace (time, topic, client_id, mqtt_msg)
-    VALUES 
-        (TO_TIMESTAMP(1701232000), 'a/b/c', 'client4', '{"key4": "value4"}'),
-        (TO_TIMESTAMP(1701233000), 'a/b/c', 'client5', '{"key5": "value5"}'),
-        (TO_TIMESTAMP(1701233500), 'a/b/c', 'client6', '{"key6": "value6"}'),
-        (TO_TIMESTAMP(1701234000), 'topic1', 'client1', '{"key1": "value1"}'),
-        (TO_TIMESTAMP(1701245000), 'topic1/subtopic1', 'client1', '{"key2": "value2"}'),
-        (TO_TIMESTAMP(1701245000), 'topic1/subtopic2', 'client2', '{"key3": "value5"}'),
-        (TO_TIMESTAMP(1701257000), 'topic3', 'client1', '{"key3": "value3"}')
-    RETURNING *;
-and
-    DELETE FROM unifiednamespace;
-
-"""
-
 
 @pytest.yield_fixture(scope="session")
 def event_loop(request):  # noqa: ARG001
@@ -72,7 +63,7 @@ def event_loop(request):  # noqa: ARG001
 
 @pytest_asyncio.fixture(scope="session")
 @pytest.mark.integrationtest
-async def historian_pool(event_loop):
+async def historian_pool(event_loop):  # noqa: ARG001
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
     """
@@ -120,7 +111,7 @@ async def prepare_database(historian_pool):  # noqa: ARG001
         (query_topic1_hashtag_wildcard, 3),
         (query_single_wildcard, 2),
         (query_from_to_same, 1),
-        (query_from_is_none, 7),
+        (query_from_is_none, 8),
         (query_to_is_none, 1),
         (query_only_topic_a, 3),
         (query_only_topic1_wc, 3),
@@ -134,5 +125,44 @@ async def test_get_historic_events(prepare_database, query: Query, count_of_retu
     async with HistorianDBPool() as historian:
         result = await historian.get_historic_events(
             topics=query[0], publishers=query[1], from_datetime=query[2], to_datetime=query[3]
+        )
+        assert len(result) == count_of_return
+
+
+@pytest.mark.asyncio(scope="session")
+@pytest.mark.integrationtest
+@pytest.mark.xdist_group(
+    name="graphql_historian"
+)  # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+@pytest.mark.parametrize(
+    "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
+    [
+        (["key5"], None, None, None, None, 2),
+        (["key1", "key2"], "OR", ["a/b/c"], datetime.fromtimestamp(1701231000), datetime.fromtimestamp(1701236000), 2),
+        (["key5", "key4"], "OR", ["topic1/#"], None, None, 3),
+        (["key1", "key2"], "AND", ["topic1/#"], None, None, 0),
+        (["key1", "key2"], "OR", None, None, None, 2),
+        (["key1", "key2"], "OR", ["a/b/c"], None, None, 2),
+        (["k1", "k2"], "OR", None, None, None, 1),  # nested
+        (["k1", "key1"], "AND", None, None, None, 0),
+        (["key1", "key2"], "NOT", None, None, None, 6),  # NOT
+    ],
+)
+async def test_get_historic_events_for_property_keys(
+    prepare_database,  # noqa: ARG001
+    property_keys: list[str],
+    binary_operator: Literal["AND", "OR", "NOT"],
+    topics: list[str],
+    from_timestamp,
+    to_timestamp,
+    count_of_return: int,
+):
+    async with HistorianDBPool() as historian:
+        result = await historian.get_historic_events_for_property_keys(
+            property_keys=property_keys,
+            binary_operator=binary_operator,
+            topics=topics,
+            from_datetime=from_timestamp,
+            to_datetime=to_timestamp,
         )
         assert len(result) == count_of_return

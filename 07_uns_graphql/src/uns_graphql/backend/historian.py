@@ -3,7 +3,7 @@ Encapsulates integration with the historian database
 """
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 import asyncpg
 from asyncpg import Pool
@@ -106,7 +106,7 @@ class HistorianDBPool:
             *args: Query parameters.
 
         Returns:
-            List[HistoricalUNSEvent]: List of historical events.
+            list[HistoricalUNSEvent]: list of historical events.
 
         Raises:
             asyncpg.PostgresError: If there's an error executing the prepared statement.
@@ -147,13 +147,13 @@ class HistorianDBPool:
         Retrieves historical events based on specified criteria.
 
         Args:
-            topics (List[str]): List of topics.
-            publishers (List[str]): List of publishers.
+            topics (list[str]): list of topics.
+            publishers (list[str]): list of publishers.
             from_datetime (datetime): Start date/time.
             to_datetime (datetime): End date/time.
 
         Returns:
-            List[HistoricalUNSEvent]: List of historical events.
+            list[HistoricalUNSEvent]: list of historical events.
 
         Raises:
             asyncpg.PostgresError: If there's an error fetching historical events.
@@ -193,6 +193,79 @@ class HistorianDBPool:
             conditions.append(f"( time <= ${param_index} )  ")
             query_params.append(to_datetime)
             param_index = param_index + 1
+
+        full_query: str = f"{base_query} {' AND '.join(conditions)}"
+        LOGGER.debug(f"Query: {full_query} \n Params; {query_params}")
+
+        return await self.execute_prepared(full_query, *query_params)
+
+    async def get_historic_events_for_property_keys(
+        self,
+        property_keys: list[str],
+        binary_operator: Optional[Literal["AND", "OR", "NOT"]],
+        topics: Optional[list[str]],
+        from_datetime: Optional[datetime],
+        to_datetime: Optional[datetime],
+    ) -> list[HistoricalUNSEvent]:
+        """
+        Retrieves historical events based on specified criteria.
+
+        Args:
+            property_keys (list[str]): list of property key to search for in the JSON msg.
+            binary_operator (OR| AND | NOT): binary operator applied on the property_keys. OR if None provided
+            topics (list[str]): list of topics.
+            from_datetime (datetime): Start date/time.
+            to_datetime (datetime): End date/time.
+
+        Returns:
+            list[HistoricalUNSEvent]: list of historical events.
+
+        Raises:
+            asyncpg.PostgresError: If there's an error fetching historical events.
+        """
+        # check that at least mandatory criteria is provided
+        if property_keys is None or len(property_keys) == 0:
+            raise ValueError("Mandatory criteria for fetching historic events by property_keys needs to be provided")
+        if binary_operator is not None and binary_operator not in ["AND", "OR", "NOT"]:
+            raise ValueError("Illegal value for binary operator. Should be on of ['AND', 'OR', 'NOT']")
+        base_query: str = f"SELECT time, topic, client_id, mqtt_msg FROM {HistorianConfig.table} WHERE"  # noqa: S608
+        conditions: list[str] = []
+        query_params: list[list[str] | datetime] = []
+        param_index: int = 1
+        if binary_operator is None:
+            binary_operator = "OR"
+
+        if topics:
+            # if topics is not null we need to convert all MQTT wild cards to postgres wildcards
+            query_params.append([UnsMQTTClient.get_regex_for_topic_with_wildcard(topic) for topic in topics])
+
+            # convert the topics wild cards into regex to be used with SIMILAR instead of LIKE
+            # conditions.append(f"( topic SIMILAR TO ANY (SELECT * FROM UNNEST( ${param_index}::text[]) ) ")
+            conditions.append(f"( topic ~  ANY (  ${param_index}  ) ) ")
+            param_index = param_index + 1
+
+        if from_datetime:
+            conditions.append(f"( time >= ${param_index} ) ")
+            query_params.append(from_datetime)
+            param_index = param_index + 1
+
+        if to_datetime:
+            conditions.append(f"( time <= ${param_index} )  ")
+            query_params.append(to_datetime)
+            param_index = param_index + 1
+
+        property_sub_query: list[str] = []
+        for property_key in property_keys:
+            property_sub_query.append(f"( jsonb_path_exists( mqtt_msg, ${param_index} ) )")
+            query_params.append("$.**." + property_key)
+            param_index = param_index + 1
+
+        if binary_operator == "NOT":
+            # handle NOT operator
+            conditions.append(binary_operator + " ( " + " OR ".join(property_sub_query) + ") ")
+        else:
+            # handle AND  / OR operator
+            conditions.append(" ( " + binary_operator.join(property_sub_query) + ") ")
 
         full_query: str = f"{base_query} {' AND '.join(conditions)}"
         LOGGER.debug(f"Query: {full_query} \n Params; {query_params}")

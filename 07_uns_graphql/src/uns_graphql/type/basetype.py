@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 from typing import Union
 
 import strawberry
@@ -49,3 +50,11 @@ Int64 = strawberry.scalar(
     serialize=lambda v: int(v),
     parse_value=lambda v: str(v),
 )
+
+
+@strawberry.enum
+class BinaryOperator(Enum):
+    # input binary operators in queries
+    OR = "OR"
+    AND = "AND"
+    NOT = "NOT"

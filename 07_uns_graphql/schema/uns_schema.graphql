@@ -3,6 +3,12 @@ Represents binary data as Base64-encoded strings, using the standard alphabet.
 """
 scalar Base64 @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc4648.html#section-4")
 
+enum BinaryOperator {
+  OR
+  AND
+  NOT
+}
+
 type BytesPayload {
   data: Base64!
 }
@@ -52,12 +58,17 @@ input MQTTTopicInput {
 """Query the UNS for current or historic Nodes/Events """
 type Query {
   """
-  Get all historical published on the given topics and between the time slots.If time slots are not provided then fromDatetime defaults to 0 and toDatetime defaults to current time
+  Get all historical published on the given array of topics and between the time slots.
   """
   getHistoricEventsInTimeRange(topics: [MQTTTopicInput!]!, fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
 
-  """Get all historical events published by specified client"""
+  """Get all historical events published by specified clients."""
   getEventsByPublishers(publishers: [String!]!, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+
+  """
+  Get all historical events published which have specific attributes.Option binary_operator input allows chaining the list of property_keys. If NULL, property_keys will be ORed- OR: Either of the property_keys must exist in the same event.. If only one property_keys provided will be ignored- AND:  All property_keys must exist in same event. If only one property_keys provided will be ignored- NOT: None of the provided property_keys should exist in the same eventOther criteria - topics, from_datetime & to_datetime will always be ANDed to the query filter
+  """
+  getEventsByProperty(propertyKeys: [String!]!, binaryOperator: BinaryOperator, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
 }
 
 type StateString {
