@@ -4,6 +4,7 @@
         "aiomqtt",
         "Aiven",
         "alnum",
+        "asyncio",
         "asyncpg",
         "autouse",
         "bitnami",
@@ -86,7 +87,8 @@
         "VERNEMQ",
         "virtualenv",
         "Waehner",
-        "websockets"
+        "websockets",
+        "xdist"
     ],
     "[python]": {
         "editor.formatOnSaveMode": "file",

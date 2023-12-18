@@ -286,3 +286,11 @@ poetry run pytest -m "not integrationtest" ./07_uns_graphql
    ```bash
    powershell Set-ExecutionPolicy RemoteSigned
     ```
+
+1. **pytest-xdist & VSCode**:
+    To optimize and speed up the project is using the [pytest-xdist](https://pytest-xdist.readthedocs.io/en/latest/)
+    This however has some challenges [Working with VSCode Issue]( <https://github.com/microsoft/vscode-python/issues/19374>)
+    As a workaround run all tests which are marked `@pytest.mark.xdist_group` via the command line instead of within VSCode
+
+1. **pytest-asyncio & Integration Testing**:
+    Similar to `pytest-xdist` I have also enabled `pytest-asyncio` for the project. While this has significantly decreased the execution time, for some integration tests ( marked by `@pytest.mark.integrationtest`) sometimes fail (*flaky tests*) if there is too much CPU / IO load. Executing them again normally works. Need to investigate how to make those more robust/race proof. The issue is not in the code but in the test case where the validation starts before the test data has completely been setup in the data store.

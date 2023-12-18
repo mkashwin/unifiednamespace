@@ -183,7 +183,7 @@ def test_02_authenticated_connections(
     [
         ("#", "a", True),
         ("#", "a/b/c", True),
-        ("a/#", "a", True),  # FIXME this should be true
+        ("a/#", "a", True),
         ("a/#", "a/b/c", True),
         ("a/#", "ab/a", False),
         ("a/+", "a/b", True),
