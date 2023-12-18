@@ -4,7 +4,6 @@ Tests for Uns_MQTT_GraphDb
 import json
 import sys
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from google.protobuf.json_format import MessageToDict
@@ -20,7 +19,7 @@ test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
 sys.path.insert(0, str(test_folder))
 # @FIXME Hack done to be able to import utility modules in the tests directories
 # @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
-from test_graphdb_handler import read_nodes  # noqa: E402
+from test_graphdb_handler import cleanup_test_data, read_nodes  # noqa: E402
 
 
 @pytest.mark.integrationtest()
@@ -105,7 +104,7 @@ def test_uns_mqtt_graph_db():
         ),
     ],
 )
-def test_mqtt_graphdb_persistance(topic: str, message):
+def test_mqtt_graphdb_persistance(topic: str, message: dict):
     """
     Test the persistance of message (UNS & SpB) to the database
     """
@@ -119,13 +118,13 @@ def test_mqtt_graphdb_persistance(topic: str, message):
             if topic.startswith("spBv1.0/"):
                 inbound_payload = sparkplug_b_pb2.Payload()
                 inbound_payload.ParseFromString(message)
-                message_dict = MessageToDict(inbound_payload)
+                message_dict: dict = MessageToDict(inbound_payload)
                 node_type = GraphDBConfig.spb_node_types
             else:
                 message_dict = message
                 node_type = GraphDBConfig.uns_node_types
 
-            attr_nd_typ: Optional[str] = GraphDBConfig.nested_attributes_node_type
+            attr_nd_typ: str = GraphDBConfig.nested_attributes_node_type
 
             try:
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
@@ -135,6 +134,11 @@ def test_mqtt_graphdb_persistance(topic: str, message):
             except (exceptions.TransientError, exceptions.TransactionError) as ex:
                 pytest.fail("Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
             finally:
+                # After successfully validating the data run a new transaction to delete
+                with uns_mqtt_graphdb.graph_db_handler.connect().session(
+                    database=uns_mqtt_graphdb.graph_db_handler.database,
+                ) as session:
+                    session.execute_write(cleanup_test_data, node_type, attr_nd_typ, topic, message_dict)
                 uns_mqtt_graphdb.uns_client.disconnect()
 
         # --- end of function
