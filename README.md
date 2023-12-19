@@ -1,8 +1,7 @@
 # Unified Name Space (UNS)
 
 [![UNS Project](https://github.com/mkashwin/unifiednamespace/actions/workflows/python-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/python-app.yml)
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mkashwin/unifiednamespace)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 This project aims to create an open sourced option for setting up a Unified Namespace for IIOT transformation.
 
@@ -56,6 +55,7 @@ The overall architecture and the deployment setup is as follows
     * TimescaleDB installed and running on docker / cluster / K8s / hosted service
     * Graph DB installed and running on  docker / cluster / K8s  / hosted service
     * Kafka cluster/ K8s / hosted service
+    * GraphQL service running and connected to the cloud data stores
     * UNS graphdb client to persist messages to the Graph DB  instance
     * UNS historian client to persist messages to the Graph DB  instance
     * UNS Kafka listener to stream/convert MQTT messages to the Kafka instance
@@ -294,3 +294,5 @@ poetry run pytest -m "not integrationtest" ./07_uns_graphql
 
 1. **pytest-asyncio & Integration Testing**:
     Similar to `pytest-xdist` I have also enabled `pytest-asyncio` for the project. While this has significantly decreased the execution time, for some integration tests ( marked by `@pytest.mark.integrationtest`) sometimes fail (*flaky tests*) if there is too much CPU / IO load. Executing them again normally works. Need to investigate how to make those more robust/race proof. The issue is not in the code but in the test case where the validation starts before the test data has completely been setup in the data store.
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mkashwin/unifiednamespace)
