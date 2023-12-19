@@ -2,6 +2,7 @@ import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
+import pytest_asyncio
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient
 from uns_graphql.graphql_config import KAFKAConfig
@@ -10,25 +11,76 @@ from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.type.streaming_event import StreamingMessage
 
 TWO_TOPICS_MULTIPLE_MSGS = (
-    [KAFKATopicInput(topic="a.b.c"), KAFKATopicInput(topic="abc")],
+    [KAFKATopicInput(topic="graphql_test_a.b.c"), KAFKATopicInput(topic="graphql_test_abc")],
     [
-        ("a.b.c", b'{"timestamp": 123456, "val1": 1234}'),
-        ("a.b.c", b'{"timestamp": 234567, "val1": 2345}'),
-        ("abc", b'{"timestamp": 123987, "val1": 9876}'),
-        ("abc", b'{"timestamp": 456789, "val2": "test different"}'),
+        ("graphql_test_a.b.c", b'{"timestamp": 123456, "val1": 1234}'),
+        ("graphql_test_a.b.c", b'{"timestamp": 234567, "val1": 2345}'),
+        ("graphql_test_abc", b'{"timestamp": 123987, "val1": 9876}'),
+        ("graphql_test_abc", b'{"timestamp": 456789, "val2": "test different"}'),
     ],
 )
 
 ONE_TOPIC_MULTIPLE_MSGS = (
-    [KAFKATopicInput(topic="l.m.n")],
+    [KAFKATopicInput(topic="graphql_test_l.m.n")],
     [
-        ("l.m.n", b'{"timestamp": 123456, "val1": 1234}'),
-        ("l.m.n", b'{"timestamp": 123457, "val1": 5678}'),
-        ("l.m.n", b'{"timestamp": 123458, "val1": 9012}'),
+        ("graphql_test_l.m.n", b'{"timestamp": 123456, "val1": 1234}'),
+        ("graphql_test_l.m.n", b'{"timestamp": 123457, "val1": 5678}'),
+        ("graphql_test_l.m.n", b'{"timestamp": 123458, "val1": 9012}'),
     ],
 )
 
-ONE_TOPIC_ONE_MSG = ([KAFKATopicInput(topic="x.y.z")], [("x.y.z", b'{"timestamp": 123456, "val1": 1234}')])
+ONE_TOPIC_ONE_MSG = (
+    [KAFKATopicInput(topic="graphql_test_x.y.z")],
+    [("graphql_test_x.y.z", b'{"timestamp": 123456, "val1": 1234}')],
+)
+
+
+@pytest.fixture(scope="module")
+def kafka_event_loop(request):  # noqa: ARG001
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    loop.close()
+
+
+@pytest_asyncio.fixture(scope="function")
+@pytest.mark.integrationtest
+async def create_topics(kafka_event_loop, message_vals):  # noqa: ARG001
+    kafka_config = {
+        "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
+    }
+
+    # Function to Delete topics if present
+    async def delete_existing_topics():
+        # Create Kafka admins
+        admin = AdminClient(kafka_config)
+        existing_topics = admin.list_topics().topics  # Get a list of existing topics
+        for topic in existing_topics:
+            if topic in [msg_val[0] for msg_val in message_vals]:
+                admin.delete_topics([topic])
+
+    # Function to Create Kafka producer inside a context manager to ensure proper cleanup
+    async def produce_messages():
+        # Create Kafka producer
+        producer = Producer(kafka_config)
+
+        def delivery_report(err, msg):  # noqa: ARG001
+            pass
+
+        # Produce messages
+        for topic, msg in message_vals:
+            producer.produce(topic, value=msg, callback=delivery_report)
+
+        producer.flush()
+
+    # Delete topics
+    await delete_existing_topics()
+    # Run message producer in a separate thread
+    await produce_messages()
+    yield
+    # Delete topics
+    await delete_existing_topics()
 
 
 @pytest.mark.asyncio
@@ -84,9 +136,9 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
 
 @pytest.mark.asyncio
 @pytest.mark.integrationtest()
-@pytest.mark.xdist_group(
-    name="graphql_kafka"
-)  # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# Comment this marker and run test individually
+@pytest.mark.xdist_group(name="graphql_kafka")
 @pytest.mark.parametrize(
     "kafka_topics, message_vals",
     [
@@ -95,58 +147,23 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
         ONE_TOPIC_ONE_MSG,
     ],
 )
-async def test_get_kafka_messages_integration(kafka_topics: list[KAFKATopicInput], message_vals: list[tuple]):
-    kafka_config = {
-        "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
-    }
-
-    # Create Kafka admins
-    admin = AdminClient(kafka_config)
+async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[KAFKATopicInput], message_vals: list[tuple]):  # noqa: ARG001
+    #    create_topics(message_vals)
+    received_messages = []
+    subscription = KAFKASubscription()
     try:
-        # Delete topics if present
-        existing_topics = admin.list_topics().topics  # Get a list of existing topics
-        for topic in existing_topics:
-            if topic in [msg_val[0] for msg_val in message_vals]:
-                admin.delete_topics([topic])
+        index: int = 0
+        async for message in subscription.get_kafka_messages(kafka_topics):
+            assert isinstance(message, StreamingMessage)
+            received_messages.append(message)
+            index = index + 1
+            if index == len(message_vals):
+                break
+    except RuntimeError:
+        assert index == len(message_vals), "Not all messages were processed"
 
-        # Create Kafka producer inside a context manager to ensure proper cleanup
-        async def produce_messages():
-            # Create Kafka producer
-            producer = Producer(kafka_config)
-
-            def delivery_report(err, msg):  # noqa: ARG001
-                pass
-
-            # Produce messages
-            for topic, msg in message_vals:
-                producer.produce(topic, value=msg, callback=delivery_report)
-
-            producer.flush()
-
-        # Run message producer in a separate thread
-        await asyncio.gather(produce_messages())
-
-        # Retrieve messages from the subscription
-        received_messages = []
-        subscription = KAFKASubscription()
-        try:
-            index: int = 0
-            async for message in subscription.get_kafka_messages(kafka_topics):
-                assert isinstance(message, StreamingMessage)
-                received_messages.append(message)
-                index = index + 1
-                if index == len(message_vals):
-                    break
-        except RuntimeError:
-            assert index == len(message_vals), "Not all messages were processed"
-
-        # Validate that all published messages were received
-        assert len(received_messages) == len(message_vals)
-        for topic, msg in message_vals:
-            # order of messages may not be same hence check after all messages were provided
-            assert any(
-                StreamingMessage(topic=topic, payload=msg) == received_message for received_message in received_messages
-            )
-    finally:
-        # Delete topics after the tests
-        admin.delete_topics([msg_val[0] for msg_val in message_vals])
+    # Validate that all published messages were received
+    assert len(received_messages) == len(message_vals)
+    for topic, msg in message_vals:
+        # order of messages may not be same hence check after all messages were provided
+        assert any(StreamingMessage(topic=topic, payload=msg) == received_message for received_message in received_messages)

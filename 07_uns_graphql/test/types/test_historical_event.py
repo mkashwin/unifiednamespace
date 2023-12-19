@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 import strawberry
@@ -10,7 +10,7 @@ from uns_graphql.type.historical_event import HistoricalUNSEvent
 def sample_historical_event():
     return HistoricalUNSEvent(
         publisher="Publisher",
-        timestamp=datetime.fromtimestamp(1234567890),
+        timestamp=datetime.fromtimestamp(1234567890, UTC),
         topic="sample/topic",
         payload=JSONPayload(data={"key": "value"}),
     )
@@ -25,7 +25,7 @@ def test_historical_event_published_by(sample_historical_event):
 
 
 def test_historical_event_timestamp(sample_historical_event):
-    assert sample_historical_event.timestamp == datetime.fromtimestamp(1234567890)
+    assert sample_historical_event.timestamp == datetime.fromtimestamp(1234567890, UTC)
 
 
 def test_historical_event_topic(sample_historical_event):

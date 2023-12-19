@@ -46,6 +46,23 @@
 				"charliermarsh.ruff"
 			]
 		}
+	},
+	"portsAttributes": {
+		"1883": {
+			"label": "MQTT"
+		},
+		"5432": {
+			"label": "Timescaledb"
+		},
+		"7474": {
+			"label": "neo4j browser"
+		},
+		"7687": {
+			"label": "Neo4j database"
+		},
+		"8083": {
+			"label": "MQTT Websockets"
+		}
 	}
 	// Configure tool-specific properties.
 	// "customizations": {},

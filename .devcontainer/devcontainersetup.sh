@@ -29,6 +29,7 @@ dynaconf_merge: true
     -v $HOME/neo4j/logs:/logs \
     -v $HOME/neo4j/plugins:/plugins \
     -v $HOME/neo4j/import:/var/lib/neo4j/import \
+    -v $HOME/neo4j/run:/var/lib/neo4j/run \
     --env NEO4J_AUTH=${UNS_graphdb__username}/${UNS_graphdb__password} \
     --env apoc.export.file.enabled=true \
     --env apoc.import.file.enabled=true \

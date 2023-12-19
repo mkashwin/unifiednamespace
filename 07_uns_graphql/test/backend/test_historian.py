@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 import pytest
@@ -14,15 +14,15 @@ Query = tuple[list[list[str]], list[str], datetime, datetime]  # topic list, pub
 
 
 test_data_set: list[DatabaseRow] = [
-    (datetime.fromtimestamp(1701232000), "a/b/c", "client4", json.dumps({"key1": "value1"})),
-    (datetime.fromtimestamp(1701233000), "a/b/c", "client5", json.dumps({"key2": "value2"})),
-    (datetime.fromtimestamp(1701233500), "a/b/c", "client6", json.dumps({"key3": "value3"})),
-    (datetime.fromtimestamp(1701234000), "topic1", "client1", json.dumps({"key4": "value4"})),
-    (datetime.fromtimestamp(1701245000), "topic1/subtopic1", "client1", json.dumps({"key5": "value5.1"})),
-    (datetime.fromtimestamp(1701245000), "topic1/subtopic2", "client2", json.dumps({"key5": "value5.2"})),
-    (datetime.fromtimestamp(1701257000), "topic3", "client1", json.dumps({"key6": "value6"})),
+    (datetime.fromtimestamp(1701232000, UTC), "a/b/c", "client4", json.dumps({"key1": "value1"})),
+    (datetime.fromtimestamp(1701233000, UTC), "a/b/c", "client5", json.dumps({"key2": "value2"})),
+    (datetime.fromtimestamp(1701233500, UTC), "a/b/c", "client6", json.dumps({"key3": "value3"})),
+    (datetime.fromtimestamp(1701234000, UTC), "topic1", "client1", json.dumps({"key4": "value4"})),
+    (datetime.fromtimestamp(1701245000, UTC), "topic1/subtopic1", "client1", json.dumps({"key5": "value5.1"})),
+    (datetime.fromtimestamp(1701245000, UTC), "topic1/subtopic2", "client2", json.dumps({"key5": "value5.2"})),
+    (datetime.fromtimestamp(1701257000, UTC), "topic3", "client1", json.dumps({"key6": "value6"})),
     (
-        datetime.fromtimestamp(170129000),
+        datetime.fromtimestamp(170129000, UTC),
         "test/nested/json",
         "nested",
         json.dumps({"a": "value1", "b": [10, 23, 23, 34], "c": {"k1": "v1", "k2": 100}, "k3": "outer_v1"}),
@@ -32,13 +32,23 @@ test_data_set: list[DatabaseRow] = [
 query_topic1_hashtag_wildcard: Query = (
     ["topic1/#"],
     None,
-    datetime.fromtimestamp(1701233000),
-    datetime.fromtimestamp(1701259000),
+    datetime.fromtimestamp(1701233000, UTC),
+    datetime.fromtimestamp(1701259000, UTC),
 )
-query_single_wildcard: Query = (["topic1/+"], None, datetime.fromtimestamp(1701233000), datetime.fromtimestamp(1701259000))
-query_from_to_same: Query = (["topic3"], None, datetime.fromtimestamp(1701257000), datetime.fromtimestamp(1701257000))
-query_from_is_none: Query = (["#"], None, None, datetime.fromtimestamp(1701257000))
-query_to_is_none: Query = (["#"], None, datetime.fromtimestamp(1701257000), None)
+query_single_wildcard: Query = (
+    ["topic1/+"],
+    None,
+    datetime.fromtimestamp(1701233000, UTC),
+    datetime.fromtimestamp(1701259000, UTC),
+)
+query_from_to_same: Query = (
+    ["topic3"],
+    None,
+    datetime.fromtimestamp(1701257000, UTC),
+    datetime.fromtimestamp(1701257000, UTC),
+)
+query_from_is_none: Query = (["#"], None, None, datetime.fromtimestamp(1701257000, UTC))
+query_to_is_none: Query = (["#"], None, datetime.fromtimestamp(1701257000, UTC), None)
 query_only_topic_a: Query = (["a/#"], None, None, None)
 query_only_topic1_wc: Query = (["topic1/#"], None, None, None)
 query_only_topic1_sub_wc: Query = (["topic1/+"], None, None, None)
@@ -47,12 +57,12 @@ query_multiple_topics_no_times: Query = (["topic1/#", "topic3"], None, None, Non
 query_multiple_topics: Query = (
     ["topic1/#", "topic3"],
     None,
-    datetime.fromtimestamp(1701233000),
-    datetime.fromtimestamp(1701259000),
+    datetime.fromtimestamp(1701233000, UTC),
+    datetime.fromtimestamp(1701259000, UTC),
 )
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def event_loop(request):  # noqa: ARG001
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -102,9 +112,9 @@ async def prepare_database(historian_pool):  # noqa: ARG001
 
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.integrationtest
-@pytest.mark.xdist_group(
-    name="graphql_historian"
-)  # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# Comment this marker and run test individually
+@pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.parametrize(
     "query, count_of_return",
     [
@@ -131,14 +141,21 @@ async def test_get_historic_events(prepare_database, query: Query, count_of_retu
 
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.integrationtest
-@pytest.mark.xdist_group(
-    name="graphql_historian"
-)  # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# Comment this marker and run test individually
+@pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.parametrize(
     "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
     [
         (["key5"], None, None, None, None, 2),
-        (["key1", "key2"], "OR", ["a/b/c"], datetime.fromtimestamp(1701231000), datetime.fromtimestamp(1701236000), 2),
+        (
+            ["key1", "key2"],
+            "OR",
+            ["a/b/c"],
+            datetime.fromtimestamp(1701231000, UTC),
+            datetime.fromtimestamp(1701236000, UTC),
+            2,
+        ),
         (["key5", "key4"], "OR", ["topic1/#"], None, None, 3),
         (["key1", "key2"], "AND", ["topic1/#"], None, None, 0),
         (["key1", "key2"], "OR", None, None, None, 2),
