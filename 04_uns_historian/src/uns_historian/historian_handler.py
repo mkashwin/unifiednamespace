@@ -145,7 +145,7 @@ class HistorianHandler:
             _timestamp = datetime.datetime.now()
         else:
             # Timestamp is normally in milliseconds and needs to be converted prior to insertion
-            _timestamp = datetime.datetime.fromtimestamp(timestamp / 1000)
+            _timestamp = datetime.datetime.fromtimestamp(timestamp / 1000, datetime.UTC)
 
         sql_cmd = f"""INSERT INTO {self.table} ( time, topic, client_id, mqtt_msg )
                         VALUES (%s,%s,%s,%s)

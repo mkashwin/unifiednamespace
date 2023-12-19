@@ -6,7 +6,6 @@ import json
 
 import psycopg2
 import pytest
-import pytz
 from google.protobuf.json_format import MessageToDict
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
@@ -82,7 +81,7 @@ def test_uns_mqtt_historian_persistance(topic: str, message):
             try:
                 cursor = uns_mqtt_historian.uns_historian_handler.get_cursor()
                 query_timestamp: datetime = datetime.datetime.fromtimestamp(
-                    float(message_dict.get(MQTTConfig.timestamp_key)) / 1000
+                    float(message_dict.get(MQTTConfig.timestamp_key)) / 1000, datetime.UTC
                 )
                 # FIXME Sometimes this fails when async testing as the previous write may not have completed
                 compare_with_historian(
@@ -156,8 +155,7 @@ def compare_with_historian(cursor, db_table: str, query_timestamp: datetime, top
             assert db_msg == message_dict, "Message payload is not matching"
             assert db_client == client_id, "client_id are not matching"
             assert db_topic == topic, "Topic are not matching"  # topic
-            # Need to localize the value in order to be able to compare with the info from db
-            assert data[0] == pytz.utc.localize(query_timestamp), "Timestamp are not matching"  # timestamp
+            assert data[0] == query_timestamp, "Timestamp are not matching"  # timestamp
 
     except (psycopg2.DataError, psycopg2.OperationalError) as ex:
         pytest.fail(
