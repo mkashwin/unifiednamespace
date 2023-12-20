@@ -5,7 +5,7 @@ from enum import Enum
 
 import strawberry
 from strawberry.types import Info
-from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.uns_spb_helper import SPBDataSetDataType, SPBMetricDataTypes, SPBPropertyValueTypes
 
 from uns_graphql.type.basetype import BytesPayload, JSONPayload
 
@@ -14,75 +14,18 @@ LOGGER = logging.getLogger(__name__)
 
 @strawberry.enum
 class SPBDataTypeEnum(Enum):
-    """
-    Enumeration of datatypes possible in a Metric
-    """
-
-    Unknown = sparkplug_b_pb2.Unknown
-    Int8 = sparkplug_b_pb2.Int8
-    Int16 = sparkplug_b_pb2.Int16
-    Int32 = sparkplug_b_pb2.Int32
-    Int64 = sparkplug_b_pb2.Int64
-    UInt8 = sparkplug_b_pb2.UInt16
-    UInt16 = sparkplug_b_pb2.UInt16
-    UInt32 = sparkplug_b_pb2.UInt32
-    UInt64 = sparkplug_b_pb2.UInt64
-    Float = sparkplug_b_pb2.Float
-    Double = sparkplug_b_pb2.Double
-    Boolean = sparkplug_b_pb2.Boolean
-    String = sparkplug_b_pb2.String
-    DateTime = sparkplug_b_pb2.DateTime
-    Text = sparkplug_b_pb2.Text
-    UUID = sparkplug_b_pb2.UUID
-    DataSet = sparkplug_b_pb2.DataSet
-    Bytes = sparkplug_b_pb2.Bytes
-    File = sparkplug_b_pb2.File
-    Template = sparkplug_b_pb2.Template
-    PropertySet = sparkplug_b_pb2.PropertySet
-    PropertySetList = sparkplug_b_pb2.PropertySetList
-    Int8Array = sparkplug_b_pb2.Int8Array
-    Int16Array = sparkplug_b_pb2.Int16Array
-    Int32Array = sparkplug_b_pb2.Int32Array
-    Int64Array = sparkplug_b_pb2.Int64Array
-    UInt8Array = sparkplug_b_pb2.UInt8Array
-    UInt16Array = sparkplug_b_pb2.UInt16Array
-    UInt32Array = sparkplug_b_pb2.UInt32Array
-    UInt64Array = sparkplug_b_pb2.UInt64Array
-    FloatArray = sparkplug_b_pb2.FloatArray
-    DoubleArray = sparkplug_b_pb2.DoubleArray
-    BooleanArray = sparkplug_b_pb2.BooleanArray
-    StringArray = sparkplug_b_pb2.StringArray
-    DateTimeArray = sparkplug_b_pb2.DateTimeArray
+    SPBMetricDataTypes = SPBMetricDataTypes
 
 
 @strawberry.enum
 class SPBPropertyTypeEnum(Enum):
-    """
-    Enumeration of datatypes possible for PropertyTypes
-    """
-
-    UInt32 = sparkplug_b_pb2.UInt32
-    Uint64 = sparkplug_b_pb2.UInt64
-    Float = sparkplug_b_pb2.Float
-    Double = sparkplug_b_pb2.Double
-    Boolean = sparkplug_b_pb2.Boolean
-    String = sparkplug_b_pb2.String
-    PropertySet = sparkplug_b_pb2.PropertySet
-    PropertySetList = sparkplug_b_pb2.PropertySetList
+    SPBPropertyValueTypeEnum = SPBPropertyValueTypes
 
 
 @strawberry.type
 class SPBDataSetTypeEnum(Enum):
-    """
-    Enumeration of datatypes possible for DataSetValue
-    """
-
-    UInt32 = sparkplug_b_pb2.UInt32
-    Uint64 = sparkplug_b_pb2.UInt64
-    Float = sparkplug_b_pb2.Float
-    Double = sparkplug_b_pb2.Double
-    Boolean = sparkplug_b_pb2.Boolean
-    String = sparkplug_b_pb2.String
+    SPBDataSetDataType = SPBDataSetDataType
+    pass
 
 
 @strawberry.type
