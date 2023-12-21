@@ -79,7 +79,6 @@ class HistorianDBPool:
         self._pool: Pool = await self.get_shared_pool()  # Acquire the shared pool directly
         self._conn: Connection = await self._pool.acquire()  # Acquire a connection from the pool
         return self
-        # return self._conn  # Returning the acquired connection
 
     async def __aexit__(self, exc_type, exc, tb):
         await self._pool.release(self._conn)  # Release the acquired connection

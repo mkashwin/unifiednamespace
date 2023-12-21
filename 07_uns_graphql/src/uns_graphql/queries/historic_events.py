@@ -29,7 +29,7 @@ class Query:
             "Query for historic events in UNS with Params :\n"
             f"topics={topics}, from_datetime={from_datetime}, to_datetime={from_datetime}"
         )
-        if type and type(topics) is not list:
+        if type(topics) is not list:
             # convert single topic to array for consistent handling
             topics = [topics]
 
