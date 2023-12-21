@@ -63,14 +63,15 @@ type Query {
   getHistoricEventsInTimeRange(topics: [MQTTTopicInput!]!, fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
 
   """Get all historical events published by specified clients."""
-  getEventsByPublishers(publishers: [String!]!, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+  getHistoricEventsByPublishers(publishers: [String!]!, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
 
   """
   Get all historical events published which have specific attributes.Option binary_operator input allows chaining the list of property_keys. If NULL, property_keys will be ORed- OR: Either of the property_keys must exist in the same event.. If only one property_keys provided will be ignored- AND:  All property_keys must exist in same event. If only one property_keys provided will be ignored- NOT: None of the provided property_keys should exist in the same eventOther criteria - topics, from_datetime & to_datetime will always be ANDed to the query filter
   """
-  getEventsByProperty(propertyKeys: [String!]!, binaryOperator: BinaryOperator, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+  getHistoricEventsByProperty(propertyKeys: [String!]!, binaryOperator: BinaryOperator, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
 }
 
+"""Same as String. Needed because GraphQL does not support str for unions"""
 type StateString {
   data: String!
 }

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import LiteralString, Optional
+from typing import Optional
 
 import strawberry
 
@@ -12,10 +12,10 @@ from uns_graphql.type.historical_event import HistoricalUNSEvent
 LOGGER = logging.getLogger(__name__)
 
 
-@strawberry.type(description="Query Historic")
+@strawberry.type(description="Query Historic Events")
 class Query:
     """
-    All Queries for historical information from the
+    All Queries for historical events from the Unified Namespace
     """
 
     @strawberry.field(description="Get all historical published on the given array of topics and between the time slots.")
@@ -25,6 +25,10 @@ class Query:
         from_datetime: Optional[datetime] = strawberry.UNSET,
         to_datetime: Optional[datetime] = strawberry.UNSET,
     ) -> list[HistoricalUNSEvent]:
+        LOGGER.debug(
+            "Query for historic events in UNS with Params :\n"
+            f"topics={topics}, from_datetime={from_datetime}, to_datetime={from_datetime}"
+        )
         if type and type(topics) is not list:
             # convert single topic to array for consistent handling
             topics = [topics]
@@ -39,13 +43,17 @@ class Query:
             return result
 
     @strawberry.field(description="Get all historical events published by specified clients.")
-    async def get_events_by_publishers(
+    async def get_historic_events_by_publishers(
         self,
         publishers: list[str],
         topics: Optional[list[MQTTTopicInput]] = strawberry.UNSET,
         from_datetime: Optional[datetime] = strawberry.UNSET,
         to_datetime: Optional[datetime] = strawberry.UNSET,
     ) -> list[HistoricalUNSEvent]:
+        LOGGER.debug(
+            "Query for historic events by publishers in UNS with Params :\n"
+            f"publishers={publishers}, topics={topics}, from_datetime={from_datetime}, to_datetime={from_datetime}  "
+        )
         async with HistorianDBPool() as historian:
             result: list[HistoricalUNSEvent] = await historian.get_historic_events(
                 topics=[x.topic for x in topics] if topics else None,  # extract string from input object
@@ -63,7 +71,7 @@ class Query:
         "- NOT: None of the provided property_keys should exist in the same event"
         "Other criteria - topics, from_datetime & to_datetime will always be ANDed to the query filter"
     )
-    async def get_events_by_property(
+    async def get_historic_events_by_property(
         self,
         property_keys: list[str],
         binary_operator: Optional[BinaryOperator] = strawberry.UNSET,
@@ -71,6 +79,11 @@ class Query:
         from_datetime: Optional[datetime] = strawberry.UNSET,
         to_datetime: Optional[datetime] = strawberry.UNSET,
     ) -> list[HistoricalUNSEvent]:
+        LOGGER.debug(
+            "Query for historic events by properties, with params :\n"
+            f"property_keys={property_keys}, binary_operator={binary_operator}, topics={topics},"
+            f" from_datetime={from_datetime}, to_datetime={from_datetime} "
+        )
         async with HistorianDBPool() as historian:
             result: list[HistoricalUNSEvent] = await historian.get_historic_events_for_property_keys(
                 property_keys=property_keys,

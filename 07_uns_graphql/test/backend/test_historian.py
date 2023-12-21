@@ -53,6 +53,7 @@ query_only_topic_a: Query = (["a/#"], None, None, None)
 query_only_topic1_wc: Query = (["topic1/#"], None, None, None)
 query_only_topic1_sub_wc: Query = (["topic1/+"], None, None, None)
 query_only_topic3: Query = (["topic3"], None, None, None)
+query_only_topic3_publisher: Query = (["topic3"], ["client1"], None, None)
 query_multiple_topics_no_times: Query = (["topic1/#", "topic3"], None, None, None)
 query_multiple_topics: Query = (
     ["topic1/#", "topic3"],
@@ -127,6 +128,7 @@ async def prepare_database(historian_pool):  # noqa: ARG001
         (query_only_topic1_wc, 3),
         (query_only_topic1_sub_wc, 2),
         (query_only_topic3, 1),
+        (query_only_topic3_publisher, 1),
         (query_multiple_topics_no_times, 4),
         (query_multiple_topics, 4),
     ],
