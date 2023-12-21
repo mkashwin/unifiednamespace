@@ -257,7 +257,7 @@ class HistorianDBPool:
         property_sub_query: list[str] = []
         for property_key in property_keys:
             property_sub_query.append(f"( jsonb_path_exists( mqtt_msg, ${param_index} ) )")
-            query_params.append("$.**." + property_key)
+            query_params.append('$.**."' + property_key + '"')  # handle attribute names with spaces
             param_index = param_index + 1
 
         if binary_operator == "NOT":

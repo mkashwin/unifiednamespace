@@ -10,7 +10,6 @@ from uns_graphql.graphql_config import HistorianConfig
 
 # model for db entry
 DatabaseRow = tuple[datetime, str, str, dict]
-Query = tuple[list[list[str]], list[str], datetime, datetime]  # topic list, publisher list, from_time, to_time
 
 
 test_data_set: list[DatabaseRow] = [
@@ -28,39 +27,6 @@ test_data_set: list[DatabaseRow] = [
         json.dumps({"a": "value1", "b": [10, 23, 23, 34], "c": {"k1": "v1", "k2": 100}, "k3": "outer_v1"}),
     ),
 ]
-
-query_topic1_hashtag_wildcard: Query = (
-    ["topic1/#"],
-    None,
-    datetime.fromtimestamp(1701233000, UTC),
-    datetime.fromtimestamp(1701259000, UTC),
-)
-query_single_wildcard: Query = (
-    ["topic1/+"],
-    None,
-    datetime.fromtimestamp(1701233000, UTC),
-    datetime.fromtimestamp(1701259000, UTC),
-)
-query_from_to_same: Query = (
-    ["topic3"],
-    None,
-    datetime.fromtimestamp(1701257000, UTC),
-    datetime.fromtimestamp(1701257000, UTC),
-)
-query_from_is_none: Query = (["#"], None, None, datetime.fromtimestamp(1701257000, UTC))
-query_to_is_none: Query = (["#"], None, datetime.fromtimestamp(1701257000, UTC), None)
-query_only_topic_a: Query = (["a/#"], None, None, None)
-query_only_topic1_wc: Query = (["topic1/#"], None, None, None)
-query_only_topic1_sub_wc: Query = (["topic1/+"], None, None, None)
-query_only_topic3: Query = (["topic3"], None, None, None)
-query_only_topic3_publisher: Query = (["topic3"], ["client1"], None, None)
-query_multiple_topics_no_times: Query = (["topic1/#", "topic3"], None, None, None)
-query_multiple_topics: Query = (
-    ["topic1/#", "topic3"],
-    None,
-    datetime.fromtimestamp(1701233000, UTC),
-    datetime.fromtimestamp(1701259000, UTC),
-)
 
 
 @pytest.fixture(scope="session")
@@ -115,37 +81,46 @@ async def prepare_database(historian_pool):  # noqa: ARG001
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually
-@pytest.mark.xdist_group(name="graphql_historian")
+# @pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.parametrize(
-    "query, count_of_return",
+    "topic_list,publisher_list,from_date, to_date, count_of_return",
     [
-        (query_topic1_hashtag_wildcard, 3),
-        (query_single_wildcard, 2),
-        (query_from_to_same, 1),
-        (query_from_is_none, 8),
-        (query_to_is_none, 1),
-        (query_only_topic_a, 3),
-        (query_only_topic1_wc, 3),
-        (query_only_topic1_sub_wc, 2),
-        (query_only_topic3, 1),
-        (query_only_topic3_publisher, 1),
-        (query_multiple_topics_no_times, 4),
-        (query_multiple_topics, 4),
+        (["topic1/#"], None, datetime.fromtimestamp(1701233000, UTC), datetime.fromtimestamp(1701259000, UTC), 3),
+        (["topic1/+"], None, datetime.fromtimestamp(1701233000, UTC), datetime.fromtimestamp(1701259000, UTC), 2),
+        (["topic3"], None, datetime.fromtimestamp(1701257000, UTC), datetime.fromtimestamp(1701257000, UTC), 1),
+        (["#"], None, None, datetime.fromtimestamp(1701257000, UTC), 8),
+        (["#"], None, datetime.fromtimestamp(1701257000, UTC), None, 1),
+        (["a/#"], None, None, None, 3),
+        (["topic1/#"], None, None, None, 3),
+        (["topic1/+"], None, None, None, 2),
+        (["topic3"], None, None, None, 1),
+        (["topic3"], ["client1"], None, None, 1),
+        (["#"], ["client1", "client2"], None, None, 4),
+        (["topic3"], ["do_not_exist"], None, None, 0),
+        (["topic1/#", "topic3"], None, None, None, 4),
+        (["topic1/#", "topic3"], None, datetime.fromtimestamp(1701233000, UTC), datetime.fromtimestamp(1701259000, UTC), 4),
     ],
 )
-async def test_get_historic_events(prepare_database, query: Query, count_of_return: int):  # noqa: ARG001
+async def test_get_historic_events(
+    prepare_database,  # noqa: ARG001
+    topic_list: list[str],
+    publisher_list: list[str],
+    from_date: datetime,
+    to_date: datetime,
+    count_of_return: int,
+):
     async with HistorianDBPool() as historian:
         result = await historian.get_historic_events(
-            topics=query[0], publishers=query[1], from_datetime=query[2], to_datetime=query[3]
+            topics=topic_list, publishers=publisher_list, from_datetime=from_date, to_datetime=to_date
         )
         assert len(result) == count_of_return
 
 
-@pytest.mark.asyncio(scope="session")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually
-@pytest.mark.xdist_group(name="graphql_historian")
+# @pytest.mark.xdist_group(name="graphql_historian")
+@pytest.mark.asyncio(scope="session")
 @pytest.mark.parametrize(
     "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
     [
@@ -157,14 +132,18 @@ async def test_get_historic_events(prepare_database, query: Query, count_of_retu
             datetime.fromtimestamp(1701231000, UTC),
             datetime.fromtimestamp(1701236000, UTC),
             2,
-        ),
+        ),  # binary operator is None. default to OR
+        (["key1"], None, None, None, None, 1),  #
         (["key5", "key4"], "OR", ["topic1/#"], None, None, 3),
-        (["key1", "key2"], "AND", ["topic1/#"], None, None, 0),
         (["key1", "key2"], "OR", None, None, None, 2),
         (["key1", "key2"], "OR", ["a/b/c"], None, None, 2),
         (["k1", "k2"], "OR", None, None, None, 1),  # nested
+        (["i_dont_exist"], "OR", None, None, None, 0),  # non existent path
+        (["key1", "key2"], "AND", ["topic1/#"], None, None, 0),
         (["k1", "key1"], "AND", None, None, None, 0),
         (["key1", "key2"], "NOT", None, None, None, 6),  # NOT
+        (["key1"], None, [f"; SELECT * FROM {HistorianConfig.table}"], None, None, 0),  # noqa: S608 Test for SQL Injection on topics
+        ([f"; SELECT * FROM {HistorianConfig.table}"], None, None, None, None, 0),  # noqa: S608  Test for SQL Injection on properties
     ],
 )
 async def test_get_historic_events_for_property_keys(
