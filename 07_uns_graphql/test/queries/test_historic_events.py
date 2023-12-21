@@ -1,5 +1,6 @@
 import json
 from datetime import UTC, datetime
+from typing import Literal
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -58,7 +59,7 @@ mocked_db_pool.execute_prepared.return_value = [
         (["+"], None, None, False),
     ],
 )
-async def test_get_historic_events_in_time_range_mock(
+async def test_get_historic_events_in_time_range(
     topics: list[str],
     from_date: datetime,
     to_date: datetime,
@@ -86,7 +87,7 @@ async def test_get_historic_events_in_time_range_mock(
         ([], None, None, False),
     ],
 )
-async def test_strawberry_get_historic_events_in_time_range_mock(
+async def test_strawberry_get_historic_events_in_time_range(
     topics: list[str],
     from_date: str,
     to_date: str,
@@ -122,6 +123,64 @@ async def test_strawberry_get_historic_events_in_time_range_mock(
             assert not result.errors
 
 
-# def test_strawberry_get_historic_events_for_property_keys(query: str):
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "properties, binary_operator, topics, from_date, to_date, has_result_errors",
+    [
+        (["key5"], None, None, "2023-11-29 11:23:20", None, False),
+        (["key1", "key2"], "OR", ["a/b/c"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
+        (["key1"], None, None, None, None, False),
+        (["key5", "key4"], "OR", ["topic1/#", "topic3"], None, None, False),
+        (["key1", "key2"], "OR", None, None, None, False),
+        (["key1", "key2"], "OR", ["a/b/c"], None, None, False),
+        (["k1", "k2"], "OR", None, None, None, False),
+        (["key1", "key2"], "AND", ["topic1/#"], None, None, False),
+        (["k1", "key1"], "AND", None, "2023-11-29", None, False),
+        (["key1", "key2"], "NOT", None, "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
+    ],
+)
+async def test_strawberry_get_historic_events_by_property(
+    properties: list[str],
+    binary_operator: Literal,
+    topics: list[str],
+    from_date: str,
+    to_date: str,
+    has_result_errors: bool,
+):
+    query: str = """query TestQuery($properties:[String!]! , $binary_operator:BinaryOperator,
+                                    $mqtt_topics:[MQTTTopicInput!], $from_date:DateTime, $to_date:DateTime ) {
+                  getHistoricEventsByProperty(
+                    propertyKeys: $properties
+                    binaryOperator: $binary_operator
+                    topics: $mqtt_topics
+                    fromDatetime: $from_date
+                    toDatetime: $to_date
+                  ){
+                    timestamp
+                    topic
+                    publisher
+                    payload {
+                        data
+                    }
+                  }
+            }
+    """
+    mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics] if topics is not None else None
+    schema = strawberry.Schema(query=HistorianQuery)
 
-# def test_strawberry_get_events_by_publishers
+    with patch("uns_graphql.queries.historic_events.HistorianDBPool", return_value=mocked_db_pool):
+        result = await schema.execute(
+            query=query,
+            variable_values={
+                "properties": properties,
+                "binary_operator": binary_operator,
+                "mqtt_topics": mqtt_topics,
+                "from_date": from_date,
+                "to_date": to_date,
+            },
+        )
+        if not has_result_errors:
+            assert not result.errors
+
+
+# def test_strawberry_get_historic_events_by_publishers

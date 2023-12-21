@@ -139,7 +139,7 @@ async def test_get_historic_events(
         (["key1", "key2"], "OR", ["a/b/c"], None, None, 2),
         (["k1", "k2"], "OR", None, None, None, 1),  # nested
         (["i_dont_exist"], "OR", None, None, None, 0),  # non existent path
-        (["key1", "key2"], "AND", ["topic1/#"], None, None, 0),
+        (["key1", "key2"], "AND", ["topic1/#", "topic3"], None, None, 0),
         (["k1", "key1"], "AND", None, None, None, 0),
         (["key1", "key2"], "NOT", None, None, None, 6),  # NOT
         (["key1"], None, [f"; SELECT * FROM {HistorianConfig.table}"], None, None, 0),  # noqa: S608 Test for SQL Injection on topics

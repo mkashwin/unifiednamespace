@@ -178,8 +178,52 @@ async def async_message_generator(messages):
         yield msg
 
 
+@pytest.fixture
 @pytest.mark.asyncio
-@pytest.mark.integrationtest()
+@pytest.mark.integrationtest
+async def publish_to_mqtt(expected_messages: list[Message]):
+    client_id = f"test_graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
+    publish_properties = None
+    if MQTTConfig.version == ProtocolVersion.V5:
+        publish_properties = Properties(PacketTypes.PUBLISH)
+
+    client = Client(
+        client_id=client_id,
+        clean_session=MQTTConfig.clean_session,
+        protocol=MQTTConfig.version,
+        transport=MQTTConfig.transport,
+        hostname=MQTTConfig.host,
+        port=MQTTConfig.port,
+        username=MQTTConfig.username,
+        password=MQTTConfig.password,
+        keepalive=MQTTConfig.keep_alive,
+        tls_params=MQTTConfig.tls_params,
+        tls_insecure=MQTTConfig.tls_insecure,
+    )
+    try:
+        async with client:
+            for msg in expected_messages:
+                # Publish the test data
+                await client.publish(
+                    topic=str(msg.topic), payload=msg.payload, qos=msg.qos, retain=True, properties=publish_properties
+                )
+    except MqttError as ex:
+        pytest.fail(f"Error publishing messages for the test: {ex!s}")
+
+    yield client
+
+    try:
+        # clean up the test data. Publish None to delete retained message
+        async with client:
+            for msg in expected_messages:
+                # Publish the test data
+                await client.publish(topic=str(msg.topic), payload=None, properties=publish_properties)
+    except MqttError as ex:
+        pytest.fail(f"Error cleaning up messages after the test: {ex!s}")
+
+
+@pytest.mark.asyncio
+@pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "topics, expected_messages",
     [
@@ -294,45 +338,12 @@ async def async_message_generator(messages):
         # Add more test cases as needed
     ],
 )
-async def test_get_mqtt_messages_integration(topics: list[MQTTTopicInput], expected_messages: list[Message]):
-    client_id = f"test_graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
-    publish_properties = None
-    if MQTTConfig.version == ProtocolVersion.V5:
-        publish_properties = Properties(PacketTypes.PUBLISH)
-    client = Client(
-        client_id=client_id,
-        clean_session=MQTTConfig.clean_session,
-        protocol=MQTTConfig.version,
-        transport=MQTTConfig.transport,
-        hostname=MQTTConfig.host,
-        port=MQTTConfig.port,
-        username=MQTTConfig.username,
-        password=MQTTConfig.password,
-        keepalive=MQTTConfig.keep_alive,
-        tls_params=MQTTConfig.tls_params,
-        tls_insecure=MQTTConfig.tls_insecure,
-    )
-    try:
-        async with client:
-            for msg in expected_messages:
-                # Publish the test data
-                await client.publish(
-                    topic=str(msg.topic), payload=msg.payload, qos=msg.qos, retain=True, properties=publish_properties
-                )
-            subscription = MQTTSubscription()
-            received_messages: list[MQTTMessage] = []
-            # Await the subscription result directly to collect the messages
-            async for message in subscription.get_mqtt_messages(topics):
-                received_messages.append(message)
-                if len(received_messages) == len(expected_messages):
-                    break
-            assert len(received_messages) == len(expected_messages)
-
-    except MqttError as ex:
-        pytest.fail(f"Error publishing messages for the test: {ex!s}")
-    finally:
-        # clean up the test data. Publish None to delete retained message
-        async with client:
-            for msg in expected_messages:
-                # Publish the test data
-                await client.publish(topic=str(msg.topic), payload=None, properties=publish_properties)
+async def test_get_mqtt_messages_integration(publish_to_mqtt, topics: list[MQTTTopicInput], expected_messages: list[Message]):  # noqa: ARG001
+    subscription = MQTTSubscription()
+    received_messages: list[MQTTMessage] = []
+    # Await the subscription result directly to collect the messages
+    async for message in subscription.get_mqtt_messages(topics):
+        received_messages.append(message)
+        if len(received_messages) == len(expected_messages):
+            break
+    assert len(received_messages) == len(expected_messages)

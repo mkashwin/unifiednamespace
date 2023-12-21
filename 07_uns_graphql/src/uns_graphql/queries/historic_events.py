@@ -87,7 +87,7 @@ class Query:
         async with HistorianDBPool() as historian:
             result: list[HistoricalUNSEvent] = await historian.get_historic_events_for_property_keys(
                 property_keys=property_keys,
-                binary_operator=str(binary_operator) if binary_operator else str(BinaryOperator.OR),
+                binary_operator=binary_operator.value if binary_operator else BinaryOperator.OR.value,
                 topics=[x.topic for x in topics] if topics else None,
                 from_datetime=from_datetime,
                 to_datetime=to_datetime,
