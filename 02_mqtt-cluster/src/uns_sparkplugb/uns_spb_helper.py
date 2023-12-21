@@ -69,7 +69,7 @@ class SPBArrayDataTypes(IntEnum):
 
 
 @staticmethod
-def _combine_enums(name: str, *enums: IntEnum):
+def __combine_enums(name: str, *enums: IntEnum):
     """
     Private Utility function to merge Enums because Enums cannot be extended
     """
@@ -79,14 +79,14 @@ def _combine_enums(name: str, *enums: IntEnum):
 
 # Enumeration of datatypes possible in a Metric.
 # Combine  basic datatypes, additional datatypes and array datatypes
-SPBMetricDataTypes: IntEnum = _combine_enums(
+SPBMetricDataTypes: IntEnum = __combine_enums(
     "SPBMetricDataTypes", SPBBasicDataTypes, SPBAdditionalDataTypes, SPBArrayDataTypes
 )
 
 
 # Enumeration of datatypes possible for PropertyTypes
 # Extend basic datatypes with PropertySet & PropertySetList types
-SPBPropertyValueTypes = _combine_enums(
+SPBPropertyValueTypes = __combine_enums(
     "SPBPropertyValueTypes",
     SPBBasicDataTypes,
     IntEnum("SPBPropertySetTypes", {"PropertySet": sparkplug_b_pb2.PropertySet}),
