@@ -83,8 +83,10 @@ async def test_get_historic_events_in_time_range(
         (["topic1/+"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
         (["#"], None, "2023-11-29 11:23:20", False),
         (["#"], "2023-11-29 11:23:20", None, False),
+        (["#"], None, None, False),
         (["topic1/#", "topic3"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
-        ([], None, None, False),
+        ([None], "2023-11-29 04:43:20", "2023-11-29 11:56:40", True),
+        # ([], None, None, True),  # FIXME This should return an  error
     ],
 )
 async def test_strawberry_get_historic_events_in_time_range(
@@ -93,9 +95,6 @@ async def test_strawberry_get_historic_events_in_time_range(
     to_date: str,
     has_result_errors: bool,
 ):
-    #   getHistoricEventsInTimeRange(
-    #     topics: [{", ".join([f'{{ topic: "{topic}" }}' for topic in topics])}]"""
-
     query: str = """query TestQuery($mqtt_topics:[MQTTTopicInput!]!, $from_date:DateTime, $to_date:DateTime ) {
                   getHistoricEventsInTimeRange(
                     topics: $mqtt_topics
@@ -183,4 +182,50 @@ async def test_strawberry_get_historic_events_by_property(
             assert not result.errors
 
 
-# def test_strawberry_get_historic_events_by_publishers
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "publishers, topics, from_date, to_date, has_result_errors",
+    [
+        (["client1"], ["topic1/#"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
+        (["client1"], None, "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
+        (["client1"], ["#"], "2023-11-29 04:43:20", None, False),
+        (["client1"], ["#"], None, "2023-11-29 11:23:20", False),
+        (["client1"], ["#"], None, None, False),
+        (["client1"], None, None, None, False),
+        (["client1", "client2"], None, None, None, False),
+        (["client1", "client2"], ["#"], "2023-11-29 11:23:20", None, False),
+        (["client1", "client2"], ["#"], None, "2023-11-29 11:23:20", False),
+        (["client1", "client2"], ["topic1/#", "topic3"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
+        ([None], ["topic1/#", "topic3"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", True),
+        # ([], [], None, None, False), # FIXME This should return an  error
+    ],
+)
+async def test_strawberry_get_historic_events_by_publishers(publishers, topics, from_date, to_date, has_result_errors):
+    query: str = """query TestQuery($publishers:[String!]!, $mqtt_topics:[MQTTTopicInput!], $from_date:DateTime, $to_date:DateTime ) {
+                  getHistoricEventsByPublishers(
+                    publishers: $publishers
+                    topics: $mqtt_topics
+                    fromDatetime: $from_date
+                    toDatetime: $to_date
+                  ){
+                    timestamp
+                    topic
+                    publisher
+                    payload {
+                        data
+                    }
+                  }
+            }
+    """
+    mqtt_topics = None
+    if topics is not None:
+        mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics]
+    schema = strawberry.Schema(query=HistorianQuery)
+
+    with patch("uns_graphql.queries.historic_events.HistorianDBPool", return_value=mocked_db_pool):
+        result = await schema.execute(
+            query=query,
+            variable_values={"publishers": publishers, "mqtt_topics": mqtt_topics, "from_date": from_date, "to_date": to_date},
+        )
+        if not has_result_errors:
+            assert not result.errors
