@@ -3,6 +3,7 @@ import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import pytest_asyncio
 from aiomqtt import Client, Message, MqttError, ProtocolVersion
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
@@ -178,7 +179,7 @@ async def async_message_generator(messages):
         yield msg
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(scope="function")
 @pytest.mark.asyncio
 @pytest.mark.integrationtest
 async def publish_to_mqtt(expected_messages: list[Message]):
@@ -224,6 +225,9 @@ async def publish_to_mqtt(expected_messages: list[Message]):
 
 @pytest.mark.asyncio
 @pytest.mark.integrationtest
+# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# Comment this marker and run test individually
+@pytest.mark.xdist_group(name="graphql_mqtt")
 @pytest.mark.parametrize(
     "topics, expected_messages",
     [
