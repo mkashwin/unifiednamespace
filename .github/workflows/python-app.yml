@@ -12,7 +12,7 @@ on:
       - "**/pyproject.toml"
       - "**/poetry.lock"
       - ".github/workflows/*.yml"
-      - ".github/include/*"
+      - ".github/include/**"
 
   pull_request:
     branches:
@@ -22,7 +22,7 @@ on:
       - "**/pyproject.toml"
       - "**/poetry.lock"
       - ".github/workflows/*.yml"
-      - ".github/include/*"
+      - ".github/include/**"
 
 permissions:
   contents: read
