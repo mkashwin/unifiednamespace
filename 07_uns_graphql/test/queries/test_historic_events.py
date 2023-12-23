@@ -201,7 +201,10 @@ async def test_strawberry_get_historic_events_by_property(
     ],
 )
 async def test_strawberry_get_historic_events_by_publishers(publishers, topics, from_date, to_date, has_result_errors):
-    query: str = """query TestQuery($publishers:[String!]!, $mqtt_topics:[MQTTTopicInput!], $from_date:DateTime, $to_date:DateTime ) {
+    query: str = """query TestQuery($publishers:[String!]!,
+                                    $mqtt_topics:[MQTTTopicInput!],
+                                    $from_date:DateTime,
+                                    $to_date:DateTime ) {
                   getHistoricEventsByPublishers(
                     publishers: $publishers
                     topics: $mqtt_topics

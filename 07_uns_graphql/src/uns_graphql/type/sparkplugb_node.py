@@ -62,7 +62,7 @@ class SPBPropertyValue:
 
     is_null: bool
     datatype: SPBPropertyTypeEnum
-    value: typing.Union[int, float, str, SPBPropertySet, list[SPBPropertySet]]
+    value: [int, float, str, SPBPropertySet, list[SPBPropertySet]]
 
     @strawberry.field(name="value")
     def resolve_value(self, info: Info):  # noqa: ARG002
@@ -82,7 +82,7 @@ class SPBPropertyValue:
             case SPBPropertyTypeEnum.PropertySet:
                 return SPBPropertySet(value=self.value)
             case SPBPropertyTypeEnum.PropertySetList:
-                return typing.List(SPBPropertySet(self.value))
+                return list(SPBPropertySet(self.value))
 
 
 @strawberry.type
@@ -230,7 +230,7 @@ class SPBMetric:
     is_null: bool
     metadata: SPBMetadata
     properties: SPBPropertySet
-    value: typing.Union[int, float, bool, str, strawberry.ID, bytes, SPBDataSet, SPBTemplate]
+    value: strawberry.union[int, float, bool, str, strawberry.ID, bytes, SPBDataSet, SPBTemplate]
 
     @strawberry.field(name="value")
     def resolve_value(self, info: Info):  # noqa: ARG002

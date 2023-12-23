@@ -145,9 +145,7 @@ async def test_get_mqtt_messages(topics: list[MQTTTopicInput], expected_messages
     async_context_manager = AsyncContextManagerMock(mock_client)
 
     # Patch Client and mock the messages context manager
-    with patch("uns_graphql.subscriptions.mqtt.Client", return_value=async_context_manager), patch(
-        "uns_graphql.subscriptions.MQTTMessage", autospec=True
-    ):
+    with patch("uns_graphql.subscriptions.mqtt.Client", return_value=async_context_manager):
         # Mock the client.messages context manager to return an async generator
         mock_messages = MagicMock()
         mock_messages.__aenter__.return_value = async_message_generator(expected_messages)
@@ -225,9 +223,6 @@ async def publish_to_mqtt(expected_messages: list[Message]):
 
 @pytest.mark.asyncio
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually
-@pytest.mark.xdist_group(name="graphql_mqtt")
 @pytest.mark.parametrize(
     "topics, expected_messages",
     [
