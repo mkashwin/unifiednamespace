@@ -1,4 +1,3 @@
-import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -35,18 +34,9 @@ ONE_TOPIC_ONE_MSG = (
 )
 
 
-@pytest.fixture(scope="module")
-def kafka_event_loop(request):  # noqa: ARG001
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
 @pytest_asyncio.fixture(scope="function")
 @pytest.mark.integrationtest
-async def create_topics(kafka_event_loop, message_vals):  # noqa: ARG001
+async def create_topics(message_vals):
     kafka_config = {
         "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
     }
