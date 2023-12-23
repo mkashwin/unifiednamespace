@@ -106,7 +106,7 @@ jobs:
           KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
@@ -167,7 +167,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Compile and Test Dockerfile
         uses: ./.github/include/test_docker_builds/
