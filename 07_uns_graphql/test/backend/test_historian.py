@@ -30,7 +30,7 @@ test_data_set: list[DatabaseRow] = [
 
 
 @pytest.fixture(scope="session")
-def event_loop(request):  # noqa: ARG001
+def my_event_loop(request):  # noqa: ARG001
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     asyncio.set_event_loop(loop)
@@ -40,7 +40,7 @@ def event_loop(request):  # noqa: ARG001
 
 @pytest_asyncio.fixture(scope="session")
 @pytest.mark.integrationtest
-async def historian_pool(event_loop):  # noqa: ARG001
+async def historian_pool(my_event_loop):  # noqa: ARG001
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
     """
