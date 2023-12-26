@@ -8,8 +8,7 @@ import pytest
 import pytest_asyncio
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_graphdb.graphdb_config import MQTTConfig
-from uns_historian.historian_config import HistorianConfig
+from uns_historian.historian_config import HistorianConfig, MQTTConfig
 from uns_historian.historian_handler import HistorianHandler
 from uns_historian.uns_mqtt_historian import UnsMqttHistorian, main
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
