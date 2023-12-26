@@ -103,7 +103,7 @@ dynaconf_merge: true
       CREATE ROLE ${UNS_historian__username} LOGIN PASSWORD '\''${UNS_historian__password}'\'';'
 
     PGPASSWORD=${UNS_historian__password} psql -U ${UNS_historian__username} -p 5432 -d ${UNS_historian__database} -c'
-      CREATE TABLE ${UNS_historian__table} (time TIMESTAMPTZ NOT NULL, topic TEXT NOT NULL, client_id TEXT, mqtt_msg JSONB);
+      CREATE TABLE ${UNS_historian__table} (time TIMESTAMPTZ NOT NULL, topic TEXT NOT NULL, client_id TEXT, mqtt_msg JSONB, CONSTRAINT unique_event UNIQUE (time, topic, client_id, mqtt_msg));
       SELECT create_hypertable('\''${UNS_historian__table}'\'', '\''time'\'');'
     "
 fi
@@ -114,7 +114,7 @@ if [[ $(docker ps -aq -f name=uns_emqx_mqtt) ]]; then
 else
   docker run \
       --name uns_emqx_mqtt \
-      -p1883:1883 -p18083:18083 \
+      -p1883:1883 -p8083:8083 -p18083:18083 \
       -d \
       emqx/emqx:latest
 

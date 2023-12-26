@@ -64,7 +64,6 @@
         "psycopg",
         "pydantic",
         "pytest",
-        "pytz",
         "reqs",
         "sasl",
         "SCADA",
@@ -134,4 +133,10 @@
     "python.analysis.autoImportCompletions": true,
     "python.analysis.completeFunctionParens": true,
     "python.analysis.gotoDefinitionInStringLiteral": false,
+    "debug.confirmOnExit": "always",
+    "debug.console.acceptSuggestionOnEnter": "on",
+    "launch": {
+        "configurations": [],
+        "compounds": []
+    },
 }

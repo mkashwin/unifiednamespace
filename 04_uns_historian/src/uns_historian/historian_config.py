@@ -2,6 +2,7 @@
 Configuration reader for mqtt server and Timescale DB server details
 """
 import logging
+import ssl
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -110,3 +111,32 @@ class HistorianConfig:
         return not (
             cls.hostname is None or cls.database is None or cls.table is None or cls.user is None or cls.password is None
         )
+
+    @classmethod
+    def get_ssl_context(cls) -> ssl.SSLContext | None:
+        """
+        Creates the SSL Context needed for DB connect based on the SSL Params
+        See https://github.com/MagicStack/asyncpg/issues/737
+        """
+        if cls.sslmode:
+            ssl_context: ssl.SSLContext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            ssl_context.options |= {
+                "disable": ssl.OP_NO_SSLv2,
+                "allow": ssl.OP_NO_SSLv3,
+                "prefer": ssl.OP_NO_TLSv1,
+                "require": ssl.OP_NO_TLSv1_1,
+                "verify-ca": ssl.OP_NO_TLSv1_2,
+                "verify-full": ssl.OP_NO_TLSv1_3,
+            }.get(cls.db_sslmode.lower(), 0)
+
+            if cls.sslcert:
+                ssl_context.load_cert_chain(certfile=cls.sslcert, keyfile=cls.sslkey)
+
+            if cls.sslrootcert:
+                ssl_context.load_verify_locations(cafile=cls.sslrootcert)
+
+            if cls.sslcrl:
+                ssl_context.load_verify_locations(cafile=cls.sslcrl)
+
+            return ssl_context
+        return None

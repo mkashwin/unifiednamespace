@@ -9,6 +9,8 @@ import time
 from enum import IntEnum, unique
 from typing import Literal, Optional
 
+from google.protobuf.json_format import MessageToDict
+
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload as spbPayload
 
@@ -708,3 +710,13 @@ def unknown_value_in_metric(datatype, value, metric: spbPayload.Metric):
     LOGGER.error(
         "Invalid type: %s.\n Value: %s not added to %s", str(datatype), str(value), str(metric), stack_info=True, exc_info=True
     )
+
+
+@staticmethod
+def convert_spb_bytes_payload_to_dict(payload: bytes) -> dict:
+    """
+    Takes raw bytes input and converts it into a dict
+    """
+    inbound_payload = sparkplug_b_pb2.Payload()
+    inbound_payload.ParseFromString(payload)
+    return MessageToDict(inbound_payload)

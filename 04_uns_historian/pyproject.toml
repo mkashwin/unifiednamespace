@@ -25,8 +25,10 @@ packages = [{ include = "uns_historian", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 logger = "^1.4"
-psycopg2-binary = "^2.9.8"
-pytz = "^2023.3"
+# psycopg2-binary = "^2.9.8"
+# pytz = "^2023.3"
+
+asyncpg = "^0.29"
 dynaconf = "^3.2.4"
 
 
@@ -36,6 +38,7 @@ uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.3"
 pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
+pytest-asyncio = "^0.23.2"
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
 ruff = "^0.1.6"
@@ -51,7 +54,7 @@ build-backend = "poetry.core.masonry.api"
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
-addopts = "-n auto"
+addopts = "-n auto --dist loadgroup"
 
 [tool.ruff]
 # Extend the `pyproject.toml` file in the parent directory...

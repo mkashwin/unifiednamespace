@@ -12,10 +12,10 @@ from os import path
 from typing import Final, Literal, Optional
 
 import paho.mqtt.client as mqtt_client
-from google.protobuf.json_format import MessageToDict
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
 # Logger
 LOGGER = logging.getLogger(__name__)
@@ -270,9 +270,8 @@ class UnsMQTTClient(mqtt_client.Client):
             decoded_payload = {"WILL_MESSAGE": payload.decode("utf-8")}
         elif topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # This message was to the sparkplugB namespace in protobuf format
-            inbound_payload = sparkplug_b_pb2.Payload()
-            inbound_payload.ParseFromString(payload)
-            decoded_payload = MessageToDict(inbound_payload)
+
+            decoded_payload = convert_spb_bytes_payload_to_dict(payload)
 
         else:
             # Assuming all messages to UNS are json hence convertible to dict

@@ -6,14 +6,13 @@ import sys
 from pathlib import Path
 
 import pytest
-from google.protobuf.json_format import MessageToDict
 from neo4j import exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_graphdb.graphdb_config import GraphDBConfig
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 from uns_mqtt.mqtt_listener import MQTTVersion
-from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
 test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
 sys.path.insert(0, str(test_folder))
@@ -116,9 +115,7 @@ def test_mqtt_graphdb_persistance(topic: str, message: dict):
         def on_message_decorator(client, userdata, msg):
             old_on_message(client, userdata, msg)
             if topic.startswith("spBv1.0/"):
-                inbound_payload = sparkplug_b_pb2.Payload()
-                inbound_payload.ParseFromString(message)
-                message_dict: dict = MessageToDict(inbound_payload)
+                message_dict: dict = convert_spb_bytes_payload_to_dict(message)
                 node_type = GraphDBConfig.spb_node_types
             else:
                 message_dict = message
