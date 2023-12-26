@@ -28,7 +28,6 @@ logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.215", extras = ["fastapi", "cli"] }
 aiohttp = "^3.9"
-#uvicorn = "^0.24"
 uvicorn = { version = "^0.24", extras = ["standard"] }
 
 aiomqtt = "^1.2.1"
@@ -50,6 +49,7 @@ ruff = "^0.1.6"
 
 [tool.poetry.scripts]
 uns_graphql_app = "uns_graphql.uns_graphql_app:main"
+start = "uvicorn your_module_name:app --host 0.0.0.0 --port 8000"
 
 [build-system]
 requires = ["poetry-core"]

@@ -80,7 +80,7 @@ async def prepare_database(historian_pool):  # noqa: ARG001
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually
+# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.parametrize(
     "topic_list,publisher_list,from_date, to_date, count_of_return",
@@ -118,7 +118,7 @@ async def test_get_historic_events(
 
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually
+# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.parametrize(

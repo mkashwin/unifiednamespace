@@ -65,8 +65,10 @@ USER uns_user
 
 ARG GIT_HASH
 ENV GIT_HASH=${GIT_HASH:-dev}
+# expose port
+EXPOSE 8000
 
 # Mount the volume /conf
 VOLUME /app/conf
-# Set the Entrypoint script to run the uns_graphql module
-ENTRYPOINT ["poetry", "run", "uns_graphql_app"]
+# Set the Entrypoint script to run the uns_graphql module using uvicorn
+ENTRYPOINT ["poetry", "run", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app", "--host", "0.0.0.0", "--port", "8000"]
