@@ -49,7 +49,6 @@ ruff = "^0.1.6"
 
 [tool.poetry.scripts]
 uns_graphql_app = "uns_graphql.uns_graphql_app:main"
-start = "uvicorn your_module_name:app --host 0.0.0.0 --port 8000"
 
 [build-system]
 requires = ["poetry-core"]

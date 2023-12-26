@@ -18,37 +18,48 @@ runs:
         SHA_TAG=${{ github.sha }}
 
         cd "${module}"
-        echo "Validating Docker Entry prior to build"
+        echo "Validating Docker Entrypoint prior to build"
+
+        # Extract the entrypoint from Dockerfile
         entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
         if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
-          echo "Error: Entry point should be in the format [\"poetry\", \"run\", \"<script_name>\"]"
-          exit 1
+            echo "Error: Entrypoint should be in the format [\"poetry\", \"run\", \"<command>\"]"
+            
+        fi
+
+        echo "Entrypoint for Docker is: ${entry_point}"
+
+        # Extract the command to be run
+        command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
+
+        # Validate based on command type
+        if [[ "${command}" =~ ^[^:]+:[^:]+$ ]]; then  # Check for format <module>:<function>
+            python_module=${command%:*}
+            function=${command##*:}
+
+            echo "Validating if ${command} points to a valid Python function"
+
+            # Check for [tool.poetry.scripts] entry
+            if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
+                echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
+                
+            fi
+
+            if ! grep -q "^${python_module} =" ./pyproject.toml; then
+                echo "Error: Script entry for ${python_module} not found in [tool.poetry.scripts] section of pyproject.toml"
+                
+            fi
         else
-          echo "Entrypoint for docker is: ${entry_point}"
+            echo "Validating if ${command} is a valid module command"
+
+            # Check if command exists in the project
+            if ! command -v "${command}" &> /dev/null; then
+                echo "Error: Command ${command} not found in the project"
+              
+            fi
         fi
 
-        script_name="$(echo "${entry_point}" | awk '{print $4}' | tr -d '"]')"
-        if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
-          echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
-          exit 1
-        fi
-
-        if ! grep -q "^${script_name} =" ./pyproject.toml; then
-          echo "Error: Script entry for ${script_name} not found in [tool.poetry.scripts] section of pyproject.toml"
-          exit 1
-        else            
-          echo "[tool.poetry.scripts] entry is: ${script_name}"
-        fi
-
-        main_entry=$(grep "^${script_name} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
-        echo "Validate if ${main_entry} points to a valid python function"
-
-        python_module=${main_entry%:*}
-        function=${main_entry##*:}
-        if [[ ! "${function}" == "main" ]]; then
-          echo "Error: '${main_entry}' should map to a main function of python python_module"
-          exit 1
-        fi
+        echo "Validation successful!"
 
         echo "Creating Docker: ${image_name}:${SHA_TAG}"
         docker build -t "${image_name}:${SHA_TAG}" --build-arg GIT_HASH=${SHA_TAG::7} -f ./Dockerfile ..
