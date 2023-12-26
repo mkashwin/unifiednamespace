@@ -7,7 +7,6 @@ from typing import Optional
 
 import neo4j
 from neo4j import exceptions
-from typing_extensions import deprecated
 
 # Logger
 LOGGER = logging.getLogger(__name__)
@@ -381,7 +380,6 @@ RETURN value.child
 
     # static Method Starts
     @staticmethod
-    @deprecated("Dont need to flatten JSON. Create a child not instead")
     def flatten_json_for_neo4j(mqtt_msg: dict) -> dict:
         """
         Utility methods to convert a nested JSON into a flat structure
