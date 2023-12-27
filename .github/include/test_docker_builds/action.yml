@@ -44,8 +44,8 @@ runs:
           # the script is not referencing a main function, must be a module
           echo "Validating if ${command} is a valid module command"
           # Check if command exists in the project
-          if ! poetry run which ${command} &> /dev/null; then
-                echo "Error: Command ${command} not found in the project" 
+          if [[ -z $script_name ]]; then
+                echo "Error: Command ${command} not found in the project. Should have had a dependency  entry in pyproject.toml" 
                 exit 1
           fi
           python_module="$(echo "${entry_point}" | awk '{print $5}' | tr -d '",]')"
