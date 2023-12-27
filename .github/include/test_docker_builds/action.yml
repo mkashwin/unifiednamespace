@@ -44,10 +44,8 @@ runs:
           # the script is not referencing a main function, must be a module
           echo "Validating if ${command} is a valid module command"
           # Check if command exists in the project
-          if ! command -v "${command}" &> /dev/null; then
-                echo "Error: Script entry for ${command} not found in [tool.poetry.scripts] section of pyproject.toml"
+          if ! poetry run which ${command} &> /dev/null; then
                 echo "Error: Command ${command} not found in the project" 
-                echo "One of those 2 is required"
                 exit 1
           fi
           python_module="$(echo "${entry_point}" | awk '{print $5}' | tr -d '",]')"
@@ -57,8 +55,8 @@ runs:
           echo "Validate if ${main_entry} points to a valid python function"
           python_module=${main_entry%:*}
           function=${main_entry##*:}
-          if [[ ! "${function}" == "main" ]]; then
-            echo "Error: '${main_entry}' should map to a main function of python python_module"
+          if [[ -z $main_entry ]]; then
+            echo "Error: Script entry for ${python_module} not found in [tool.poetry.scripts] section of pyproject.toml "
             exit 1
           fi          
         fi
