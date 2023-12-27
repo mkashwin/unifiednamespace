@@ -18,48 +18,51 @@ runs:
         SHA_TAG=${{ github.sha }}
 
         cd "${module}"
+        echo "Check for [tool.poetry.scripts]"
+        if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
+          echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
+          exit 1
+        fi
+
         echo "Validating Docker Entrypoint prior to build"
 
         # Extract the entrypoint from Dockerfile
         entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
         if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
             echo "Error: Entrypoint should be in the format [\"poetry\", \"run\", \"<command>\"]"
-            
+            exit 1
         fi
 
         echo "Entrypoint for Docker is: ${entry_point}"
 
-        # Extract the command to be run
+        # Extract the command/script name to be run
         command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
 
-        # Validate based on command type
-        if [[ "${command}" =~ ^[^:]+:[^:]+$ ]]; then  # Check for format <module>:<function>
-            python_module=${command%:*}
-            function=${command##*:}
-
-            echo "Validating if ${command} points to a valid Python function"
-
-            # Check for [tool.poetry.scripts] entry
-            if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
-                echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
-                
-            fi
-
-            if ! grep -q "^${python_module} =" ./pyproject.toml; then
-                echo "Error: Script entry for ${python_module} not found in [tool.poetry.scripts] section of pyproject.toml"
-                
-            fi
-        else
-            echo "Validating if ${command} is a valid module command"
-
-            # Check if command exists in the project
-            if ! command -v "${command}" &> /dev/null; then
-                echo "Error: Command ${command} not found in the project"
-              
-            fi
+        # check in pyproject if it is a script.
+        script_name=$( grep "^${command} =" ./pyproject.toml)
+        if [[  ! $script_name == *':main"' ]]; then
+          # the script is not referencing a main function, must be a module
+          echo "Validating if ${command} is a valid module command"
+          # Check if command exists in the project
+          if ! command -v "${command}" &> /dev/null; then
+                echo "Error: Script entry for ${command} not found in [tool.poetry.scripts] section of pyproject.toml"
+                echo "Error: Command ${command} not found in the project" 
+                echo "One of those 2 is required"
+                exit 1
+          fi
+          python_module="$(echo "${entry_point}" | awk '{print $5}' | tr -d '",]')"
+        else    
+          # command was found in pyproject.toml   
+          main_entry=$(grep "^${command} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
+          echo "Validate if ${main_entry} points to a valid python function"
+          python_module=${main_entry%:*}
+          function=${main_entry##*:}
+          if [[ ! "${function}" == "main" ]]; then
+            echo "Error: '${main_entry}' should map to a main function of python python_module"
+            exit 1
+          fi          
         fi
-
-        echo "Validation successful!"
+        echo "Static Validation successful!"
 
         echo "Creating Docker: ${image_name}:${SHA_TAG}"
         docker build -t "${image_name}:${SHA_TAG}" --build-arg GIT_HASH=${SHA_TAG::7} -f ./Dockerfile ..
@@ -96,10 +99,14 @@ runs:
           fi
           
           poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
-
-          entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
+          if [[ $function  ]];then  
+            # function is not null, check if the entry in pyproject.toml scripts is valid
+            entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
+          elif poetry run python -c "import ${python_module} as module;" &> /dev/null; then
+            entry_valid=True
+          fi
           if [ ! "$entry_valid" == "True" ];then
-            echo "Error: Invalid main entry ${python_module}:${function}"
+            echo "Error: Invalid entry ${python_module}:${function}"
             exit 1
           fi
           echo "Docker image tests passed successfully"

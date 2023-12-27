@@ -108,7 +108,7 @@ def create_publisher() -> UnsMQTTClient:
 
 @pytest_asyncio.fixture(scope="session")
 @pytest.mark.integrationtest
-async def clean_up_database():  # noqa: ARG001
+async def clean_up_database():
     """
     Clean database from test data from the historian after execution of the tests
     """
