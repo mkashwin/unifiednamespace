@@ -45,10 +45,13 @@ runs:
           echo "Validating if ${command} is a valid module command"
           # Check if command exists in the project
           if [[ -z $script_name ]]; then
-                echo "Error: Command ${command} not found in the project. Should have had a dependency  entry in pyproject.toml" 
-                exit 1
+            echo "Error: Command ${command} not found in the project. Should have had a dependency  entry in pyproject.toml" 
+            exit 1
           fi
-          python_module="$(echo "${entry_point}" | awk '{print $5}' | tr -d '",]')"
+          main_entry=$(echo "${entry_point}" | awk '{print $5}' | tr -d '",]')
+          python_module=${main_entry%:*}
+          function=${main_entry##*:}
+          class=${function%.*}
         else    
           # command was found in pyproject.toml   
           main_entry=$(grep "^${command} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
@@ -56,7 +59,7 @@ runs:
           python_module=${main_entry%:*}
           function=${main_entry##*:}
           if [[ -z $main_entry ]]; then
-            echo "Error: Script entry for ${python_module} not found in [tool.poetry.scripts] section of pyproject.toml "
+            echo "Error: Script entry for ${command} not found in [tool.poetry.scripts] section of pyproject.toml "
             exit 1
           fi          
         fi
@@ -67,7 +70,7 @@ runs:
 
         # Run the Docker tests
         echo "Running tests for Docker image: ${image_name}:${SHA_TAG}"
-        docker run --entrypoint "sh" -e python_module="$python_module" -e function="$function" "${image_name}:${SHA_TAG}" -c '
+        docker run --entrypoint "sh" -e python_module="$python_module" -e function="$function" -e class="$class" "${image_name}:${SHA_TAG}" -c '
           if [ ! -d "/02_mqtt-cluster" ]; then
             echo "Error: Folder /02_mqtt-cluster not found in Docker image"
             exit 1
@@ -97,10 +100,10 @@ runs:
           fi
           
           poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
-          if [[ $function  ]];then  
+          if [[ -z $class  ]];then  
             # function is not null, check if the entry in pyproject.toml scripts is valid
             entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
-          elif poetry run python -c "import ${python_module} as module;" &> /dev/null; then
+          elif poetry run python -c "from ${python_module} import ${class};  x=${function};" &> /dev/null; then
             entry_valid=True
           fi
           if [ ! "$entry_valid" == "True" ];then
