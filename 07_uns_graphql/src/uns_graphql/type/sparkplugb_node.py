@@ -5,7 +5,7 @@ from enum import Enum
 
 import strawberry
 from strawberry.types import Info
-from uns_sparkplugb.uns_spb_helper import SPBDataSetDataType, SPBMetricDataTypes, SPBPropertyValueTypes
+from uns_sparkplugb.uns_spb_helper import SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
 
 from uns_graphql.type.basetype import BytesPayload, JSONPayload
 
@@ -24,7 +24,7 @@ class SPBPropertyTypeEnum(Enum):
 
 @strawberry.type
 class SPBDataSetTypeEnum(Enum):
-    SPBDataSetDataType = SPBDataSetDataType
+    SPBDataSetDataType = SPBDataSetDataTypes
     pass
 
 
@@ -276,7 +276,7 @@ class SPBMetric:
 
             case SPBDataTypeEnum.Template:
                 return SPBTemplate(value=self.value)
-
+            # FIXME enhance to support arrays also.
             case _:
                 LOGGER.error(
                     "Invalid type: %s.\n Trying Value: %s as String",

@@ -97,7 +97,7 @@ SPBPropertyValueTypes = __combine_enums(
 
 
 # Enumeration of datatypes possible for DataSetValue
-SPBDataSetDataType = SPBBasicDataTypes
+SPBDataSetDataTypes = SPBBasicDataTypes
 
 
 class SpBMessageGenerator:
@@ -258,19 +258,20 @@ class SpBMessageGenerator:
         metric.timestamp = timestamp
         return metric
 
-    def init_dataset_metric(
+    def get_dataset_metric(
         self,
         payload: spbPayload,
         name: str,
-        columns: list[int | float | bool | str],  # can be of type int, float, bool or str
-        types: list[int],
-        rows: list,
+        columns: list[str],  # column headers
+        types: list[SPBDataSetDataTypes],  # type of the value in the inner list of rows
+        rows: Optional[
+            list[list[int | float | bool | str]]
+        ],  # list of row values . row value can be of type int, float, bool or str
         alias: Optional[int] = None,
         timestamp: Optional[float] = int(round(time.time() * 1000)),
     ) -> spbPayload.DataSet:
         """
         Helper method for initializing a dataset metric to a payload
-        FIXME Need to enhance to add Row and Elements (DataSet.Row and  DataSet.DataSetValue )
 
         Parameters
         ----------
@@ -278,16 +279,24 @@ class SpBMessageGenerator:
             SparkplugB Payload
         name: str
             Name of the metric. First time a metric is added Name is mandatory
-        alias: int
-            alias for metric name. Either Name or Alias must be provided
         columns: list[str]
             array of strings representing the column headers of this DataSet.
             It must have the same number of elements that the types array
         types: list[int]
             array of unsigned 32 bit integers representing the datatypes of the column
+        rows: Optional list of list[int | float | bool | str]
+              outer list mapping to all rows
+              inner list mapping to the values of a row
+              length of inner list must match length of types
+              order of elements in inner list must adhere to the datatype in types
+              if not provided, rows can be added
+        alias: int
+            alias for metric name. Either Name or Alias must be provided
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
+        if len(columns) != len(types):
+            raise ValueError("Length of columns and types should match")
         metric: spbPayload.Metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
 
         metric.datatype = SPBMetricDataTypes.DataSet
@@ -295,8 +304,39 @@ class SpBMessageGenerator:
         metric.dataset_value.num_of_columns = len(types)
         metric.dataset_value.columns.extend(columns)
         metric.dataset_value.types.extend(types)
-        metric.dataset_value.rows.extend(rows)
+        for row in rows:
+            self.add_row_to_dataset(dataset_value=metric.dataset_value, values=row)
+
         return metric.dataset_value
+
+    def add_row_to_dataset(self, dataset_value: spbPayload.DataSet, values: list[int | float | bool | str]):
+        ds_row = dataset_value.rows.add()
+        types = dataset_value.types
+        for cell, cell_type in zip(values, types):
+            ds_element = ds_row.elements.add()
+            match cell_type:
+                case SPBDataSetDataTypes.Int8:
+                    set_int_value_in_spb_object(cell, ds_element, 8)
+                case SPBDataSetDataTypes.Int16:
+                    set_int_value_in_spb_object(cell, ds_element, 16)
+                case SPBDataSetDataTypes.Int32:
+                    set_int_value_in_spb_object(cell, ds_element, 32)
+                case SPBDataSetDataTypes.Int64:
+                    set_long_value_in_spb_object(cell, ds_element, 64)
+                case SPBDataSetDataTypes.UInt8 | SPBDataSetDataTypes.UInt16 | SPBDataSetDataTypes.UInt32:
+                    set_int_value_in_spb_object(cell, ds_element, 0)
+                case SPBDataSetDataTypes.UInt64 | SPBDataSetDataTypes.DateTime:
+                    set_long_value_in_spb_object(cell, ds_element, 0)
+                case SPBDataSetDataTypes.Float:
+                    set_float_value_in_spb_object(cell, ds_element)
+                case SPBDataSetDataTypes.Double:
+                    set_double_value_in_spb_object(cell, ds_element)
+                case SPBDataSetDataTypes.Boolean:
+                    set_boolean_value_in_spb_object(cell, ds_element)
+                case SPBDataSetDataTypes.String | SPBDataSetDataTypes.Text:
+                    set_string_value_in_spb_object(cell, ds_element)
+                case _:
+                    unknown_value_in_spb_object(SPBDataSetDataTypes.Unknown, cell, ds_element)
 
     def init_template_metric(
         self,
@@ -343,30 +383,32 @@ class SpBMessageGenerator:
 
         if parameters is not None:
             for param in parameters:
-                parameter = metric.template_value.parameters.add()
+                parameter: spbPayload.Template.Parameter = metric.template_value.parameters.add()
                 parameter.name = param[0]
                 parameter.type = param[1]
                 match parameter.type:
                     case SPBBasicDataTypes.Int8:
-                        set_int_value_in_metric(param[2], parameter, 8)
+                        set_int_value_in_spb_object(param[2], parameter, 8)
                     case SPBBasicDataTypes.Int16:
-                        set_int_value_in_metric(param[2], parameter, 16)
+                        set_int_value_in_spb_object(param[2], parameter, 16)
                     case SPBBasicDataTypes.Int32:
-                        set_int_value_in_metric(param[2], parameter, 32)
+                        set_int_value_in_spb_object(param[2], parameter, 32)
                     case SPBBasicDataTypes.Int64:
-                        set_long_value_in_metric(param[2], parameter, 64)
+                        set_long_value_in_spb_object(param[2], parameter, 64)
                     case SPBBasicDataTypes.UInt8 | SPBBasicDataTypes.UInt16 | SPBBasicDataTypes.UInt32:
-                        set_int_value_in_metric(param[2], parameter, 0)
+                        set_int_value_in_spb_object(param[2], parameter, 0)
                     case SPBBasicDataTypes.UInt64 | SPBBasicDataTypes.DateTime:
-                        set_long_value_in_metric(param[2], metric, 0)
+                        set_long_value_in_spb_object(param[2], metric, 0)
                     case SPBBasicDataTypes.Float:
-                        set_float_value_in_metric(param[2], parameter)
+                        set_float_value_in_spb_object(param[2], parameter)
                     case SPBBasicDataTypes.Double:
-                        set_double_value_in_metric(param[2], parameter)
+                        set_double_value_in_spb_object(param[2], parameter)
                     case SPBBasicDataTypes.Boolean:
-                        set_boolean_value_in_metric(param[2], parameter)
+                        set_boolean_value_in_spb_object(param[2], parameter)
                     case SPBBasicDataTypes.String | SPBBasicDataTypes.Text:
-                        set_string_value_in_metric(param[2], parameter)
+                        set_string_value_in_spb_object(param[2], parameter)
+                    case _:
+                        unknown_value_in_spb_object(SPBBasicDataTypes.Unknown, param[2], parameter)
 
         metric.template_value.version = version
         metric.template_value.metrics = metrics
@@ -375,7 +417,7 @@ class SpBMessageGenerator:
 
     def add_metric(
         self,
-        payload: spbPayload,
+        payload: spbPayload | spbPayload.Template,
         name: str,
         datatype: int,
         value=None,
@@ -413,33 +455,32 @@ class SpBMessageGenerator:
             case SPBMetricDataTypes.Int8:
                 # check if the value is less than zero. If yes,convert it to an unsigned value
                 # while preserving its representation in the given number of bits
-                value = set_int_value_in_metric(value, metric, 8)
+                value = set_int_value_in_spb_object(value, metric, 8)
             case SPBMetricDataTypes.Int16:
-                value = set_int_value_in_metric(value, metric, 16)
+                value = set_int_value_in_spb_object(value, metric, 16)
             case SPBMetricDataTypes.Int32:
-                value = set_int_value_in_metric(value, metric, 32)
+                value = set_int_value_in_spb_object(value, metric, 32)
             case SPBMetricDataTypes.Int64:
-                value = set_long_value_in_metric(value, metric, 64)
+                value = set_long_value_in_spb_object(value, metric, 64)
             case SPBMetricDataTypes.UInt8 | SPBMetricDataTypes.UInt16 | SPBMetricDataTypes.UInt32:
-                value = set_int_value_in_metric(value, metric, 0)
+                value = set_int_value_in_spb_object(value, metric, 0)
             case SPBMetricDataTypes.UInt64 | SPBMetricDataTypes.DateTime:
-                value = set_long_value_in_metric(value, metric, 0)
+                value = set_long_value_in_spb_object(value, metric, 0)
             case SPBMetricDataTypes.Float:
-                value = set_float_value_in_metric(value, metric)
+                value = set_float_value_in_spb_object(value, metric)
             case SPBMetricDataTypes.Double:
-                value = set_double_value_in_metric(value, metric)
+                value = set_double_value_in_spb_object(value, metric)
             case SPBMetricDataTypes.Boolean:
-                value = set_boolean_value_in_metric(value, metric)
+                value = set_boolean_value_in_spb_object(value, metric)
             case SPBMetricDataTypes.String | SPBMetricDataTypes.Text | SPBMetricDataTypes.UUID:
-                value = set_string_value_in_metric(value, metric)
+                value = set_string_value_in_spb_object(value, metric)
             case SPBMetricDataTypes.Bytes | SPBMetricDataTypes.File:
-                value = set_bytes_value_in_metric(value, metric)
+                value = set_bytes_value_in_spb_object(value, metric)
             case SPBMetricDataTypes.Template:
-                value = set_templates_value_in_metric(value, metric)
+                value = set_templates_value_in_spb_object(value, metric)
             case SPBMetricDataTypes.DataSet:
-                # FIXME how to support this?
-                raise NotImplementedError(
-                    f"MetricType:{SPBMetricDataTypes.DataSet}" + " Not supported by #add_metric(). Use #init_dataset_metric()",
+                raise (
+                    f"MetricType:{SPBMetricDataTypes.DataSet}" + " Not supported by #add_metric(). Use #get_dataset_metric()",
                 )
             case SPBMetricDataTypes.Int8Array:
                 # FIXME how to support this?
@@ -507,7 +548,7 @@ class SpBMessageGenerator:
                     f"MetricType:{SPBMetricDataTypes.DateTimeArray}" + " Not supported by #add_metric()",
                 )
             case _:
-                unknown_value_in_metric(SPBMetricDataTypes.Unknown, value, metric)
+                unknown_value_in_spb_object(SPBMetricDataTypes.Unknown, value, metric)
 
         # Return the metric
         return metric
@@ -546,7 +587,9 @@ class SpBMessageGenerator:
         # Return the metric
         return metric
 
-    def add_null_metric(self, container, name: str, datatype: int, alias: Optional[int] = None):
+    def add_null_metric(
+        self, container: spbPayload | spbPayload.Template, name: str, datatype: int, alias: Optional[int] = None
+    ):
         """
         Helper method for adding null metrics  to a container which can be a payload or a template
 
@@ -566,14 +609,66 @@ class SpBMessageGenerator:
         metric.is_null = True
         return metric
 
+    def add_metadata_to_metric(
+        self,
+        metric: spbPayload.Metric,
+        is_multi_part: Optional[bool],
+        content_type: Optional[str],
+        size: Optional[int],
+        seq: Optional[int],
+        file_name: Optional[str],
+        file_type: Optional[str],
+        md5: Optional[str],
+        description: Optional[str],
+    ) -> spbPayload.MetaData:
+        """
+        Sets the MetaData object in a Metric and is used to describe different types of binary data in the metric
+
+        Parameters
+        ----------
+        is_multi_part:
+            A Boolean representing whether this metric contains part of a multi-part message.
+        content_type:
+            UTF-8 string which represents the content type of a given metric value if applicable.
+        size:
+            unsigned 64-bit integer representing the size of the metric value. e.g. file size.
+        seq:
+            For multipart metric, this is an unsigned 64-bit integer representing the
+            sequence number of this part of a multipart metric.
+        file_name:
+            For file metric, this is a UTF-8 string representing the filename of the file.
+        file_type
+            For file metric, this is a UTF-8 string representing the type of the file.
+        md5
+            For byte array or file metric that can have a md5sum,
+            this field can be used as a UTF-8 string to represent it.
+        description
+            Freeform field with a UTF-8 string to represent any other pertinent metadata for this
+            metric. It can contain JSON, XML, text, or anything else that can be understood by both the
+            publisher and the subscriber.
+        """
+        metric.metadata.is_multi_part = is_multi_part
+        metric.metadata.content_type = content_type
+        metric.metadata.size = size
+
+        metric.metadata.seq = seq
+        metric.metadata.file_name = file_name
+        metric.metadata.file_type = file_type
+        metric.metadata.md5 = md5
+        metric.metadata.description = description
+
 
 # class end
 
 
 @staticmethod
-def set_int_value_in_metric(value: int, metric, factor: Literal[0, 8, 16, 32] = 0):
+def set_int_value_in_spb_object(
+    value: int,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+    factor: Literal[0, 8, 16, 32] = 0,
+) -> int:
     """
-    Helper method for setting Int value in metric
+    Helper method for setting Int value in metric/property value/dataset value / template parameter
     check if the value is less than zero. If yes,convert it to an unsigned value
     while preserving its representation in the given number of bits
     Parameters
@@ -592,9 +687,13 @@ def set_int_value_in_metric(value: int, metric, factor: Literal[0, 8, 16, 32] = 
 
 
 @staticmethod
-def set_long_value_in_metric(value: int, metric, factor: Literal[0, 64] = 0):
+def set_long_value_in_spb_object(
+    value: int,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+    factor: Literal[0, 64] = 0,
+) -> int:
     """
-    Helper method for setting Long value in metric
+    Helper method for setting Long value in metric/property value/dataset value / template parameter
     Check if the value is less than zero. If yes,convert it to an unsigned value
     while preserving its representation in the given number of bits
     Parameters
@@ -612,9 +711,12 @@ def set_long_value_in_metric(value: int, metric, factor: Literal[0, 64] = 0):
 
 
 @staticmethod
-def set_float_value_in_metric(value: float, metric: spbPayload.Metric):
+def set_float_value_in_spb_object(
+    value: float,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+) -> float:
     """
-    Helper method for setting float value in metric
+    Helper method for setting float value in metric/property value/dataset value / template parameter
 
     Parameters
     ----------
@@ -626,9 +728,12 @@ def set_float_value_in_metric(value: float, metric: spbPayload.Metric):
 
 
 @staticmethod
-def set_double_value_in_metric(value: float, metric: spbPayload.Metric):
+def set_double_value_in_spb_object(
+    value: float,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+) -> float:
     """
-    Helper method for setting double value in metric
+    Helper method for setting double value in metric/property value/dataset value / template parameter
 
     Parameters
     ----------
@@ -640,9 +745,12 @@ def set_double_value_in_metric(value: float, metric: spbPayload.Metric):
 
 
 @staticmethod
-def set_string_value_in_metric(value: str, metric: spbPayload.Metric):
+def set_string_value_in_spb_object(
+    value: str,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+) -> str:
     """
-    Helper method for setting string value in metric
+    Helper method for setting string value in metric/property value/dataset value / template parameter
 
     Parameters
     ----------
@@ -654,9 +762,12 @@ def set_string_value_in_metric(value: str, metric: spbPayload.Metric):
 
 
 @staticmethod
-def set_bytes_value_in_metric(value: bytes, metric: spbPayload.Metric):
+def set_bytes_value_in_spb_object(
+    value: bytes,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+) -> bytes:
     """
-    Helper method for setting bytes value in metric
+    Helper method for setting bytes value in metric/property value/dataset value / template parameter
 
     Parameters
     ----------
@@ -668,9 +779,12 @@ def set_bytes_value_in_metric(value: bytes, metric: spbPayload.Metric):
 
 
 @staticmethod
-def set_templates_value_in_metric(value, metric: spbPayload.Metric):
+def set_templates_value_in_spb_object(
+    value,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+):
     """
-    Helper method for setting template value in metric
+    Helper method for setting template value in metric/property value/dataset value / template parameter
 
     Parameters
     ----------
@@ -682,9 +796,12 @@ def set_templates_value_in_metric(value, metric: spbPayload.Metric):
 
 
 @staticmethod
-def set_boolean_value_in_metric(value: bool, metric: spbPayload.Metric) -> bool:
+def set_boolean_value_in_spb_object(
+    value: bool,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+) -> bool:
     """
-    Helper method for setting boolean value in metric
+    Helper method for setting boolean value in metric/property value/dataset value / template parameter
 
     Parameters
     ----------
@@ -696,7 +813,11 @@ def set_boolean_value_in_metric(value: bool, metric: spbPayload.Metric) -> bool:
 
 
 @staticmethod
-def unknown_value_in_metric(datatype, value, metric: spbPayload.Metric):
+def unknown_value_in_spb_object(
+    datatype,
+    value,
+    metric: spbPayload.Metric | spbPayload.PropertyValue | spbPayload.DataSet.DataSetValue | spbPayload.Template.Parameter,
+):
     """
     Helper method handling values of unknown type in metric
 
@@ -704,9 +825,17 @@ def unknown_value_in_metric(datatype, value, metric: spbPayload.Metric):
     ----------
     datatype: int but not matching the sparkplugB specifications for data types
     value: value to stored. will be ignored
-    metric: Metric object
+    metric: Metric object/ PropertyValue/ DataSetValue/ Template.Parameter
     """
-    metric.datatype = None
+
+    match type(metric):
+        case spbPayload.Metric:
+            metric.datatype = None  # attribute name is different for Metric
+        case spbPayload.PropertyValue | spbPayload.Template.Parameter:
+            metric.type = None
+        case spbPayload.DataSet.DataSetValue:
+            pass  # object doesn't have type attribute
+
     LOGGER.error(
         "Invalid type: %s.\n Value: %s not added to %s", str(datatype), str(value), str(metric), stack_info=True, exc_info=True
     )

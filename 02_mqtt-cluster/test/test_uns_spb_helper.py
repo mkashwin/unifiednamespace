@@ -36,11 +36,11 @@ metric_dict = {
         (-10, SimpleNamespace(**metric_dict), 32, -10 + 2**32),
     ],
 )
-def test_set_int_value_in_metric(value: int, metric: dict, factor: int, metric_value: int):
+def test_set_int_value_in_spb_object(value: int, metric: dict, factor: int, metric_value: int):
     """
-    Test case for uns_spb_helper#set_int_value_in_metric
+    Test case for uns_spb_helper#set_int_value_in_spb_object
     """
-    uns_spb_helper.set_int_value_in_metric(value, metric, factor)
+    uns_spb_helper.set_int_value_in_spb_object(value, metric, factor)
     assert metric.int_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.int_value} "
     for datatype in metric_dict:
         if datatype != "int_value":
@@ -57,12 +57,12 @@ def test_set_int_value_in_metric(value: int, metric: dict, factor: int, metric_v
         (10, SimpleNamespace(**metric_dict), 64, 10),
     ],
 )
-def test_set_long_value_in_metric(value: int, metric: dict, factor: int, metric_value: int):
+def test_set_long_value_in_spb_object(value: int, metric: dict, factor: int, metric_value: int):
     """
-    Test case for uns_spb_helper#set_long_value_in_metric
+    Test case for uns_spb_helper#set_long_value_in_spb_object
     """
     # In python all long values are int
-    uns_spb_helper.set_long_value_in_metric(value, metric, factor)
+    uns_spb_helper.set_long_value_in_spb_object(value, metric, factor)
     assert metric.long_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.long_value} "
     for datatype in metric_dict:
         if datatype != "long_value":
@@ -78,11 +78,11 @@ def test_set_long_value_in_metric(value: int, metric: dict, factor: int, metric_
         (-10.0, SimpleNamespace(**metric_dict), -10.0),
     ],
 )
-def test_set_float_value_in_metric(value: float, metric: dict, metric_value: float):
+def test_set_float_value_in_spb_object(value: float, metric: dict, metric_value: float):
     """
-    Test case for uns_spb_helper#set_float_value_in_metric
+    Test case for uns_spb_helper#set_float_value_in_spb_object
     """
-    uns_spb_helper.set_float_value_in_metric(value, metric)
+    uns_spb_helper.set_float_value_in_spb_object(value, metric)
     assert metric.float_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.float_value} "
     for datatype in metric_dict:
         if datatype != "float_value":
@@ -98,11 +98,11 @@ def test_set_float_value_in_metric(value: float, metric: dict, metric_value: flo
         (-10.0, SimpleNamespace(**metric_dict), -10.0),
     ],
 )
-def test_set_double_value_in_metric(value: float, metric: dict, metric_value: float):
+def test_set_double_value_in_spb_object(value: float, metric: dict, metric_value: float):
     """
-    Test case for uns_spb_helper#set_double_value_in_metric
+    Test case for uns_spb_helper#set_double_value_in_spb_object
     """
-    uns_spb_helper.set_double_value_in_metric(value, metric)
+    uns_spb_helper.set_double_value_in_spb_object(value, metric)
     assert metric.double_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.double_value} "
     for datatype in metric_dict:
         if datatype != "double_value":
@@ -118,11 +118,11 @@ def test_set_double_value_in_metric(value: float, metric: dict, metric_value: fl
         (False, SimpleNamespace(**metric_dict), False),
     ],
 )
-def test_set_boolean_value_in_metric(value: bool, metric: dict, metric_value: bool):
+def test_set_boolean_value_in_spb_object(value: bool, metric: dict, metric_value: bool):
     """
-    Test case for uns_spb_helper#set_boolean_value_in_metric
+    Test case for uns_spb_helper#set_boolean_value_in_spb_object
     """
-    uns_spb_helper.set_boolean_value_in_metric(value, metric)
+    uns_spb_helper.set_boolean_value_in_spb_object(value, metric)
     assert metric.boolean_value == metric_value, f"Expecting metric value to be:{metric_value}, got:{metric.boolean_value}"
     for datatype in metric_dict:
         if datatype != "boolean_value":
@@ -138,11 +138,11 @@ def test_set_boolean_value_in_metric(value: bool, metric: dict, metric_value: bo
         ("""Test String2\nLine2""", SimpleNamespace(**metric_dict), """Test String2\nLine2"""),
     ],
 )
-def test_set_string_value_in_metric(value: str, metric: dict, metric_value: str):
+def test_set_string_value_in_spb_object(value: str, metric: dict, metric_value: str):
     """
-    Test case for uns_spb_helper#set_string_value_in_metric
+    Test case for uns_spb_helper#set_string_value_in_spb_object
     """
-    uns_spb_helper.set_string_value_in_metric(value, metric)
+    uns_spb_helper.set_string_value_in_spb_object(value, metric)
     assert metric.string_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.string_value}"
     for datatype in metric_dict:
         if datatype != "string_value":
@@ -158,11 +158,11 @@ def test_set_string_value_in_metric(value: str, metric: dict, metric_value: str)
         (bytes("""Test String2\nLine2""", "utf-8"), SimpleNamespace(**metric_dict), bytes("""Test String2\nLine2""", "utf-8")),
     ],
 )
-def test_set_bytes_value_in_metric(value: bytes, metric: dict, metric_value: bytes):
+def test_set_bytes_value_in_spb_object(value: bytes, metric: dict, metric_value: bytes):
     """
-    Test case for uns_spb_helper#set_bytes_value_in_metric
+    Test case for uns_spb_helper#set_bytes_value_in_spb_object
     """
-    uns_spb_helper.set_bytes_value_in_metric(value, metric)
+    uns_spb_helper.set_bytes_value_in_spb_object(value, metric)
     assert metric.bytes_value == metric_value, f"Expecting metric value to be: {metric_value}, but got {metric.string_value}"
     for datatype in metric_dict:
         if datatype != "bytes_value":
