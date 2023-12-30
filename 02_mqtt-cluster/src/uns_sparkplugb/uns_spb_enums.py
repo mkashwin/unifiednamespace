@@ -423,7 +423,7 @@ SPBPropertyValueTypes = _SPBAbstractDataTypes._combine_enums(
             "PropertySetList": (
                 sparkplug_b_pb2.PropertySetList,  # @FIXME need to handle PropertySet
                 SPBValueFieldName.PROPERTY_SET_LIST,
-                lambda spb_object, value: setattr(spb_object, SPBValueFieldName.PROPERTY_SET, value)
+                lambda spb_object, value: setattr(spb_object, SPBValueFieldName.PROPERTY_SET_LIST, value)
                 if isinstance(value, Payload.PropertySetList)
                 else _SetValueInSparkPlugObject.raise_in_lambda(
                     ValueError(f"Expecting object of type Payload.PropertySetList, got of type {type(value)}")
