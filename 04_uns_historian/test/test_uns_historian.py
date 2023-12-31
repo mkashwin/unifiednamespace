@@ -166,9 +166,7 @@ def test_uns_mqtt_historian(clean_up_database, topic, messages):  # noqa: ARG001
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(
-                topic=topic, payload=message, qos=MQTTConfig.qos, retain=False, properties=publish_properties
-            )
+            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=False, properties=publish_properties)
 
         # wait for uns_mqtt_historian to have persisted to the database
         while len(mgs_received) < len(messages):
