@@ -37,6 +37,7 @@ pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
 ruff = "^0.1.6"
 
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
