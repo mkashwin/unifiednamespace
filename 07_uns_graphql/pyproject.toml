@@ -40,7 +40,7 @@ uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
 strawberry-graphql = { version = "^0.215", extras = ["debug-server"] }
-pytest = "^7.4.3"
+pytest = "^7.4.4"
 pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
 pytest-asyncio = "^0.23.2"
 pytest-cov = "^4.1.0"
