@@ -2,6 +2,7 @@
 Test class for uns_sparkplugb.uns_spb_helper
 """
 from types import SimpleNamespace
+from typing import Literal
 from unittest.mock import MagicMock
 
 import pytest
@@ -302,3 +303,99 @@ def test_set_propertyset_list_via_enum(value: sparkplug_b_pb2.Payload.PropertySe
     else:
         with pytest.raises(ValueError):
             SPBMetricDataTypes(sparkplug_b_pb2.PropertySetList).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+
+
+def little_to_big_endian(byte_list: list[float], factor: Literal[4, 8]) -> bytes:
+    rearranged_list = [
+        x for chunk in [byte_list[i : i + factor][::-1] for i in range(0, len(byte_list), factor)] for x in chunk
+    ]
+    return bytes(rearranged_list)
+
+
+@pytest.mark.parametrize(
+    "array_type, value, spb_obj, encoded_bytes",
+    [  # test data taken from https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
+        # FIXME  document mentioned [0xEF, 0x7B] but appears wrong, should have been [0xE9, 0x7B]
+        (sparkplug_b_pb2.Int8Array, [-23, 123], SimpleNamespace(**spb_obj_dict), bytes([0xE9, 0x7B])),
+        (sparkplug_b_pb2.Int16Array, [-30000, 30000], SimpleNamespace(**spb_obj_dict), bytes([0xD0, 0x8A, 0x30, 0x75])),
+        (
+            sparkplug_b_pb2.Int32Array,
+            [-1, 315338746],
+            SimpleNamespace(**spb_obj_dict),
+            bytes([0xFF, 0xFF, 0xFF, 0xFF, 0xFA, 0xAF, 0xCB, 0x12]),
+        ),
+        (
+            sparkplug_b_pb2.Int64Array,
+            [-4270929666821191986, -3601064768563266876],
+            SimpleNamespace(**spb_obj_dict),
+            bytes([0xCE, 0x06, 0x72, 0xAC, 0x18, 0x9C, 0xBA, 0xC4, 0xC4, 0xBA, 0x9C, 0x18, 0xAC, 0x72, 0x06, 0xCE]),
+        ),
+        (sparkplug_b_pb2.UInt8Array, [23, 250], SimpleNamespace(**spb_obj_dict), bytes([0x17, 0xFA])),
+        (sparkplug_b_pb2.UInt16Array, [30, 52360], SimpleNamespace(**spb_obj_dict), bytes([0x1E, 0x00, 0x88, 0xCC])),
+        (
+            sparkplug_b_pb2.UInt32Array,
+            [52, 3293969225],
+            SimpleNamespace(**spb_obj_dict),
+            bytes([0x34, 0x00, 0x00, 0x00, 0x49, 0xFB, 0x55, 0xC4]),
+        ),
+        (
+            sparkplug_b_pb2.UInt64Array,
+            [52, 16444743074749521625],
+            SimpleNamespace(**spb_obj_dict),
+            bytes([0x34, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD9, 0x9E, 0x02, 0xD1, 0xB2, 0x76, 0x37, 0xE4]),
+        ),
+        (
+            sparkplug_b_pb2.FloatArray,
+            [1.23, 89.341],
+            SimpleNamespace(**spb_obj_dict),
+            # reverse the byte order in groups of 4 bytes to change from little-endian to big-endian,
+            little_to_big_endian([0x3F, 0x9D, 0x70, 0xA4, 0x42, 0xB2, 0xAE, 0x98], 4),
+        ),
+        (
+            sparkplug_b_pb2.DoubleArray,
+            [12.354213, 1022.9123213],
+            SimpleNamespace(**spb_obj_dict),
+            little_to_big_endian(
+                [0x40, 0x28, 0xB5, 0x5B, 0x68, 0x05, 0xA2, 0xD7, 0x40, 0x8F, 0xF7, 0x4C, 0x6F, 0x1C, 0x17, 0x8E], 8
+            ),
+        ),
+        (
+            sparkplug_b_pb2.DateTimeArray,
+            [1256102875335, 1656107875000],
+            SimpleNamespace(**spb_obj_dict),
+            bytes([0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00, 0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]),
+            # Needed to add 0x00, 0x00 to each date value to convert it to 8 bytes representation
+        ),
+        (
+            sparkplug_b_pb2.BooleanArray,
+            [False, False, True, True, False, True, False, False, True, True, False, True],
+            SimpleNamespace(**spb_obj_dict),
+            bytes([0x0C, 0x00, 0x00, 0x00, 0x34, 0xD0]),
+        ),
+        (
+            sparkplug_b_pb2.StringArray,
+            ["ABC", "hello"],
+            SimpleNamespace(**spb_obj_dict),
+            bytes(
+                "".join(
+                    [
+                        f"{x:02x}" if x != 0x00 else "\\x00"
+                        for x in [0x41, 0x42, 0x43, 0x00, 0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x00]
+                    ]
+                ),
+                "utf-8",
+            )
+            .decode("unicode-escape")
+            .encode("utf-8"),
+            # convert byte/int into hex and then convert them to bytes
+        ),
+    ],
+)
+def test_set_arrays(array_type, value: list[int], spb_obj, encoded_bytes: bytes):
+    SPBMetricDataTypes(array_type).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+    assert spb_obj.bytes_value == encoded_bytes
+    for datatype in spb_obj_dict:
+        if datatype != SPBValueFieldName.BYTES:
+            assert (
+                spb_obj.__dict__[datatype] is None
+            ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.BYTES}"

@@ -141,6 +141,42 @@ class _SetValueInSparkPlugObject:
         return value
 
     @staticmethod
+    def boolean_array(
+        values: list[bool],
+        spb_object: Payload.Metric,
+    ) -> bytes:
+        # Calculate the number of packed bytes required
+        packed_bytes_count = (len(values) + 7) // 8
+        # Create a byte array to hold the packed bits
+        packed_bytes = bytearray(packed_bytes_count)
+
+        # Iterate through the boolean array
+        for i, value in enumerate(values):
+            # Calculate the bit position in the packed byte
+            bit_position = 7 - (i % 8)
+            # Set the bit in the appropriate position within the byte
+            packed_bytes[i // 8] |= value << bit_position
+
+        # Prepend the packed bytes with a 4-byte integer representing the number of boolean values
+        bytes_value = struct.pack("<I", len(values)) + packed_bytes
+        spb_object.bytes_value = bytes_value
+        return bytes_value
+
+    @staticmethod
+    def string_array(
+        values: list[str],
+        spb_object: Payload.Metric,
+    ) -> bytes:
+        # convert strings to bytes and encode to hex
+        hex_string_array = [string.encode().hex() for string in values]
+        # convert hex string to bytes and terminate with null character
+        packed_bytes = [bytes(hex_string, "utf-8") + b"\x00" for hex_string in hex_string_array]
+        # joining the bytes to form a null terminated byte string
+        bytes_value = b"".join(packed_bytes)
+        spb_object.bytes_value = bytes_value
+        return bytes_value
+
+    @staticmethod
     def raise_in_lambda(ex):
         """
         Hack to raise exceptions in lambda
@@ -238,7 +274,7 @@ class SPBBasicDataTypes(_SPBAbstractDataTypes):
     DateTime = (
         sparkplug_b_pb2.DateTime,
         SPBValueFieldName.LONG,
-        lambda spb_object, value: _SetValueInSparkPlugObject.long_value(value=value, spb_object=spb_object, factor=0),
+        lambda spb_object, value: _SetValueInSparkPlugObject.long_value(value=value, spb_object=spb_object, factor=64),
     )
     Text = (
         sparkplug_b_pb2.Text,
@@ -315,79 +351,91 @@ class SPBArrayDataTypes(_SPBAbstractDataTypes):
     Int8Array = (
         sparkplug_b_pb2.Int8Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(
-            spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}b", *values)
+        lambda spb_object, value: setattr(
+            spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}b", *value)
         ),  # Format "b" maps to  "signed char" C Type and integer Python type
     )
+
     Int16Array = (
         sparkplug_b_pb2.Int16Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}h", *values)),
-        # Format "h" maps to  "short" C Type and integer Python type
+        lambda spb_object, value: setattr(
+            spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}h", *value)
+        ),  # Format "h" maps to  "short" C Type and integer Python type
     )
+
     Int32Array = (
         sparkplug_b_pb2.Int32Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}i", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}i", *value)),
         # Format "i" maps to  "int" C Type and integer Python type
     )
+
     Int64Array = (
         sparkplug_b_pb2.Int64Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}q", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}q", *value)),
         # Format "q" maps to  "long long" C Type and integer Python type
     )
+
     UInt8Array = (
         sparkplug_b_pb2.UInt8Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}B", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}B", *value)),
         # Format "B" maps to  "unsigned char" C Type and integer Python type
     )
+
     UInt16Array = (
         sparkplug_b_pb2.UInt16Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}H", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}H", *value)),
         # Format "H" maps to  "unsigned short" C Type and integer Python type
     )
+
     UInt32Array = (
         sparkplug_b_pb2.UInt32Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}I", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}I", *value)),
         # Format "I" maps to  "unsigned int" C Type and integer Python type
     )
+
     UInt64Array = (
         sparkplug_b_pb2.UInt64Array,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}Q", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}Q", *value)),
         # Format "Q" maps to  "unsigned long long" C Type and integer Python type
     )
+
     FloatArray = (
         sparkplug_b_pb2.FloatArray,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}f", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}f", *value)),
         # Format "f" maps to  "float" C Type and float Python type
     )
+
     DoubleArray = (
         sparkplug_b_pb2.DoubleArray,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}d", *values)),
-    )  # Format "d" maps to  "double" C Type and float Python type
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}d", *value)),
+        # Format "d" maps to  "double" C Type and float Python type
+    )
+
     BooleanArray = (
         sparkplug_b_pb2.BooleanArray,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(_SetValueInSparkPlugObject.raise_in_lambda(NotImplementedError("FIXME"))),
+        lambda spb_object, value: _SetValueInSparkPlugObject.boolean_array(values=value, spb_object=spb_object),
         # @FIXME
     )
     StringArray = (
         sparkplug_b_pb2.StringArray,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(_SetValueInSparkPlugObject.raise_in_lambda(NotImplementedError("FIXME"))),
-        # @FIXME
+        lambda spb_object, value: _SetValueInSparkPlugObject.string_array(values=value, spb_object=spb_object),
     )
+
     DateTimeArray = (
         sparkplug_b_pb2.DateTimeArray,
         SPBValueFieldName.BYTES,
-        lambda spb_object, values: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(values)}q", *values)),
+        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.BYTES, struct.pack(f"<{len(value)}q", *value)),
     )  # Format "q" maps to  "long long" C Type and integer Python type.since Datetime is a long value
 
 
