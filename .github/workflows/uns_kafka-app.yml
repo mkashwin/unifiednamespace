@@ -16,6 +16,8 @@ on:
       - "06_uns_kafka/poetry.lock"
       - "06_uns_kafka/Dockerfile"
       - ".github/workflows/uns_kafka-app.yml"
+      - ".github/include/**"
+
   pull_request:
     branches:
       - "**"
@@ -28,6 +30,8 @@ on:
       - "06_uns_kafka/poetry.lock"
       - "06_uns_kafka/Dockerfile"
       - ".github/workflows/uns_kafka-app.yml"
+      - ".github/include/**"
+
 permissions:
   contents: read
 
@@ -59,123 +63,26 @@ jobs:
           KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup with python environment
+        uses: ./.github/include/setup_python/
         with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          # change to current directory of module                
-          cd ./06_uns_kafka
-          python -m pip install --upgrade pip poetry
-          poetry install
+          module: 06_uns_kafka
 
-      - name: Lint with flake8
-        run: |
-          # change to current directory of module                
-          cd ./06_uns_kafka
-          # stop the build if there are Python syntax errors or undefined names
-          poetry run flake8 ./src ./test --count --select=E9,F63,F7,F82 --show-source --statistics 
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          poetry run flake8 ./src ./test --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Test for security vulnerabilities
-        run: |
-          cd ./06_uns_kafka
-          poetry run safety check
-
-      - name: Test with pytest
-
-        run: |
-          cd ./06_uns_kafka
-          poetry run pytest ./test
+      - name: Run all type of tests
+        uses: ./.github/include/execute_tests/
+        with:
+          module: 06_uns_kafka
+          integration_tests: true
 
   build_docker:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          module="06_uns_kafka"
-          image_name="uns/kafka_mapper"
-          SHA_TAG=${{ github.sha }}
-          echo "SHA_TAG=${SHA_TAG}"
+      - uses: actions/checkout@v4
 
-          cd "${module}"
-          echo "Validating Docker Entry prior to build"
-          entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
-          if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
-            echo "Error: Entry point should be in the format [\"poetry\", \"run\", \"<script_name>\"]"
-            exit 1
-          else
-            echo "Entrypoint for docker is: ${entry_point}"
-          fi
-
-          script_name="$(echo "${entry_point}" | awk '{print $4}' | tr -d '"]')"
-          if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
-            echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
-            exit 1
-          fi
-
-          if ! grep -q "^${script_name} =" ./pyproject.toml; then
-            echo "Error: Script entry for ${script_name} not found in [tool.poetry.scripts] section of pyproject.toml"
-            exit 1
-          else            
-            echo "[tool.poetry.scripts] entry is: ${script_name}"
-          fi
-
-          main_entry=$(grep "^${script_name} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
-          echo "Validate if ${main_entry} points to a valid python function"
-
-          python_module=${main_entry%:*}
-          function=${main_entry##*:}
-          if [[ ! "${function}" == "main" ]]; then
-            echo "Error: '${main_entry}' should map to a main function of python python_module"
-            exit 1
-          fi
-
-          echo "Creating Docker: ${image_name}:${SHA_TAG}"
-          docker build -t "${image_name}:${SHA_TAG}" --build-arg GIT_HASH=${SHA_TAG::7} -f ./Dockerfile ..
-
-          # Run the Docker tests
-          echo "Running tests for Docker image: ${image_name}:${SHA_TAG}"
-          docker run --entrypoint "sh" -e python_module="$python_module" -e function="$function" "${image_name}:${SHA_TAG}" -c '
-            if [ ! -d "/02_mqtt-cluster" ]; then
-              echo "Error: Folder /02_mqtt-cluster not found in Docker image"
-              exit 1
-            else
-              echo "Success:  Folder /02_mqtt-cluster is present"
-            fi
-
-            if [ ! "$(ls -AR /app/src | grep -E ".py$" | wc -l)" -gt "0" ]; then
-              echo "Error: No .py files found in folder /app/src"
-              exit 1
-            else
-              echo "Success:  Python Files are present"
-            fi
-
-            if [ ! -f "/app/pyproject.toml" ]; then
-              echo "Error: pyproject.toml file not found in folder /app"
-              exit 1
-            else
-              echo "Success:  pyproject.toml file found"
-            fi
-
-            if [ -d "/app/test" ]; then
-              echo "Error: test folder not found in folder /app"
-              exit 1
-            else
-              echo "Success:  test folder was not copied to the Docker"
-            fi
-            
-            poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
-
-            entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
-            if [ ! "$entry_valid" == "True" ];then
-              echo "Error: Invalid main entry ${python_module}:${function}"
-              exit 1
-            fi
-            echo "Docker image tests passed successfully"
-          '
+      - name: Compile and Test Dockerfile
+        uses: ./.github/include/test_docker_builds/
+        with:
+          module: 06_uns_kafka
+          image_name: uns/kafka_mapper

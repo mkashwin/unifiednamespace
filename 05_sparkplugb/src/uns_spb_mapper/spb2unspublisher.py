@@ -4,11 +4,11 @@ after correctly decoding the protobuf payloads
 """
 import json
 import logging
-from typing import Any
+from typing import Any, ClassVar, Final, Optional
 
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_mqtt.mqtt_listener import UnsMQTTClient
+from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
 
 LOGGER = logging.getLogger(__name__)
@@ -16,16 +16,17 @@ LOGGER = logging.getLogger(__name__)
 
 class Spb2UNSPublisher:
     """
-        Class to parse the metric array extracted from the SPB payload and
-        published to the respective UNS topics.
-        Create only one instance of this class per uns_sparkplugb_listener
-        This is a stateful class and stores the mappings of the alias to topic (if MQTTv5 is used)
-        This also temporarily stores the mapping of SparkPlugB Metric aliases
+    Class to parse the metric array extracted from the SPB payload and
+    published to the respective UNS topics.
+    Create only one instance of this class per uns_sparkplugb_listener
+    This is a stateful class and stores the mappings of the alias to topic (if MQTTv5 is used)
+    This also temporarily stores the mapping of SparkPlugB Metric aliases
     """
-    SPB_NAME: str = "name"
-    SPB_ALIAS: str = "alias"
-    SPB_TIMESTAMP: str = "timestamp"
-    SPB_DATATYPE: str = "datatype"
+
+    SPB_NAME: Optional[str] = "name"
+    SPB_ALIAS: Optional[str] = "alias"
+    SPB_TIMESTAMP: Optional[str] = "timestamp"
+    SPB_DATATYPE: Optional[str] = "datatype"
     SPB_IS_NULL = "is_null"
     SPB_IS_HISTORICAL = "is_historical"
 
@@ -33,7 +34,7 @@ class Spb2UNSPublisher:
     SPB_METADATA = "metadata"
     SPB_PROPERTIES = "properties"
 
-    SPB_DATATYPE_KEYS = {
+    SPB_DATATYPE_KEYS: Final[str] = {
         sparkplug_b_pb2.Unknown: "Unknown",
         sparkplug_b_pb2.Int8: "int_value",
         sparkplug_b_pb2.Int16: "int_value",
@@ -57,11 +58,11 @@ class Spb2UNSPublisher:
     }
 
     # stores the message aliases as uses in the SparkPlugB message payload
-    metric_name_alias_map: dict[int, str] = {}
+    metric_name_alias_map: ClassVar[dict[int, str]] = {}
     # Flag indicating this an MQTTv5 connection
     is_mqtt_v5: bool = False
     # stores the topic aliases to be used if the protocol is MQTTv5
-    topic_alias: dict[str, str] = {}
+    topic_alias: ClassVar[dict[str, str]] = {}
     # the Mqtt client used to publish the messages
     mqtt_client: UnsMQTTClient = None
     # maximum topic alias
@@ -69,21 +70,23 @@ class Spb2UNSPublisher:
 
     def __init__(self, mqtt_client: UnsMQTTClient):
         self.mqtt_client = mqtt_client
-        self.is_mqtt_v5 = mqtt_client.protocol == UnsMQTTClient.MQTTv5
+        self.is_mqtt_v5 = mqtt_client.protocol == MQTTVersion.MQTTv5
 
     def clear_metric_alias(self):
         """
-            Clear all metric aliases stored.
-            Typically called if a node rebirth / death message is received.
+        Clear all metric aliases stored.
+        Typically called if a node rebirth / death message is received.
         """
         self.metric_name_alias_map.clear()
 
-    def transform_spb_and_publish_to_uns(self,
-                                         spb_payload,
-                                         group_id: str,
-                                         message_type: str,
-                                         edge_node_id: str,
-                                         device_id: str = None) -> dict:
+    def transform_spb_and_publish_to_uns(
+        self,
+        spb_payload,
+        group_id: str,
+        message_type: str,
+        edge_node_id: str,
+        device_id: Optional[str] = None,
+    ) -> dict:
         # pylint: disable=too-many-arguments
         """
         Parses the SPB payload and depending on message type
@@ -114,7 +117,8 @@ class Spb2UNSPublisher:
                     group_id=group_id,
                     message_type=message_type,
                     edge_node_id=edge_node_id,
-                    device_id=device_id)
+                    device_id=device_id,
+                )
 
             case "NDEATH":  # Death certificate for MQTT EoN nodes.
                 LOGGER.debug("Received message type : %s", str(message_type))
@@ -125,7 +129,8 @@ class Spb2UNSPublisher:
                     group_id=group_id,
                     message_type=message_type,
                     edge_node_id=edge_node_id,
-                    device_id=device_id)
+                    device_id=device_id,
+                )
 
             case "DBIRTH":  # Birth certificate for Devices.
                 LOGGER.debug("Received message type : %s", str(message_type))
@@ -141,7 +146,8 @@ class Spb2UNSPublisher:
                     group_id=group_id,
                     message_type=message_type,
                     edge_node_id=edge_node_id,
-                    device_id=device_id)
+                    device_id=device_id,
+                )
 
             case "DDATA":  # Device data message.
                 all_uns_messages = self.handle_spb_messages(
@@ -149,7 +155,8 @@ class Spb2UNSPublisher:
                     group_id=group_id,
                     message_type=message_type,
                     edge_node_id=edge_node_id,
-                    device_id=device_id)
+                    device_id=device_id,
+                )
 
             case "NCMD":  # Node command message.
                 all_uns_messages = self.handle_spb_messages(
@@ -157,7 +164,8 @@ class Spb2UNSPublisher:
                     group_id=group_id,
                     message_type=message_type,
                     edge_node_id=edge_node_id,
-                    device_id=device_id)
+                    device_id=device_id,
+                )
 
             case "DCMD":  # device command message.
                 all_uns_messages = self.handle_spb_messages(
@@ -165,63 +173,59 @@ class Spb2UNSPublisher:
                     group_id=group_id,
                     message_type=message_type,
                     edge_node_id=edge_node_id,
-                    device_id=device_id)
+                    device_id=device_id,
+                )
 
             case "STATE":  # Critical application state message.
                 LOGGER.info("Received message type : %s", str(message_type))
 
             case _:
-                LOGGER.error("Unknown message_type received: %s",
-                             str(message_type))
-                raise ValueError(
-                    f"Unknown message_type received: {message_type}")
+                LOGGER.error("Unknown message_type received: %s", str(message_type))
+                raise ValueError(f"Unknown message_type received: {message_type}")
         if len(all_uns_messages) > 0:
             self.publish_to_uns(all_uns_messages)
 
-    def handle_spb_messages(self,
-                            spb_payload,
-                            group_id: str,
-                            message_type: str,
-                            edge_node_id: str,
-                            device_id: str = None) -> dict:
+    def handle_spb_messages(
+        self,
+        spb_payload,
+        group_id: str,
+        message_type: str,
+        edge_node_id: str,
+        device_id: Optional[str] = None,
+    ) -> dict:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         """
-            Parse the SPBPayload for message types
+        Parse the SPBPayload for message types
         """
         # convert spb payload and extract metrics array
         metrics_list: list = self.get_metrics_from_payload(spb_payload)
 
         # collate all metrics to the same topic and send them as one payload
         all_uns_messages: dict = {}
-        spb_context = self.get_spb_context(group_id, message_type,
-                                           edge_node_id, device_id)
+        spb_context = self.get_spb_context(group_id, message_type, edge_node_id, device_id)
         for metric in metrics_list:
             name = self.get_metric_name(metric)
             name_list = name.rsplit("/", 1)
             uns_topic = name_list[0]
             tag_name = name_list[1]
 
-            metric_timestamp: float = float(
-                getattr(metric, Spb2UNSPublisher.SPB_TIMESTAMP))
+            metric_timestamp: float = float(getattr(metric, Spb2UNSPublisher.SPB_TIMESTAMP))
             datatype: int = getattr(metric, Spb2UNSPublisher.SPB_DATATYPE)
 
-            is_historical: bool = getattr(metric,
-                                          Spb2UNSPublisher.SPB_IS_HISTORICAL,
-                                          False)
+            is_historical: bool = getattr(metric, Spb2UNSPublisher.SPB_IS_HISTORICAL, False)
             metric_value = None
             if not getattr(metric, Spb2UNSPublisher.SPB_IS_NULL):
-                metric_value = getattr(
-                    metric, Spb2UNSPublisher.SPB_DATATYPE_KEYS.get(datatype))
+                metric_value = getattr(metric, Spb2UNSPublisher.SPB_DATATYPE_KEYS.get(datatype))
 
-            uns_message: dict[
-                str, Any] = Spb2UNSPublisher.extract_uns_message_for_topic(
-                    parsed_message=all_uns_messages.get(uns_topic),
-                    tag_name=tag_name,
-                    metric_value=metric_value,
-                    metric_timestamp=metric_timestamp,
-                    is_historical=is_historical,
-                    spb_context=spb_context)
+            uns_message: dict[str, Any] = Spb2UNSPublisher.extract_uns_message_for_topic(
+                parsed_message=all_uns_messages.get(uns_topic),
+                tag_name=tag_name,
+                metric_value=metric_value,
+                metric_timestamp=metric_timestamp,
+                is_historical=is_historical,
+                spb_context=spb_context,
+            )
 
             all_uns_messages[uns_topic] = uns_message
         # Publish all messages to the respective UNS topics
@@ -233,35 +237,31 @@ class Spb2UNSPublisher:
         Extract metric name from metric payload
         Encapsulate metric name alias handling
         """
-        name: str = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
+        name: Optional[str] = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
         try:
-            metric_alias: int = int(getattr(metric,
-                                            Spb2UNSPublisher.SPB_ALIAS))
+            metric_alias: int = int(getattr(metric, Spb2UNSPublisher.SPB_ALIAS))
         except (AttributeError, TypeError, ValueError):
             metric_alias = None
 
-        if (name is None or name == ""):
+        if name is None or name == "":
             if metric_alias is not None:
                 name = self.metric_name_alias_map.get(metric_alias)
-            if (name is None or name == ""):
-                LOGGER.error(
-                    "Skipping as metric Name is null and alias not yet provided: %s",
-                    str(metric))
+            if name is None or name == "":
+                LOGGER.error("Skipping as metric Name is null and alias not yet provided: %s", str(metric))
         elif metric_alias is not None:
             # if metric_alias was provided then store it in the map
             self.metric_name_alias_map[metric_alias] = name
         return name
 
     @staticmethod
-    def get_spb_context(group_id: str, message_type: str, edge_node_id: str,
-                        device_id: str) -> dict[str, str]:
+    def get_spb_context(group_id: str, message_type: str, edge_node_id: str, device_id: str) -> dict[str, str]:
         """
-            returns a dict of key value pair of the SPB parsed topic
+        Returns a dict of key value pair of the SPB parsed topic
         """
         spb_context = {
             "spBv1.0_group_id": group_id,
             "spBv1.0_message_type": message_type,
-            "spBv1.0_edge_node_id": edge_node_id
+            "spBv1.0_edge_node_id": edge_node_id,
         }
         if device_id is not None:
             spb_context["spBv1.0_device_id"] = device_id
@@ -272,7 +272,7 @@ class Spb2UNSPublisher:
         """
         Extracts metrics list  from the SparkplugB payload
         """
-        return getattr(Spb2UNSPublisher.get_payload(payload), "metrics")
+        return Spb2UNSPublisher.get_payload(payload).metrics
 
     @staticmethod
     def get_payload(payload: sparkplug_b_pb2.Payload) -> dict:
@@ -285,12 +285,13 @@ class Spb2UNSPublisher:
 
     @staticmethod
     def extract_uns_message_for_topic(
-            parsed_message: dict,
-            tag_name: str,
-            metric_value: Any,
-            metric_timestamp: float,
-            is_historical: bool = False,
-            spb_context: dict[str, str] = None) -> dict[str, Any]:
+        parsed_message: dict,
+        tag_name: str,
+        metric_value: Any,
+        metric_timestamp: float,
+        is_historical: bool = False,
+        spb_context: Optional[dict[str, str]] = None,
+    ) -> dict[str, Any]:
         # pylint: disable=too-many-arguments
         """
         Returns a dictionary where the key is the target topic name and value is the
@@ -298,9 +299,7 @@ class Spb2UNSPublisher:
         """
         # check if there were any tags  already parsed for this uns topic
         if parsed_message is None:
-            parsed_message = {
-                tag_name: (metric_value, metric_timestamp, is_historical)
-            }
+            parsed_message = {tag_name: (metric_value, metric_timestamp, is_historical)}
             parsed_message[Spb2UNSPublisher.SPB_TIMESTAMP] = metric_timestamp
             # enrich the message to add SpB related information
             if spb_context is not None:
@@ -308,8 +307,7 @@ class Spb2UNSPublisher:
         else:
             # check if there were there was any already parsed metric for this tag and UNS topic
             old_metric_tuple_list = parsed_message.get(tag_name)
-            old_metric_timestamp = parsed_message.get(
-                Spb2UNSPublisher.SPB_TIMESTAMP)
+            old_metric_timestamp = parsed_message.get(Spb2UNSPublisher.SPB_TIMESTAMP)
             if not isinstance(old_metric_tuple_list, list):
                 # replace current metric value with array of values if it is a singe value
                 old_metric_tuple_list = [old_metric_tuple_list]
@@ -326,14 +324,11 @@ class Spb2UNSPublisher:
 
                 # If needed might need to convert this into a dict to have attribute keys
                 # for identification
-                old_metric_tuple_list.append(
-                    (metric_value, metric_timestamp, is_historical))
+                old_metric_tuple_list.append((metric_value, metric_timestamp, is_historical))
             else:
                 # if the metric in the uns_message is older than the metric received
-                old_metric_tuple_list.insert(
-                    0, (metric_value, metric_timestamp, is_historical))
-                parsed_message[
-                    Spb2UNSPublisher.SPB_TIMESTAMP] = metric_timestamp
+                old_metric_tuple_list.insert(0, (metric_value, metric_timestamp, is_historical))
+                parsed_message[Spb2UNSPublisher.SPB_TIMESTAMP] = metric_timestamp
             parsed_message[tag_name] = old_metric_tuple_list
             # end of inner if & else
         # end of outer if
@@ -350,13 +345,13 @@ class Spb2UNSPublisher:
                 if self.is_mqtt_v5:
                     publish_properties = Properties(PacketTypes.PUBLISH)
 
-                self.mqtt_client.publish(topic=topic,
-                                         payload=json.dumps(message),
-                                         qos=self.mqtt_client.qos,
-                                         retain=True,
-                                         properties=publish_properties)
+                self.mqtt_client.publish(
+                    topic=topic,
+                    payload=json.dumps(message),
+                    qos=self.mqtt_client.qos,
+                    retain=True,
+                    properties=publish_properties,
+                )
         else:
-            LOGGER.error(
-                "MQTT Client is not connected. Cannot publish to UNS: %s",
-                str(self.mqtt_client))
+            LOGGER.error("MQTT Client is not connected. Cannot publish to UNS: %s", str(self.mqtt_client))
             raise ConnectionError(f"{self.mqtt_client}")

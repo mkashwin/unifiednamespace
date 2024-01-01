@@ -59,7 +59,7 @@ psql -U uns_dbuser  -h localhost -d uns_historian -f './sql_scripts/02_setup_hyp
 **The key parameters you must update for your environment are :**
 
 * \<postgres password\> : password for the super user which is passed to the docker command  `-e POSTGRES_PASSWORD=`
-* \<dba password\> : password for the DBA will be needed for db mgmt. activities
+* \<dba password\> : password for the DBA will be needed for db management activities
 * \<application user password\> : is the password needed to connect to the DB. Needs to also be updated in [./.secrets.yaml](#key-configurations-to-provide)
 
 Depending on your context you may need to change the other properties like container name, port, directories etc.
@@ -84,6 +84,7 @@ This application has two configuration file.
     mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
     mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
     mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
+    mqtt | clean_session | Boolean value to be specified only if MQTT Version is not 5 | *None*
     mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
     mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  None
     mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
@@ -110,6 +111,10 @@ This application has two configuration file.
    **historian** | **username**\* | | The user id  needed to authenticate with TimescaleDB | *None*
    **historian** | **password**\* | | The password needed to authenticate with TimescaleDB | *None*
    historian | sslmode | | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full | *None*
+   historian | sslcert | | Specifies the file name of the client SSL certificate | *None*
+   historian | sslkey | | Specifies the location for the secret key used for the client certificate| *None*
+   historian | sslrootcert | | Specifies the name of a file containing SSL certificate authority (CA) certificate(s) | *None*
+   historian | sslcrl | | Specifies the file name of the SSL certificate revocation list (CRL)  | *None*
    **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
 
 ## The Logic for persisting the message into the historian
@@ -168,12 +173,10 @@ python ./src/uns_historian/uns_mqtt_historian.py
 The set of test for this module is executed by
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell 
 #run all tests excluding integration tests 
-pytest -m "not integrationtest" test/
+poetry run pytest -m "not integrationtest" test/
 # runs all tests
-pytest test/
+poetry run pytest test/
 ```
 
 ## Deploying the docker container image created for this module
