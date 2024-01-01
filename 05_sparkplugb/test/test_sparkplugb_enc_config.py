@@ -1,112 +1,99 @@
 """
 Test cases for sparkplugb_enc_config
 """
-import os
 import re
 import socket
+from pathlib import Path
 
 import pytest
-from uns_spb_mapper.sparkplugb_enc_config import settings
+from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
+from uns_spb_mapper.sparkplugb_enc_config import MQTTConfig, settings
 
-is_configs_provided: bool = settings.mqtt["host"] is not None
+is_configs_provided: bool = settings.get("mqtt.host") is not None
 
 # Constant regex expression to match valid MQTT topics
-REGEX_TO_MATCH_TOPIC = r"^(\+|\#|.+/\+|[^#]+#|.*/\+/.*)$"
+REGEX_TO_MATCH_TOPIC = (
+    r"^(?:(?:(?:(?:(?:(?:[.0-9a-zA-Z_-]+)|(?:\+))(?:\/))*)" r"(?:(?:(?:[.0-9a-zA-Z_-]+)|(?:\+)|(?:\#))))|(?:(?:\#)))$"
+)
 
 
-@pytest.mark.xfail(not is_configs_provided,
-                   reason="Configurations have not been provided")
+@pytest.mark.xfail(not is_configs_provided, reason="Configurations have not been provided")
 def test_mqtt_config():
     """
     Test if the mqtt configurations are valid
     """
     # run these tests only if both configuration files exists or mandatory environment vars are set
-    mqtt_transport: str = settings.get("mqtt.transport")
-    assert mqtt_transport in (
-        None, "tcp",
-        "ws"), f"Invalid value for key 'mqtt.transport':{mqtt_transport}"
 
-    mqtt_version: int = settings.get("mqtt.version")
-    assert mqtt_version in (
-        None, 3, 4, 5), f"Invalid value for key 'mqtt.version':{mqtt_version}"
+    assert MQTTConfig.transport in ("tcp", "ws"), f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
 
-    mqtt_qos: int = settings.get("mqtt.qos")
-    assert mqtt_qos in (None, 0, 1,
-                        2), f"Invalid value for key 'mqtt.qos':{mqtt_qos}"
+    assert MQTTConfig.version_code in (
+        MQTTVersion.MQTTv31,
+        MQTTVersion.MQTTv311,
+        MQTTVersion.MQTTv5,
+    ), f"Invalid value for key 'mqtt.version':{MQTTConfig.version_code}"
 
-    reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure")
-    assert reconnect_on_failure in (
-        None, True, False
-    ), f"Invalid value for key 'mqtt.reconnect_on_failure'{reconnect_on_failure}"
+    assert MQTTConfig.qos in (0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
 
-    clean_session: bool = settings.get("mqtt.clean_session")
-    assert clean_session in (
-        True, False,
-        None), f"Invalid value for key 'mqtt.clean_session'{clean_session}"
+    assert MQTTConfig.reconnect_on_failure in (
+        True,
+        False,
+    ), f"Invalid value for key 'mqtt.reconnect_on_failure'{MQTTConfig.reconnect_on_failure}"
 
-    host: str = settings.mqtt["host"]
-    assert host is not None, f"Invalid value for key 'mqtt.host'{host}"
+    assert MQTTConfig.clean_session in (
+        None,
+        True,
+        False,
+    ), f"Invalid value for key 'mqtt.clean_session'{MQTTConfig.clean_session}"
 
-    port: int = settings.get("mqtt.port", 1883)
-    assert isinstance(
-        port,
-        int) or port is None, f"Invalid value for key 'mqtt.port':{str(port)}"
-    assert isinstance(
-        port, int
-    ) and 1024 <= port <= 49151, f"'mqtt.port':{str(port)} must be between 1024 to 49151"
+    assert MQTTConfig.host is not None, f"Invalid value for key 'mqtt.host'{MQTTConfig.host}"
 
-    username = settings.get("mqtt.username")
-    password = settings.get("mqtt.password")
+    assert MQTTConfig.port is not None and isinstance(
+        MQTTConfig.port, int
+    ), f"Invalid value for key 'mqtt.port':{MQTTConfig.port}"
+    assert 1024 <= MQTTConfig.port <= 49151, f"'mqtt.port':{MQTTConfig.port} must be between 1024 to 49151"
 
-    assert (username is None and password is None) or (
-        isinstance(username, str) and len(username) > 0
-        and isinstance(password, str) and len(password)
-        > 0), "Either both username & password need to be specified or neither"
+    assert (MQTTConfig.username is None and MQTTConfig.password is None) or (
+        isinstance(MQTTConfig.username, str)
+        and len(MQTTConfig.username) > 0
+        and isinstance(MQTTConfig.password, str)
+        and len(MQTTConfig.password) > 0
+    ), "Either both username & password need to be specified or neither"
 
-    tls: dict = settings.get("mqtt.tls", None)
-    assert (tls is None) or (
-        isinstance(tls, dict) and not bool(tls)
-        and tls.get("ca_certs") is not None
-    ), ("Check the configuration provided for tls connection to the broker."
-        "The property ca_certs is missing")
+    assert (MQTTConfig.tls is None) or (
+        isinstance(MQTTConfig.tls, dict) and not bool(MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
+    ), "Check the configuration provided for tls connection to the broker." "The property ca_certs is missing"
 
-    assert (tls is None) or (os.path.isfile(tls.get(
-        "ca_certs"))), f"Unable to find certificate at: {tls.get('ca_certs')}"
+    assert (MQTTConfig.tls is None) or (
+        Path(MQTTConfig.tls.get("ca_certs")).is_file()
+    ), f"Unable to find certificate at: {MQTTConfig.tls.get('ca_certs')}"
 
-    topics: str = settings.get("mqtt.topics", ["spBv1.0/#"])
-
-    for topic in topics:
+    for topic in MQTTConfig.topics:
         assert bool(
-            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic)
-        ), f"configuration 'mqtt.topics':{topics} has an valid MQTT topic topic:{topic}"
+            re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
+        ), f"configuration 'mqtt.topics':{MQTTConfig.topics} has an invalid MQTT topic topic:{topic}"
+        assert topic.startswith(UnsMQTTClient.SPARKPLUG_NS), f"topic:{topic} is not a SparkplugB namespace"
 
-    keep_alive: float = settings.get("mqtt.keep_alive", 60)
-    assert (keep_alive is None) or (
-        keep_alive
-        > 0), f"'mqtt.keep_alive'{keep_alive} must be a positive number"
+    assert (MQTTConfig.keepalive is not None) and (
+        MQTTConfig.keepalive > 0
+    ), f"'mqtt.keep_alive'{MQTTConfig.keepalive} must be a positive number"
 
-    ignored_attributes: dict = settings.get("mqtt.ignored_attributes")
-    assert (ignored_attributes is None) or (
-        isinstance(ignored_attributes, dict)
-    ), f"Configuration 'mqtt.ignored_attributes':{ignored_attributes} is not a valid dict"
+    assert (MQTTConfig.ignored_attributes is None) or (
+        isinstance(MQTTConfig.ignored_attributes, dict)
+    ), f"Configuration 'mqtt.ignored_attributes':{MQTTConfig.ignored_attributes} is not a valid dict"
 
-    timestamp_attribute: str = settings.get("mqtt.timestamp_attribute",
-                                            "timestamp")
-    # Should be a valid JSON attribute
-    assert (timestamp_attribute is None) or (
-        len(timestamp_attribute) > 0
-    ), f"Configuration 'mqtt.timestamp_attribute':{timestamp_attribute} is not a valid JSON key"
+    # Should be a valid JSON key name
+    assert (isinstance(MQTTConfig.timestamp_key, str)) and (
+        len(MQTTConfig.timestamp_key) > 0
+    ), f"Configuration 'mqtt.timestamp_attribute':{MQTTConfig.timestamp_key } is not a valid JSON key"
 
 
-@pytest.mark.integrationtest
+@pytest.mark.integrationtest()
 def test_connectivity_to_mqtt():
     """
     Test if the provided configurations for the MQTT server are valid and
     there is connectivity to the MQTT broker
     """
-    host: str = settings.mqtt["host"]
-    port: int = settings.get("mqtt.port", 1883)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex(
-        (host,
-         port)) == 0, f"Host: {host} is not reachable at port:{str(port)}"
+    assert (
+        sock.connect_ex((MQTTConfig.host, MQTTConfig.port)) == 0
+    ), f"Host: {MQTTConfig.host} is not reachable at port:{MQTTConfig.port}"
