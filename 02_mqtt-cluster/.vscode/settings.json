@@ -9,7 +9,7 @@
     "[python]": {
         "editor.formatOnSaveMode": "file",
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "eeyore.yapf"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "cSpell.words": [
         "aarch",
@@ -40,11 +40,5 @@
         "storageclass",
         "Tahu",
         "userdata"
-    ],
-    "flake8.args": [
-        "--config=.flake8"
-    ],
-    "pylint.args": [
-        "--max-line-length= 120"
     ],
 }

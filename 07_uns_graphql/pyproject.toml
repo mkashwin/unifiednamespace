@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "uns_graphql"
+version = "0.7.10"
+description = "Provide GraphQL capabilities to the UNS across all data sources -MQTT, KAFKA, Historian & GraphDB"
+license = "MIT"
+authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
+maintainers = [
+    "Himanshu Dhami <himanshudhami@gmail.com>",
+    "Johan Jeppson <logic4human@gmail.com>",
+]
+readme = "README.md"
+# homepage = ""
+repository = "https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql"
+# documentation = ""
+keywords = ["uns", "graphql", "mqtt", "graphDB", "historian", "kafka"]
+#classifiers = [
+#   "License :: OSI Approved :: MIT License",
+#   "Intended Audience :: Manufacturing",
+#   "Operating System :: OS Independent",
+#   "Topic :: Software Development :: Libraries :: UNS GraphQL",
+#   "Topic :: Industry 4.0 :: Unified Name Space :: UNS GraphQL Resolver"
+# ]
+packages = [{ include = "uns_graphql", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+logger = "^1.4"
+dynaconf = "^3.2.4"
+strawberry-graphql = { version = "^0.215", extras = ["fastapi", "cli"] }
+aiohttp = "^3.9"
+uvicorn = { version = "^0.24", extras = ["standard"] }
+
+aiomqtt = "^1.2.1"
+confluent-kafka = "^2.3.0"
+neo4j = "^5.15"
+asyncpg = "^0.29"
+
+[tool.poetry.group.dev.dependencies]
+uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
+
+[tool.poetry.group.test.dependencies]
+strawberry-graphql = { version = "^0.215", extras = ["debug-server"] }
+pytest = "^7.4.4"
+pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
+pytest-asyncio = "^0.23.2"
+pytest-cov = "^4.1.0"
+safety = "^2.4.0b2"
+ruff = "^0.1.6"
+
+[tool.poetry.scripts]
+uns_graphql_app = "uns_graphql.uns_graphql_app:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
+testpaths = ["test"]
+markers = ["integrationtest: mark a test as an integration test"]
+addopts = "-n auto --dist loadgroup"
+
+[tool.ruff]
+# Extend the `pyproject.toml` file in the parent directory...
+extend = "../pyproject.toml"
