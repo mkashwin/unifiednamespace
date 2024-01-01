@@ -3,6 +3,7 @@ Class responsible for persisting the MQTT message into the Graph Database
 """
 import logging
 import time
+from typing import Optional
 
 import neo4j
 from neo4j import exceptions
@@ -22,13 +23,15 @@ class GraphDBHandler:
     Class responsible for persisting the MQTT message into the Graph Database
     """
 
-    def __init__(self,
-                 uri: str,
-                 user: str,
-                 password: str,
-                 database: str = neo4j.DEFAULT_DATABASE,
-                 max_retry: int = 5,
-                 sleep_btw_attempts: float = 10):
+    def __init__(
+        self,
+        uri: str,
+        user: str,
+        password: str,
+        database: Optional[str] = neo4j.DEFAULT_DATABASE,
+        max_retry: int = 5,
+        sleep_btw_attempts: float = 10,
+    ):
         # pylint: disable=too-many-arguments
         """
         Initialize the GraphDBHandler class.
@@ -41,7 +44,7 @@ class GraphDBHandler:
             db user name. Must have write access on the Neo4j database also specified here
         password:
             password for the db user
-        database : str = neo4j.DEFAULT_DATABASE
+        database : Optional[str] = neo4j.DEFAULT_DATABASE
             The Neo4j database in which this data should be persisted
         max_retry: int
                 Must be a positive integer. Default value is 5.
@@ -50,9 +53,9 @@ class GraphDBHandler:
                 Must be a positive float. Default value is 10 seconds.
                 Seconds to sleep between retries
         """
-        self.uri: str = uri
+        self.uri: Optional[str] = uri
         self.auth: tuple = (user, password)
-        self.database: str = database
+        self.database: Optional[str] = database
         if self.database is None or self.database == "":
             self.database = neo4j.DEFAULT_DATABASE
         self.max_retry: int = max_retry
@@ -64,10 +67,7 @@ class GraphDBHandler:
         except SystemError as ex:
             raise ex
         except Exception as ex:
-            LOGGER.error("Failed to create the driver: %s",
-                         str(ex),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Failed to create the driver: %s", str(ex), stack_info=True, exc_info=True)
             raise SystemError(ex) from ex
 
     def connect(self, retry: int = 0) -> neo4j.Driver:
@@ -84,7 +84,8 @@ class GraphDBHandler:
         Returns:
             neo4j.Driver: The Neo4j driver object.
 
-        Raises:
+        Raises
+        ------
             neo4j.exceptions.DatabaseError: When there is a general error from the database.
             neo4j.exceptions.TransientError: When there is a problem connecting to the database.
             neo4j.exceptions.DatabaseUnavailable: When the database is unavailable.
@@ -92,34 +93,27 @@ class GraphDBHandler:
         """
         try:
             if self.driver is None:
-                self.driver = neo4j.GraphDatabase.driver(self.uri,
-                                                         auth=self.auth)
+                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth)
             self.driver.verify_connectivity()
-        except (exceptions.DatabaseError, exceptions.TransientError,
-                exceptions.DatabaseUnavailable,
-                exceptions.ServiceUnavailable) as ex:
+        except (
+            exceptions.DatabaseError,
+            exceptions.TransientError,
+            exceptions.DatabaseUnavailable,
+            exceptions.ServiceUnavailable,
+        ) as ex:
             if retry >= self.max_retry:
-                LOGGER.error("No. of retries exceeded %s",
-                             str(self.max_retry),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error("No. of retries exceeded %s", str(self.max_retry), stack_info=True, exc_info=True)
                 raise SystemError(ex) from ex
 
             retry += 1
-            LOGGER.error("Error Connecting to %s.\n Error: %s",
-                         self.database,
-                         str(ex),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Error Connecting to %s.\n Error: %s", self.database, str(ex), stack_info=True, exc_info=True)
             time.sleep(self.sleep_btw_attempts)
             self.connect(retry=retry)
 
         except Exception as ex:
-            LOGGER.error("Error Connecting to %s. Unable to retry. Error: %s",
-                         self.database,
-                         str(ex),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error(
+                "Error Connecting to %s. Unable to retry. Error: %s", self.database, str(ex), stack_info=True, exc_info=True
+            )
             raise SystemError(ex) from ex
         return self.driver
 
@@ -133,20 +127,18 @@ class GraphDBHandler:
                 self.driver = None
             except Exception as ex:
                 # pylint: disable=broad-exception-caught
-                LOGGER.error("Failed to close the driver:%s",
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error("Failed to close the driver:%s", str(ex), stack_info=True, exc_info=True)
                 self.driver = None
 
-    def persist_mqtt_msg(self,
-                         topic: str,
-                         message: dict,
-                         timestamp: float = time.time(),
-                         node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA",
-                                              "LINE", "DEVICE"),
-                         attr_node_type: str = "NESTED_ATTRIBUTE",
-                         retry: int = 0):
+    def persist_mqtt_msg(
+        self,
+        topic: str,
+        message: dict,
+        timestamp: float = time.time(),
+        node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"),
+        attr_node_type: Optional[str] = "NESTED_ATTRIBUTE",
+        retry: int = 0,
+    ):
         # pylint: disable=too-many-arguments
         """
         Persists all nodes and the message as attributes to the leaf node
@@ -158,25 +150,19 @@ class GraphDBHandler:
         timestamp : float, optional
             Timestamp for receiving the message, by default `time.time()`
         node_types : tuple, optional
-            Tuple of names given to nodes based on the hierarchy of the topic.
+            tuple of names given to nodes based on the hierarchy of the topic.
             By default `("ENTERPRISE", "FACILITY", "AREA","LINE", "DEVICE")`
         attr_node_type:
             Node type used to depict nested attributes which will be child nodes
             by default `"NESTED_ATTRIBUTE"`
         """
-
         try:
             driver = self.connect(retry)
             with driver.session(database=self.database) as session:
-                session.execute_write(self.save_all_nodes, topic, message,
-                                      timestamp, node_types, attr_node_type)
-        except (exceptions.TransientError, exceptions.TransactionError,
-                exceptions.SessionExpired) as ex:
+                session.execute_write(self.save_all_nodes, topic, message, timestamp, node_types, attr_node_type)
+        except (exceptions.TransientError, exceptions.TransactionError, exceptions.SessionExpired) as ex:
             if retry >= self.max_retry:
-                LOGGER.error("No. of retries exceeded %s",
-                             str(self.max_retry),
-                             stack_info=True,
-                             exc_info=True)
+                LOGGER.error("No. of retries exceeded %s", str(self.max_retry), stack_info=True, exc_info=True)
                 raise ex
 
             retry += 1
@@ -186,26 +172,26 @@ class GraphDBHandler:
                 str(message),
                 str(ex),
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
             # reset the driver
             self.close()
             time.sleep(self.sleep_btw_attempts)
-            self.persist_mqtt_msg(topic=topic,
-                                  message=message,
-                                  timestamp=timestamp,
-                                  attr_node_type=attr_node_type,
-                                  retry=retry)
+            self.persist_mqtt_msg(
+                topic=topic, message=message, timestamp=timestamp, attr_node_type=attr_node_type, retry=retry
+            )
 
     # method  starts
-    def save_all_nodes(self, session: neo4j.Session, topic: str, message: dict,
-                       timestamp: float, node_types: tuple,
-                       attr_node_type: str):
+    def save_all_nodes(
+        self, session: neo4j.Session, topic: str, message: dict, timestamp: float, node_types: tuple, attr_node_type: str
+    ):
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         """
         Iterate the topics by '/'. create node for each level & merge the messages to the final node
         For the other topics in the hierarchy a node will be created / merged and linked to the
         parent topic node
+
         Parameters
         ----------
         session :
@@ -217,49 +203,41 @@ class GraphDBHandler:
         timestamp:
             timestamp for receiving the message
         node_types : tuple
-            Tuple of strings representing the node types for each level in the topic hierarchy
+            tuple of strings representing the node types for each level in the topic hierarchy
         attr_node_type : str
             The node type for attribute nodes
         """
         response = None
         count = 0
         lastnode_id = None
-        nodes = topic.split('/')
-        dict_less_message, child_dict_vals = GraphDBHandler.separate_plain_composite_attributes(
-            message)
+        nodes = topic.split("/")
+        dict_less_message, child_dict_vals = GraphDBHandler.separate_plain_composite_attributes(message)
         for node in nodes:
-            LOGGER.debug("Processing sub topic: %s of topic:%s", str(node),
-                         str(topic))
+            LOGGER.debug("Processing sub topic: %s of topic:%s", str(node), str(topic))
 
             node_attr = None
             if count == len(nodes) - 1:
                 # Save the attributes without nested dicts only for the leaf node of topics
                 node_attr = dict_less_message
-            node_type: str = GraphDBHandler.get_topic_node_type(
-                count, node_types)
-            response = GraphDBHandler.save_node(session, node, node_type,
-                                                node_attr, lastnode_id,
-                                                timestamp)
+            node_type: Optional[str] = GraphDBHandler.get_topic_node_type(count, node_types)
+            response = GraphDBHandler.save_node(session, node, node_type, node_attr, lastnode_id, timestamp)
             records = list(response)
             lastnode_id = records[0][0].element_id
             if count == len(nodes) - 1:
                 # If this is the last node we iterate through the nested dicts
-                GraphDBHandler.save_attribute_nodes(session, lastnode_id,
-                                                    child_dict_vals,
-                                                    attr_node_type, timestamp)
+                GraphDBHandler.save_attribute_nodes(session, lastnode_id, child_dict_vals, attr_node_type, timestamp)
             count += 1
 
     # method Ends
 
     # static method starts
     @staticmethod
-    def save_attribute_nodes(session, lastnode_id: str, attr_nodes: dict,
-                             attr_node_type: str, timestamp: float):
+    def save_attribute_nodes(session, lastnode_id: str, attr_nodes: dict, attr_node_type: str, timestamp: float):
         """
         This function saves attribute nodes in the graph database.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         session: The session object to interact with the database.
         lastnode_id (str): The element_id of the parent node in the graph. None for top most nodes
         attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples
@@ -268,26 +246,21 @@ class GraphDBHandler:
 
         """
         for key in attr_nodes:
-            plain_attributes, composite_attributes = GraphDBHandler.separate_plain_composite_attributes(
-                attr_nodes[key])
-            response = GraphDBHandler.save_node(session, key, attr_node_type,
-                                                plain_attributes, lastnode_id,
-                                                timestamp)
+            plain_attributes, composite_attributes = GraphDBHandler.separate_plain_composite_attributes(attr_nodes[key])
+            response = GraphDBHandler.save_node(session, key, attr_node_type, plain_attributes, lastnode_id, timestamp)
             last_attr_node_id = response.peek()[0].element_id
             # After all the topics have been created the nested dicts , list of dicts in the message
             # need to be created as nodes so that they are properly persisted and traversable
             # The Label for all nodes created for attributes will be the same `attr_node_type`
-            if (composite_attributes is not None
-                    and len(composite_attributes) > 0):
+            if composite_attributes is not None and len(composite_attributes) > 0:
                 for child_key in composite_attributes.items():
                     child_value = composite_attributes[child_key]
                     # Fix to handle blank values which were give error unhashable type: 'dict'
-                    if (isinstance(child_value, (list, dict, tuple))
-                            and len(child_value) == 0):
+                    if isinstance(child_value, (list, dict, tuple)) and len(child_value) == 0:
                         child_value = None
                     response = GraphDBHandler.save_attribute_nodes(
-                        session, last_attr_node_id, {child_key, child_value},
-                        attr_node_type, timestamp)
+                        session, last_attr_node_id, {child_key, child_value}, attr_node_type, timestamp
+                    )
 
     # method Ends
 
@@ -300,22 +273,25 @@ class GraphDBHandler:
         if current_depth < len(node_types):
             return node_types[current_depth]
 
-        return f"{node_types[-1]}_depth_{current_depth - len(node_types)+ 1}"
+        return f"{node_types[-1]}_depth_{current_depth - len(node_types) + 1}"
 
     # static method ends
 
     # static Method Starts
     @staticmethod
-    def save_node(session: neo4j.Session,
-                  nodename: str,
-                  nodetype: str,
-                  attributes: dict = None,
-                  parent_id: str = None,
-                  timestamp: float = time.time()):
+    def save_node(
+        session: neo4j.Session,
+        nodename: str,
+        nodetype: str,
+        attributes: Optional[dict] = None,
+        parent_id: Optional[str] = None,
+        timestamp: float = time.time(),
+    ):
         # pylint: disable=too-many-arguments
         """
         Creates or Merges the MQTT message as a Graph node. Each level of the topic is also
         persisted as a graph node with appropriate parent relationship
+
         Parameters
         ----------
         session  : neo4j.Session
@@ -337,7 +313,11 @@ class GraphDBHandler:
         """
         LOGGER.debug(
             "Saving node: %s of type: %s and attributes: %s with parent: %s",
-            str(nodename), str(nodetype), str(attributes), str(parent_id))
+            str(nodename),
+            str(nodetype),
+            str(attributes),
+            str(parent_id),
+        )
         # attributes should not be null for the query to work
         if attributes is None:
             attributes = {}
@@ -391,11 +371,9 @@ RETURN value.child
 
         LOGGER.debug("CQL statement to be executed: %s", str(query))
         # non-referred would be ignored in the execution.
-        result: neo4j.Result = session.run(query,
-                                           nodename=nodename,
-                                           timestamp=timestamp,
-                                           parent_id=parent_id,
-                                           attributes=attributes)
+        result: neo4j.Result = session.run(
+            query, nodename=nodename, timestamp=timestamp, parent_id=parent_id, attributes=attributes
+        )
         return result
 
     # static Method Ends
@@ -408,6 +386,7 @@ RETURN value.child
         Keys for lists will be of the form <key>_<count>
         Keys for dicts will be of the form <parent key>_<child key>
         if any attribute is named "node_name" it will be replaced by "NODE_NAME"
+
         Parameters
         ----------
         message  : dict
@@ -416,19 +395,19 @@ RETURN value.child
         LOGGER.debug(mqtt_msg)
         output = {}
 
-        def flatten(json_object, name=''):
+        def flatten(json_object, name=""):
             """
             Recursive function to flatten nested dict/json objects
             """
             if isinstance(json_object, dict):
                 # iterate through the dict. recursively call the flattening function for each item
                 for items in json_object:
-                    flatten(json_object[items], name + items + '_')
+                    flatten(json_object[items], name + items + "_")
             elif isinstance(json_object, (list, tuple)):
                 i = 0
                 # iterate through the list. recursively call the flattening function for each item
                 for items in json_object:
-                    flatten(items, name + str(i) + '_')
+                    flatten(items, name + str(i) + "_")
                     i += 1
             elif json_object is not None:
                 if name[:-1] == NODE_NAME_KEY:
@@ -448,13 +427,14 @@ RETURN value.child
         Removes a composite values from the attribute object
         Composite values are of instance list, tuple and dict
         Does not recursively go into the value object
+
         Parameters
         ----------
         attributes  : dict
             Message properties which may or may not contain combination of plain and composite values
 
         Returns
-        ----------
+        -------
         1. dict with only simple attribute
         2. dict of remaining composite attributes ( list, dict, tuple)
         """
