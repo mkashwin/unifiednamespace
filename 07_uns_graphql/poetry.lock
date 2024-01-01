@@ -1284,13 +1284,13 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.23.2"
+version = "0.23.3"
 description = "Pytest support for asyncio"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-asyncio-0.23.2.tar.gz", hash = "sha256:c16052382554c7b22d48782ab3438d5b10f8cf7a4bdcae7f0f67f097d95beecc"},
-    {file = "pytest_asyncio-0.23.2-py3-none-any.whl", hash = "sha256:ea9021364e32d58f0be43b91c6233fb8d2224ccef2398d6837559e587682808f"},
+    {file = "pytest-asyncio-0.23.3.tar.gz", hash = "sha256:af313ce900a62fbe2b1aed18e37ad757f1ef9940c6b6a88e2954de38d6b1fb9f"},
+    {file = "pytest_asyncio-0.23.3-py3-none-any.whl", hash = "sha256:37a9d912e8338ee7b4a3e917381d1c95bfc8682048cb0fbc35baba316ec1faba"},
 ]
 
 [package.dependencies]
@@ -1675,13 +1675,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyam
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.215.3"
+version = "0.217.0"
 description = "A library for creating GraphQL APIs"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "strawberry_graphql-0.215.3-py3-none-any.whl", hash = "sha256:9a370e43b450c1ddbe3857bb6ef3f0a200bc412ee81ac970fa07e7dc086ebb07"},
-    {file = "strawberry_graphql-0.215.3.tar.gz", hash = "sha256:4103b02759c2436016bd1ec6f09487a8bcd1f5d1ae90dd0e50755d1206d7c833"},
+    {file = "strawberry_graphql-0.217.0-py3-none-any.whl", hash = "sha256:10e21ff8af08de002b3be39444dfb45c5baa8da34a4a2c00223aeb35cdf8205e"},
+    {file = "strawberry_graphql-0.217.0.tar.gz", hash = "sha256:c0b55bd2a76b7ae76e2c595c998dbe17ff5d957e5a5a8cd846d1d8b3dabaf1d3"},
 ]
 
 [package.dependencies]
@@ -1798,13 +1798,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "uvicorn"
-version = "0.24.0.post1"
+version = "0.25.0"
 description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "uvicorn-0.24.0.post1-py3-none-any.whl", hash = "sha256:7c84fea70c619d4a710153482c0d230929af7bcf76c7bfa6de151f0a3a80121e"},
-    {file = "uvicorn-0.24.0.post1.tar.gz", hash = "sha256:09c8e5a79dc466bdf28dead50093957db184de356fcdc48697bad3bde4c2588e"},
+    {file = "uvicorn-0.25.0-py3-none-any.whl", hash = "sha256:ce107f5d9bd02b4636001a77a4e74aab5e1e2b146868ebbad565237145af444c"},
+    {file = "uvicorn-0.25.0.tar.gz", hash = "sha256:6dddbad1d7ee0f5140aba5ec138ddc9612c5109399903828b4874c9937f009c2"},
 ]
 
 [package.dependencies]
@@ -2139,4 +2139,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4b2f29769186f98a81ffb4a4555a96a26142b4360ffe7dfb4d7d396b27fab302"
+content-hash = "59a6a82a8114c3a5150c4e7de067b3b66b44fc3eca72fed7600ef67d53f13a95"
