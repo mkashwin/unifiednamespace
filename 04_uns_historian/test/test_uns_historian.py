@@ -1,187 +1,200 @@
-"""
-Tests for uns_historian.uns_mqtt_historian
-"""
-import datetime
-import inspect
+import asyncio
 import json
-import os
+import random
+import time
+from unittest.mock import patch
 
-import psycopg2
 import pytest
-import pytz
-from google.protobuf.json_format import MessageToDict
+import pytest_asyncio
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_historian.uns_mqtt_historian import UnsMqttHistorian
-from uns_mqtt.mqtt_listener import UnsMQTTClient
-from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_historian.historian_config import HistorianConfig, MQTTConfig
+from uns_historian.historian_handler import HistorianHandler
+from uns_historian.uns_mqtt_historian import UnsMqttHistorian, main
+from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
+from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
-cmd_subfolder = os.path.realpath(
-    os.path.abspath(
-        os.path.join(
-            os.path.split(inspect.getfile(inspect.currentframe()))[0], '..',
-            'src')))
 
-is_configs_provided: bool = (os.path.exists(
-    os.path.join(cmd_subfolder, "../conf/.secrets.yaml")) and os.path.exists(
-        os.path.join(cmd_subfolder, "../conf/settings.yaml"))) or (bool(
-            os.getenv("UNS_historian__username")))
+@pytest.fixture
+def mock_uns_client():
+    with patch("uns_historian.uns_mqtt_historian.UnsMQTTClient", autospec=True) as mock_client:
+        yield mock_client
+
+
+@pytest.fixture
+def mock_historian_handler():
+    with patch("uns_historian.uns_mqtt_historian.HistorianHandler", autospec=True) as mock_handler:
+        yield mock_handler
+
+
+def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historian_handler):  # noqa: ARG001
+    uns_mqtt_historian = UnsMqttHistorian()
+    # simulate the disconnection by calling the callback directly
+    uns_mqtt_historian.uns_client.on_disconnect(uns_mqtt_historian.uns_client, None, 0, None)
+    # verify the pool was closed
+    mock_historian_handler.close_pool.assert_not_called()
+
+
+def test_uns_mqtt_historian_main_positive_pool_closure(mock_uns_client, mock_historian_handler):  # noqa: ARG001
+    # verify that the main method closed the pool in normal execution
+    main()
+    mock_historian_handler.close_pool.assert_called_once()
+
+
+def test_uns_mqtt_historian_main_negative_pool_closure(mock_uns_client, mock_historian_handler):
+    # verify that the main method closed the pool even if exceptions were raised
+    mock_uns_client.loop_forever.side_effect = Exception("Mocked MQTT Error")
+    try:
+        main()
+    except Exception:
+        mock_historian_handler.close_pool.assert_called_once()
+
+
+# test data_list :  [{topic,[messages]}]
+# ensure that the topics mentioned here align with settings.yaml
+test_data_list: list[dict[str, list[dict | bytes | str]]] = [
+    {
+        "test/uns/ar1/ln2":  # test_data[0]: test for normal messages
+        [
+            {
+                "timestamp": 1486144502122,
+                "TestMetric1": "TestUNS",
+            },
+            {
+                "timestamp": 1586144502222,
+                "TestMetric2": "TestUNS",
+            },
+        ],
+    },
+    {
+        "spBv1.0/uns_group/NBIRTH/eon1":  # test_data[1]: test for SparkplugB messages
+        [
+            (
+                b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
+                b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
+                b"Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ "
+                b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
+                b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00"
+            ),
+        ],
+    },
+]
+
+
+def create_publisher() -> UnsMQTTClient:
+    """
+    utility method to create publisher
+    """
+    uns_publisher = UnsMQTTClient(
+        client_id=f"publisher-{time.time()}-{random.randint(0, 1000)}",  # noqa: S311
+        clean_session=MQTTConfig.clean_session,
+        userdata=None,
+        protocol=MQTTConfig.version,
+        transport=MQTTConfig.transport,
+        reconnect_on_failure=MQTTConfig.reconnect_on_failure,
+    )
+    if MQTTConfig.username is not None:
+        uns_publisher.username_pw_set(MQTTConfig.username, MQTTConfig.password)
+    uns_publisher.setup_tls(MQTTConfig.tls)
+    uns_publisher.topics = MQTTConfig.topics
+    connect_properties = None
+    if MQTTConfig.version == MQTTVersion.MQTTv5:
+        connect_properties = Properties(PacketTypes.CONNECT)
+    uns_publisher.connect(
+        host=MQTTConfig.host, port=MQTTConfig.port, keepalive=MQTTConfig.keepalive, properties=connect_properties
+    )
+    return uns_publisher
+
+
+@pytest_asyncio.fixture(scope="session")
+@pytest.mark.integrationtest
+async def clean_up_database():
+    """
+    Clean database from test data from the historian after execution of the tests
+    """
+    yield
+    delete_sql_cmd = f""" DELETE FROM {HistorianConfig.table} WHERE
+                               topic = $1 AND
+                               mqtt_msg = $2;"""  # noqa: S608
+    for test_data in test_data_list:
+        for topic, messages in test_data.items():
+            for message in messages:
+                if type(message) is bytes:
+                    message = convert_spb_bytes_payload_to_dict(message)
+                async with HistorianHandler() as historian:
+                    await historian.execute_prepared(delete_sql_cmd, *[topic, json.dumps(message)])
 
 
 @pytest.mark.integrationtest
-def test_uns_mqtt_historian():
-    """
-    Test case for UnsMqttHistorian#init()
-    """
+# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
+@pytest.mark.xdist_group(name="uns_mqtt_historian")
+@pytest.mark.parametrize(  # convert test data dict into tuples for pytest parameterize
+    "topic, messages", [(topic, messages) for dictionary in test_data_list for topic, messages in dictionary.items()]
+)
+def test_uns_mqtt_historian(clean_up_database, topic, messages):  # noqa: ARG001
     uns_mqtt_historian = None
     try:
+        # 1. Start the historian listener in a new thread
         uns_mqtt_historian = UnsMqttHistorian()
-        assert uns_mqtt_historian is not None, (
-            "Connection to either the MQTT Broker or the Historian DB did not happen"
-        )
-    except Exception as ex:
-        pytest.fail(
-            "Connection to either the MQTT Broker or the Historian DB did not happen:"
-            f" Exception {ex}")
-    finally:
-        if uns_mqtt_historian is not None:
-            uns_mqtt_historian.uns_client.disconnect()
-        if (uns_mqtt_historian
-                is not None) and (uns_mqtt_historian.uns_historian_handler
-                                  is not None):
-
-            uns_mqtt_historian.uns_historian_handler.close()
-
-
-@pytest.mark.integrationtest
-@pytest.mark.parametrize(
-    "topic, message",  # Test spB message persistance
-    [
-
-        # Test UNS message persistance
-        ("test/uns/ar1/ln2", {
-            "timestamp": 1486144502122,
-            "TestMetric2": "TestUNS"
-        }),
-        ("spBv1.0/uns_group/NBIRTH/eon1",
-         b'\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t'
-         b'Outputs/E\x10\x02\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\tOutputs/F\x10\x03\x18\xea\xf2\xf5\xa8\xa0+ '
-         b'\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11'
-         b'Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00'
-         )
-    ])
-def test_uns_mqtt_historian_persistance(topic: str, message):
-    """
-    Test the persistance of message (UNS & SpB) to the database
-    """
-    uns_mqtt_historian = None
-    try:
-        uns_mqtt_historian = UnsMqttHistorian()
-        uns_mqtt_historian.uns_client.loop()
+        mgs_received: list = []
+        old_on_message = uns_mqtt_historian.uns_client.on_message
+        # FIXME Loop inside on_message_decorator is null for some reason. hence trying to set outer loop in callback
+        loop = asyncio.get_event_loop()
 
         def on_message_decorator(client, userdata, msg):
             """
-            override / wrap the existing on_message callback so that
-            on_publish is asleep until the message was received
+            Override / wrap the existing on_message callback so that
+            we can track the messages were processed
             """
+            asyncio.set_event_loop(loop)
             old_on_message(client, userdata, msg)
-            if topic.startswith("spBv1.0/"):
-                inbound_payload = sparkplug_b_pb2.Payload()
-                inbound_payload.ParseFromString(message)
-                message_dict = MessageToDict(inbound_payload)
+            mgs_received.append(msg)
 
-            else:
-                message_dict = message
-
-            try:
-                cursor = uns_mqtt_historian.uns_historian_handler.get_cursor()
-                query_timestamp: datetime = datetime.datetime.fromtimestamp(
-                    float(
-                        message_dict.get(
-                            uns_mqtt_historian.mqtt_timestamp_key)) / 1000)
-                compare_with_historian(
-                    cursor, uns_mqtt_historian.uns_historian_handler.table,
-                    query_timestamp, topic, uns_mqtt_historian.client_id,
-                    message_dict)
-            finally:
-                uns_mqtt_historian.uns_client.disconnect()
-
-        # --- end of function
-
-        publish_properties = None
-        if uns_mqtt_historian.uns_client.protocol == UnsMQTTClient.MQTTv5:
-            publish_properties = Properties(PacketTypes.PUBLISH)
-
-        if topic.startswith("spBv1.0/"):
-            payload = message
-        else:
-            payload = json.dumps(message)
-
-        # Overriding on_message is more reliable that on_publish because some times
-        # on_publish was called before on_message
-        old_on_message = uns_mqtt_historian.uns_client.on_message
         uns_mqtt_historian.uns_client.on_message = on_message_decorator
 
-        # publish the messages as non-persistent
-        # to allow the tests to be idempotent across multiple runs
-        uns_mqtt_historian.uns_client.publish(
-            topic=topic,
-            payload=payload,
-            qos=uns_mqtt_historian.uns_client.qos,
-            retain=False,
-            properties=publish_properties)
+        uns_mqtt_historian.uns_client.loop_start()
 
-        uns_mqtt_historian.uns_client.loop_forever()
+        # 2. Create an MQTT publisher
+        uns_publisher: UnsMQTTClient = create_publisher()
+        uns_publisher.loop_start()
+
+        if MQTTConfig.version == MQTTVersion.MQTTv5:
+            publish_properties = Properties(PacketTypes.PUBLISH)
+        for message in messages:
+            if type(message) is dict or type(message) is str:
+                message = json.dumps(message)
+            # publish multiple message as non-persistent
+            # to allow the tests to be idempotent across multiple runs
+            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=False, properties=publish_properties)
+
+        # wait for uns_mqtt_historian to have persisted to the database
+        while len(mgs_received) < len(messages):
+            asyncio.sleep(1)
+        # disconnect the historian listener to free the asyncio loop
+        uns_mqtt_historian.uns_client.disconnect()
+        # connect to the database and validate
+        select_query = f""" SELECT * FROM {HistorianConfig.table} WHERE
+                               topic = $1 AND
+                               mqtt_msg = $2;"""  # noqa: S608
+
+        # Inline the async function
+        async def execute_prepared_async(select_query, topic, message):
+            async with HistorianHandler() as historian:
+                return await historian.execute_prepared(select_query, *[topic, json.dumps(message)])
+
+        for message in messages:
+            if type(message) is bytes:
+                message = convert_spb_bytes_payload_to_dict(message)
+
+            result = loop.run_until_complete(execute_prepared_async(select_query, topic, message))
+
+            assert result is not None, "Should have gotten a result"
+            assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
 
     except Exception as ex:
-        pytest.fail(
-            "Connection to either the MQTT Broker or the Historian DB did not happen:"
-            f" Exception {ex}")
+        pytest.fail("Connection to either the MQTT Broker or the Historian DB did not happen:" f" Exception {ex}")
 
     finally:
-        if uns_mqtt_historian is not None:
-            uns_mqtt_historian.uns_client.disconnect()
-        if (uns_mqtt_historian
-                is not None) and (uns_mqtt_historian.uns_historian_handler
-                                  is not None):
-            # incase the on_disconnect message is not called
-            uns_mqtt_historian.uns_historian_handler.close()
-
-
-def compare_with_historian(cursor, db_table: str, query_timestamp: datetime,
-                           topic: str, client_id: str, message_dict: dict):
-    # pylint: disable=too-many-arguments
-    """
-    Utility method for test case to compare data in the database with the data sent
-    """
-    try:
-        # Read the database for the published data.
-
-        sql_command = f"""SELECT *
-                      FROM {db_table}
-                      WHERE
-                        time = %s AND
-                        topic = %s AND
-                        client_id=%s;"""
-
-        with cursor:
-            cursor.execute(sql_command, (query_timestamp, topic, client_id))
-            data = cursor.fetchone()
-            assert data is not None, "No data found in the database"
-            db_msg = data[3]
-            db_client = data[2]
-            db_topic = data[1]
-            assert db_msg == message_dict, "Message payload is not matching"
-            assert db_client == client_id, "client_id are not matching"
-            assert db_topic == topic, "Topic are not matching"  # topic
-            # Need to localize the value in order to be able to compare with the info from db
-            assert data[0] == pytz.utc.localize(
-                query_timestamp), "Timestamp are not matching"  # timestamp
-
-    except (psycopg2.DataError, psycopg2.OperationalError) as ex:
-        pytest.fail(
-            f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}"
-        )
-    except AssertionError as ex:
-        pytest.fail(f"Assertions did not pass: Exception {ex}")
+        uns_publisher.disconnect()
+        uns_mqtt_historian.uns_client.disconnect()

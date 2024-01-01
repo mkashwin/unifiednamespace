@@ -1,175 +1,155 @@
 """
 Encapsulate logic of persisting messages to the historian database
 """
-import datetime
 import json
 import logging
-import time
+from datetime import UTC, datetime
+from typing import Optional
 
-import psycopg2
+import asyncpg
+from asyncpg import Pool, Record
+from asyncpg.connection import Connection
+from asyncpg.prepared_stmt import PreparedStatement
 
-# Logger
+from uns_historian.historian_config import HistorianConfig
+
 LOGGER = logging.getLogger(__name__)
-MAX_RETRIES: int = 5
-SLEEP_BTW_ATTEMPT = 10  # seconds to sleep between retries
 
 
 class HistorianHandler:
-    # pylint: disable=too-many-instance-attributes
     """
     Class to encapsulate logic of persisting messages to the historian database
     """
-    timescale_db_conn = None
-    timescale_db_cursor = None
 
-    def __init__(self, hostname: str, port: int, database: str, table: str,
-                 user: str, password: str, sslmode: str):
-        # pylint: disable=too-many-arguments
-        """
-        Parameters
-        -----------
-        hostname: str,
-        port:int,
-        database:str,
-        table:str,
-        user: str,
-        password: str,
-        sslmode: str
-        """
-        self.hostname = hostname
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
-        self.sslmode = sslmode
-        self.table = table
+    # Class variable to hold the shared pool
+    _shared_pool: Pool = None
 
-        self.connect()
-        LOGGER.debug("Successfully connected to the Historian DB")
+    @classmethod
+    async def get_shared_pool(cls) -> Pool:
+        """
+        Retrieves the shared connection pool.
+        Creates a new pool if it doesn't exist.
 
-    def connect(self, retry: int = 0):
+        Returns:
+            Pool: The shared connection pool.
         """
-        Connect to the postgres DB. Allow for reconnects tries up to MAX_RETRIES and sleep
-        SLEEP_BTW_ATTEMPT seconds between retry attempts
-        This is required because psycopg2 doesn't support reconnecting connections which time out / expire
-        """
-        if self.timescale_db_conn is None:
-            try:
-                self.timescale_db_conn = psycopg2.connect(
-                    host=self.hostname,
-                    port=self.port,
-                    database=self.database,
-                    user=self.user,
-                    password=self.password,
-                    sslmode=self.sslmode)
-                self.timescale_db_conn.set_session(autocommit=True)
-                return self.timescale_db_conn
-            except psycopg2.OperationalError as ex:
-                if (self.timescale_db_conn is None and retry >= MAX_RETRIES):
-                    LOGGER.error("No. of retries exceeded %s",
-                                 str(MAX_RETRIES),
-                                 stack_info=True,
-                                 exc_info=True)
-                    raise ex
-                retry += 1
-                LOGGER.error("Error Connecting to %s. Error: %s",
-                             self.database,
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
-                time.sleep(SLEEP_BTW_ATTEMPT)
-                return self.connect(retry=retry)
-            except Exception as ex:
-                LOGGER.error(
-                    "Error Connecting to %s. Unable to retry. Error:%s",
-                    self.database,
-                    str(ex),
-                    stack_info=True,
-                    exc_info=True)
-                raise ex
-        return None
+        try:
+            LOGGER.debug("DB Shared connection pool requested")
+            if cls._shared_pool is None:
+                cls._shared_pool = await cls.create_pool()
+            return cls._shared_pool
+        except Exception as ex:
+            LOGGER.error(f"Error while getting shared pool: {ex}")
+            raise
 
-    def get_cursor(self):
+    @classmethod
+    async def create_pool(cls) -> Pool:
         """
-        Get the cursor for the Timescale DB
+        Creates a connection pool.
+        Returns:
+            Pool: The created connection pool.
+        Raises:
+            asyncpg.PostgresError: If there's an error creating the pool.
         """
-        if (self.timescale_db_cursor is None
-                or self.timescale_db_cursor.closed):
-            if self.timescale_db_conn is None:
-                self.connect()
-            self.timescale_db_cursor = self.timescale_db_conn.cursor()
-        return self.timescale_db_cursor
+        try:
+            pool: Pool = await asyncpg.create_pool(
+                host=HistorianConfig.hostname,
+                user=HistorianConfig.user,
+                password=HistorianConfig.password,
+                database=HistorianConfig.database,
+                port=HistorianConfig.port,
+                ssl=HistorianConfig.get_ssl_context(),
+            )
+            LOGGER.info("Connection pool created successfully")
+            return pool
+        except asyncpg.PostgresError as e:
+            LOGGER.error(f"Error creating connection pool: {e}")
+            raise
 
-    def close(self):
+    @classmethod
+    async def close_pool(cls):
         """
-        Close the database connection
+        Close the connection pool
         """
-        if self.timescale_db_cursor is not None:
-            try:
-                self.timescale_db_cursor.close()
-            except Exception as ex:
-                LOGGER.error("Error closing the cursor %s",
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
-        # in case there was any error in closing the cursor, attempt closing the connection too
-        if self.timescale_db_conn is not None:
-            try:
-                self.timescale_db_conn.close()
-                self.timescale_db_conn = None
-            except Exception as ex:
-                LOGGER.error("Error closing the connection %s",
-                             str(ex),
-                             stack_info=True,
-                             exc_info=True)
+        if not cls._shared_pool.is_closing():
+            await cls._shared_pool.close()
+            LOGGER.info("Connection pool closed successfully")
+        else:
+            LOGGER.warn("Connection pool was already closed ")
 
-    def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: float,
-                         message: dict):
+    async def __aenter__(self):
+        self._pool: Pool = await self.get_shared_pool()  # Acquire the shared pool directly
+        self._conn: Connection = await self._pool.acquire()  # Acquire a connection from the pool
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self._pool.release(self._conn)  # Release the acquired connection
+
+    async def __aiter__(self):
         """
-        Persists all nodes and the message as attributes to the leaf node
+        Allow usage in asynchronous for loops.
+        """
+        self._conn: Connection = await self.get_shared_pool().acquire()
+        return self
+
+    async def __anext__(self) -> Connection:
+        """
+        Use with asynchronous for loops.
+        """
+        return self._conn
+
+    async def execute_prepared(self, query: str, *args) -> list:
+        """
+        Executes a prepared query to fetch historical events.
+        Returns a list of Records
+
+        Args:
+            query (str): The SQL query to execute.
+            *args: Query parameters.
+
+        Returns:
+            list[HistoricalUNSEvent]: list of historical events.
+
+        Raises:
+            asyncpg.PostgresError: If there's an error executing the prepared statement.
+        """
+        try:
+            if self._conn is None or self._conn.is_closed():
+                self._conn = await self._pool().acquire()
+            stmt: PreparedStatement = await self._conn.prepare(query)
+            results: Record = await stmt.fetch(*args)
+            return results
+
+        except asyncpg.PostgresError as ex:
+            LOGGER.error(f"Error executing prepared statement: {ex}")
+            raise
+        finally:
+            # Ensure that the connection is released back to the pool
+            if self._conn and not self._conn.is_closed():
+                await self._pool.release(self._conn)
+
+    async def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: Optional[float], message: dict):
+        """
+        Persists all mqtt message in the historian
         ----------
         client_id:
             Identifier for the Subscriber
         topic: str
             The topic on which the message was sent
         timestamp
-            The timestamp of the message received
+            The timestamp of the message received in milliseconds
         message: str
             The MQTT message. String is expected to be JSON formatted
         """
         if timestamp is None:
-            _timestamp = datetime.datetime.now()
+            db_timestamp = datetime.now()
         else:
             # Timestamp is normally in milliseconds and needs to be converted prior to insertion
-            _timestamp = datetime.datetime.fromtimestamp(timestamp / 1000)
-
-        sql_cmd = f"""INSERT INTO {self.table} ( time, topic, client_id, mqtt_msg )
-                        VALUES (%s,%s,%s,%s)
-                        RETURNING *;"""
-
-        def execute_sql_cmd(retry: int = 0):
-            """
-            inline method to enable retry
-            """
-            try:
-                with self.get_cursor() as cursor:
-                    cursor.execute(
-                        sql_cmd,
-                        (_timestamp, topic, client_id, json.dumps(message)))
-            except (psycopg2.DataError, psycopg2.OperationalError) as ex:
-                # handle exception
-                LOGGER.error(
-                    "Error persisting message to the database. Error: %s",
-                    str(ex),
-                    stack_info=True,
-                    exc_info=True)
-                if retry >= MAX_RETRIES:
-                    raise ex
-                retry += 1
-                # Close the stale connection.
-                self.close()
-                time.sleep(SLEEP_BTW_ATTEMPT)
-                execute_sql_cmd(retry)
-
-        # ---------------------------------------------------------------------------------------------------
-        execute_sql_cmd()
+            db_timestamp = datetime.fromtimestamp(timestamp / 1000, UTC)
+        # sometimes when qos is not 2, the mqtt message may be delivered multiple times. in such case avoid duplicate inserts
+        sql_cmd = f"""INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg )
+                        VALUES ($1,$2,$3,$4)
+                        ON CONFLICT DO NOTHING
+                        RETURNING *;"""  # noqa: S608:
+        params = [db_timestamp, topic, client_id, json.dumps(message)]
+        return await self.execute_prepared(sql_cmd, *params)
