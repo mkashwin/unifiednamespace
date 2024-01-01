@@ -1,147 +1,76 @@
 """
 MQTT listener that listens to ISA-95 UNS and SparkplugB and persists all messages to the Historian
 """
+import asyncio
 import logging
 import random
 import time
 
 from uns_mqtt.mqtt_listener import UnsMQTTClient
-from uns_historian.historian_config import settings
+
+from uns_historian.historian_config import MQTTConfig
 from uns_historian.historian_handler import HistorianHandler
 
 LOGGER = logging.getLogger(__name__)
 
-SPARKPLUG_NS = "spBv1.0/"
-
 
 class UnsMqttHistorian:
-    # pylint: disable=too-many-instance-attributes
     """
     MQTT listener that listens to ISA-95 UNS and SparkplugB and
     persists all messages to the Historian
     """
 
     def __init__(self):
-        self.load_mqtt_configs()
-        self.load_historian_config()
+        self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
         self.uns_client: UnsMQTTClient = UnsMQTTClient(
             client_id=self.client_id,
-            clean_session=self.clean_session,
+            clean_session=MQTTConfig.clean_session,
             userdata=None,
-            protocol=self.mqtt_mqtt_version_code,
-            transport=self.mqtt_transport,
-            reconnect_on_failure=self.reconnect_on_failure)
-        # Connect to the database
-        self.uns_historian_handler = HistorianHandler(
-            hostname=self.historian_hostname,
-            port=self.historian_port,
-            database=self.historian_database,
-            table=self.historian_table,
-            user=self.historian_user,
-            password=self.historian_password,
-            sslmode=self.historian_sslmode)
+            protocol=MQTTConfig.version,
+            transport=MQTTConfig.transport,
+            reconnect_on_failure=MQTTConfig.reconnect_on_failure,
+        )
+        # Callback messages
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
-
-        self.uns_client.run(host=self.mqtt_host,
-                            port=self.mqtt_port,
-                            username=self.mqtt_username,
-                            password=self.mqtt_password,
-                            tls=self.mqtt_tls,
-                            keepalive=self.mqtt_keepalive,
-                            topics=self.topics,
-                            qos=self.mqtt_qos)
-
-    def load_mqtt_configs(self):
-        """
-        Read the MQTT configurations required to connect to the MQTT broker
-        """
-        # generate client ID with pub prefix randomly
-        self.client_id = f'historian-{time.time()}-{random.randint(0, 1000)}'
-
-        self.mqtt_transport: str = settings.get("mqtt.transport", "tcp")
-        self.mqtt_mqtt_version_code: int = settings.get(
-            "mqtt.version", UnsMQTTClient.MQTTv5)
-        self.mqtt_qos: int = settings.get("mqtt.qos", 2)
-        self.reconnect_on_failure: bool = settings.get(
-            "mqtt.reconnect_on_failure", True)
-        self.clean_session: bool = settings.get("mqtt.clean_session", None)
-
-        self.mqtt_host: str = settings.mqtt["host"]
-        self.mqtt_port: int = settings.get("mqtt.port", 1883)
-        self.mqtt_username: str = settings.get("mqtt.username")
-        self.mqtt_password: str = settings.get("mqtt.password")
-        self.mqtt_tls: dict = settings.get("mqtt.tls", None)
-        self.topics: str = settings.get("mqtt.topics", ["#"])
-        self.mqtt_keepalive: int = settings.get("mqtt.keep_alive", 60)
-        self.mqtt_ignored_attributes: dict = settings.get(
-            "mqtt.ignored_attributes", None)
-        self.mqtt_timestamp_key = settings.get("mqtt.timestamp_attribute",
-                                               "timestamp")
-        if self.mqtt_host is None:
-            raise SystemError(
-                "MQTT Host not provided. Update key 'mqtt.host' in '../../conf/settings.yaml'"
-            )
-
-    def load_historian_config(self):
-        """
-        Loads the configurations from '../../conf/settings.yaml' and '../../conf/.secrets.yaml'
-        """
-        self.historian_hostname: str = settings.historian["hostname"]
-        self.historian_port: int = settings.get("historian.port", None)
-        self.historian_user: str = settings.historian["username"]
-        self.historian_password: str = settings.historian["password"]
-        self.historian_sslmode: str = settings.get("historian.sslmode", None)
-
-        self.historian_database: str = settings.historian["database"]
-
-        self.historian_table: str = settings.historian["table"]
-
-        if self.historian_hostname is None:
-            raise SystemError((
-                "Historian Url not provided. "
-                "Update key 'historian.hostname' in '../../conf/settings.yaml'"
-            ))
-        if self.historian_database is None:
-            raise SystemError((
-                "Historian Database name  not provided. "
-                "Update key 'historian.database' in '../../conf/settings.yaml'"
-            ))
-        if self.historian_table is None:
-            raise SystemError(
-                f"""Table in Historian Database {self.historian_database} not provided.
-                Update key 'historian.table' in '../../conf/settings.yaml'""")
-        if ((self.historian_user is None)
-                or (self.historian_password is None)):
-            raise SystemError(
-                "Historian DB  Username & Password not provided."
-                "Update keys 'historian.username' and 'historian.password' "
-                "in '../../conf/.secrets.yaml'")
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(HistorianHandler.get_shared_pool())
+        self.uns_client.run(
+            host=MQTTConfig.host,
+            port=MQTTConfig.port,
+            username=MQTTConfig.username,
+            password=MQTTConfig.password,
+            tls=MQTTConfig.tls,
+            keepalive=MQTTConfig.keepalive,
+            topics=MQTTConfig.topics,
+            qos=MQTTConfig.qos,
+        )
 
     def on_message(self, client, userdata, msg):
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{"
-                     "Client: %s,"
-                     "Userdata: %s,"
-                     "Message: %s,"
-                     "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
 
         try:
             # get the payload as a dict object
             filtered_message = self.uns_client.get_payload_as_dict(
-                topic=msg.topic,
-                payload=msg.payload,
-                mqtt_ignored_attributes=self.mqtt_ignored_attributes)
-            # save message
-            self.uns_historian_handler.persist_mqtt_msg(
-                client_id=client._client_id.decode(),
-                topic=msg.topic,
-                timestamp=float(
-                    filtered_message.get(self.mqtt_timestamp_key,
-                                         time.time())),
-                message=filtered_message)
+                topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=MQTTConfig.ignored_attributes
+            )
+
+            # Async Historian persistance method
+            async def run_async_handler():
+                async with HistorianHandler() as uns_historian_handler:
+                    await uns_historian_handler.persist_mqtt_msg(
+                        client_id=client._client_id.decode(),
+                        topic=msg.topic,
+                        timestamp=float(filtered_message.get(MQTTConfig.timestamp_key, time.time())),
+                        message=filtered_message,
+                    )
+
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(run_async_handler())
+
         except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
@@ -149,27 +78,31 @@ class UnsMqttHistorian:
                 msg.topic,
                 msg.payload,
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
         except Exception as ex:
-            # pylint: disable=broad-exception-caught
             LOGGER.error(
                 "Error persisting the message to the Historian DB: %s\nTopic: %s \nMessage:%s",
                 str(ex),
                 msg.topic,
                 msg.payload,
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
 
-    def on_disconnect(self, client, userdata, result_code, properties=None):
+    def on_disconnect(
+        self,
+        client,  # noqa: ARG002
+        userdata,  # noqa: ARG002
+        result_code,
+        properties=None,  # noqa: ARG002
+    ) -> None:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
-        # pylint: disable=unused-argument
         if result_code != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         str(result_code),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(result_code), stack_info=True, exc_info=True)
+        # dont close the DB Pool as the client may disconnect multiple times and reconnect
 
 
 def main():
@@ -183,12 +116,9 @@ def main():
     finally:
         if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()
-        if (uns_mqtt_historian
-                is not None) and (uns_mqtt_historian.uns_historian_handler
-                                  is not None):
-            # incase the on_disconnect message is not called
-            uns_mqtt_historian.uns_historian_handler.close()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(HistorianHandler.close_pool())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

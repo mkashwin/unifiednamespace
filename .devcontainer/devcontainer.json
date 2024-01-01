@@ -16,7 +16,7 @@
 			"includeDeps": true,
 			"package": "black",
 			"version": "latest",
-			"injections": "pylint pytest",
+			"injections": "pytest",
 			"interpreter": "python3"
 		},
 		"ghcr.io/devcontainers-contrib/features/poetry:2": {
@@ -39,14 +39,29 @@
 				"ms-python.autopep8",
 				"streetsidesoftware.code-spell-checker",
 				"tamasfe.even-better-toml",
-				"ms-python.flake8",
 				"VisualStudioExptTeam.vscodeintellicode",
 				"ms-python.isort",
 				"DavidAnson.vscode-markdownlint",
-				"ms-python.pylint",
 				"redhat.vscode-yaml",
-				"eeyore.yapf"
+				"charliermarsh.ruff"
 			]
+		}
+	},
+	"portsAttributes": {
+		"1883": {
+			"label": "MQTT"
+		},
+		"5432": {
+			"label": "Timescaledb"
+		},
+		"7474": {
+			"label": "neo4j browser"
+		},
+		"7687": {
+			"label": "Neo4j database"
+		},
+		"8083": {
+			"label": "MQTT Websockets"
 		}
 	}
 	// Configure tool-specific properties.

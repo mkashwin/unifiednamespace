@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
@@ -111,6 +111,11 @@ jobs:
               image: uns/kafka_mapper,
               container_description: "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka",
             }
+          - {
+              module: 07_uns_graphql,
+              image: uns/kafka_mapper,
+              container_description: "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka",
+            }            
 
     env:
       SHA_TAG: ${{ needs.update-version.outputs.sha_tag }}
@@ -124,7 +129,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
 
@@ -259,7 +264,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
 
@@ -290,7 +295,7 @@ jobs:
     steps:
       - name: Checkout Code
         if: startsWith(needs.update-version.outputs.branch_name, 'main')
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
           fetch-depth: 0

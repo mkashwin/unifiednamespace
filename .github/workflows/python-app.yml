@@ -12,6 +12,8 @@ on:
       - "**/pyproject.toml"
       - "**/poetry.lock"
       - ".github/workflows/*.yml"
+      - ".github/include/**"
+
   pull_request:
     branches:
       - "**"
@@ -20,6 +22,8 @@ on:
       - "**/pyproject.toml"
       - "**/poetry.lock"
       - ".github/workflows/*.yml"
+      - ".github/include/**"
+
 permissions:
   contents: read
 
@@ -36,31 +40,18 @@ jobs:
             "./04_uns_historian",
             "./05_sparkplugb",
             "./06_uns_kafka",
+            "./07_uns_graphql",
           ]
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup with python environment
+        uses: ./.github/include/setup_python/
         with:
-          python-version: "3.11"
+          module: ${{ matrix.module }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip poetry
-          poetry install
-
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          poetry run flake8 ${{ matrix.module }}/src ${{ matrix.module }}/test  --count --select=E9,F63,F7,F82 --show-source --statistics 
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          poetry run flake8 ${{ matrix.module }}/src ${{ matrix.module }}/test  --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Test for security vulnerabilities
-        run: |
-          poetry run safety check
-
-      - name: Test with pytest
-
-        run: |
-          poetry run pytest -m "not integrationtest" ${{ matrix.module }}/test/
+      - name: Run all type of tests
+        uses: ./.github/include/execute_tests/
+        with:
+          module: ${{ matrix.module }}
+          integration_tests: false
