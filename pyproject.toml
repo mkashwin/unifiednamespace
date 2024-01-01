@@ -55,7 +55,7 @@ confluent-kafka = "^2.3.0"
 # All other dependencies fulfilled by uns_mqtt
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.4.3"
+pytest = "^7.4.4"
 flake8 = "^6.1.0"
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
