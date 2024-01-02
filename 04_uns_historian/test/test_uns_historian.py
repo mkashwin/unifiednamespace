@@ -179,7 +179,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
         # connect to the database and validate
         select_query = f""" SELECT * FROM {HistorianConfig.table} WHERE
                                topic = $1 AND
-                               mqtt_msg = $2 AND 
+                               mqtt_msg = $2 AND
                                client_id = $3;"""  # noqa: S608
 
         # Inline the async function
