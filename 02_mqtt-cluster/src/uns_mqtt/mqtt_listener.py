@@ -14,7 +14,6 @@ from typing import Final, Literal, Optional
 import paho.mqtt.client as mqtt_client
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
 # Logger

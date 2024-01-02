@@ -132,8 +132,9 @@ async def clean_up_database():
 @pytest.mark.parametrize(  # convert test data dict into tuples for pytest parameterize
     "topic, messages", [(topic, messages) for dictionary in test_data_list for topic, messages in dictionary.items()]
 )
-def test_uns_mqtt_historian(clean_up_database, topic, messages):  # noqa: ARG001
+def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # noqa: ARG001
     uns_mqtt_historian = None
+    uns_publisher = None
     try:
         # 1. Start the historian listener in a new thread
         uns_mqtt_historian = UnsMqttHistorian()
@@ -166,7 +167,9 @@ def test_uns_mqtt_historian(clean_up_database, topic, messages):  # noqa: ARG001
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=False, properties=publish_properties)
+            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
+            # allow for the message to be received
+            time.sleep(1)
 
         # wait for uns_mqtt_historian to have persisted to the database
         while len(mgs_received) < len(messages):
@@ -176,24 +179,24 @@ def test_uns_mqtt_historian(clean_up_database, topic, messages):  # noqa: ARG001
         # connect to the database and validate
         select_query = f""" SELECT * FROM {HistorianConfig.table} WHERE
                                topic = $1 AND
-                               mqtt_msg = $2;"""  # noqa: S608
+                               mqtt_msg = $2 AND 
+                               client_id = $3;"""  # noqa: S608
 
         # Inline the async function
-        async def execute_prepared_async(select_query, topic, message):
+        async def execute_prepared_async(select_query, topic, message, client_id):
             async with HistorianHandler() as historian:
-                return await historian.execute_prepared(select_query, *[topic, json.dumps(message)])
+                return await historian.execute_prepared(select_query, *[topic, json.dumps(message), client_id])
 
         for message in messages:
             if type(message) is bytes:
                 message = convert_spb_bytes_payload_to_dict(message)
 
-            result = loop.run_until_complete(execute_prepared_async(select_query, topic, message))
+            result = loop.run_until_complete(
+                execute_prepared_async(select_query, topic, message, uns_mqtt_historian.client_id)
+            )
 
             assert result is not None, "Should have gotten a result"
             assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
-
-    except Exception as ex:
-        pytest.fail("Connection to either the MQTT Broker or the Historian DB did not happen:" f" Exception {ex}")
 
     finally:
         uns_publisher.disconnect()
