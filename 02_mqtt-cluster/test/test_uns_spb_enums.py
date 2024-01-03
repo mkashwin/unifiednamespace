@@ -52,7 +52,7 @@ property_set_list: sparkplug_b_pb2.Payload.PropertySet = MagicMock(spec=sparkplu
         (-10, SimpleNamespace(**spb_obj_dict), -10 + 2**32, sparkplug_b_pb2.Int32),
     ],
 )
-def test_set_int_value_via_enum(value: int, spb_obj, metric_value: int, spb_datatype: int):
+def test_int_value_via_enum(value: int, spb_obj, metric_value: int, spb_datatype: int):
     """
     Test case for uns_spb_helper#set_int_value_in_spb_object
     """
@@ -65,6 +65,8 @@ def test_set_int_value_via_enum(value: int, spb_obj, metric_value: int, spb_data
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.INT}"
 
+        assert my_enum_type(spb_datatype).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj, metric_value,spb_datatype",
@@ -75,7 +77,7 @@ def test_set_int_value_via_enum(value: int, spb_obj, metric_value: int, spb_data
         (123456, SimpleNamespace(**spb_obj_dict), 123456, sparkplug_b_pb2.DateTime),
     ],
 )
-def test_set_long_value_via_enum(value: int, spb_obj, metric_value: int, spb_datatype: int):
+def test_long_value_via_enum(value: int, spb_obj, metric_value: int, spb_datatype: int):
     """
     Test case for uns_spb_helper#set_long_value_in_spb_object
     """
@@ -91,6 +93,8 @@ def test_set_long_value_via_enum(value: int, spb_obj, metric_value: int, spb_dat
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.LONG}"
 
+        assert my_enum_type(spb_datatype).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj, metric_value",
@@ -99,7 +103,7 @@ def test_set_long_value_via_enum(value: int, spb_obj, metric_value: int, spb_dat
         (-10.0, SimpleNamespace(**spb_obj_dict), -10.0),
     ],
 )
-def test_set_float_value_via_enum(value: float, spb_obj, metric_value: float):
+def test_float_value_via_enum(value: float, spb_obj, metric_value: float):
     """
     Test case for setting float value via the ENUMs
     """
@@ -114,6 +118,8 @@ def test_set_float_value_via_enum(value: float, spb_obj, metric_value: float):
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.FLOAT}"
 
+        assert my_enum_type(sparkplug_b_pb2.Float).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj, metric_value",
@@ -122,7 +128,7 @@ def test_set_float_value_via_enum(value: float, spb_obj, metric_value: float):
         (-10.0, SimpleNamespace(**spb_obj_dict), -10.0),
     ],
 )
-def test_set_double_value_via_enum(value: float, spb_obj, metric_value: float):
+def test_double_value_via_enum(value: float, spb_obj, metric_value: float):
     """
     Test case for value setting double via the ENUMs
     """
@@ -137,6 +143,8 @@ def test_set_double_value_via_enum(value: float, spb_obj, metric_value: float):
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.DOUBLE}"
 
+        assert my_enum_type(sparkplug_b_pb2.Double).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj, metric_value",
@@ -145,7 +153,7 @@ def test_set_double_value_via_enum(value: float, spb_obj, metric_value: float):
         (False, SimpleNamespace(**spb_obj_dict), False),
     ],
 )
-def test_set_boolean_value_via_enum(value: bool, spb_obj, metric_value: bool):
+def test_boolean_value_via_enum(value: bool, spb_obj, metric_value: bool):
     """
     Test case for value setting boolean via the ENUMs
     """
@@ -161,6 +169,8 @@ def test_set_boolean_value_via_enum(value: bool, spb_obj, metric_value: bool):
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} must be null in {spb_obj} for all types except {SPBValueFieldName.BOOLEAN}"
 
+        assert my_enum_type(sparkplug_b_pb2.Boolean).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj, metric_value",
@@ -169,7 +179,7 @@ def test_set_boolean_value_via_enum(value: bool, spb_obj, metric_value: bool):
         ("""Test String2\nLine2""", SimpleNamespace(**spb_obj_dict), """Test String2\nLine2"""),
     ],
 )
-def test_set_string_value_via_enum(value: str, spb_obj, metric_value: str):
+def test_string_value_via_enum(value: str, spb_obj, metric_value: str):
     """
     Test case for value setting String via the ENUMs
     """
@@ -184,6 +194,8 @@ def test_set_string_value_via_enum(value: str, spb_obj, metric_value: str):
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.STRING}"
 
+        assert my_enum_type(sparkplug_b_pb2.String).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj, metric_value",
@@ -196,7 +208,7 @@ def test_set_string_value_via_enum(value: str, spb_obj, metric_value: str):
         ),
     ],
 )
-def test_set_bytes_value_via_enum(value: bytes, spb_obj, metric_value: bytes):
+def test_bytes_value_via_enum(value: bytes, spb_obj, metric_value: bytes):
     """
     Test case for value setting boolean via the ENUMs
     """
@@ -208,6 +220,8 @@ def test_set_bytes_value_via_enum(value: bytes, spb_obj, metric_value: bytes):
                 spb_obj.__dict__[datatype] is None
             ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.BYTES}"
 
+    assert SPBMetricDataTypes(sparkplug_b_pb2.Bytes).get_value_function(spb_obj) == metric_value
+
 
 @pytest.mark.parametrize(
     "value, spb_obj",
@@ -216,7 +230,7 @@ def test_set_bytes_value_via_enum(value: bytes, spb_obj, metric_value: bytes):
         ("String", SimpleNamespace(**spb_obj_dict)),  # negative test case
     ],
 )
-def test_set_dataset_via_enum(value: sparkplug_b_pb2.Payload.DataSet, spb_obj):
+def test_dataset_via_enum(value: sparkplug_b_pb2.Payload.DataSet, spb_obj):
     """
     Test case for value setting Template via the ENUMs
     """
@@ -228,6 +242,8 @@ def test_set_dataset_via_enum(value: sparkplug_b_pb2.Payload.DataSet, spb_obj):
                 assert (
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.TEMPLATE}"
+
+        assert SPBMetricDataTypes(sparkplug_b_pb2.DataSet).get_value_function(spb_obj) == value
     else:
         with pytest.raises(ValueError):
             SPBMetricDataTypes(sparkplug_b_pb2.DataSet).set_value_in_sparkplug(value=value, spb_object=spb_obj)
@@ -240,7 +256,7 @@ def test_set_dataset_via_enum(value: sparkplug_b_pb2.Payload.DataSet, spb_obj):
         ("String", SimpleNamespace(**spb_obj_dict)),  # negative test case
     ],
 )
-def test_set_template_via_enum(value: sparkplug_b_pb2.Template, spb_obj):
+def test_template_via_enum(value: sparkplug_b_pb2.Template, spb_obj):
     """
     Test case for value setting Template via the ENUMs
     """
@@ -252,6 +268,8 @@ def test_set_template_via_enum(value: sparkplug_b_pb2.Template, spb_obj):
                 assert (
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.TEMPLATE}"
+
+        assert SPBMetricDataTypes(sparkplug_b_pb2.Template).get_value_function(spb_obj) == value
     else:
         with pytest.raises(ValueError):
             SPBMetricDataTypes(sparkplug_b_pb2.Template).set_value_in_sparkplug(value=value, spb_object=spb_obj)
@@ -264,7 +282,7 @@ def test_set_template_via_enum(value: sparkplug_b_pb2.Template, spb_obj):
         ("String", SimpleNamespace(**spb_obj_dict)),  # negative test case
     ],
 )
-def test_set_propertyset_via_enum(value: sparkplug_b_pb2.Payload.PropertySet, spb_obj):
+def test_propertyset_via_enum(value: sparkplug_b_pb2.Payload.PropertySet, spb_obj):
     """
     Test case for value setting Template via the ENUMs
     """
@@ -275,10 +293,12 @@ def test_set_propertyset_via_enum(value: sparkplug_b_pb2.Payload.PropertySet, sp
             if datatype != SPBValueFieldName.PROPERTY_SET:
                 assert (
                     spb_obj.__dict__[datatype] is None
-                ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.TEMPLATE}"
+                ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.PROPERTY_SET}"
+
+        assert SPBPropertyValueTypes(sparkplug_b_pb2.PropertySet).get_value_function(spb_obj) == value
     else:
         with pytest.raises(ValueError):
-            SPBMetricDataTypes(sparkplug_b_pb2.PropertySet).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+            SPBPropertyValueTypes(sparkplug_b_pb2.PropertySet).set_value_in_sparkplug(value=value, spb_object=spb_obj)
 
 
 @pytest.mark.parametrize(
@@ -288,7 +308,7 @@ def test_set_propertyset_via_enum(value: sparkplug_b_pb2.Payload.PropertySet, sp
         ("String", SimpleNamespace(**spb_obj_dict)),  # negative test case
     ],
 )
-def test_set_propertyset_list_via_enum(value: sparkplug_b_pb2.Payload.PropertySetList, spb_obj):
+def test_propertyset_list_via_enum(value: sparkplug_b_pb2.Payload.PropertySetList, spb_obj):
     """
     Test case for value setting Template via the ENUMs
     """
@@ -297,12 +317,32 @@ def test_set_propertyset_list_via_enum(value: sparkplug_b_pb2.Payload.PropertySe
         assert spb_obj.propertysets_value == value
         for datatype in spb_obj_dict:
             if datatype != SPBValueFieldName.PROPERTY_SET_LIST:
-                assert (
-                    spb_obj.__dict__[datatype] is None
-                ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.TEMPLATE}"
+                assert spb_obj.__dict__[datatype] is None, (
+                    f"Datatype: {datatype} should be null in  {spb_obj} for all types "
+                    f"except {SPBValueFieldName.PROPERTY_SET_LIST}"
+                )
+
+        assert SPBPropertyValueTypes(sparkplug_b_pb2.PropertySetList).get_value_function(spb_obj) == value
     else:
         with pytest.raises(ValueError):
-            SPBMetricDataTypes(sparkplug_b_pb2.PropertySetList).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+            SPBPropertyValueTypes(sparkplug_b_pb2.PropertySetList).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+
+
+@pytest.mark.parametrize(
+    "value, spb_obj",
+    [
+        (1234, SimpleNamespace(**spb_obj_dict)),
+        ("UNKNOWN VALUE", SimpleNamespace(**spb_obj_dict)),
+    ],
+)
+def test_unknown_via_enum(value, spb_obj):
+    for my_enum_type in [SPBBasicDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes, SPBDataSetDataTypes]:
+        my_enum_type(sparkplug_b_pb2.Unknown).set_value_in_sparkplug(value, spb_object=spb_obj)
+        for datatype in spb_obj_dict:
+            assert (
+                spb_obj.__dict__[datatype] is None
+            ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.TEMPLATE}"
+        assert my_enum_type(sparkplug_b_pb2.Unknown).get_value_from_sparkplug(spb_obj) is None
 
 
 def little_to_big_endian(byte_list: list[float], factor: Literal[4, 8]) -> bytes:
@@ -344,21 +384,7 @@ def little_to_big_endian(byte_list: list[float], factor: Literal[4, 8]) -> bytes
             SimpleNamespace(**spb_obj_dict),
             bytes([0x34, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD9, 0x9E, 0x02, 0xD1, 0xB2, 0x76, 0x37, 0xE4]),
         ),
-        (
-            sparkplug_b_pb2.FloatArray,
-            [1.23, 89.341],
-            SimpleNamespace(**spb_obj_dict),
-            # reverse the byte order in groups of 4 bytes to change from little-endian to big-endian,
-            little_to_big_endian([0x3F, 0x9D, 0x70, 0xA4, 0x42, 0xB2, 0xAE, 0x98], 4),
-        ),
-        (
-            sparkplug_b_pb2.DoubleArray,
-            [12.354213, 1022.9123213],
-            SimpleNamespace(**spb_obj_dict),
-            little_to_big_endian(
-                [0x40, 0x28, 0xB5, 0x5B, 0x68, 0x05, 0xA2, 0xD7, 0x40, 0x8F, 0xF7, 0x4C, 0x6F, 0x1C, 0x17, 0x8E], 8
-            ),
-        ),
+        # Float and Double may have floating point precision issues which need a separate test
         (
             sparkplug_b_pb2.DateTimeArray,
             [1256102875335, 1656107875000],
@@ -391,11 +417,54 @@ def little_to_big_endian(byte_list: list[float], factor: Literal[4, 8]) -> bytes
         ),
     ],
 )
-def test_set_arrays(array_type, value: list[int], spb_obj, encoded_bytes: bytes):
+def test_set_arrays(array_type, value: list[int | str | bool | bytes], spb_obj, encoded_bytes: bytes):
     SPBMetricDataTypes(array_type).set_value_in_sparkplug(value=value, spb_object=spb_obj)
     assert spb_obj.bytes_value == encoded_bytes
     for datatype in spb_obj_dict:
         if datatype != SPBValueFieldName.BYTES:
+            # Check that no other field was set
             assert (
                 spb_obj.__dict__[datatype] is None
             ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.BYTES}"
+    #  check if the array is correctly decoded back from the byte array
+    assert SPBMetricDataTypes(array_type).get_value_from_sparkplug(spb_obj) == value
+
+
+@pytest.mark.parametrize(
+    "array_type, value, spb_obj, encoded_bytes, decimal_precision",
+    [  # test data taken from https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
+        (
+            sparkplug_b_pb2.FloatArray,
+            [1.23, 89.341],
+            SimpleNamespace(**spb_obj_dict),
+            # reverse the byte order in groups of 4 bytes to change from little-endian to big-endian,
+            little_to_big_endian([0x3F, 0x9D, 0x70, 0xA4, 0x42, 0xB2, 0xAE, 0x98], 4),
+            5,
+        ),
+        (
+            sparkplug_b_pb2.DoubleArray,
+            [12.354213, 1022.9123213],
+            SimpleNamespace(**spb_obj_dict),
+            little_to_big_endian(
+                [0x40, 0x28, 0xB5, 0x5B, 0x68, 0x05, 0xA2, 0xD7, 0x40, 0x8F, 0xF7, 0x4C, 0x6F, 0x1C, 0x17, 0x8E], 8
+            ),
+            12,
+        ),
+    ],
+)
+def test_set_float_arrays(array_type, value: list[float], spb_obj, encoded_bytes: bytes, decimal_precision: int):
+    """
+    Need separate tests for decimal values due to floating point precision errors while converting to bytes and back from bytes
+    """
+    SPBMetricDataTypes(array_type).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+    assert spb_obj.bytes_value == encoded_bytes
+    for datatype in spb_obj_dict:
+        if datatype != SPBValueFieldName.BYTES:
+            # Check that no other field was set
+            assert (
+                spb_obj.__dict__[datatype] is None
+            ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.BYTES}"
+    #  check if the array is correctly decoded back from the byte array
+    decoded_values = SPBMetricDataTypes(array_type).get_value_from_sparkplug(spb_obj)
+    for original, decoded in zip(value, decoded_values):
+        assert round(original, decimal_precision) == round(decoded, decimal_precision)
