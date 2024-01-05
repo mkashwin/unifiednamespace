@@ -65,7 +65,7 @@ def test_int_value_via_enum(value: int, spb_obj, metric_value: int, spb_datatype
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.INT}"
 
-        assert my_enum_type(spb_datatype).get_value_function(spb_obj) == metric_value
+        assert my_enum_type(spb_datatype).get_value_function(spb_obj) == value
 
 
 @pytest.mark.parametrize(
@@ -93,7 +93,7 @@ def test_long_value_via_enum(value: int, spb_obj, metric_value: int, spb_datatyp
                     spb_obj.__dict__[datatype] is None
                 ), f"Datatype: {datatype} should be null in  {spb_obj} for all types except {SPBValueFieldName.LONG}"
 
-        assert my_enum_type(spb_datatype).get_value_function(spb_obj) == metric_value
+        assert my_enum_type(spb_datatype).get_value_function(spb_obj) == value
 
 
 @pytest.mark.parametrize(

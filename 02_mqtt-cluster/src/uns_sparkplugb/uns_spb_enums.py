@@ -137,13 +137,14 @@ class _GetAndSetValueInSparkPlugObject:
         )
 
     @staticmethod
-    def int_value_to_bytes(
+    def get_unsigned_int_or_long(
         value: int,
+        attr_name: Literal[SPBValueFieldName.INT, SPBValueFieldName.LONG],
         spb_object: Payload.Metric | Payload.PropertyValue | Payload.DataSet.DataSetValue | Payload.Template.Parameter,
-        factor: Literal[0, 8, 16, 32] = 0,
+        factor: Literal[0, 8, 16, 32, 64] = 0,
     ) -> int:
         """
-        Helper method for setting Int value in metric/property value/dataset value / template parameter
+        Helper method for setting Int value or Long Value in metric/property value/dataset value / template parameter
         check if the value is less than zero. If yes,convert it to an unsigned value
         while preserving its representation in the given number of bits
         Parameters
@@ -154,35 +155,27 @@ class _GetAndSetValueInSparkPlugObject:
                     Int8:  8
                     Int16: 16
                     Int32: 32
-                    UInt: 0
+                    Int64: 64 <- for long
+                    UInt: 0 <- for UInt8, UInt16, UInt32, UInt64
         """
         if value is not None and value < 0:
             value = value + (0 if factor == 0 else 2**factor)
-        spb_object.int_value = value
+        setattr(spb_object, attr_name, value)
         return value
 
     @staticmethod
-    def long_value_to_bytes(
-        value: int,
+    def get_signed_int_or_long(
         spb_object: Payload.Metric | Payload.PropertyValue | Payload.DataSet.DataSetValue | Payload.Template.Parameter,
-        factor: Literal[0, 64] = 0,
-    ) -> int:
-        """
-        Helper method for setting Long value in metric/property value/dataset value / template parameter
-        Check if the value is less than zero. If yes,convert it to an unsigned value
-        while preserving its representation in the given number of bits
-        Parameters
-        ----------
-        value:
-        metric: Metric object
-        factor: Depending on datatype used to mask negative integers
-                    Int64:  64
-                    all others: 0
-        """
-        if value is not None and value < 0:
-            value = value + (2**factor if factor != 0 else 0)
-        spb_object.long_value = value
-        return value
+        attr_name: Literal[SPBValueFieldName.INT, SPBValueFieldName.LONG],
+        factor: Literal[0, 8, 16, 32, 64] = 0,
+    ):
+        unsigned_value: int = getattr(spb_object, attr_name)
+
+        if unsigned_value >= 2 ** (factor - 1):
+            signed_value = unsigned_value - 2**factor
+        else:
+            signed_value = unsigned_value
+        return signed_value
 
     @staticmethod
     def boolean_array_to_bytes(
@@ -277,65 +270,65 @@ class SPBBasicDataTypes(_SPBAbstractDataTypes):
     Int8 = (
         sparkplug_b_pb2.Int8,
         SPBValueFieldName.INT,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.int_value_to_bytes(
-            value=value, spb_object=spb_object, factor=8
+        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.get_unsigned_int_or_long(
+            value=value, attr_name=SPBValueFieldName.INT, spb_object=spb_object, factor=8
+        ),
+        lambda spb_object: _GetAndSetValueInSparkPlugObject.get_signed_int_or_long(
+            spb_object=spb_object, attr_name=SPBValueFieldName.INT, factor=8
         ),
     )
 
     Int16 = (
         sparkplug_b_pb2.Int16,
         SPBValueFieldName.INT,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.int_value_to_bytes(
-            value=value, spb_object=spb_object, factor=16
+        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.get_unsigned_int_or_long(
+            value=value, attr_name=SPBValueFieldName.INT, spb_object=spb_object, factor=16
+        ),
+        lambda spb_object: _GetAndSetValueInSparkPlugObject.get_signed_int_or_long(
+            spb_object=spb_object, attr_name=SPBValueFieldName.INT, factor=16
         ),
     )
 
     Int32 = (
         sparkplug_b_pb2.Int32,
         SPBValueFieldName.INT,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.int_value_to_bytes(
-            value=value, spb_object=spb_object, factor=32
+        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.get_unsigned_int_or_long(
+            value=value, attr_name=SPBValueFieldName.INT, spb_object=spb_object, factor=32
+        ),
+        lambda spb_object: _GetAndSetValueInSparkPlugObject.get_signed_int_or_long(
+            spb_object=spb_object, attr_name=SPBValueFieldName.INT, factor=32
         ),
     )
 
     Int64 = (
         sparkplug_b_pb2.Int64,
         SPBValueFieldName.LONG,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.long_value_to_bytes(
-            value=value, spb_object=spb_object, factor=64
+        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.get_unsigned_int_or_long(
+            value=value, attr_name=SPBValueFieldName.LONG, spb_object=spb_object, factor=64
+        ),
+        lambda spb_object: _GetAndSetValueInSparkPlugObject.get_signed_int_or_long(
+            spb_object=spb_object, attr_name=SPBValueFieldName.LONG, factor=64
         ),
     )
 
     UInt8 = (
         sparkplug_b_pb2.UInt8,
         SPBValueFieldName.INT,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.int_value_to_bytes(
-            value=value, spb_object=spb_object, factor=0
-        ),
     )
 
     UInt16 = (
         sparkplug_b_pb2.UInt16,
         SPBValueFieldName.INT,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.int_value_to_bytes(
-            value=value, spb_object=spb_object, factor=0
-        ),
     )
 
     UInt32 = (
         sparkplug_b_pb2.UInt32,
         SPBValueFieldName.INT,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.int_value_to_bytes(
-            value=value, spb_object=spb_object, factor=0
-        ),
     )
 
     UInt64 = (
         sparkplug_b_pb2.UInt64,
         SPBValueFieldName.LONG,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.long_value_to_bytes(
-            value=value, spb_object=spb_object, factor=0
-        ),
     )
 
     Float = (
@@ -363,8 +356,11 @@ class SPBBasicDataTypes(_SPBAbstractDataTypes):
     DateTime = (
         sparkplug_b_pb2.DateTime,
         SPBValueFieldName.LONG,
-        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.long_value_to_bytes(
-            value=value, spb_object=spb_object, factor=64
+        lambda spb_object, value: _GetAndSetValueInSparkPlugObject.get_unsigned_int_or_long(
+            value=value, attr_name=SPBValueFieldName.LONG, spb_object=spb_object, factor=64
+        ),
+        lambda spb_object: _GetAndSetValueInSparkPlugObject.get_signed_int_or_long(
+            spb_object=spb_object, attr_name=SPBValueFieldName.LONG, factor=64
         ),
     )
 
