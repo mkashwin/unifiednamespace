@@ -67,7 +67,9 @@ class SpBMessageGenerator:
 
     def get_node_death_payload(self, payload: Payload = None) -> Payload:
         """
-        Helper to get the Death Node Payload
+        Helper to get the Death Node Payload.
+        Sets the bdSeq counter in the metric for this payload.
+        You can add additional metrics after calling this function
         Always request this before requesting the Node Birth Payload
 
         Parameters
@@ -83,7 +85,8 @@ class SpBMessageGenerator:
         """
         Helper to get the Node Birth Payload
         Always request this after requesting the Node Death Payload
-
+        Sets the bdSeq counter in the metric for this payload.
+        You can add additional metrics after calling this function
         Parameters
         ----------
         payload:  Can be None if blank message is being created
@@ -105,6 +108,7 @@ class SpBMessageGenerator:
     def get_device_birth_payload(self, payload: Payload = None, timestamp: Optional[float] = None) -> Payload:
         """
         Get the DBIRTH payload
+        You can add additional metrics after calling this function
 
         Parameters
         ----------
@@ -124,23 +128,24 @@ class SpBMessageGenerator:
     def get_device_data_payload(self, payload: Payload = None, timestamp: Optional[float] = None) -> Payload:
         """
         Get a DDATA payload
+        You can add additional metrics after calling this function
 
         Parameters
         ----------
         payload:  Can be None if blank message is being created
         timestamp: if None then current time will be used for metric else provided timestamp
-        @TODO review this
         """
         return self.get_device_birth_payload(payload, timestamp)
 
     def get_node_data_payload(self, payload: Payload = None) -> Payload:
         """
         Get a NDATA payload
+        Always request this after requesting the Node Death Payload
+        You can add additional metrics after calling this function
 
         Parameters
         ----------
         payload:  Can be none if blank message is being created
-        @TODO review this
         """
         return self.get_node_birth_payload(payload)
 
@@ -497,9 +502,14 @@ class SpBMessageGenerator:
                 "must be equal"
             )
 
-    def create_propertyset_list(self, propertysets: list[PropertySet]):
-        """ """
-        pass
+    def create_propertyset_list(self, propertysets: list[PropertySet]) -> PropertySetList:
+        """
+        Helper method to create a PropertySetList object.
+        Create the required PropertySet Objects first with SpBMessageGenerator#create_propertyset
+        Create the PropertySetList object with this function
+        Lastly set the created object in the Metric with SpBMessageGenerator#add_properties_to_metric
+        """
+        return PropertySetList(propertysets)
 
 
 # class end
