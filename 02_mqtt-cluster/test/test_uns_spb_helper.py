@@ -1,6 +1,8 @@
 """
 Test class for uns_sparkplugb.uns_spb_helper
 """
+from typing import Literal
+
 import pytest
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
@@ -79,50 +81,190 @@ def test_get_node_birth_payload():
     assert metrics[0].long_value == 1
 
 
+def convert_to_unsigned_int(value: int, factor: Literal[0, 8, 16, 32, 64]) -> int:
+    """
+    Utility method to manage signed int
+    """
+    if value is not None and value < 0:
+        value = value + (0 if factor == 0 else 2**factor)
+    return value
+
+
 @pytest.mark.parametrize(
     "timestamp, metrics",
     [
-        (
-            1671554024644,
+        (  # Test for SPBBasicDataTypes
+            10000000014,
             [
                 {
-                    "name": "Inputs/A",
+                    "name": "Inputs/int8",
                     "timestamp": 1486144502122,
-                    "datatype": 11,
+                    "datatype": SPBMetricDataTypes.Int8,
+                    "value": 10,
+                },
+                {
+                    "name": "Inputs/int8.Neg",
+                    "timestamp": 1486144502123,
+                    "datatype": SPBMetricDataTypes.Int8,
+                    "value": -10,
+                },
+                {
+                    "name": "Inputs/uint8",
+                    "timestamp": 1486144502123,
+                    "datatype": SPBMetricDataTypes.UInt8,
+                    "value": 10,
+                },
+                {
+                    "name": "Inputs/int16.neg",
+                    "timestamp": 1486144502123,
+                    "datatype": SPBMetricDataTypes.Int16,
+                    "value": -100,
+                },
+                {
+                    "name": "Inputs/uint16",
+                    "timestamp": 1486144502123,
+                    "datatype": SPBMetricDataTypes.UInt16,
+                    "value": 100,
+                },
+                {
+                    "name": "Properties/int32",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int32,
+                    "value": 200,
+                },
+                {
+                    "name": "Properties/int32.neg",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int32,
+                    "value": -200,
+                },
+                {
+                    "name": "Properties/Uint32",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt32,
+                    "value": 200,
+                },
+                {
+                    "name": "Outputs/DateTime",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.DateTime,
+                    "value": 1486144502122,
+                },
+                {
+                    "name": "Outputs/Uint64",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt64,
+                    "value": 123456,
+                },
+                {
+                    "name": "Outputs/int64.Neg",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int64,
+                    "value": -123456,
+                },
+                {
+                    "name": "Outputs/Bool",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Boolean,
                     "value": False,
                 },
                 {
-                    "name": "Inputs/B",
+                    "name": "Outputs/Float",
                     "timestamp": 1486144502122,
-                    "datatype": 11,
-                    "value": False,
+                    "datatype": SPBMetricDataTypes.Float,
+                    "value": 1.1234,
                 },
                 {
-                    "name": "Outputs/E",
+                    "name": "Outputs/Double",
                     "timestamp": 1486144502122,
-                    "datatype": 11,
-                    "value": False,
+                    "datatype": SPBMetricDataTypes.Double,
+                    "value": 122341.1234,
                 },
                 {
-                    "name": "Outputs/F",
+                    "name": "Properties/String",
                     "timestamp": 1486144502122,
-                    "datatype": 11,
-                    "value": False,
-                },
-                {
-                    "name": "Properties/Hardware Make",
-                    "timestamp": 1486144502122,
-                    "datatype": 12,
+                    "datatype": SPBMetricDataTypes.String,
                     "value": "Sony",
                 },
                 {
-                    "name": "Properties/Weight",
+                    "name": "Properties/Text",
                     "timestamp": 1486144502122,
-                    "datatype": 3,
-                    "value": 200,
+                    "datatype": SPBMetricDataTypes.Text,
+                    "value": "Sony made this device in 1986",
                 },
             ],
-        )
+        ),
+        (  # Test for SPBArrayDataTypes
+            2200000034,
+            [
+                {
+                    "name": "Inputs/int8",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int8Array,
+                    "value": [10, 11, -23],
+                },
+                {
+                    "name": "Inputs/int16",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int16Array,
+                    "value": [-30000, 30000],
+                },
+                {
+                    "name": "Inputs/int32",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int32Array,
+                    "value": [-1, 315338746],
+                },
+                {
+                    "name": "Inputs/int64",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Int64Array,
+                    "value": [-4270929666821191986, -3601064768563266876],
+                },
+                {
+                    "name": "Inputs/uint8",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt8Array,
+                    "value": [23, 250],
+                },
+                {
+                    "name": "Inputs/uint16",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt16Array,
+                    "value": [30, 52360],
+                },
+                {
+                    "name": "Inputs/uint32",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt32Array,
+                    "value": [52, 3293969225],
+                },
+                {
+                    "name": "Inputs/uint64",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt64Array,
+                    "value": [5245, 16444743074749521625],
+                },
+                {
+                    "name": "Inputs/datetime",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UInt64Array,
+                    "value": [1486144502122, 1486144505122],
+                },
+                {
+                    "name": "Inputs/boolean",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.BooleanArray,
+                    "value": [True, False, True],
+                },
+                {
+                    "name": "Inputs/string",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.StringArray,
+                    "value": ["I am a string", "I too am a string"],
+                },
+            ],
+        ),
     ],
 )
 def test_create_ddata_payload_with_data(timestamp: float, metrics: list[dict]):
@@ -159,5 +301,35 @@ def test_create_ddata_payload_with_data(timestamp: float, metrics: list[dict]):
         assert payload_metric.timestamp == metric_timestamp
         assert payload_metric.datatype == metric["datatype"]
         parsed_value = SPBMetricDataTypes(payload_metric.datatype).get_value_function(payload_metric)
+        expected_value = metric["value"]
 
-        assert parsed_value == metric["value"]
+        match metric["datatype"]:
+            # special considerations for signed ints
+            case SPBMetricDataTypes.Int8:
+                assert payload_metric.int_value == convert_to_unsigned_int(expected_value, 8)
+
+            case SPBMetricDataTypes.Int16:
+                assert payload_metric.int_value == convert_to_unsigned_int(expected_value, 16)
+
+            case SPBMetricDataTypes.Int32:
+                assert payload_metric.int_value == convert_to_unsigned_int(expected_value, 32)
+
+            case SPBMetricDataTypes.Int64 | SPBMetricDataTypes.DateTime:
+                assert payload_metric.long_value == convert_to_unsigned_int(expected_value, 64)
+
+            case SPBMetricDataTypes.Float:
+                # Manage decimal precision issues
+                float_precision = 5
+                expected_value = round(expected_value, float_precision)
+                parsed_value = round(parsed_value, float_precision)
+
+            case SPBMetricDataTypes.FloatArray:
+                # Manage decimal precision issues
+                float_precision = 5
+                expected_value = [round(val, float_precision) for val in expected_value]
+                parsed_value = [round(val, float_precision) for val in parsed_value]
+
+            case _:  # All other cases
+                pass
+
+        assert parsed_value == expected_value
