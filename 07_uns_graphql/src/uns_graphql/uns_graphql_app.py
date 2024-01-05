@@ -43,7 +43,7 @@ def main():
     #     Main function invoked from command line
     #     """
     LOGGER.error(
-        "dont invoke main. Invoke via Uvicorn in the manner below. Adapt host and port appropriately \n\n"
+        "Dont invoke main. Invoke via Uvicorn in the manner below. Adapt host and port appropriately \n\n"
         "uvicorn uns_graphql.uns_graphql_app:UNSGraphql.app --host 0.0.0.0 --port 8000\n\n"
     )
 

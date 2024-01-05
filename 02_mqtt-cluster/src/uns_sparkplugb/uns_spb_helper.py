@@ -11,8 +11,8 @@ from typing import Optional
 from google.protobuf.json_format import MessageToDict
 
 from uns_sparkplugb.generated import sparkplug_b_pb2
-from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
-from uns_sparkplugb.uns_spb_enums import SPBBasicDataTypes, SPBDataSetDataTypes, SPBMetricDataTypes
+from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload, PropertySet, PropertySetList
+from uns_sparkplugb.uns_spb_enums import SPBBasicDataTypes, SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
 
 LOGGER = logging.getLogger(__name__)
 
@@ -146,7 +146,7 @@ class SpBMessageGenerator:
 
     def get_metric_wrapper(
         self,
-        payload: Payload,
+        container: Payload | Payload.Template,
         name: str,
         alias: Optional[int] = None,
         timestamp: Optional[float] = int(round(time.time() * 1000)),
@@ -156,17 +156,16 @@ class SpBMessageGenerator:
 
         Parameters
         ----------
-        payload:
-            SparkplugB Payload
+        container:
+            SparkplugB object containing the metric. either Payload or Template
         name: str
             Name of the metric. First time a metric is added Name is mandatory
         alias: int
             alias for metric name. Either Name or Alias must be provided
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
-
         """
-        metric: Payload.Metric = payload.metrics.add()
+        metric: Payload.Metric = container.metrics.add()
         if alias is not None:
             metric.alias = alias
 
@@ -224,7 +223,7 @@ class SpBMessageGenerator:
         """
         if len(columns) != len(types):
             raise ValueError("Length of columns and types should match")
-        metric: Payload.Metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
+        metric: Payload.Metric = self.get_metric_wrapper(container=payload, name=name, alias=alias, timestamp=timestamp)
 
         metric.datatype = SPBMetricDataTypes.DataSet
         # Set up the dataset
@@ -237,6 +236,9 @@ class SpBMessageGenerator:
         return metric.dataset_value
 
     def add_row_to_dataset(self, dataset_value: Payload.DataSet, values: list[int | float | bool | str]):
+        """
+        Helper method to set the row in the the dataset
+        """
         ds_row = dataset_value.rows.add()
         types = dataset_value.types
         for cell_value, cell_type in zip(values, types):
@@ -245,7 +247,7 @@ class SpBMessageGenerator:
 
     def init_template_metric(
         self,
-        payload: Payload,
+        payload: Payload | Payload.Template,
         name: str,
         metrics: list[Payload.Metric],
         version: Optional[str] = None,
@@ -276,7 +278,7 @@ class SpBMessageGenerator:
             Optional array of tuples representing parameters associated with the Template
             parameter.name; str, parameter.type = SPBBasicDataTypes, parameter.value = int| float| bool | str
         """
-        metric: Payload.Metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias)
+        metric: Payload.Metric = self.get_metric_wrapper(container=payload, name=name, alias=alias)
         metric.datatype = SPBMetricDataTypes.Template
 
         # Set up the template
@@ -329,7 +331,7 @@ class SpBMessageGenerator:
         if timestamp is None:
             # SparkplugB works with milliseconds
             timestamp = int(round(time.time() * 1000))
-        metric: Payload.Metric = self.get_metric_wrapper(payload=payload, name=name, alias=alias, timestamp=timestamp)
+        metric: Payload.Metric = self.get_metric_wrapper(container=payload, name=name, alias=alias, timestamp=timestamp)
         if value is None:
             metric.is_null = True
         metric.datatype = datatype
@@ -441,6 +443,63 @@ class SpBMessageGenerator:
         metric.metadata.file_type = file_type
         metric.metadata.md5 = md5
         metric.metadata.description = description
+
+    def add_properties_to_metric(
+        self,
+        metric: Payload.Metric,
+        keys: list[str],
+        datatypes: list[int],
+        values: list[str | float | bool | int | Payload.PropertySet | Payload.PropertySetList],
+    ) -> PropertySet:
+        """
+        Helper method to add properties to a Metric
+        """
+        if len(keys) == len(datatypes) == len(values):
+            metric.properties = self.create_propertyset(keys, datatypes, values)
+            return metric.properties
+        else:
+            raise LookupError(
+                f"Length of keys list:{len(keys)},"
+                f"Length of datatype list:{len(datatypes)},"
+                f"Length of values list:{len(values)}"
+                "must be equal"
+            )
+
+    def create_propertyset(
+        self,
+        ps_keys: list[str],
+        ps_datatypes: list[int],
+        ps_values: list[str | float | bool | int],
+    ) -> PropertySet:
+        """
+        Helper method to create a PropertySet object.
+        You will need to set the created object in the Metric via SpBMessageGenerator#add_properties_to_metric
+        """
+        if len(ps_keys) == len(ps_datatypes) == len(ps_values):
+            property_value_array: list[Payload.PropertyValue] = []
+            for datatype, value in zip(ps_datatypes, ps_values):
+                property_value: Payload.PropertyValue = Payload.PropertyValue()
+                property_value.type = datatype
+                if value is None:
+                    property_value.is_null = True
+                else:
+                    SPBPropertyValueTypes(datatype).set_value_in_sparkplug(value=value, spb_object=property_value)
+
+                property_value_array.append(property_value)
+
+            propertyset: Payload.PropertySet = Payload.PropertySet(keys=ps_keys, values=property_value_array)
+            return propertyset
+        else:
+            raise LookupError(
+                f"Length of keys list:{len(ps_keys)},"
+                f"Length of datatype list:{len(ps_datatypes)},"
+                f"Length of values list:{len(ps_values)}"
+                "must be equal"
+            )
+
+    def create_propertyset_list(self, propertysets: list[PropertySet]):
+        """ """
+        pass
 
 
 # class end

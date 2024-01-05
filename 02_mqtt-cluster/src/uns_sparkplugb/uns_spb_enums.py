@@ -64,9 +64,24 @@ class _SPBAbstractDataTypes(int, Enum):
         return self.field_name
 
     def set_value_in_sparkplug(self, value, spb_object):
+        """
+        Set the value in the correct slot of the spb_object
+        spb_object is one of type
+            - Payload.Metric
+            - Payload.PropertyValue
+            - Payload.DataSet.DataSetValue
+            - Payload.Template.Parameter
+        """
         self.add_value_function(value=value, spb_object=spb_object)
 
-    def get_value_from_sparkplug(self, spb_object):
+    def get_value_from_sparkplug(self, spb_object) -> int | float | str | bytes | list | Payload.DataSet | Payload.Template:
+        """
+        Retrieves the value from the correct slot of the spb_object
+        spb_object is one of type
+            - Payload.Metric
+            - Payload.PropertyValue
+            - Payload.DataSet.DataSetValue
+            - Payload.Template.Parameter"""
         return self.get_value_function(spb_object=spb_object)
 
     @staticmethod
