@@ -390,7 +390,7 @@ class SPBAdditionalDataTypes(_SPBAbstractDataTypes):
     DataSet = (
         sparkplug_b_pb2.DataSet,
         SPBValueFieldName.DATASET,
-        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.DATASET, value)
+        lambda spb_object, value: spb_object.dataset_value.CopyFrom(value)
         if isinstance(value, Payload.DataSet)
         else _GetAndSetValueInSparkPlugObject.raise_in_lambda(
             ValueError(f"Expecting object of type Payload.DataSet, got of type {type(value)}")
@@ -407,7 +407,7 @@ class SPBAdditionalDataTypes(_SPBAbstractDataTypes):
     Template = (
         sparkplug_b_pb2.Template,
         SPBValueFieldName.TEMPLATE,
-        lambda spb_object, value: setattr(spb_object, SPBValueFieldName.TEMPLATE, value)
+        lambda spb_object, value: spb_object.template_value.CopyFrom(value)
         if isinstance(value, Payload.Template)
         else _GetAndSetValueInSparkPlugObject.raise_in_lambda(
             ValueError(f"Expecting object of type Payload.DataSet, got of type {type(value)}")
@@ -582,28 +582,48 @@ class SPBArrayDataTypes(_SPBAbstractDataTypes):
     )  # Format "q" maps to  "long long" C Type and integer Python type.since Datetime is a long value
 
 
-# Enumeration of datatypes possible in a Metric.
+# Enumeration of datatypes possible in Payload.Metric
 # Combine  basic datatypes, additional datatypes and array datatypes
-SPBMetricDataTypes: Enum = _SPBAbstractDataTypes._combine_enums(
+SPBMetricDataTypes: _SPBAbstractDataTypes = _SPBAbstractDataTypes._combine_enums(
     "SPBMetricDataTypes", SPBBasicDataTypes, SPBAdditionalDataTypes, SPBArrayDataTypes
 )
 
 
-# Enumeration of datatypes possible for PropertyTypes
+# Enumeration of datatypes possible for Payload.Template.Parameters and Payload.DataSet.DataSetValue
+# Since the specs state that The value supplied MUST be one of the following
+# Google Protobuf types: uint32, uint64, float, double, bool, or string.
+# extrapolated that to determine the appropriate SPB Basic Datatypes (excluding Text)
+SPBParameterTypes: _SPBAbstractDataTypes = _SPBAbstractDataTypes._combine_enums(
+    "SPBParameterTypes",
+    [
+        SPBBasicDataTypes.UInt32,
+        SPBBasicDataTypes.UInt64,
+        SPBBasicDataTypes.Float,
+        SPBBasicDataTypes.Double,
+        SPBBasicDataTypes.Boolean,
+        SPBBasicDataTypes.String,
+    ],
+)
+
+
+# Enumeration of datatypes possible for Payload.PropertyValue
 # Extend basic datatypes with PropertySet & PropertySetList types
-SPBPropertyValueTypes = _SPBAbstractDataTypes._combine_enums(
+SPBPropertyValueTypes: _SPBAbstractDataTypes = _SPBAbstractDataTypes._combine_enums(
     "SPBPropertyValueTypes",
-    SPBBasicDataTypes,
+    SPBParameterTypes,
     _SPBAbstractDataTypes(
         "SPBPropertySet",
         {
             "PropertySet": (
-                sparkplug_b_pb2.PropertySet,  # @FIXME need to handle PropertySet
+                sparkplug_b_pb2.PropertySet,
                 SPBValueFieldName.PROPERTY_SET,
-                lambda spb_object, value: setattr(spb_object, SPBValueFieldName.PROPERTY_SET, value)
-                if isinstance(value, Payload.PropertySet)
+                lambda spb_object, value: spb_object.propertyset_value.CopyFrom(value)
+                if isinstance(value, Payload.PropertySet) and isinstance(spb_object, Payload.PropertyValue)
                 else _GetAndSetValueInSparkPlugObject.raise_in_lambda(
-                    ValueError(f"Expecting object of type Payload.PropertySet, got of type {type(value)}")
+                    ValueError(
+                        f"Expecting object of type Payload.PropertySet, got of type {type(value)}"
+                        f"to set in Payload.PropertyValue but got {type(spb_object)}"
+                    )
                 ),
             )
         },
@@ -612,12 +632,15 @@ SPBPropertyValueTypes = _SPBAbstractDataTypes._combine_enums(
         "SPBPropertySetList",
         {
             "PropertySetList": (
-                sparkplug_b_pb2.PropertySetList,  # @FIXME need to handle PropertySet
+                sparkplug_b_pb2.PropertySetList,
                 SPBValueFieldName.PROPERTY_SET_LIST,
-                lambda spb_object, value: setattr(spb_object, SPBValueFieldName.PROPERTY_SET_LIST, value)
-                if isinstance(value, Payload.PropertySetList)
+                lambda spb_object, value: spb_object.propertysets_value.CopyFrom(value)
+                if isinstance(value, Payload.PropertySetList) and isinstance(spb_object, Payload.PropertyValue)
                 else _GetAndSetValueInSparkPlugObject.raise_in_lambda(
-                    ValueError(f"Expecting object of type Payload.PropertySetList, got of type {type(value)}")
+                    ValueError(
+                        f"Expecting object of type Payload.PropertySetList, got of type {type(value)}"
+                        f"to set in Payload.PropertyValue but got {type(spb_object)}"
+                    )
                 ),
             )
         },
@@ -625,5 +648,7 @@ SPBPropertyValueTypes = _SPBAbstractDataTypes._combine_enums(
 )
 
 
-# Enumeration of datatypes possible for DataSetValue
-SPBDataSetDataTypes = SPBBasicDataTypes
+# Enumeration of datatypes possible for Payload.DataSet.DataSetValue
+# As this is same as that for Payload.Template.Parameter creating an alias
+# If the spec changes for DataSetValue we just need to adapt the value
+SPBDataSetDataTypes: _SPBAbstractDataTypes = SPBParameterTypes

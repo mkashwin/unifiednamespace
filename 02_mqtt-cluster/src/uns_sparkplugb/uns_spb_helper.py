@@ -12,7 +12,13 @@ from google.protobuf.json_format import MessageToDict
 
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload, PropertySet, PropertySetList
-from uns_sparkplugb.uns_spb_enums import SPBBasicDataTypes, SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
+from uns_sparkplugb.uns_spb_enums import (
+    SPBBasicDataTypes,
+    SPBDataSetDataTypes,
+    SPBMetricDataTypes,
+    SPBParameterTypes,
+    SPBPropertyValueTypes,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -257,7 +263,7 @@ class SpBMessageGenerator:
         metrics: list[Payload.Metric],
         version: Optional[str] = None,
         template_ref: Optional[str] = None,
-        parameters: Optional[list[tuple[str, SPBBasicDataTypes, int | float | bool | str]]] = None,
+        parameters: Optional[list[tuple[str, SPBParameterTypes, int | float | bool | str]]] = None,
         alias: Optional[int] = None,
     ) -> Payload.Template:
         """
@@ -337,10 +343,11 @@ class SpBMessageGenerator:
             # SparkplugB works with milliseconds
             timestamp = int(round(time.time() * 1000))
         metric: Payload.Metric = self.get_metric_wrapper(container=payload, name=name, alias=alias, timestamp=timestamp)
+        metric.datatype = datatype
         if value is None:
             metric.is_null = True
-        metric.datatype = datatype
-        SPBMetricDataTypes(datatype).set_value_in_sparkplug(value=value, spb_object=metric)
+        else:
+            SPBMetricDataTypes(datatype).set_value_in_sparkplug(value=value, spb_object=metric)
 
         # Return the metric
         return metric
@@ -353,7 +360,7 @@ class SpBMessageGenerator:
         value,
         timestamp,
         alias: Optional[int] = None,
-    ):
+    ) -> Payload.Metric:
         """
         Helper method for adding metrics to a container which can be a
         payload or a template
@@ -374,7 +381,9 @@ class SpBMessageGenerator:
         timestamp:
             timestamp associated with this metric. If not provided current system time will be used
         """
-        metric = self.add_metric(container, name=name, alias=alias, datatype=datatype, value=value, timestamp=timestamp)
+        metric: Payload.Metric = self.add_metric(
+            container, name=name, alias=alias, datatype=datatype, value=value, timestamp=timestamp
+        )
         metric.is_historical = True
         # Return the metric
         return metric
@@ -460,7 +469,7 @@ class SpBMessageGenerator:
         Helper method to add properties to a Metric
         """
         if len(keys) == len(datatypes) == len(values):
-            metric.properties = self.create_propertyset(keys, datatypes, values)
+            metric.properties.CopyFrom(self.create_propertyset(keys, datatypes, values))
             return metric.properties
         else:
             raise LookupError(
@@ -479,6 +488,7 @@ class SpBMessageGenerator:
         """
         Helper method to create a PropertySet object.
         You will need to set the created object in the Metric via SpBMessageGenerator#add_properties_to_metric
+        Use the method Metric.properties.CopyFrom() to set this object in your Metric
         """
         if len(ps_keys) == len(ps_datatypes) == len(ps_values):
             property_value_array: list[Payload.PropertyValue] = []

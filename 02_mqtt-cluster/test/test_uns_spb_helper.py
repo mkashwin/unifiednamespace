@@ -5,7 +5,7 @@ from typing import Literal
 
 import pytest
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
-from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
+from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes
 from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
 
 
@@ -79,6 +79,54 @@ def test_get_node_birth_payload():
     assert metrics[0].timestamp is not None
     assert metrics[0].datatype == SPBMetricDataTypes.Int64
     assert metrics[0].long_value == 1
+
+
+def create_dataset() -> Payload.DataSet:
+    """
+    utility method to create a dataset
+    """
+
+    row1 = Payload.DataSet.Row(
+        elements=[
+            Payload.DataSet.DataSetValue(int_value=10),
+            Payload.DataSet.DataSetValue(double_value=100.0),
+            Payload.DataSet.DataSetValue(long_value=100000),
+            Payload.DataSet.DataSetValue(string_value="I am dataset row1"),
+            Payload.DataSet.DataSetValue(boolean_value=False),
+        ]
+    )
+    row2 = Payload.DataSet.Row(
+        elements=[
+            Payload.DataSet.DataSetValue(int_value=20),
+            Payload.DataSet.DataSetValue(double_value=200.0),
+            Payload.DataSet.DataSetValue(long_value=200000),
+            Payload.DataSet.DataSetValue(string_value="I am dataset row2"),
+            Payload.DataSet.DataSetValue(boolean_value=True),
+        ]
+    )
+    row3 = Payload.DataSet.Row(
+        elements=[
+            Payload.DataSet.DataSetValue(int_value=30),
+            Payload.DataSet.DataSetValue(double_value=300.0),
+            Payload.DataSet.DataSetValue(long_value=300000),
+            Payload.DataSet.DataSetValue(string_value="I am dataset row3"),
+            Payload.DataSet.DataSetValue(boolean_value=False),
+        ]
+    )
+
+    data_set: Payload.DataSet = Payload.DataSet(
+        num_of_columns=5,
+        columns=["uint32", "double", "int64", "string", "boolean"],
+        rows=[row1, row2, row3],
+        types=[
+            SPBDataSetDataTypes.UInt32,
+            SPBDataSetDataTypes.Double,
+            SPBDataSetDataTypes.UInt64,
+            SPBDataSetDataTypes.String,
+            SPBDataSetDataTypes.Boolean,
+        ],
+    )
+    return data_set
 
 
 def convert_to_unsigned_int(value: int, factor: Literal[0, 8, 16, 32, 64]) -> int:
@@ -262,6 +310,39 @@ def convert_to_unsigned_int(value: int, factor: Literal[0, 8, 16, 32, 64]) -> in
                     "timestamp": 1486144502122,
                     "datatype": SPBMetricDataTypes.StringArray,
                     "value": ["I am a string", "I too am a string"],
+                },
+            ],
+        ),
+        (  # Test for SPBAdditionalDataTypes
+            1500000019,
+            [
+                {
+                    "name": "Inputs/UUID",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.UUID,
+                    "value": "unique_id_123456789",
+                },
+                {
+                    "name": "Inputs/bytes",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Bytes,
+                    "value": bytes([0x0C, 0x00, 0x00, 0x00, 0x34, 0xD0]),
+                },
+                {
+                    "name": "Inputs/file",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.File,
+                    "value": bytes(
+                        [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00, 0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
+                    ),
+                    # TODO DataSet and Template
+                },
+                {
+                    "name": "Inputs/dataset",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.DataSet,
+                    "value": create_dataset(),
+                    # TODO DataSet and Template
                 },
             ],
         ),
