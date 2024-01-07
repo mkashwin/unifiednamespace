@@ -46,9 +46,9 @@ class SpBMessageGenerator:
     # birth/death sequence number
     birth_death_seq_num: int = 0
 
-    # map of  metric names to alias.
+    # map of alias to names for metrics / templates.
     # While adding metrics, if an alias exists for that name it will be used instead
-    alias_map: ClassVar[dict[str, int]] = {}
+    alias_name_map: ClassVar[dict[str, int]] = {}
 
     def get_seq_num(self):
         """
@@ -100,6 +100,7 @@ class SpBMessageGenerator:
         payload:  Can be None if blank message is being created
         timestamp: Optional, if None then current time will be used for metric else provided timestamp
         """
+        # reset sequence number
         self.msg_seq_number = 0
         if payload is None:
             payload = Payload()
@@ -179,21 +180,30 @@ class SpBMessageGenerator:
             timestamp associated with this metric. If not provided current system time will be used
         """
         metric: Payload.Metric = payload_or_template.metrics.add()
-        if alias is not None:
+
+        if name is None and alias is None:
+            raise ValueError(f"Need either name:{name} or alias:{alias} to be provided.")
+
+        if name is not None and alias is not None:
+            # check if alias exists for the provided name, else set the alias mapping
+            if self.alias_name_map.get(alias) is None:
+                self.alias_name_map[alias] = name
+            elif self.alias_name_map.get(alias) != name:
+                raise ValueError(
+                    f" Name:{name} provided for Alias:{alias} not matching"
+                    + f"to previously provided value:{self.alias_name_map.get(alias)}"
+                )
+            metric.name = name
             metric.alias = alias
 
-        if name is not None:
-            metric.name = name
-
-        if self.alias_map.get(name) is None:
-            self.alias_map[name] = alias
-        elif self.alias_map.get(name) == alias:
-            metric.name = ""
+        elif name is None:
+            if self.alias_name_map.get(alias) is None:
+                raise ValueError(f" No name found  for Alias:{alias}. Alias has not yet been set")
+            metric.alias = alias
         else:
-            raise ValueError(
-                f"Alias:{alias} provided for Name:{name} not matching"
-                + f"to previously provided alias:{self.alias_map.get(name)}"
-            )
+            metric.name = name
+        if timestamp is None:
+            timestamp = int(round(time.time() * 1000))
         metric.timestamp = timestamp
         return metric
 
