@@ -8,6 +8,7 @@ import pytest
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
 from uns_spb_mapper.sparkplugb_enc_config import MQTTConfig
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
@@ -270,7 +271,7 @@ def test_get_spb_context(group_id: str, message_type: str, edge_node_id: str, de
                 ),
                 (
                     "Scale",  # name
-                    4,  # alias
+                    2,  # alias
                     sparkplug_b_pb2.String,  # datatype
                     "Bar",  # value
                 ),
@@ -283,12 +284,16 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
     See Spb2UNSPublisher#getPayload
     Spb2UNSPublisher#getMetricsListFromPayload
     """
-    sparkplug_message = uns_spb_helper.SpBMessageGenerator()
-    spb_data_payload = sparkplug_message.get_device_data_payload()
+    sparkplug_generator = uns_spb_helper.SpBMessageGenerator()
+    spb_data_payload = sparkplug_generator.get_device_data_payload()
 
     for metric_data in metrics_list:
-        sparkplug_message.add_metric(
-            payload=spb_data_payload, name=metric_data[0], alias=metric_data[1], datatype=metric_data[2], value=metric_data[3]
+        sparkplug_generator.add_metric(
+            payload_or_template=spb_data_payload,
+            name=metric_data[0],
+            alias=metric_data[1],
+            datatype=metric_data[2],
+            value=metric_data[3],
         )
     parsed_payload: dict = Spb2UNSPublisher.get_payload(spb_data_payload.SerializeToString())
     assert parsed_payload is not None, "parsed payload should not be none"
@@ -303,9 +308,15 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
         name = parsed_metric.name
         alias = parsed_metric.alias
         datatype = parsed_metric.datatype
-        value = getattr(parsed_metric, Spb2UNSPublisher.SPB_DATATYPE_KEYS.get(datatype))
 
-        assert name == org_metric[0] and alias == org_metric[1] and datatype == org_metric[2]
+        value = getattr(parsed_metric, SPBMetricDataTypes(datatype).get_field_name())
+
+        if alias is not None:
+            assert alias == org_metric[1]
+        else:
+            assert name == org_metric[0]
+
+        assert datatype == org_metric[2]
         if datatype == sparkplug_b_pb2.Float or datatype == sparkplug_b_pb2.Double:
             # Need to handle floating point issue in Python
             assert round(value, 5) == round(org_metric[3], 5)

@@ -10,6 +10,7 @@ from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,29 +34,6 @@ class Spb2UNSPublisher:
     # TODO currently not yet handled correctly. need to figure how to handle this
     SPB_METADATA = "metadata"
     SPB_PROPERTIES = "properties"
-
-    SPB_DATATYPE_KEYS: Final[str] = {
-        sparkplug_b_pb2.Unknown: "Unknown",
-        sparkplug_b_pb2.Int8: "int_value",
-        sparkplug_b_pb2.Int16: "int_value",
-        sparkplug_b_pb2.Int32: "int_value",
-        sparkplug_b_pb2.UInt8: "int_value",
-        sparkplug_b_pb2.UInt16: "int_value",
-        sparkplug_b_pb2.UInt32: "int_value",
-        sparkplug_b_pb2.Int64: "long_value",
-        sparkplug_b_pb2.UInt64: "long_value",
-        sparkplug_b_pb2.DateTime: "long_value",
-        sparkplug_b_pb2.Float: "float_value",
-        sparkplug_b_pb2.Double: "double_value",
-        sparkplug_b_pb2.String: "string_value",
-        sparkplug_b_pb2.Text: "string_value",
-        sparkplug_b_pb2.UUID: "string_value",
-        sparkplug_b_pb2.DataSet: "dataset_value",
-        sparkplug_b_pb2.Bytes: "bytes_value",
-        sparkplug_b_pb2.File: "bytes_value",
-        sparkplug_b_pb2.Boolean: "boolean_value",
-        sparkplug_b_pb2.Template: "template_value",
-    }
 
     # stores the message aliases as uses in the SparkPlugB message payload
     metric_name_alias_map: ClassVar[dict[int, str]] = {}
@@ -216,7 +194,7 @@ class Spb2UNSPublisher:
             is_historical: bool = getattr(metric, Spb2UNSPublisher.SPB_IS_HISTORICAL, False)
             metric_value = None
             if not getattr(metric, Spb2UNSPublisher.SPB_IS_NULL):
-                metric_value = getattr(metric, Spb2UNSPublisher.SPB_DATATYPE_KEYS.get(datatype))
+                metric_value = getattr(metric, SPBMetricDataTypes(datatype).get_field_name())
 
             uns_message: dict[str, Any] = Spb2UNSPublisher.extract_uns_message_for_topic(
                 parsed_message=all_uns_messages.get(uns_topic),
