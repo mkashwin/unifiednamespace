@@ -9,6 +9,13 @@ from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes
 from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
 
 
+@pytest.fixture(autouse=True)
+def setup_alias_map():
+    # clear the alias map for each test
+    spb_mgs_gen = SpBMessageGenerator()
+    spb_mgs_gen.alias_name_map.clear()
+
+
 def test_get_seq_num():
     """
     Test case for Spb_Message_Generator#get_seq_num()
@@ -43,13 +50,6 @@ def test_get_birth_seq_num():
         else:
             assert new_sequence == 0, f"Loop {count}: Sequence number should reset to 0 after 256 but got  {new_sequence}"
         old_sequence = new_sequence
-
-
-@pytest.fixture(autouse=True)
-def setup_alias_map():
-    # clear the alias map
-    spb_mgs_gen = SpBMessageGenerator()
-    spb_mgs_gen.alias_name_map.clear()
 
 
 @pytest.mark.parametrize(
@@ -88,12 +88,13 @@ def test__get_metric_wrapper(name, alias, timestamp):
 
     if alias is not None:
         assert metric_1.alias == alias
-
+        # check for ability to create a metric with alias and name
         metric_2 = spb_mgs_generator._get_metric_wrapper(payload, name=name, alias=alias, timestamp=timestamp)
         assert metric_2.name == name
         assert metric_2.alias == alias
         assert metric_2.timestamp is not None
 
+        # check for ability to create a metric with alias and without name
         metric_3 = spb_mgs_generator._get_metric_wrapper(payload, name=None, alias=alias, timestamp=timestamp)
         assert metric_3.alias == alias
         assert spb_mgs_generator.alias_name_map[alias] == name
@@ -698,14 +699,13 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
                 "value": bytes(
                     [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00, 0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
                 ),
-                # TODO DataSet and Template
             },
             {
                 "name": "Inputs/dataset",
                 "timestamp": 1486144502122,
                 "datatype": SPBMetricDataTypes.DataSet,
                 "value": create_dummy_dataset(),
-                # TODO DataSet and Template
+                # TODO Template
             },
         ],
     ],
@@ -863,3 +863,19 @@ def test_get_dataset_metric(
                 )
             else:
                 assert input_cell == SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element)
+
+
+# def test_add_metadata_to_metric():
+#     pass
+
+
+# def test_add_properties_to_metric():
+#     pass
+
+
+# def test_add_propertyset_to_metric():
+#     pass
+
+
+# def test_add_propertysets_to_metric():
+#     pass

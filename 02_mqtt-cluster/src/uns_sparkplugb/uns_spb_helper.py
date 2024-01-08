@@ -381,7 +381,7 @@ class SpBMessageGenerator:
         self,
         payload: Payload | Payload.Template,
         name: str,
-        metrics: list[Payload.Metric],
+        metrics: Optional[list[Payload.Metric]],
         version: Optional[str] = None,
         template_ref: Optional[str] = None,
         parameters: Optional[list[tuple[str, SPBParameterTypes, int | float | bool | str]]] = None,
@@ -389,7 +389,8 @@ class SpBMessageGenerator:
     ) -> Payload.Template:
         """
         Helper method for adding template metrics to a payload
-        Add metrics to the template after initialization
+        Additional metrics can  be added to the template after initialization
+        using SpBMessageGenerator#add_metric and passing the template instance
 
         Parameters
         ----------
@@ -400,6 +401,7 @@ class SpBMessageGenerator:
         metrics:
             An array of metrics representing the members of the Template.
             These can be primitive datatypes or other Templates as required.
+            Can also be None
         version:
             An optional field and can be included in a Template Definition or Template Instance
         alias: int
@@ -409,7 +411,7 @@ class SpBMessageGenerator:
             If this is a Template definition this field must be null
         parameters:
             Optional array of tuples representing parameters associated with the Template
-            parameter.name; str, parameter.type = SPBBasicDataTypes, parameter.value = int| float| bool | str
+            parameter.name; str, parameter.type = SPBParameterTypes, parameter.value = int| float| bool | str
         """
         metric: Payload.Metric = self._get_metric_wrapper(payload_or_template=payload, name=name, alias=alias)
         metric.datatype = SPBMetricDataTypes.Template
@@ -426,10 +428,12 @@ class SpBMessageGenerator:
                 parameter: Payload.Template.Parameter = metric.template_value.parameters.add()
                 parameter.name = param[0]
                 parameter.type = param[1]
-                SPBBasicDataTypes(parameter.type).set_value_in_sparkplug(value=param[2], spb_object=parameter)
+                SPBParameterTypes(parameter.type).set_value_in_sparkplug(value=param[2], spb_object=parameter)
 
         metric.template_value.version = version
-        metric.template_value.metrics = metrics
+        if metrics is not None and len(metrics) > 0:
+            for inner_metric in metrics:
+                metric.template_value.metrics.append(inner_metric)
 
         return metric.template_value
 

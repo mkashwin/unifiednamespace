@@ -256,9 +256,9 @@ class SPBBasicDataTypes(_SPBAbstractDataTypes):
       for the provided SparkplugB Object
     The SparkplugB objects must be of type
         - Payload.Metric
-        - Payload.PropertyValue
-        - Payload.DataSet.DataSetValue
-        - Payload.Template.Parameter
+        - Payload.PropertyValue (only valid types)
+        - Payload.DataSet.DataSetValue (only valid types)
+        - Payload.Template.Parameter (only valid types)
 
     """
 
