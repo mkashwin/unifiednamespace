@@ -244,6 +244,32 @@ def test_bytes_value_via_enum(value: bytes, spb_obj, spb_enum_types, expected_va
 
 
 @pytest.mark.parametrize(
+    "value, spb_obj, spb_enum_types, expected_value",
+    [
+        (bytes("Test String1", "utf-8"), sparkplug_b_pb2.Payload.Metric(), SPBMetricDataTypes, bytes("Test String1", "utf-8")),
+        (
+            bytes("""Test String2\nLine2""", "utf-8"),
+            sparkplug_b_pb2.Payload.Metric(),
+            SPBMetricDataTypes,
+            bytes("""Test String2\nLine2""", "utf-8"),
+        ),
+    ],
+)
+def test_file_value_via_enum(value: bytes, spb_obj, spb_enum_types, expected_value: bytes):
+    """
+    Test case for value setting boolean via the ENUMs
+    """
+    spb_enum_types(sparkplug_b_pb2.File).set_value_in_sparkplug(value=value, spb_object=spb_obj)
+    assert (
+        spb_obj.bytes_value == expected_value
+    ), f"Expecting metric value to be: {expected_value}, but got {spb_obj.bytes_value}"
+    check_other_slots(value, spb_obj, spb_enum_types, SPBAdditionalDataTypes.File)
+    # check encoded value matches original value
+
+    assert spb_enum_types(sparkplug_b_pb2.File).get_value_function(spb_obj) == expected_value
+
+
+@pytest.mark.parametrize(
     "value, spb_obj",
     [
         (sparkplug_b_pb2.Payload.DataSet(), sparkplug_b_pb2.Payload.Metric()),  # positive test case

@@ -398,14 +398,17 @@ class SPBAdditionalDataTypes(_SPBAbstractDataTypes):
             ValueError(f"Expecting object of type Payload.DataSet, got of type {type(value)}")
         ),
     )
+
     Bytes = (
         sparkplug_b_pb2.Bytes,
         SPBValueFieldName.BYTES,
     )
+
     File = (
         sparkplug_b_pb2.File,
         SPBValueFieldName.BYTES,
     )
+
     Template = (
         sparkplug_b_pb2.Template,
         SPBValueFieldName.TEMPLATE,

@@ -704,8 +704,67 @@ def test_get_dataset_metric(
                 assert input_cell == SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element)
 
 
-# def test_add_metadata_to_metric():
-#     pass
+@pytest.mark.parametrize(
+    "is_multi_part, content_type, size, seq, file_name, file_type, md5, description",
+    [
+        (None, None, None, None, None, None, None, None),
+        (False, "utf-8", 57, 1, "test.txt", "txt", "a8a42d159d5c815a80629c7ce443d404", "description"),
+    ],
+)
+def test_add_metadata_to_metric(
+    is_multi_part: Optional[bool],
+    content_type: Optional[str],
+    size: Optional[int],
+    seq: Optional[int],
+    file_name: Optional[str],
+    file_type: Optional[str],
+    md5: Optional[str],
+    description: Optional[str],
+):
+    spb_mgs_generator = SpBMessageGenerator()
+    payload = Payload()
+
+    metric = spb_mgs_generator.add_metric(
+        payload_or_template=payload,
+        name="test metadata",
+        datatype=SPBMetricDataTypes.File,
+        value=bytes("I am a text file", "utf-8"),
+    )
+
+    spb_mgs_generator.add_metadata_to_metric(
+        metric=metric,
+        is_multi_part=is_multi_part,
+        content_type=content_type,
+        size=size,
+        seq=seq,
+        file_name=file_name,
+        file_type=file_type,
+        md5=md5,
+        description=description,
+    )
+    if is_multi_part is not None:
+        assert metric.metadata.is_multi_part == is_multi_part
+
+    if content_type:
+        assert metric.metadata.content_type == content_type
+
+    if size is not None:
+        assert metric.metadata.size == size
+
+    if seq is not None:
+        assert metric.metadata.seq == seq
+
+    if file_name is not None:
+        assert metric.metadata.file_name == file_name
+
+    if file_type is not None:
+        assert metric.metadata.file_type == file_type
+
+    if md5 is not None:
+        assert metric.metadata.md5 == md5
+
+    if description is not None:
+        assert metric.metadata.description == description
 
 
 # def test_add_properties_to_metric():

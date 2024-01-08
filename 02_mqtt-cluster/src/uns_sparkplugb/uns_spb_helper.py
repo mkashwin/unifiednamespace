@@ -475,15 +475,23 @@ class SpBMessageGenerator:
             metric. It can contain JSON, XML, text, or anything else that can be understood by both the
             publisher and the subscriber.
         """
-        metric.metadata.is_multi_part = is_multi_part
-        metric.metadata.content_type = content_type
-        metric.metadata.size = size
+        if is_multi_part is not None:
+            metric.metadata.is_multi_part = is_multi_part
+        if content_type is not None:
+            metric.metadata.content_type = content_type
+        if size is not None:
+            metric.metadata.size = size
 
-        metric.metadata.seq = seq
-        metric.metadata.file_name = file_name
-        metric.metadata.file_type = file_type
-        metric.metadata.md5 = md5
-        metric.metadata.description = description
+        if seq is not None:
+            metric.metadata.seq = seq
+        if file_name is not None:
+            metric.metadata.file_name = file_name
+        if file_type is not None:
+            metric.metadata.file_type = file_type
+        if md5 is not None:
+            metric.metadata.md5 = md5
+        if description is not None:
+            metric.metadata.description = description
 
     def add_properties_to_metric(
         self,
