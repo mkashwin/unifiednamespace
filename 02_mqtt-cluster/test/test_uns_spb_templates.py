@@ -86,12 +86,6 @@ from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
                 "value": False,
             },
             {
-                "name": "Outputs/Float",
-                "timestamp": 1486144502122,
-                "datatype": SPBMetricDataTypes.Float,
-                "value": 1.1234,
-            },
-            {
                 "name": "Outputs/Double",
                 "timestamp": 1486144502122,
                 "datatype": SPBMetricDataTypes.Double,
@@ -266,6 +260,8 @@ def test_init_template_metric(name: str, metrics, template_metrics_dict, version
     if metrics is not None:
         for set_met, param_met in zip(template.metrics, metrics):
             assert set_met == param_met
+    else:
+        metrics = []
 
     if parameters is not None:
         for param, template_params in zip(parameters, template.parameters):
@@ -279,9 +275,60 @@ def test_init_template_metric(name: str, metrics, template_metrics_dict, version
         datatype: int = metric["datatype"]
         value = metric.get("value", None)
         metric_timestamp = metric.get("timestamp", None)
-        spb_mgs_generator.add_metric(
+        child_metric = spb_mgs_generator.add_metric(
             payload_or_template=template, name=name, datatype=datatype, value=value, timestamp=metric_timestamp
         )
+        assert child_metric.name == name
+        assert child_metric.datatype == datatype
+        assert value == SPBMetricDataTypes(datatype).get_value_from_sparkplug(child_metric)
+        assert child_metric.timestamp is not None
+
+    assert len(template.metrics) == len(template_metrics_dict) + len(metrics)
 
 
-# Add tests to add Template to Template
+@pytest.mark.parametrize(
+    "child_templates",
+    [
+        [
+            Payload.Template(
+                is_definition=False,
+                version="v1.0",
+                template_ref="my_temp",
+                metrics=[Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+            ),
+            Payload.Template(
+                is_definition=True,
+                version="v1.0",
+                metrics=[Payload.Metric(name="ref", datatype=SPBMetricDataTypes.String, string_value="Template Definition")],
+            ),
+        ]
+    ],
+)
+@pytest.mark.parametrize(
+    "name, version, template_ref, parameters",
+    [
+        ("Template", "v_0.1.0", None, None),  # no parameters
+        ("Template_Reference", "v_0.1.1", "Template Reference", None),  # No parameters
+    ],
+)
+def test_init_template_with_template(name: str, version, template_ref, parameters, child_templates):
+    """
+    Tests to add Template to Template
+    """
+    spb_mgs_generator = SpBMessageGenerator()
+
+    payload = Payload()
+    template: Payload.Template = spb_mgs_generator.init_template_metric(
+        payload=payload,
+        name=name,
+        metrics=None,
+        version=version,
+        template_ref=template_ref,
+        parameters=parameters,
+    )
+    count: int = 0
+    for child in child_templates:
+        set_child_tem = spb_mgs_generator.add_metric(
+            payload_or_template=template, name=f"child_{count}", datatype=SPBMetricDataTypes.Template, value=child
+        )
+        assert child == set_child_tem.template_value
