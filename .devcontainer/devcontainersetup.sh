@@ -87,7 +87,6 @@ dynaconf_merge: true
   done
 
   # 2.2.3 basic database setup needed for the historian ( create users, database, timeseries extension etc.)
-
   docker exec \
     -e PGPASSWORD=${POSTGRES_PASSWORD} \
     -e UNS_historian__database=${UNS_historian__database} \
@@ -96,16 +95,22 @@ dynaconf_merge: true
     -e UNS_historian__table=${UNS_historian__table} \
     -it uns_timescaledb \
     bash -c "
-    PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -c '
-      CREATE DATABASE ${UNS_historian__database};'
-    PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database} -c '
-      CREATE EXTENSION IF NOT EXISTS timescaledb;
-      CREATE ROLE ${UNS_historian__username} LOGIN PASSWORD '\''${UNS_historian__password}'\'';'
+    echo \"CREATE DATABASE ${UNS_historian__database};\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432
+    echo \"CREATE EXTENSION IF NOT EXISTS timescaledb;\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
+    echo \"CREATE ROLE ${UNS_historian__username} LOGIN PASSWORD '${UNS_historian__password}'; \" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
 
-    PGPASSWORD=${UNS_historian__password} psql -U ${UNS_historian__username} -p 5432 -d ${UNS_historian__database} -c'
-      CREATE TABLE ${UNS_historian__table} (time TIMESTAMPTZ NOT NULL, topic TEXT NOT NULL, client_id TEXT, mqtt_msg JSONB, CONSTRAINT unique_event UNIQUE (time, topic, client_id, mqtt_msg));
-      SELECT create_hypertable('\''${UNS_historian__table}'\'', '\''time'\'');'
-    "
+    echo \"
+      CREATE TABLE ${UNS_historian__table} (
+        time TIMESTAMPTZ NOT NULL,
+        topic TEXT NOT NULL,
+        client_id TEXT,
+        mqtt_msg JSONB,
+        CONSTRAINT unique_event UNIQUE (time, topic, client_id, mqtt_msg)
+      );
+      SELECT create_hypertable('${UNS_historian__table}', 'time');
+    \" | PGPASSWORD=${UNS_historian__password} psql -U ${UNS_historian__username} -p 5432 -d ${UNS_historian__database}
+    
+  "
 fi
 
 # 2.3 MQTT used by all modules 
