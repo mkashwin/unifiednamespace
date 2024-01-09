@@ -8,6 +8,13 @@ from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes, SPBParameterTypes
 from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
 
 
+@pytest.fixture(autouse=True)
+def setup_alias_map():
+    # clear the alias map for each test
+    spb_mgs_gen = SpBMessageGenerator()
+    spb_mgs_gen.alias_name_map.clear()
+
+
 @pytest.mark.parametrize(
     "template_metrics_dict",
     [
