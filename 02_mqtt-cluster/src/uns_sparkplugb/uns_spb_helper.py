@@ -11,7 +11,7 @@ from typing import ClassVar, Optional
 from google.protobuf.json_format import MessageToDict
 
 from uns_sparkplugb.generated import sparkplug_b_pb2
-from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload, PropertySet, PropertySetList
+from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import (
     SPBBasicDataTypes,
     SPBDataSetDataTypes,
@@ -497,9 +497,9 @@ class SpBMessageGenerator:
         self,
         metric: Payload.Metric,
         keys: list[str],
-        datatypes: list[int],
+        datatypes: list[SPBPropertyValueTypes],
         values: list[str | float | bool | int | Payload.PropertySet | Payload.PropertySetList],
-    ) -> PropertySet:
+    ) -> Payload.PropertySet:
         """
         Helper method to add properties to a Metric
         """
@@ -519,7 +519,7 @@ class SpBMessageGenerator:
         ps_keys: list[str],
         ps_datatypes: list[int],
         ps_values: list[str | float | bool | int],
-    ) -> PropertySet:
+    ) -> Payload.PropertySet:
         """
         Helper method to create a PropertySet object.
         You will need to set the created object in the Metric via SpBMessageGenerator#add_properties_to_metric
@@ -547,14 +547,14 @@ class SpBMessageGenerator:
                 "must be equal"
             )
 
-    def create_propertyset_list(self, propertysets: list[PropertySet]) -> PropertySetList:
+    def create_propertyset_list(self, propertysets: list[Payload.PropertySet]) -> Payload.PropertySetList:
         """
         Helper method to create a PropertySetList object.
         Create the required PropertySet Objects first with SpBMessageGenerator#create_propertyset
         Create the PropertySetList object with this function
         Lastly set the created object in the Metric with SpBMessageGenerator#add_properties_to_metric
         """
-        return PropertySetList(propertysets)
+        return Payload.PropertySetList(propertyset=propertysets)
 
 
 # class end
