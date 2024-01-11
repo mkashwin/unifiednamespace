@@ -65,7 +65,6 @@ class Spb2UNSPublisher:
         edge_node_id: str,
         device_id: Optional[str] = None,
     ) -> dict:
-        # pylint: disable=too-many-arguments
         """
         Parses the SPB payload and depending on message type
         will appropriately publish the message to the UNS
@@ -171,8 +170,6 @@ class Spb2UNSPublisher:
         edge_node_id: str,
         device_id: Optional[str] = None,
     ) -> dict:
-        # pylint: disable=too-many-arguments
-        # pylint: disable=too-many-locals
         """
         Parse the SPBPayload for message types
         """
@@ -270,7 +267,6 @@ class Spb2UNSPublisher:
         is_historical: bool = False,
         spb_context: Optional[dict[str, str]] = None,
     ) -> dict[str, Any]:
-        # pylint: disable=too-many-arguments
         """
         Returns a dictionary where the key is the target topic name and value is the
         message payload in dict format

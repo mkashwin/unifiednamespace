@@ -32,7 +32,6 @@ class GraphDBHandler:
         max_retry: int = 5,
         sleep_btw_attempts: float = 10,
     ):
-        # pylint: disable=too-many-arguments
         """
         Initialize the GraphDBHandler class.
 
@@ -139,7 +138,6 @@ class GraphDBHandler:
         attr_node_type: Optional[str] = "NESTED_ATTRIBUTE",
         retry: int = 0,
     ):
-        # pylint: disable=too-many-arguments
         """
         Persists all nodes and the message as attributes to the leaf node
         ----------
@@ -185,8 +183,6 @@ class GraphDBHandler:
     def save_all_nodes(
         self, session: neo4j.Session, topic: str, message: dict, timestamp: float, node_types: tuple, attr_node_type: str
     ):
-        # pylint: disable=too-many-arguments
-        # pylint: disable=too-many-locals
         """
         Iterate the topics by '/'. create node for each level & merge the messages to the final node
         For the other topics in the hierarchy a node will be created / merged and linked to the
@@ -287,7 +283,6 @@ class GraphDBHandler:
         parent_id: Optional[str] = None,
         timestamp: float = time.time(),
     ):
-        # pylint: disable=too-many-arguments
         """
         Creates or Merges the MQTT message as a Graph node. Each level of the topic is also
         persisted as a graph node with appropriate parent relationship
@@ -323,7 +318,7 @@ class GraphDBHandler:
             attributes = {}
 
         query = f"""
-//Create FACILITY Node
+//Find Parent node
 OPTIONAL MATCH (parent) WHERE elementId(parent) = $parent_id
 // Optional match the child node
 OPTIONAL MATCH (parent) -[r:{NODE_RELATION_NAME}]-> (child:{nodetype}{{ node_name: $nodename}})
@@ -375,47 +370,6 @@ RETURN value.child
             query, nodename=nodename, timestamp=timestamp, parent_id=parent_id, attributes=attributes
         )
         return result
-
-    # static Method Ends
-
-    # static Method Starts
-    @staticmethod
-    def flatten_json_for_neo4j(mqtt_msg: dict) -> dict:
-        """
-        Utility methods to convert a nested JSON into a flat structure
-        Keys for lists will be of the form <key>_<count>
-        Keys for dicts will be of the form <parent key>_<child key>
-        if any attribute is named "node_name" it will be replaced by "NODE_NAME"
-
-        Parameters
-        ----------
-        message  : dict
-        created by converting MQTT message string in JSON format to python object
-        """
-        LOGGER.debug(mqtt_msg)
-        output = {}
-
-        def flatten(json_object, name=""):
-            """
-            Recursive function to flatten nested dict/json objects
-            """
-            if isinstance(json_object, dict):
-                # iterate through the dict. recursively call the flattening function for each item
-                for items in json_object:
-                    flatten(json_object[items], name + items + "_")
-            elif isinstance(json_object, (list, tuple)):
-                i = 0
-                # iterate through the list. recursively call the flattening function for each item
-                for items in json_object:
-                    flatten(items, name + str(i) + "_")
-                    i += 1
-            elif json_object is not None:
-                if name[:-1] == NODE_NAME_KEY:
-                    name = name.upper()
-                output[name[:-1]] = json_object
-
-        flatten(mqtt_msg)
-        return output
 
     # static Method Ends
 

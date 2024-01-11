@@ -50,7 +50,6 @@ class UnsMQTTClient(mqtt_client.Client):
         transport: Optional[Literal["tcp", "websockets"]] = "tcp",
         reconnect_on_failure: bool = True,
     ):
-        # pylint: disable=too-many-arguments
         """
         Creates an instance of an MQTT client
 
@@ -153,7 +152,6 @@ class UnsMQTTClient(mqtt_client.Client):
         topics: Optional[list[str]] = None,
         qos: Optional[Literal[0, 1, 2]] = 2,
     ):
-        # pylint: disable=too-many-arguments
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
         After this function invoke loop_forever() or loop start()

@@ -394,7 +394,6 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
 def test_extract_uns_message_for_topic(
     parsed_msg, tag_name, metric_value, metric_timestamp, is_historical, spb_ctx, expected_uns_message
 ):
-    # pylint: disable=too-many-arguments
     """
     See Spb2UNSPublisher#extract_uns_message_for_topic
     """
@@ -470,7 +469,6 @@ def test_publish_to_uns_not_connected(clean_session, protocol, reconnect_on_fail
 def test_publish_to_uns_connected(
     clean_session, protocol, transport, host, port, tls, qos, reconnect_on_failure, all_uns_messages
 ):
-    # pylint: disable=too-many-arguments
     """
     See Spb2UNSPublisher#publish_to_uns()
     """
@@ -490,7 +488,6 @@ def test_publish_to_uns_connected(
         """
         Call back for publish to MQTT
         """
-        # pylint: disable=unused-argument
         msg_published.append(True)
         if len(msg_published) == len(all_uns_messages):
             client.disconnect()
@@ -505,7 +502,6 @@ def test_publish_to_uns_connected(
         """
         Call back for connection to MQTT
         """
-        # pylint: disable=unused-argument
         spb_to_uns_pub.publish_to_uns(all_uns_messages)
 
     uns_client.on_connect = on_connect

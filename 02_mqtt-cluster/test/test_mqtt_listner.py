@@ -50,7 +50,6 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
 @pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
 def test_01_unauthenticated_connections(clean_session, protocol, transport, port, reconnect_on_failure, topics, tls, qos):
-    # pylint: disable=too-many-arguments
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
@@ -130,7 +129,6 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport, port
 def test_02_authenticated_connections(
     clean_session, protocol, transport, port, reconnect_on_failure, username, password, topics, tls, qos
 ):
-    # pylint: disable=too-many-arguments
     """
     Test all the parameters ( including username password against Mosquitto's hosted broker)
     """

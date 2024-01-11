@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 # listens to SparkplugB name space for messages and publishes to ISA-95
 # https://www.hivemq.com/solutions/manufacturing/smart-manufacturing-using-isa95-mqtt-sparkplug-and-uns/
 class UNSSparkPlugBMapper:
-    # pylint: disable=too-many-instance-attributes
+
     """
     MQTT listener that listens to SparkplugB name space for messages and publishes to ISA-95 UNS
     """
@@ -35,31 +35,29 @@ class UNSSparkPlugBMapper:
             userdata=None,
             protocol=MQTTConfig.version_code,
             transport=MQTTConfig.transport,
-            reconnect_on_failure=MQTTConfig.reconnect_on_failure)
+            reconnect_on_failure=MQTTConfig.reconnect_on_failure,
+        )
 
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.spb_2_uns_pub: Spb2UNSPublisher = Spb2UNSPublisher(
-            self.uns_client)
-        self.uns_client.run(host=MQTTConfig.host,
-                            port=MQTTConfig.port,
-                            username=MQTTConfig.username,
-                            password=MQTTConfig.password,
-                            tls=MQTTConfig.tls,
-                            keepalive=MQTTConfig.keepalive,
-                            topics=MQTTConfig.topics,
-                            qos=MQTTConfig.qos)
+        self.spb_2_uns_pub: Spb2UNSPublisher = Spb2UNSPublisher(self.uns_client)
+        self.uns_client.run(
+            host=MQTTConfig.host,
+            port=MQTTConfig.port,
+            username=MQTTConfig.username,
+            password=MQTTConfig.password,
+            tls=MQTTConfig.tls,
+            keepalive=MQTTConfig.keepalive,
+            topics=MQTTConfig.topics,
+            qos=MQTTConfig.qos,
+        )
 
     def on_message(self, client, userdata, msg):
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{"
-                     "Client: %s,"
-                     "Userdata: %s,"
-                     "Message: %s,"
-                     "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
                 topic_path: list[str] = msg.topic.split("/")
@@ -75,50 +73,36 @@ class UNSSparkPlugBMapper:
                     else:
                         raise ValueError(
                             f"Unknown SparkplugB topic received: {msg.topic}."
-                            +
-                            f"Depth of tree should not be more than 5, got {len(topic_path)}",
+                            + f"Depth of tree should not be more than 5, got {len(topic_path)}",
                         )
                     self.spb_2_uns_pub.transform_spb_and_publish_to_uns(
-                        msg.payload, group_id, message_type, edge_node_id,
-                        device_id)
+                        msg.payload, group_id, message_type, edge_node_id, device_id
+                    )
                 else:
-                    LOGGER.error(
-                        "Message received on an Unknown/non compliant SparkplugB topic: %s",
-                        msg.topic)
+                    LOGGER.error("Message received on an Unknown/non compliant SparkplugB topic: %s", msg.topic)
             else:
-                LOGGER.debug(
-                    "Subscribed to a  non SparkplugB topic: %s. Message ignored",
-                    msg.topic)
+                LOGGER.debug("Subscribed to a  non SparkplugB topic: %s. Message ignored", msg.topic)
         except SystemError as system_error:
-            LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
-                         str(system_error),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Fatal Error while parsing Message: %s. Exiting", str(system_error), stack_info=True, exc_info=True)
             # raise system_error
         except Exception as ex:
             # pylint: disable=broad-exception-caught
-            LOGGER.error("Error parsing SparkplugB message payload: %s",
-                         str(ex),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Error parsing SparkplugB message payload: %s", str(ex), stack_info=True, exc_info=True)
 
     def on_disconnect(
-            self,
-            client,  # noqa: ARG002
-            userdata,  # noqa: ARG002
-            result_code,
-            properties=None):  # noqa: ARG002
+        self,
+        client,  # noqa: ARG002
+        userdata,  # noqa: ARG002
+        result_code,
+        properties=None,  # noqa: ARG002
+    ):
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
-        # pylint: disable=unused-argument
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("SparkplugB listener got disconnected")
         if result_code != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         str(result_code),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(result_code), stack_info=True, exc_info=True)
 
 
 def main():

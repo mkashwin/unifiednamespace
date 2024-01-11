@@ -157,7 +157,6 @@ class SPBTemplateParameter:
     Model of a SPB Template Parameter,
     """
 
-    # pylint: disable=too-few-public-methods
     name: str
     datatype: SPBDataTypeEnum
     value: any

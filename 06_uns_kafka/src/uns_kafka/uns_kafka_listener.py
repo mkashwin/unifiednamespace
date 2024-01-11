@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class UNSKafkaMapper:
-    # pylint: disable=too-many-instance-attributes
+
     """
     MQTT listener that listens UNS namespace for messages and publishes to corresponding Kafka topic
     """
@@ -33,58 +33,53 @@ class UNSKafkaMapper:
             userdata=None,
             protocol=MQTTConfig.version,
             transport=MQTTConfig.transport,
-            reconnect_on_failure=MQTTConfig.reconnect_on_failure)
+            reconnect_on_failure=MQTTConfig.reconnect_on_failure,
+        )
 
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.kafka_handler: KafkaHandler = KafkaHandler(
-            KAFKAConfig.kafka_config_map)
+        self.kafka_handler: KafkaHandler = KafkaHandler(KAFKAConfig.kafka_config_map)
 
-        self.uns_client.run(host=MQTTConfig.host,
-                            port=MQTTConfig.port,
-                            username=MQTTConfig.username,
-                            password=MQTTConfig.password,
-                            tls=MQTTConfig.tls,
-                            keepalive=MQTTConfig.keep_alive,
-                            topics=MQTTConfig.topics,
-                            qos=MQTTConfig.qos)
+        self.uns_client.run(
+            host=MQTTConfig.host,
+            port=MQTTConfig.port,
+            username=MQTTConfig.username,
+            password=MQTTConfig.password,
+            tls=MQTTConfig.tls,
+            keepalive=MQTTConfig.keep_alive,
+            topics=MQTTConfig.topics,
+            qos=MQTTConfig.qos,
+        )
 
     def on_message(self, client, userdata, msg):
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{"
-                     "Client: %s,"
-                     "Userdata: %s,"
-                     "Message: %s,"
-                     "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
 
         # Connect to Kafka, convert the MQTT topic to Kafka topic and send the message
         self.kafka_handler.publish(
             msg.topic,
             self.uns_client.get_payload_as_dict(
-                topic=msg.topic,
-                payload=msg.payload,
-                mqtt_ignored_attributes=self.mqtt_ignored_attributes))
+                topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=self.mqtt_ignored_attributes
+            ),
+        )
 
     def on_disconnect(
-            self,
-            client,  # noqa: ARG002
-            userdata,  # noqa: ARG002
-            result_code,
-            properties=None):  # noqa: ARG002
+        self,
+        client,  # noqa: ARG002
+        userdata,  # noqa: ARG002
+        result_code,
+        properties=None,  # noqa: ARG002
+    ):
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
-        # pylint: disable=unused-argument
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("MQTT to Kafka connector got disconnected")
         if result_code != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         str(result_code),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(result_code), stack_info=True, exc_info=True)
         # force flushing the kafka connection
         self.kafka_handler.flush()
 
