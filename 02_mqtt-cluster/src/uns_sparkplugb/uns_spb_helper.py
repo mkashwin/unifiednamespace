@@ -18,19 +18,53 @@ from uns_sparkplugb.uns_spb_enums import (
     SPBMetricDataTypes,
     SPBParameterTypes,
     SPBPropertyValueTypes,
+    SPBValueFieldName,
 )
 
 LOGGER = logging.getLogger(__name__)
 
 
 @staticmethod
-def convert_spb_bytes_payload_to_dict(payload: bytes) -> dict:
+def convert_spb_bytes_payload_to_dict(raw_payload: bytes) -> dict:
     """
     Takes raw bytes input and converts it into a dict
+    Merges all placeholders like int_value , long_value etc. to a single field value
     """
-    inbound_payload = sparkplug_b_pb2.Payload()
-    inbound_payload.ParseFromString(payload)
-    return MessageToDict(inbound_payload)
+    spb_payload = sparkplug_b_pb2.Payload()
+    spb_payload.ParseFromString(raw_payload)
+
+    spb_to_dict: dict = MessageToDict(spb_payload)
+
+    return _rename_keys(spb_to_dict)
+
+
+@staticmethod
+def _rename_keys(spb_dict: dict) -> dict:
+    if not isinstance(spb_dict, dict):
+        # this is not a dict. return raw value
+        return spb_dict
+    value_key_dict: dict = {}
+
+    def snake_to_camel(snake_str: str) -> str:
+        """
+        convert snake case to camel case
+        """
+        components = snake_str.split("_")
+        return components[0] + "".join(x.title() for x in components[1:])
+
+    for key, value in spb_dict.items():
+        if key in [snake_to_camel(field) for field in SPBValueFieldName]:
+            key = "value"
+
+        if isinstance(value, dict):
+            # Recursively process nested dictionaries
+            value_key_dict[key] = _rename_keys(value)
+        elif isinstance(value, list):
+            value_key_dict[key] = [_rename_keys(x) for x in value]
+        else:
+            value_key_dict[key] = value
+
+    return value_key_dict
 
 
 class SpBMessageGenerator:

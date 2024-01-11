@@ -1,4 +1,5 @@
 import pytest
+from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
 from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
@@ -9,6 +10,115 @@ def setup_alias_map():
     # clear the alias map for each test
     spb_mgs_gen = SpBMessageGenerator()
     spb_mgs_gen.alias_name_map.clear()
+
+
+@pytest.mark.parametrize(
+    "spb_dict,renamed_dict",
+    [
+        ({"test": "value"}, {"test": "value"}),  # no int_value, long_value etc.. attributes
+        (
+            {
+                "timestamp": "1671554024644",
+                "metrics": [
+                    {
+                        "name": "Inputs/A",
+                        "timestamp": "1486144502122",
+                        "alias": "0",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Inputs/B",
+                        "timestamp": "1486144502122",
+                        "alias": "1",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Outputs/E",
+                        "timestamp": "1486144502122",
+                        "alias": "2",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Outputs/F",
+                        "timestamp": "1486144502122",
+                        "alias": "3",
+                        "datatype": 11,
+                        "booleanValue": False,
+                    },
+                    {
+                        "name": "Properties/Hardware Make",
+                        "timestamp": "1486144502122",
+                        "alias": "4",
+                        "datatype": 12,
+                        "stringValue": "Sony",
+                    },
+                    {
+                        "name": "Properties/Weight",
+                        "timestamp": "1486144502122",
+                        "alias": "5",
+                        "datatype": 3,
+                        "intValue": 200,
+                    },
+                ],
+                "seq": "0",
+            },
+            {
+                "timestamp": "1671554024644",
+                "metrics": [
+                    {
+                        "name": "Inputs/A",
+                        "timestamp": "1486144502122",
+                        "alias": "0",
+                        "datatype": 11,
+                        "value": False,
+                    },
+                    {
+                        "name": "Inputs/B",
+                        "timestamp": "1486144502122",
+                        "alias": "1",
+                        "datatype": 11,
+                        "value": False,
+                    },
+                    {
+                        "name": "Outputs/E",
+                        "timestamp": "1486144502122",
+                        "alias": "2",
+                        "datatype": 11,
+                        "value": False,
+                    },
+                    {
+                        "name": "Outputs/F",
+                        "timestamp": "1486144502122",
+                        "alias": "3",
+                        "datatype": 11,
+                        "value": False,
+                    },
+                    {
+                        "name": "Properties/Hardware Make",
+                        "timestamp": "1486144502122",
+                        "alias": "4",
+                        "datatype": 12,
+                        "value": "Sony",
+                    },
+                    {
+                        "name": "Properties/Weight",
+                        "timestamp": "1486144502122",
+                        "alias": "5",
+                        "datatype": 3,
+                        "value": 200,
+                    },
+                ],
+                "seq": "0",
+            },
+        ),
+        ("not a dict", "not a dict"),
+    ],
+)
+def test__rename_dict(spb_dict: dict, renamed_dict: dict):
+    assert uns_spb_helper._rename_keys(spb_dict) == renamed_dict
 
 
 def test_get_seq_num():
