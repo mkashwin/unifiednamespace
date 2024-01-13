@@ -45,7 +45,7 @@ def test_spb_2_uns_publisher_init(clean_session, protocol, reconnect_on_failure)
     assert spb_to_uns_publisher.mqtt_client == uns_client, "Spb2UNSPublisher#mqtt_client should " "have correctly initialized"
     assert (
         len(
-            spb_to_uns_publisher.metric_name_alias_map,
+            spb_to_uns_publisher.node_device_metric_alias_map,
         )
         == 0
     ), "Spb2UNSPublisher#message_alias_map should be empty"
@@ -57,10 +57,11 @@ def test_spb_2_uns_publisher_init(clean_session, protocol, reconnect_on_failure)
     ), "Spb2UNSPublisher#topic_alias should be empty"
 
 
+@pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
 @pytest.mark.parametrize("clean_session", [(True), (False)])
 @pytest.mark.parametrize("protocol", [(MQTTVersion.MQTTv5), (MQTTVersion.MQTTv311)])
 @pytest.mark.parametrize("reconnect_on_failure", [(True)])
-def test_clear_metric_alias(clean_session, protocol, reconnect_on_failure):
+def test_clear_metric_alias(cache_key, clean_session, protocol, reconnect_on_failure):
     """
     See Spb2UNSPublisher#clear_metric_alias()
     """
@@ -74,24 +75,20 @@ def test_clear_metric_alias(clean_session, protocol, reconnect_on_failure):
     )
     # Connection not made to broker
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
-    spb_to_uns_pub.metric_name_alias_map[1] = "value1"
-    spb_to_uns_pub.metric_name_alias_map[2] = "value2"
-    spb_to_uns_pub.metric_name_alias_map[3] = "value3"
+    spb_to_uns_pub.save_name_for_alias(cache_key, "value1", 1)
+    spb_to_uns_pub.save_name_for_alias(cache_key, "value2", 2)
+    spb_to_uns_pub.save_name_for_alias(cache_key, "value3", 3)
+
     assert (
-        len(
-            spb_to_uns_pub.metric_name_alias_map,
-        )
-        == 3
-    ), "Spb2UNSPublisher#message_alias_map should not be empty"
-    spb_to_uns_pub.clear_metric_alias()
+        len(spb_to_uns_pub.node_device_metric_alias_map[cache_key]) == 3
+    ), "Spb2UNSPublisher#node_device_metric_alias_map for cache_key should not be empty"
+    spb_to_uns_pub.clear_metric_alias(cache_key)
     assert (
-        len(
-            spb_to_uns_pub.metric_name_alias_map,
-        )
-        == 0
-    ), "Spb2UNSPublisher#message_alias_map should be empty"
+        cache_key not in spb_to_uns_pub.node_device_metric_alias_map
+    ), "Spb2UNSPublisher#node_device_metric_alias_map for cache_key should be empty"
 
 
+@pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
 @pytest.mark.parametrize(
     "metric,name",
     [
@@ -108,7 +105,7 @@ def test_clear_metric_alias(clean_session, protocol, reconnect_on_failure):
         ),
     ],
 )
-def test_get_metric_name(metric, name: str):
+def test_get_metric_name(cache_key, metric, name: str):
     """
     See Spb2UNSPublisher#get_metric_name()
     """
@@ -124,14 +121,16 @@ def test_get_metric_name(metric, name: str):
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
     assert (
         spb_to_uns_pub.get_metric_name(
+            cache_key,
             metric,
         )
         == name
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
 
 
+@pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
 @pytest.mark.parametrize("metric", [(SimpleNamespace(no_name="bad key")), (SimpleNamespace()), (None)])
-def test_negative_get_metric_name(metric):
+def test_negative_get_metric_name(cache_key, metric):
     """
     Negative tests for Spb2UNSPublisher#get_metric_name()
     """
@@ -145,9 +144,10 @@ def test_negative_get_metric_name(metric):
     )
     # Connection not made to broker
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
-    assert spb_to_uns_pub.get_metric_name(metric) is None, f"Metric name should be none for metric:{metric}"
+    assert spb_to_uns_pub.get_metric_name(cache_key, metric) is None, f"Metric name should be none for metric:{metric}"
 
 
+@pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
 @pytest.mark.parametrize(
     "metric,name, alias",
     [
@@ -164,7 +164,7 @@ def test_negative_get_metric_name(metric):
         )
     ],
 )
-def test_get_metric_name_from_alias(metric, name: str, alias: int):
+def test_get_metric_name_from_alias(cache_key, metric, name: str, alias: int):
     """
     See Spb2UNSPublisher#get_metric_name()
     """
@@ -181,13 +181,15 @@ def test_get_metric_name_from_alias(metric, name: str, alias: int):
 
     assert (
         spb_2_uns_pub.get_metric_name(
+            cache_key,
             metric,
         )
         == name
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
 
-    assert spb_2_uns_pub.metric_name_alias_map[alias] == name, (
-        f"Metric AliasMap was not filled {spb_2_uns_pub.metric_name_alias_map}" f"with alias: {alias} and name: {name}."
+    assert spb_2_uns_pub.node_device_metric_alias_map[cache_key][alias] == name, (
+        f"Metric AliasMap was not filled {spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
+        f"with alias: {alias} and name: {name}."
     )
     # remove the name from the metric and check again.
     # The alias map should ensure that the name is returned
@@ -195,12 +197,14 @@ def test_get_metric_name_from_alias(metric, name: str, alias: int):
 
     assert (
         spb_2_uns_pub.get_metric_name(
+            cache_key,
             metric,
         )
         == name
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
-    assert spb_2_uns_pub.metric_name_alias_map[alias] == name, (
-        f"Metric AliasMap was not filled {spb_2_uns_pub.metric_name_alias_map}" f"with alias: {alias} and name: {name}."
+    assert spb_2_uns_pub.node_device_metric_alias_map[cache_key][alias] == name, (
+        f"Metric AliasMap was not filled {spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
+        f"with alias: {alias} and name: {name}."
     )
 
 
