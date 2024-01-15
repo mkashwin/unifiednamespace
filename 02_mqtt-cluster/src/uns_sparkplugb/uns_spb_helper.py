@@ -4,15 +4,17 @@ Helper class to parse & create SparkplugB messages
 Extending that based on the specs in
 https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
 """
+import base64
 import logging
 import time
+from types import SimpleNamespace
 from typing import ClassVar, Optional
 
 from google.protobuf.json_format import MessageToDict
 
-from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import (
+    SPBArrayDataTypes,
     SPBBasicDataTypes,
     SPBDataSetDataTypes,
     SPBMetricDataTypes,
@@ -30,48 +32,192 @@ def convert_spb_bytes_payload_to_dict(raw_payload: bytes) -> dict:
     Takes raw bytes input and converts it into a dict
     Merges all placeholders like int_value , long_value etc. to a single field value
     """
-    spb_payload = sparkplug_b_pb2.Payload()
+    spb_payload = Payload()
     spb_payload.ParseFromString(raw_payload)
+    # FIXME What float precision should we use?
+    spb_to_dict: dict = MessageToDict(spb_payload, preserving_proto_field_name=True, float_precision=5)
 
-    spb_to_dict: dict = MessageToDict(spb_payload)
-
-    return _rename_keys(spb_to_dict)
+    return _fix_keys_and_value_types(spb_to_dict)
 
 
 @staticmethod
-def _rename_keys(spb_dict: dict) -> dict:
+def _fix_keys_and_value_types(spb_dict: dict) -> dict:
+    """
+    converts string to int for relevant fields
+    """
     if not isinstance(spb_dict, dict):
         # this is not a dict. return raw value
         return spb_dict
     value_key_dict: dict = {}
 
-    def snake_to_camel(snake_str: str) -> str:
-        """
-        convert snake case to camel case
-        """
-        components = snake_str.split("_")
-        return components[0] + "".join(x.title() for x in components[1:])
-
     for key, value in spb_dict.items():
-        if key in [snake_to_camel(field) for field in SPBValueFieldName]:
+        # First fix the value type
+        if key == SPBValueFieldName.BYTES:
+            # bytes have been base64 encoded into strings and we need to decode it
+            value = base64.b64decode(value)
+
+        elif key in [SPBValueFieldName.INT, SPBValueFieldName.LONG, "timestamp", "alias", "seq", "num_of_columns", "size"]:
+            # FIXME Need to do this as these int fields are converted to str in the dict conversion by #MessageToDict
+            value = int(value)
+
+        # Then fix field name
+        if key in SPBValueFieldName:
+            # handle conversion for Array type
+            if key == SPBValueFieldName.BYTES and "datatype" in spb_dict:
+                # Arrays are only in Metrics which have the datatype field too
+                if spb_dict["datatype"] in SPBArrayDataTypes:
+                    # Hack to mock a SPB object by converting the dict to a name space
+                    spb_dict[key] = value
+                    value = SPBArrayDataTypes(spb_dict["datatype"]).get_value_from_sparkplug(SimpleNamespace(**spb_dict))
+
+            # then rename the key
             key = "value"
 
+        # handle composite value objects
         if isinstance(value, dict):
             # Recursively process nested dictionaries
-            value_key_dict[key] = _rename_keys(value)
+            value_key_dict[key] = _fix_keys_and_value_types(value)
         elif isinstance(value, list):
-            value_key_dict[key] = [_rename_keys(x) for x in value]
+            value_key_dict[key] = [_fix_keys_and_value_types(x) for x in value]
         else:
             value_key_dict[key] = value
 
     return value_key_dict
 
 
+def convert_dict_to_payload(spb_dict: dict) -> Payload:
+    """
+    converts dict representing a SPB Payload to a Payload Object
+    """
+    spb_payload = Payload()
+
+    for key, value in spb_dict.items():
+        if value is not None:
+            if key == "metrics":
+                for metric_dict in value:
+                    spb_payload.metrics.append(convert_dict_to_metric(metric_dict))
+            else:
+                setattr(spb_payload, key, value)
+    return spb_payload
+
+
+def convert_dict_to_metric(metric_dict: dict) -> Payload.Metric:
+    metric: Payload.Metric = Payload.Metric()
+    for key, value in metric_dict.items():
+        match key:
+            # Handle the various attributes of Metric
+            case "value":
+                datatype: SPBMetricDataTypes = SPBMetricDataTypes(metric_dict["datatype"])
+                match datatype:
+                    # Set value based on datatype and special handling to get template and dataset
+                    case SPBMetricDataTypes.DataSet:
+                        SPBMetricDataTypes.DataSet.set_value_in_sparkplug(convert_dict_to_dataset(value), metric)
+
+                    case SPBMetricDataTypes.Template:
+                        SPBMetricDataTypes.Template.set_value_in_sparkplug(convert_dict_to_template(value), metric)
+
+                    case _:
+                        # All other value types
+                        SPBMetricDataTypes(datatype).set_value_in_sparkplug(value, metric)
+                # end of match for value
+            case "properties":
+                metric.properties.CopyFrom(convert_dict_to_propertyset(value))
+
+            case "metadata":
+                # Handle Metadata dict
+                for metadata_key, metadata_val in value.items():
+                    setattr(metric.metadata, metadata_key, metadata_val)
+            case _:
+                setattr(metric, key, value)
+    return metric
+
+
+def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
+    dataset = Payload.DataSet()
+    for key, value in dataset_dict.items():
+        match key:
+            case "rows":
+                for row_dict in value:
+                    row = Payload.DataSet.Row()
+                    for ds_val_dict, datatype in zip(row_dict["elements"], dataset_dict["types"]):
+                        ds_val = row.elements.add()
+                        SPBDataSetDataTypes(datatype).set_value_in_sparkplug(ds_val_dict["value"], ds_val)
+
+                    dataset.rows.append(row)
+            case "columns":
+                for col in value:
+                    dataset.columns.append(col)
+
+            case "types":
+                for datatype in value:
+                    dataset.types.append(datatype)
+
+            case "num_of_columns":
+                dataset.num_of_columns = value
+
+    return dataset
+
+
+def convert_dict_to_template(template_dict: dict) -> Payload.Template:
+    template = Payload.Template()
+    for key, value in template_dict.items():
+        match key:
+            case "metrics":
+                for metric_dict in value:
+                    template.metrics.append(convert_dict_to_metric(metric_dict))
+            case "parameters":
+                for param_dict in value:
+                    param_template = Payload.Template.Parameter()
+                    param_template.name = param_dict["name"]
+                    param_template.type = param_dict["type"]
+                    SPBParameterTypes(param_template.type).set_value_in_sparkplug(param_dict["value"], param_template)
+                    template.parameters.append(param_template)
+            case _:
+                setattr(template, key, value)
+
+    return template
+
+
+def convert_dict_to_propertyset(property_dict: dict) -> Payload.PropertySet:
+    property_values: list[Payload.PropertyValue] = []
+    for prop_val_dict in property_dict["values"]:
+        property_value: Payload.PropertyValue = Payload.PropertyValue()
+        property_value.type = prop_val_dict["type"]
+
+        if "is_null" in prop_val_dict:
+            property_value.is_null = prop_val_dict["is_null"]
+
+        if not property_value.is_null:
+            match property_value.type:
+                case SPBPropertyValueTypes.PropertySet:
+                    SPBPropertyValueTypes.PropertySet.set_value_in_sparkplug(
+                        convert_dict_to_propertyset(prop_val_dict["value"]), property_value
+                    )
+
+                case SPBPropertyValueTypes.PropertySetList:
+                    SPBPropertyValueTypes.PropertySetList.set_value_in_sparkplug(
+                        Payload.PropertySetList(
+                            propertyset=[
+                                convert_dict_to_propertyset(sub_prop_set)
+                                for sub_prop_set in prop_val_dict["value"]["propertyset"]
+                            ]
+                        ),
+                        property_value,
+                    )
+                case _:
+                    SPBPropertyValueTypes(property_value.type).set_value_in_sparkplug(prop_val_dict["value"], property_value)
+
+        property_values.append(property_value)
+
+    propertyset: Payload.PropertySet = Payload.PropertySet(keys=property_dict["keys"], values=property_values)
+    return propertyset
+
+
 class SpBMessageGenerator:
     """
     Helper class to parse & create SparkplugB messages.
     State of alias map and sequence flags maintained across instances of SpBMessageGenerator
-    Create one instance of this per node
+    Create one instance of this per node/device
     """
 
     # sequence number for messages

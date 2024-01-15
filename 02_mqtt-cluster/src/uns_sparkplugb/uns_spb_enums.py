@@ -595,20 +595,7 @@ SPBMetricDataTypes: _SPBAbstractDataTypes = _SPBAbstractDataTypes._combine_enums
 
 
 # Enumeration of datatypes possible for Payload.Template.Parameters and Payload.DataSet.DataSetValue
-# Since the specs state that The value supplied MUST be one of the following
-# Google Protobuf types: uint32, uint64, float, double, bool, or string.
-# extrapolated that to determine the appropriate SPB Basic Datatypes (excluding Text)
-SPBParameterTypes: _SPBAbstractDataTypes = _SPBAbstractDataTypes._combine_enums(
-    "SPBParameterTypes",
-    [
-        SPBBasicDataTypes.UInt32,
-        SPBBasicDataTypes.UInt64,
-        SPBBasicDataTypes.Float,
-        SPBBasicDataTypes.Double,
-        SPBBasicDataTypes.Boolean,
-        SPBBasicDataTypes.String,
-    ],
-)
+SPBParameterTypes: _SPBAbstractDataTypes = SPBBasicDataTypes
 
 
 # Enumeration of datatypes possible for Payload.PropertyValue
