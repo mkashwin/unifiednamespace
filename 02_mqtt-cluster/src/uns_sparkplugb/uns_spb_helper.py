@@ -25,6 +25,9 @@ from uns_sparkplugb.uns_spb_enums import (
 
 LOGGER = logging.getLogger(__name__)
 
+# FIXME What float precision should we use?
+FLOAT_PRECISION = 5
+
 
 @staticmethod
 def convert_spb_bytes_payload_to_dict(raw_payload: bytes) -> dict:
@@ -34,8 +37,7 @@ def convert_spb_bytes_payload_to_dict(raw_payload: bytes) -> dict:
     """
     spb_payload = Payload()
     spb_payload.ParseFromString(raw_payload)
-    # FIXME What float precision should we use?
-    spb_to_dict: dict = MessageToDict(spb_payload, preserving_proto_field_name=True, float_precision=5)
+    spb_to_dict: dict = MessageToDict(spb_payload, preserving_proto_field_name=True, float_precision=FLOAT_PRECISION)
 
     return _fix_keys_and_value_types(spb_to_dict)
 

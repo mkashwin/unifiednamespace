@@ -1,6 +1,7 @@
 """
 Test class for uns_sparkplugb.uns_spb_helper
 """
+import math
 from typing import Literal
 
 import pytest
@@ -13,6 +14,7 @@ from uns_sparkplugb.uns_spb_enums import (
     SPBParameterTypes,
     SPBPropertyValueTypes,
 )
+from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION
 
 
 def check_other_slots(value, spb_obj, enum_list, enum):
@@ -418,7 +420,15 @@ def little_to_big_endian(byte_list: list[float], factor: Literal[4, 8]) -> bytes
             sparkplug_b_pb2.Payload.Metric(),
             bytes([0x34, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD9, 0x9E, 0x02, 0xD1, 0xB2, 0x76, 0x37, 0xE4]),
         ),
-        # Float and Double may have floating point precision issues which need a separate test
+        (
+            sparkplug_b_pb2.DoubleArray,
+            [12.354213, 1022.9123213],
+            sparkplug_b_pb2.Payload.Metric(),
+            little_to_big_endian(
+                [0x40, 0x28, 0xB5, 0x5B, 0x68, 0x05, 0xA2, 0xD7, 0x40, 0x8F, 0xF7, 0x4C, 0x6F, 0x1C, 0x17, 0x8E], 8
+            ),
+        ),
+        # Float have floating point precision issues which need a separate test
         (
             sparkplug_b_pb2.DateTimeArray,
             [1256102875335, 1656107875000],
@@ -461,7 +471,7 @@ def test_set_arrays(array_type, value: list[int | str | bool | bytes], spb_obj, 
 
 
 @pytest.mark.parametrize(
-    "array_type, value, spb_obj, encoded_bytes, decimal_precision",
+    "array_type, value, spb_obj, encoded_bytes",
     [  # test data taken from https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
         (
             sparkplug_b_pb2.FloatArray,
@@ -469,20 +479,10 @@ def test_set_arrays(array_type, value: list[int | str | bool | bytes], spb_obj, 
             sparkplug_b_pb2.Payload.Metric(),
             # reverse the byte order in groups of 4 bytes to change from little-endian to big-endian,
             little_to_big_endian([0x3F, 0x9D, 0x70, 0xA4, 0x42, 0xB2, 0xAE, 0x98], 4),
-            5,
-        ),
-        (
-            sparkplug_b_pb2.DoubleArray,
-            [12.354213, 1022.9123213],
-            sparkplug_b_pb2.Payload.Metric(),
-            little_to_big_endian(
-                [0x40, 0x28, 0xB5, 0x5B, 0x68, 0x05, 0xA2, 0xD7, 0x40, 0x8F, 0xF7, 0x4C, 0x6F, 0x1C, 0x17, 0x8E], 8
-            ),
-            12,
         ),
     ],
 )
-def test_set_float_arrays(array_type, value: list[float], spb_obj, encoded_bytes: bytes, decimal_precision: int):
+def test_set_float_arrays(array_type, value: list[float], spb_obj, encoded_bytes: bytes):
     """
     Need separate tests for decimal values due to floating point precision errors while converting to bytes and back from bytes
     """
@@ -494,4 +494,4 @@ def test_set_float_arrays(array_type, value: list[float], spb_obj, encoded_bytes
     #  check if the array is correctly decoded back from the byte array
     decoded_values = SPBMetricDataTypes(array_type).get_value_from_sparkplug(spb_obj)
     for original, decoded in zip(value, decoded_values):
-        assert round(original, decimal_precision) == round(decoded, decimal_precision)
+        assert math.isclose(original, decoded, rel_tol=1 / 10**FLOAT_PRECISION)

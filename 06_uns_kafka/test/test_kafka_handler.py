@@ -64,45 +64,45 @@ def test_convert_mqtt_kafka_topic(mqtt_topic: str, kafka_topic: str):
         (
             "spBv1.0/uns_group/NBIRTH/eon1",
             """{
-         "timestamp":"1671554024644",
+         "timestamp":1671554024644,
          "metrics": [{
              "name": "Inputs/A",
-             "timestamp": "1486144502122",
-             "alias": "0",
-             "datatype": "11",
-             "value": "False"
+             "timestamp": 1486144502122,
+             "alias": 0,
+             "datatype": 11,
+             "value": false
          }, {
              "name": "Inputs/B",
-             "timestamp": "1486144502122",
-             "alias": "1",
-             "datatype": "11",
-             "value": "False"
+             "timestamp": 1486144502122,
+             "alias": 1,
+             "datatype": 11,
+             "value": "false"
          }, {
              "name": "Outputs/E",
-             "timestamp": "1486144502122",
-             "alias": "2",
-             "datatype": "11",
-             "value": "False"
+             "timestamp": 1486144502122,
+             "alias": 2,
+             "datatype": 11,
+             "value": false
          }, {
              "name": "Outputs/F",
-             "timestamp": "1486144502122",
-             "alias": "3",
-             "datatype": "11",
-             "value": "False"
+             "timestamp": 1486144502122,
+             "alias": 3,
+             "datatype": 11,
+             "value": false
          }, {
              "name": "Properties/Hardware Make",
-             "timestamp": "1486144502122",
+             "timestamp": 1486144502122,
              "alias": "4",
              "datatype": "12",
              "value": "Sony"
          }, {
              "name": "Properties/Weight",
-             "timestamp": "1486144502122",
-             "alias": "5",
-             "datatype": "3",
-             "value": "200"
+             "timestamp": 1486144502122,
+             "alias": 5,
+             "datatype": 3,
+             "value": 200
          }],
-         "seq":"0" }""",
+         "seq":0 }""",
         ),
     ],
 )

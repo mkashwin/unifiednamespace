@@ -1,6 +1,7 @@
 """
 Test cases for uns_spb_mapper.spb2unspublisher#Spb2UNSPublisher
 """
+import math
 import time
 from types import SimpleNamespace
 
@@ -322,8 +323,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
 
         assert datatype == org_metric[2]
         if datatype == sparkplug_b_pb2.Float or datatype == sparkplug_b_pb2.Double:
-            # Need to handle floating point issue in Python
-            assert round(value, 5) == round(org_metric[3], 5)
+            assert math.isclose(value, org_metric[3], rel_tol=1 / 10**uns_spb_helper.FLOAT_PRECISION)
         else:
             assert value == org_metric[3]
 

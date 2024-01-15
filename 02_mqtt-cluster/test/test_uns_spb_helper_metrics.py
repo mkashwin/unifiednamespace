@@ -1,14 +1,14 @@
 """
 Test class for uns_sparkplugb.uns_spb_helper
 """
+import math
 from typing import Literal, Optional
 
 import pytest
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
-from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
+from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION, SpBMessageGenerator
 
-FLOAT_PRECISION = 4  # Manage decimal precision issues by rounding with this value
 DUMMY_PROPERTY_SET = Payload.PropertySet(
     keys=["key1_1", "key1_2"],
     values=[
@@ -706,8 +706,10 @@ def test_get_dataset_metric(
     for input_data_row, data_set_row in zip(rows, data_set.rows):
         for datatype, input_cell, element in zip(types, input_data_row, data_set_row.elements):
             if datatype == SPBDataSetDataTypes.Float:
-                assert round(input_cell, FLOAT_PRECISION) == round(
-                    SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element), FLOAT_PRECISION
+                assert math.isclose(
+                    input_cell,
+                    SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element),
+                    rel_tol=1 / 10**FLOAT_PRECISION,
                 )
             else:
                 assert input_cell == SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element)
@@ -848,8 +850,10 @@ def test_add_properties_to_metric(
             assert prop_set.is_null
         else:
             if prop_set.type == SPBPropertyValueTypes.Float:
-                assert round(value, FLOAT_PRECISION) == round(
-                    SPBPropertyValueTypes(prop_set.type).get_value_from_sparkplug(spb_object=prop_set), FLOAT_PRECISION
+                assert math.isclose(
+                    value,
+                    SPBPropertyValueTypes(prop_set.type).get_value_from_sparkplug(spb_object=prop_set),
+                    rel_tol=1 / 10**FLOAT_PRECISION,
                 )
             else:
                 assert value == SPBPropertyValueTypes(prop_set.type).get_value_from_sparkplug(spb_object=prop_set)
