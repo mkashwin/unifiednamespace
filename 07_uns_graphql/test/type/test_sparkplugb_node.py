@@ -1,20 +1,45 @@
 import math
+from ast import literal_eval
 from datetime import UTC, datetime
 
 import pytest
 import strawberry
+from uns_graphql.type.basetype import BytesPayload
 from uns_graphql.type.sparkplugb_node import (
     SPBDataSet,
+    SPBDataSetRow,
+    SPBDataSetValue,
     SPBMetadata,
     SPBMetric,
     SPBNode,
+    SPBPrimitive,
     SPBPropertySet,
     SPBPropertyValue,
     SPBTemplate,
+    SPBTemplateParameter,
 )
+from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
-from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBParameterTypes
-from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
+from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBParameterTypes, SPBPropertyValueTypes
+from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION, SpBMessageGenerator
+
+
+@pytest.mark.parametrize(
+    "value, expected_value",
+    [
+        (100, "100"),  # int
+        (100.123, "100.123"),  # float
+        ("str", "str"),  # str
+        (True, "True"),  # bool
+        ([100, 200, 300], "[100, 200, 300]"),  # int array
+        ([1.123, 2.345, 3.456], "[1.123, 2.345, 3.456]"),  # float array
+        ([True, False, True], "[True, False, True]"),  # bool array
+        (["str1", "str2", "str3"], "['str1', 'str2', 'str3']"),  # str array
+    ],
+)
+def test_spb_primitive(value, expected_value):
+    assert SPBPrimitive(value).data == expected_value == str(value)
+
 
 sample_binary_spb_payload: bytes = (
     b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
@@ -284,17 +309,42 @@ list_of_metrics_dict: list[dict] = [
     },
 ]
 
+DUMMY_PROPERTY_SET = Payload.PropertySet(
+    keys=["key1_1", "key1_2"],
+    values=[
+        Payload.PropertyValue(type=SPBPropertyValueTypes.String, string_value="nested"),
+        Payload.PropertyValue(type=SPBPropertyValueTypes.UInt32, int_value=12345),
+    ],
+)
+
+DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
+
 
 def _create_sample_spb_payload() -> Payload():
     spb_mgs_gen = SpBMessageGenerator()
     payload = spb_mgs_gen.get_device_data_payload()
-    for metric in list_of_metrics_dict:
-        name: str = metric["name"]
-        datatype: int = metric["datatype"]
-        value = metric.get("value", None)
-        metric_timestamp = metric.get("timestamp", None)
-        spb_mgs_gen.add_metric(
+
+    for metric_dict in list_of_metrics_dict:
+        name: str = metric_dict["name"]
+        datatype: int = metric_dict["datatype"]
+        value = metric_dict.get("value", None)
+        metric_timestamp = metric_dict.get("timestamp", None)
+        metric = spb_mgs_gen.add_metric(
             payload_or_template=payload, name=name, datatype=datatype, value=value, timestamp=metric_timestamp
+        )
+        spb_mgs_gen.add_properties_to_metric(
+            metric,
+            keys=["key1", "key2", "key3", "key4", "key5", "key6", "key7"],
+            datatypes=[
+                SPBPropertyValueTypes.UInt32,
+                SPBPropertyValueTypes.UInt64,
+                SPBPropertyValueTypes.Float,
+                SPBPropertyValueTypes.Double,
+                SPBPropertyValueTypes.String,
+                SPBPropertyValueTypes.PropertySet,
+                SPBPropertyValueTypes.PropertySetList,
+            ],
+            values=[10, 10000, 10.1234, 100000.12345678, "String 1", DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
         )
     return payload
 
@@ -304,6 +354,57 @@ def setup_alias_map():
     # clear the alias map for each test
     spb_mgs_gen = SpBMessageGenerator()
     spb_mgs_gen.alias_name_map.clear()
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        """
+    {
+        value {
+            topic,
+            timestamp,
+            seq,
+            uuid,
+            body,
+        }
+    }""",
+    ],
+)
+@pytest.mark.parametrize(
+    "topic, payload",
+    [
+        ("spBv1.0/uns_group/DDATA/eon1", _create_sample_spb_payload()),
+        ("spBv1.0/uns_group/DDATA/eon2", sample_binary_spb_payload),
+        ("spBv1.0/uns_group/DDATA/eon2", uns_spb_helper.convert_spb_bytes_payload_to_dict(sample_binary_spb_payload)),
+    ],
+)
+def test_strawberry_types(query, topic, payload):
+    spb_node = SPBNode(topic=topic, payload=payload)
+
+    @strawberry.type
+    class Query:
+        value: SPBNode
+
+    schema = strawberry.Schema(
+        query=Query,
+        types=[
+            SPBPrimitive,
+            SPBNode,
+            SPBMetric,
+            SPBTemplate,
+            SPBTemplateParameter,
+            SPBDataSet,
+            SPBDataSetRow,
+            SPBDataSetValue,
+            SPBMetadata,
+            SPBPropertySet,
+            SPBPropertyValue,
+            BytesPayload,
+        ],
+    )
+    result = schema.execute_sync(query, root_value=Query(value=spb_node))
+    assert not result.errors
 
 
 @pytest.mark.parametrize(
@@ -380,17 +481,18 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
     # compare values and handle floating point precision issue
     match payload_metric.datatype:
         case SPBMetricDataTypes.Float:
-            assert math.isclose(graphql_metric.value, spb_metric.value, abs_tol=0.00001)
-            assert math.isclose(graphql_metric.value, payload_metric.float_value, abs_tol=0.00001)
+            assert graphql_metric.value == spb_metric.value
+            assert math.isclose(
+                literal_eval(graphql_metric.value.data), payload_metric.float_value, rel_tol=1 / 10**FLOAT_PRECISION
+            )
 
         case SPBMetricDataTypes.FloatArray:
-            for val1, val2 in zip(graphql_metric.value, spb_metric.value):
-                assert math.isclose(val1, val2, abs_tol=0.00001)
+            assert graphql_metric.value == spb_metric.value
 
             for val1, val2 in zip(
-                graphql_metric.value, SPBMetricDataTypes.FloatArray.get_value_from_sparkplug(payload_metric)
+                literal_eval(graphql_metric.value.data), SPBMetricDataTypes.FloatArray.get_value_from_sparkplug(payload_metric)
             ):
-                assert math.isclose(val1, val2, abs_tol=0.00001)
+                assert math.isclose(val1, val2, rel_tol=1 / 10**FLOAT_PRECISION)
 
         case SPBMetricDataTypes.Template:
             compare_templates(graphql_metric.value, payload_metric.template_value)
@@ -398,8 +500,19 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
         case SPBMetricDataTypes.DataSet:
             compare_datasets(graphql_metric.value, payload_metric.dataset_value)
 
+        case SPBMetricDataTypes.String | SPBMetricDataTypes.Text | SPBMetricDataTypes.UUID:
+            assert graphql_metric.value == spb_metric.value
+            assert graphql_metric.value.data == payload_metric.string_value
+
+        case SPBMetricDataTypes.Bytes | SPBMetricDataTypes.File:
+            assert graphql_metric.value == spb_metric.value
+            assert graphql_metric.value.data == payload_metric.bytes_value
+
         case _:
             assert graphql_metric.value == spb_metric.value
+            assert literal_eval(graphql_metric.value.data) == SPBMetricDataTypes(
+                payload_metric.datatype
+            ).get_value_from_sparkplug(payload_metric)
 
 
 def compare_metric_metadata(graphql_metadata: SPBMetadata, metadata: Payload.MetaData):
@@ -450,12 +563,20 @@ def compare_templates(graphql_template: SPBTemplate, template: Payload.Template)
         for graphql_template_param, template_param in zip(graphql_template.parameters, template.parameters):
             assert graphql_template_param.name == template_param.name
             assert graphql_template_param.datatype == SPBParameterTypes(template_param.type).name
-            if template_param.type == SPBParameterTypes.Float:
-                assert math.isclose(graphql_template_param.value, template_param.float_value, abs_tol=0.00001)
-            else:
-                assert graphql_template_param.value == SPBParameterTypes(template_param.type).get_value_from_sparkplug(
-                    template_param
-                )
+            match template_param.type:
+                case SPBParameterTypes.Float:
+                    assert math.isclose(
+                        literal_eval(graphql_template_param.value.data),
+                        template_param.float_value,
+                        rel_tol=1 / 10**FLOAT_PRECISION,
+                    )
+                case SPBParameterTypes.String:
+                    assert graphql_template_param.value.data == template_param.string_value
+
+                case _:
+                    assert literal_eval(graphql_template_param.value.data) == SPBParameterTypes(
+                        template_param.type
+                    ).get_value_from_sparkplug(template_param)
     else:
         assert len(graphql_template.parameters) == len(spb_template.parameters) == 0
 
@@ -469,10 +590,17 @@ def compare_datasets(graphql_dataset: SPBDataSet, dataset: Payload.DataSet):
         for graphql_dt_val, dt_val, datatype in zip(graphql_row.elements, dataset_row.elements, dataset.types):
             match datatype:
                 case SPBDataSetDataTypes.Float:
-                    assert math.isclose(graphql_dt_val.value, dt_val.float_value, abs_tol=0.00001)
+                    assert math.isclose(
+                        literal_eval(graphql_dt_val.value.data), dt_val.float_value, rel_tol=1 / 10**FLOAT_PRECISION
+                    )
+
+                case SPBDataSetDataTypes.String:  # literal_eval doesn't support string
+                    assert graphql_dt_val.value.data == dt_val.string_value
 
                 case _:
-                    assert graphql_dt_val.value == SPBDataSetDataTypes(datatype).get_value_from_sparkplug(dt_val)
+                    assert literal_eval(graphql_dt_val.value.data) == SPBDataSetDataTypes(datatype).get_value_from_sparkplug(
+                        dt_val
+                    )
 
 
 def compare_propertyset(graphql_propertyset: SPBPropertySet, propertyset: Payload.PropertySet):
@@ -481,14 +609,26 @@ def compare_propertyset(graphql_propertyset: SPBPropertySet, propertyset: Payloa
     assert graphql_propertyset.keys == spb_propertyset.keys == propertyset.keys
     for gql_prop_val, spb_prop_val, prop_val in zip(graphql_propertyset.values, spb_propertyset.values, propertyset.values):
         match prop_val.type:
-            case SPBPropertyValue.Float:
-                assert math.isclose(gql_prop_val.value, prop_val.float_value, abs_tol=0.00001)
+            case SPBPropertyValueTypes.Float:
+                assert gql_prop_val.value == spb_prop_val.value
+                assert math.isclose(
+                    literal_eval(gql_prop_val.value.data), prop_val.float_value, rel_tol=1 / 10**FLOAT_PRECISION
+                )
 
-            case SPBPropertyValue.PropertySet:
+            case SPBPropertyValueTypes.String:
+                assert gql_prop_val.value == spb_prop_val.value
+                assert gql_prop_val.value.data == SPBPropertyValueTypes(prop_val.type).get_value_from_sparkplug(prop_val)
+
+            case SPBPropertyValueTypes.PropertySet:
                 compare_propertyset(gql_prop_val.value, prop_val.propertyset_value)
-            case SPBPropertyValue.PropertySetList:
-                for gql_sub_prop_set, sub_prop_set in zip(gql_prop_val.value, prop_val.propertysets_value):
+
+            case SPBPropertyValueTypes.PropertySetList:
+                for gql_sub_prop_set, sub_prop_set in zip(
+                    gql_prop_val.value.propertysets, prop_val.propertysets_value.propertyset
+                ):
                     compare_propertyset(gql_sub_prop_set, sub_prop_set)
             case _:
                 assert gql_prop_val.value == spb_prop_val.value
-                assert gql_prop_val.value == SPBPropertyValue(prop_val.type).get_value_from_sparkplug(prop_val)
+                assert literal_eval(gql_prop_val.value.data) == SPBPropertyValueTypes(prop_val.type).get_value_from_sparkplug(
+                    prop_val
+                )

@@ -5,11 +5,29 @@ from datetime import UTC, datetime
 import strawberry
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBParameterTypes
-from uns_sparkplugb.uns_spb_helper import SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
+from uns_sparkplugb.uns_spb_helper import (
+    SPBDataSetDataTypes,
+    SPBMetricDataTypes,
+    SPBPropertyValueTypes,
+    convert_dict_to_payload,
+)
 
 from uns_graphql.type.basetype import BytesPayload
 
 LOGGER = logging.getLogger(__name__)
+
+
+@strawberry.type(
+    description="""Wrapper for primitive types in Sparkplug.: int, float, str, bool, list
+                 Needed because GraphQL does not support str for unions.
+                 Data is converted to its String representation for convenience.
+                 Use the datatype to convert to actual type if needed """
+)
+class SPBPrimitive:
+    data: str
+
+    def __init__(self, data: typing.Union[int, float, bool, str, list[int, float, bool, str]]):
+        self.data = str(data)
 
 
 @strawberry.type
@@ -38,19 +56,31 @@ class SPBMetadata:
         self.description = metadata.description if metadata.HasField("description") else None
 
 
+@strawberry.type
 class SPBPropertySet:
     """
     Model of PropertySet in SPBv1.0 payload
     """
 
     keys: list[str]
-    values: list[typing.Annotated["SPBPropertyValue", strawberry.lazy(".")]]
+    values: list[typing.Annotated["SPBPropertyValue", strawberry.lazy(".sparkplugb_node")]]
 
     def __init__(self, propertyset: Payload.PropertySet) -> None:
         self.keys = propertyset.keys
         self.values = [SPBPropertyValue(value) for value in propertyset.values]
 
 
+@strawberry.type
+class SPBPropertySetList:
+    """
+    Model of PropertySetList in SPBv1.0 payload
+    Wrapper needed because graphQl doesn't support list in Unions
+    """
+
+    propertysets: list[typing.Annotated[SPBPropertySet, strawberry.lazy(".sparkplugb_node")]]
+
+
+@strawberry.type
 class SPBPropertyValue:
     """
     Model of PropertyValue in SPBv1.0 payload
@@ -58,12 +88,10 @@ class SPBPropertyValue:
 
     is_null: typing.Optional[bool]
     datatype: str
-    value: [
-        int,
-        float,
-        str,
-        typing.Annotated["SPBPropertySet", strawberry.lazy(".")],
-        list[typing.Annotated["SPBPropertySet", strawberry.lazy(".")]],
+    value: typing.Union[
+        SPBPrimitive,
+        typing.Annotated[SPBPropertySet, strawberry.lazy(".sparkplugb_node")],
+        typing.Annotated[SPBPropertySetList, strawberry.lazy(".sparkplugb_node")],
     ]
 
     def __init__(self, property_value: Payload.PropertyValue):
@@ -74,19 +102,18 @@ class SPBPropertyValue:
         else:
             match property_value.type:
                 case SPBPropertyValueTypes.PropertySet:
-                    self.value = SPBPropertySet(
-                        propertyset=SPBPropertyValueTypes.PropertySet.get_value_from_sparkplug(property_value)
-                    )
+                    self.value = SPBPropertySet(property_value.propertyset_value)
 
                 case SPBPropertyValueTypes.PropertySetList:
-                    self.value = [
-                        SPBPropertySet(propertyset)
-                        for propertyset in SPBPropertySet(
-                            SPBPropertyValueTypes.PropertySetList.get_value_from_sparkplug(property_value)
-                        )
-                    ]
+                    self.value = SPBPropertySetList(
+                        propertysets=[
+                            SPBPropertySet(propertyset) for propertyset in property_value.propertysets_value.propertyset
+                        ]
+                    )
                 case _:
-                    self.value = SPBPropertyValueTypes(property_value.type).get_value_from_sparkplug(property_value)
+                    self.value = SPBPrimitive(
+                        SPBPropertyValueTypes(property_value.type).get_value_from_sparkplug(property_value)
+                    )
 
 
 @strawberry.type
@@ -96,11 +123,12 @@ class SPBDataSetValue:
     """
 
     datatype: strawberry.Private[SPBDataSetDataTypes]
-    value: typing.Union[int, float, bool, str]
+    # graphql doesn't support Unions
+    value: SPBPrimitive
 
     def __init__(self, datatype: int, dataset_value: Payload.DataSet.DataSetValue):
         self.datatype = SPBDataSetDataTypes(datatype)
-        self.value = self.datatype.get_value_from_sparkplug(dataset_value)
+        self.value = SPBPrimitive(self.datatype.get_value_from_sparkplug(dataset_value))
 
 
 @strawberry.type
@@ -137,6 +165,7 @@ class SPBDataSet:
         self.rows = [SPBDataSetRow(datatypes=dataset.types, row=row) for row in dataset.rows]
 
 
+@strawberry.type
 class SPBTemplateParameter:
     """
     Model of a SPB Template Parameter,
@@ -144,21 +173,23 @@ class SPBTemplateParameter:
 
     name: str
     datatype: str
-    value: any
+    # graphql doesn't support Unions
+    value: SPBPrimitive
 
     def __init__(self, parameter: Payload.Template.Parameter) -> None:
         self.name = parameter.name
         self.datatype = SPBParameterTypes(parameter.type).name
-        self.value = SPBParameterTypes(parameter.type).get_value_from_sparkplug(parameter)
+        self.value = SPBPrimitive(SPBParameterTypes(parameter.type).get_value_from_sparkplug(parameter))
 
 
+@strawberry.type
 class SPBTemplate:
     """
     Model of Template in SPBv1.0 payload
     """
 
     version: typing.Optional[str]
-    metrics: list[typing.Annotated["SPBMetric", strawberry.lazy(".")]]
+    metrics: list[typing.Annotated["SPBMetric", strawberry.lazy(".sparkplugb_node")]]
     parameters: typing.Optional[list[SPBTemplateParameter]]
     template_ref: typing.Optional[str]
     is_definition: typing.Optional[bool]
@@ -187,14 +218,10 @@ class SPBMetric:
     metadata: typing.Optional[SPBMetadata]
     properties: typing.Optional[SPBPropertySet]
     value: typing.Union[
-        int,
-        float,
-        bool,
-        str,
-        strawberry.ID,
+        SPBPrimitive,
         BytesPayload,
-        typing.Annotated["SPBDataSet", strawberry.lazy(".")],
-        typing.Annotated["SPBTemplate", strawberry.lazy(".")],
+        SPBDataSet,
+        typing.Annotated[SPBTemplate, strawberry.lazy(".sparkplugb_node")],
     ]
 
     def __init__(self, metric: Payload.Metric):
@@ -222,7 +249,7 @@ class SPBMetric:
                     self.value = SPBTemplate(SPBMetricDataTypes.Template.get_value_from_sparkplug(metric))
 
                 case _:
-                    self.value = SPBMetricDataTypes(metric.datatype).get_value_from_sparkplug(metric)
+                    self.value = SPBPrimitive(SPBMetricDataTypes(metric.datatype).get_value_from_sparkplug(metric))
 
 
 @strawberry.type
@@ -254,12 +281,20 @@ class SPBNode:
     body: typing.Optional[strawberry.scalars.Base64]
 
     def __init__(self, topic: str, payload: Payload | bytes | dict):
+        """
+        Creates the SPBNode
+        topic: The MQTT Topic / namespace to which the SPBPayload was published
+        payload: The SparkPlugB Payload. Can be either the Payload object or a bytes/dict representation.
+                 In case of dict or bytes the payload will be parsed and transformed in a Payload object
+        """
         self.topic = topic
 
         if isinstance(payload, bytes):
             parsed_payload = Payload()
             parsed_payload.ParseFromString(payload)
             payload = parsed_payload
+        elif isinstance(payload, dict):
+            payload = convert_dict_to_payload(payload)
         # Timestamp is normally in milliseconds and needs to be converted to microsecond
         # All payloads have a timestamp
         self.timestamp = datetime.fromtimestamp(payload.timestamp / 1000, UTC)

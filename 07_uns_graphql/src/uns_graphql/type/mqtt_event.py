@@ -42,9 +42,11 @@ class MQTTMessage:
         if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, self.topic):
             # Message to sparkplug STATE message
             return JSONPayload(data=self._raw_payload.decode("utf-8"))
+
         elif self.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # Message to sparkplug name space in protobuf i.e. BytesPayload
             return BytesPayload(data=self._raw_payload)
+
         else:
             # Message to UNS or spb STATE message f i.e. JSONPayload
             try:

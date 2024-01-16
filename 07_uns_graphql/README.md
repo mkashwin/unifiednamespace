@@ -114,8 +114,10 @@ This function is executed by the following command with the current folder as [`
 ```bash
 # Ensure that the poetry shell is activated
 poetry shell
-@FIXME
+poetry run uvicorn uns_graphql.uns_graphql_app:UNSGraphql.app --host 0.0.0.0 --port 8000
 ```
+
+Update the hostname and port appropriately
 
 #### Running the GraphQL API Server in development mode
 
