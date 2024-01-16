@@ -2,7 +2,7 @@ import json
 
 import pytest
 import strawberry
-from uns_graphql.type.basetype import BytesPayload, JSONPayload, StateString
+from uns_graphql.type.basetype import BytesPayload, JSONPayload
 from uns_graphql.type.mqtt_event import MQTTMessage
 
 sample_spb_payload: bytes = (
@@ -18,7 +18,12 @@ sample_spb_payload: bytes = (
     "topic, payload, expected_type, expected_data",
     [
         ("ent1/fac1/area5", b'{"key": "value"}', JSONPayload, {"key": "value"}),
-        ("spBv1.0/STATE/scada_1", b"OFFLINE", StateString, "OFFLINE"),
+        (
+            "spBv1.0/STATE/scada_1",
+            b'{ "online" : true,  "timestamp" : 1668114759262}',
+            JSONPayload,
+            {"online": True, "timestamp": 1668114759262},
+        ),
         ("spBv1.0/uns_group/NBIRTH/eon1", sample_spb_payload, BytesPayload, sample_spb_payload),
         ("spBv1.0/uns_group/NDATA/eon1", sample_spb_payload, BytesPayload, sample_spb_payload),
     ],
@@ -32,7 +37,7 @@ def test_resolve_payload(
     mqtt_event = MQTTMessage(topic=topic, payload=payload)
     result = mqtt_event.resolve_payload(None)
     assert isinstance(result, expected_type)
-    if isinstance(result, BytesPayload | StateString):
+    if isinstance(result, BytesPayload):
         assert result.data == expected_data
     else:
         assert json.loads(result.data) == expected_data
@@ -42,7 +47,7 @@ def test_resolve_payload(
     "input_data",
     [
         MQTTMessage(topic="ent1/fac1/area5", payload=b'{"key": "value"}'),
-        MQTTMessage(topic="spBv1.0/STATE/scada_1", payload=b"OFFLINE"),
+        MQTTMessage(topic="spBv1.0/STATE/scada_1", payload=b'{ "online" : true,  "timestamp" : 1668114759262}'),
         MQTTMessage(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=sample_spb_payload),
     ],
 )
@@ -56,12 +61,11 @@ def test_strawberry_type(input_data: MQTTMessage):
         value {
             topic,
             payload {
-                ... on StateString {str: data}
                 ... on JSONPayload {json: data}
                 ... on BytesPayload {bytes: data}
             }
         }
     }"""
-    schema = strawberry.Schema(query=Query, types=[StateString, JSONPayload, BytesPayload])
+    schema = strawberry.Schema(query=Query, types=[JSONPayload, BytesPayload])
     result = schema.execute_sync(query, root_value=Query(value=input_data))
     assert not result.errors

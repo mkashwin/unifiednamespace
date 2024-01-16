@@ -424,10 +424,8 @@ def test_filter_ignored_attributes(topic: str, json_dict: dict, mqtt_ignored_att
         ),
         (
             "spBv1.0/STATE/scada_1",
-            b"OFFLINE",
-            {
-                "WILL_MESSAGE": "OFFLINE",
-            },
+            b'{"online": true, "timestamp": 1668114759262}',
+            {"online": True, "timestamp": 1668114759262},
         ),
         (
             "spBv1.0/uns_group/NBIRTH/eon1",

@@ -3,7 +3,7 @@ import json
 
 import pytest
 import strawberry
-from uns_graphql.type.basetype import BytesPayload, Int64, JSONPayload, StateString
+from uns_graphql.type.basetype import BytesPayload, Int64, JSONPayload
 
 
 @pytest.mark.parametrize(
@@ -75,23 +75,3 @@ def test_int64_type(input_data, expected_output):
 
     assert not result.errors
     assert result.data == {"value": expected_output}
-
-
-@pytest.mark.parametrize(
-    "input_data, expected_output",
-    [
-        ("OFFLINE", "OFFLINE"),  # int 64
-    ],
-)
-def test_state_string_type(input_data, expected_output):
-    @strawberry.type
-    class Query:
-        value: StateString
-
-    query = "{ value { data } }"
-    schema = strawberry.Schema(query=Query)
-    # schema = strawberry.Schema(query=Query,scalar_overrides={int: Int64})
-    result = schema.execute_sync(query, root_value=Query(value=StateString(data=input_data)))
-
-    assert not result.errors
-    assert result.data["value"]["data"] == expected_output
