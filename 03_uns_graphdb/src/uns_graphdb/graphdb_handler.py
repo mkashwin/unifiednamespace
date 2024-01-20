@@ -2,6 +2,7 @@
 Class responsible for persisting the MQTT message into the Graph Database
 """
 import logging
+import sys
 import time
 from typing import Optional
 
@@ -241,21 +242,24 @@ class GraphDBHandler:
         timestamp (float): The timestamp of when the attribute nodes were saved.
 
         """
-        for key in attr_nodes:
-            plain_attributes, composite_attributes = GraphDBHandler.separate_plain_composite_attributes(attr_nodes[key])
+        for key, value in attr_nodes.items():
+            plain_attributes, composite_attributes = GraphDBHandler.separate_plain_composite_attributes(value)
             response = GraphDBHandler.save_node(session, key, attr_node_type, plain_attributes, lastnode_id, timestamp)
             last_attr_node_id = response.peek()[0].element_id
             # After all the topics have been created the nested dicts , list of dicts in the message
             # need to be created as nodes so that they are properly persisted and traversable
             # The Label for all nodes created for attributes will be the same `attr_node_type`
             if composite_attributes is not None and len(composite_attributes) > 0:
-                for child_key in composite_attributes.items():
-                    child_value = composite_attributes[child_key]
+                for child_key, child_value in composite_attributes.items():
+                    # child_value = composite_attributes[child_key]
                     # Fix to handle blank values which were give error unhashable type: 'dict'
                     if isinstance(child_value, (list, dict, tuple)) and len(child_value) == 0:
                         child_value = None
+
+                    attr_nodes = {}
+                    attr_nodes[child_key] = child_value
                     response = GraphDBHandler.save_attribute_nodes(
-                        session, last_attr_node_id, {child_key, child_value}, attr_node_type, timestamp
+                        session, last_attr_node_id, attr_nodes, attr_node_type, timestamp
                     )
 
     # method Ends
@@ -314,8 +318,7 @@ class GraphDBHandler:
             str(parent_id),
         )
         # attributes should not be null for the query to work
-        if attributes is None:
-            attributes = {}
+        attributes = GraphDBHandler.transform_node_params_for_neo4j(attributes)
 
         query = f"""
 //Find Parent node
@@ -372,6 +375,30 @@ RETURN value.child
         return result
 
     # static Method Ends
+
+    @staticmethod
+    def transform_node_params_for_neo4j(attributes: dict):
+        """
+        Function to transform parameters being sent
+        - null parameters
+        - BigInt
+        """
+        if attributes is None:
+            attributes = {}
+        else:
+            for key, value in attributes.items():
+                if isinstance(value, int) and not (-sys.maxsize - 1) < value < sys.maxsize:
+                    # for values greater than 9223372036854775807 i.e. sys.maxsize we get an error Integer Out of Range
+                    # Hence converting this into a string object
+                    attributes[key] = str(value)
+
+                elif (
+                    isinstance(value, list)
+                    and all(isinstance(x, int) for x in value)
+                    and any(not (-sys.maxsize - 1) < x < sys.maxsize for x in value)
+                ):  # for int arrays for any element is beyond max size convert all elements to string
+                    attributes[key] = [str(x) for x in value]
+        return attributes
 
     # static Method Starts
     @staticmethod
