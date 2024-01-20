@@ -237,6 +237,7 @@ bytes_payload_3: bytes = (
     b"\xa8\xa0+ \x0cz\x04Sony\x12;\n\x0fProperties/Text\x10\x0f\x18\xea\xf2\xf5\xa8\xa0+ \x0ez\x1dSony made this device in "
     b"1986\x18\x00"
 )
+
 spb_payload_3 = Payload()
 spb_payload_3.ParseFromString(bytes_payload_3)
 dict_payload_3: dict = {
