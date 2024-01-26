@@ -2,6 +2,7 @@
 Class responsible for persisting the MQTT message into the Graph Database
 """
 import logging
+import re
 import sys
 import time
 from typing import Optional
@@ -16,7 +17,13 @@ LOGGER = logging.getLogger(__name__)
 NODE_NAME_KEY = "node_name"
 CREATED_TIMESTAMP_KEY = "_created_timestamp"
 MODIFIED_TIMESTAMP_KEY = "_modified_timestamp"
+
 NODE_RELATION_NAME = "PARENT_OF"
+REL_ATTR_KEY = "attribute_name"
+REL_ATTR_TYPE = "type"
+REL_INDEX = "index"
+
+SANITIZE_PATTERN = r"[^A-Za-z0-9_]"  # used to sanitize fields sent to Neo4j which cant be sent as params
 
 
 class GraphDBHandler:
@@ -205,62 +212,123 @@ class GraphDBHandler:
             The node type for attribute nodes
         """
         response = None
-        count = 0
+        count: int = 0
         lastnode_id = None
         nodes = topic.split("/")
-        dict_less_message, child_dict_vals = GraphDBHandler.separate_plain_composite_attributes(message)
+
         for node in nodes:
             LOGGER.debug("Processing sub topic: %s of topic:%s", str(node), str(topic))
+            node_type: str = GraphDBHandler.get_topic_node_type(count, node_types)
+            if node != nodes[-1]:  # check if this is the leaf node of the topic
+                response = GraphDBHandler.save_node(
+                    session=session,
+                    nodename=node,
+                    nodetype=node_type,
+                    node_props=None,
+                    parent_id=lastnode_id,
+                    timestamp=timestamp,
+                )
+                records = list(response)
+                lastnode_id = records[0][0].element_id
 
-            node_attr = None
-            if count == len(nodes) - 1:
-                # Save the attributes without nested dicts only for the leaf node of topics
-                node_attr = dict_less_message
-            node_type: Optional[str] = GraphDBHandler.get_topic_node_type(count, node_types)
-            response = GraphDBHandler.save_node(session, node, node_type, node_attr, lastnode_id, timestamp)
-            records = list(response)
-            lastnode_id = records[0][0].element_id
-            if count == len(nodes) - 1:
-                # If this is the last node we iterate through the nested dicts
-                GraphDBHandler.save_attribute_nodes(session, lastnode_id, child_dict_vals, attr_node_type, timestamp)
+            else:  # if this is the leaf node of the topic then save the attributes to this nodes
+                GraphDBHandler.save_attribute_nodes(
+                    session=session,
+                    nodename=node,
+                    lastnode_id=lastnode_id,
+                    attr_nodes=message,
+                    node_type=node_type,
+                    attr_node_type=attr_node_type,
+                    timestamp=timestamp,
+                )
             count += 1
 
     # method Ends
 
     # static method starts
     @staticmethod
-    def save_attribute_nodes(session, lastnode_id: str, attr_nodes: dict, attr_node_type: str, timestamp: float):
+    def save_attribute_nodes(
+        session,
+        nodename: str,
+        lastnode_id: str,
+        attr_nodes: dict,
+        node_type: str,
+        attr_node_type: str,
+        timestamp: float,
+        nodetype_props: Optional[dict] = None,
+    ):
         """
         This function saves attribute nodes in the graph database.
 
         Parameters
         ----------
         session: The session object to interact with the database.
+        nodename (str): name of the node
+        node_type(str): type of the node
         lastnode_id (str): The element_id of the parent node in the graph. None for top most nodes
-        attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples
-        attr_node_type (str): The type of attribute node.
+        attr_nodes (dict): A dictionary containing nested dicts, lists and/or tuples.
+        nodetype_props (dict): dict of primitive values to be added to relations
+        attr_node_type (str): The type of attribute node. i.e the child nodes of attribute node
         timestamp (float): The timestamp of when the attribute nodes were saved.
-
         """
-        for key, value in attr_nodes.items():
-            plain_attributes, composite_attributes = GraphDBHandler.separate_plain_composite_attributes(value)
-            response = GraphDBHandler.save_node(session, key, attr_node_type, plain_attributes, lastnode_id, timestamp)
-            last_attr_node_id = response.peek()[0].element_id
-            # After all the topics have been created the nested dicts , list of dicts in the message
-            # need to be created as nodes so that they are properly persisted and traversable
-            # The Label for all nodes created for attributes will be the same `attr_node_type`
-            if composite_attributes is not None and len(composite_attributes) > 0:
-                for child_key, child_value in composite_attributes.items():
-                    # child_value = composite_attributes[child_key]
-                    # Fix to handle blank values which were give error unhashable type: 'dict'
-                    if isinstance(child_value, (list, dict, tuple)) and len(child_value) == 0:
-                        child_value = None
+        primitive_properties, compound_properties = GraphDBHandler.separate_plain_composite_attributes(attr_nodes)
+        if len(primitive_properties) > 0 or len(compound_properties) > 0:  # Dont create empty node
+            response = GraphDBHandler.save_node(
+                session=session,
+                nodename=nodename,
+                nodetype=node_type,
+                node_props=primitive_properties,
+                nodetype_props=nodetype_props,
+                parent_id=lastnode_id,
+                timestamp=timestamp,
+            )
+            attr_node_id = response.peek()[0].element_id
+        else:
+            attr_node_id = lastnode_id
 
-                    attr_nodes = {}
-                    attr_nodes[child_key] = child_value
-                    response = GraphDBHandler.save_attribute_nodes(
-                        session, last_attr_node_id, attr_nodes, attr_node_type, timestamp
+        for key, value in compound_properties.items():
+            if isinstance(value, dict):
+                # split the attributes of the nested dict into primitive and compound.
+                dict_name: str = str(value.get("name", key))
+                GraphDBHandler.save_attribute_nodes(
+                    session=session,
+                    nodename=dict_name,
+                    node_type=attr_node_type,
+                    attr_node_type=attr_node_type,
+                    attr_nodes=value,
+                    nodetype_props={"attribute_name": key, "type": "dict"},
+                    lastnode_id=attr_node_id,
+                    timestamp=timestamp,
+                )
+
+            elif isinstance(value, list | tuple):
+                # recursively create/update child nodes for list of dicts to the parent node
+                # currently ignoring the index in the array as subsequent updates may not have same position
+                # value should be uniquely identified by it's name
+                index: int = 0
+                for sub_dict in value:
+                    # save each element as a different node.
+                    # to avoid clashes get the name of the child node sub_dict["name"] and append to the key
+                    # Not using index because the length of the array could change across invocations
+                    # if name is not present use the current index number
+                    sub_dict_name = sub_dict.get("name", key + "_" + str(index))
+
+                    GraphDBHandler.save_attribute_nodes(
+                        session=session,
+                        nodename=sub_dict_name,
+                        node_type=attr_node_type,
+                        lastnode_id=attr_node_id,
+                        attr_nodes=sub_dict,
+                        nodetype_props={REL_ATTR_KEY: key, REL_ATTR_TYPE: "list", REL_INDEX: index},
+                        attr_node_type=attr_node_type,
+                        timestamp=timestamp,
                     )
+                    index = index + 1
+            else:
+                LOGGER.error(
+                    f"Compound Properties: {value} should either be dict or a list of dict. Ignored and not persisted"
+                )
+                pass
 
     # method Ends
 
@@ -283,7 +351,8 @@ class GraphDBHandler:
         session: neo4j.Session,
         nodename: str,
         nodetype: str,
-        attributes: Optional[dict] = None,
+        node_props: Optional[dict] = None,
+        nodetype_props: Optional[dict] = None,
         parent_id: Optional[str] = None,
         timestamp: float = time.time(),
     ):
@@ -300,9 +369,13 @@ class GraphDBHandler:
         nodetype : str
             Based on ISA-95 part 2 or Sparkplug spec
             The nested depth of the topic determines the node type.
-        message : dict
+        node_props : dict
             The JSON delivered as message in the MQTT payload converted to a dict.
             Defaults to None (for all intermittent topics)
+            Should not contain composite values i.e. dict or list[dict]
+        nodetype_props: dict
+            Optional properties added to the relation between parent and newly created  node
+            Used for nested attributes
         parent_id  : str
             elementId of the parent node to ensure unique relationships
 
@@ -314,63 +387,71 @@ class GraphDBHandler:
             "Saving node: %s of type: %s and attributes: %s with parent: %s",
             str(nodename),
             str(nodetype),
-            str(attributes),
+            str(node_props),
+            str(nodetype_props),
             str(parent_id),
         )
         # attributes should not be null for the query to work
-        attributes = GraphDBHandler.transform_node_params_for_neo4j(attributes)
+        node_props = GraphDBHandler.transform_node_params_for_neo4j(node_props)
+        # convert dict to a literal map for CQL as parameter maps are not allowed by Neo4j in queries
+        literal_map = GraphDBHandler.get_literal_map(nodetype_props)
 
-        query = f"""
-//Find Parent node
-OPTIONAL MATCH (parent) WHERE elementId(parent) = $parent_id
-// Optional match the child node
-OPTIONAL MATCH (parent) -[r:{NODE_RELATION_NAME}]-> (child:{nodetype}{{ node_name: $nodename}})
+        query = f"""//Find Parent node
+    OPTIONAL MATCH (parent) WHERE elementId(parent) = $parent_id
+    // Optional match the child node
+    OPTIONAL MATCH (parent) -[r:{NODE_RELATION_NAME} {literal_map} ]-> (child:{nodetype}{{ node_name: $nodename}})
 
-// Use apoc.do.when to handle the case where parent is null
-CALL apoc.do.when(
+    // Use apoc.do.when to handle the case where parent is null
+    CALL apoc.do.when(
         // Check if the child is null
         parent is null,
         "
         MERGE (new_node:{nodetype} {{ node_name: $nodename }})
-        SET new_node._created_timestamp = $timestamp
+        SET new_node.{CREATED_TIMESTAMP_KEY} = $timestamp
         SET new_node += $attributes
         RETURN new_node as child
         ",
         "
         CALL apoc.do.when(
-                // Check if the child is nulls
-                child is null,
-                // Create a new node when the child is null
-                'CREATE (new_node:{nodetype} {{ node_name: $nodename }})
-                SET new_node._created_timestamp = $timestamp
-                SET new_node += $attributes
-                MERGE (parent)-[r:PARENT_OF]-> (new_node)
-                // Return the new child node, parent node
-                RETURN new_node as child, parent as parent
-                ',
-                // Modify the existing child node when it is not null
-                'SET child._modified_timestamp = $timestamp
-                SET child += $attributes
-                RETURN child as child, parent as parent
-                ',
-                // Pass in the variables
-                {{parent:parent, child:child, nodename:$nodename, timestamp:$timestamp, attributes:$attributes}}
-                ) YIELD value as result
+            // Check if the child is nulls
+            child is null,
+            // Create a new node when the child is null
+            'CREATE (new_node:{nodetype} {{ node_name: $nodename }})
+            SET new_node.{CREATED_TIMESTAMP_KEY} = $timestamp
+            SET new_node += $attributes
+            MERGE (parent)-[r:{NODE_RELATION_NAME} {literal_map.replace('"', r'\"')} ]-> (new_node)
+            // Return the new child node, parent node
+            RETURN new_node as child, parent as parent
+            ',
+            // Modify the existing child node when it is not null
+            'SET child.{MODIFIED_TIMESTAMP_KEY} = $timestamp
+            SET child += $attributes
+            RETURN child as child, parent as parent
+            ',
+            // Pass in the variables
+            {{parent:parent, child:child, nodename:$nodename,
+             timestamp:$timestamp, attributes:$attributes}}
+            ) YIELD value as result
 
         // Return the child node and the parent node
         RETURN result.child as child, result.parent as parent
         ",
         // Pass in the variables
-        {{parent:parent, child:child, nodename:$nodename, timestamp:$timestamp, attributes:$attributes}}
+        {{parent:parent, child:child, nodename:$nodename,
+          timestamp:$timestamp, attributes:$attributes}}
         ) YIELD value
-// return the child node
-RETURN value.child
-"""
+    // return the child node
+    RETURN value.child
+    """
 
         LOGGER.debug("CQL statement to be executed: %s", str(query))
-        # non-referred would be ignored in the execution.
+
         result: neo4j.Result = session.run(
-            query, nodename=nodename, timestamp=timestamp, parent_id=parent_id, attributes=attributes
+            query,
+            nodename=nodename,
+            timestamp=timestamp,
+            parent_id=parent_id,
+            attributes=node_props,
         )
         return result
 
@@ -402,6 +483,33 @@ RETURN value.child
 
     # static Method Starts
     @staticmethod
+    def get_literal_map(attributes: dict) -> str:
+        """
+        Convert the attributes to be added to a relationship to a string,
+        because parameters are not allowed for relationship attributes.
+        Also sanitizes all keys and values to prevent CQL injection attacks
+        """
+        literal_map: str = ""
+        if attributes is not None:
+            literal_map = literal_map + "{ "
+            for key, val in attributes.items():
+                literal_map = (
+                    # sanitizing the properties to reduce risk of CQL Injection  attacks
+                    literal_map
+                    + " "
+                    + re.sub(SANITIZE_PATTERN, "", key)
+                    + ': "'
+                    + re.sub(SANITIZE_PATTERN, "", str(val))
+                    + '" ,'
+                )
+            literal_map = literal_map[:-1] + "}"
+
+        return literal_map
+
+    # static Method Ends
+
+    # static Method Starts
+    @staticmethod
     def separate_plain_composite_attributes(attributes: dict):
         """
         Splits provided dict into simple values and composite values
@@ -426,32 +534,18 @@ RETURN value.child
         if attributes is None:
             # if this is not a dict then this must be a nested simple list
             attributes = {}
-        for key in attributes:
-            attr_val = attributes.get(key)
+        for key, attr_val in attributes.items():
             # Handle restricted name node_name
+            if key == NODE_NAME_KEY:
+                key = key.upper()
+
             if isinstance(attr_val, dict):
                 # if the value is type dict then add it to the complex_attributes
                 complex_attr[key] = attr_val
 
-            elif isinstance(attr_val, (list, tuple)):
-                counter: int = 0
-                temp_dict: dict = {}
-                is_only_simple_arr: bool = True
-                for item in attr_val:
-                    name_key = key + "_" + str(counter)
-                    if isinstance(item, (dict, list, tuple)):
-                        # special handling. if there is a sub attribute "name", use it for the node name
-                        if isinstance(item, dict) and "name" in item:
-                            name_key = item["name"]
-                        is_only_simple_arr = False
-                    temp_dict[name_key] = item
-                    counter = counter + 1
-                if is_only_simple_arr:
-                    # if the item is a list or tuple of only primitive types
-                    # then it can be merged to the simple_attributes
-                    simple_attr[key] = attr_val
-                else:
-                    complex_attr.update(temp_dict)
+            elif isinstance(attr_val, list | tuple) and all(isinstance(item, dict) for item in attr_val):
+                # List/Tuple of complex attributes only. list of primitive values allowed under node
+                complex_attr[key] = attr_val
             else:
                 # if the value is neither dict, list or tuple  add it to the simple_attributes
                 simple_attr[key] = attr_val
