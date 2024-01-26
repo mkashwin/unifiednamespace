@@ -34,11 +34,8 @@ class UnsMQTTClient(mqtt_client.Client):
 
     SPARKPLUG_NS: Final[str] = "spBv1.0/"
 
-    # TODO What is the name space of STATE messages
     # Currently following https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf
     #   which states spBv1.0/STATE/+
-    # Contradictory https://github.com/eclipse-sparkplug/sparkplug/blob/master/docs/normative_statements.md#sparkplug-topics
-    #   which states STATE/+
     SPB_STATE_MSG_TYPE: Final[str] = "spBv1.0/STATE/+"
 
     def __init__(
@@ -50,7 +47,6 @@ class UnsMQTTClient(mqtt_client.Client):
         transport: Optional[Literal["tcp", "websockets"]] = "tcp",
         reconnect_on_failure: bool = True,
     ):
-        # pylint: disable=too-many-arguments
         """
         Creates an instance of an MQTT client
 
@@ -153,7 +149,6 @@ class UnsMQTTClient(mqtt_client.Client):
         topics: Optional[list[str]] = None,
         qos: Optional[Literal[0, 1, 2]] = 2,
     ):
-        # pylint: disable=too-many-arguments
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
         After this function invoke loop_forever() or loop start()
@@ -265,8 +260,9 @@ class UnsMQTTClient(mqtt_client.Client):
             dict: The payload as a dictionary.
         """
         if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, topic):
-            # This is a State Message in SparkPlugB which is a utf-8 string
-            decoded_payload = {"WILL_MESSAGE": payload.decode("utf-8")}
+            # This is a State Message in SparkPlugB which is a utf-8 string for JSON
+            # https://docs.chariot.io/display/CLD80/Changes+to+the+STATE+message+in+the+Sparkplug+v3.0.0+Specification
+            decoded_payload = json.loads(payload.decode("utf-8"))
         elif topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
             # This message was to the sparkplugB namespace in protobuf format
 

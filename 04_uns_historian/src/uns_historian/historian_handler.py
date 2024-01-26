@@ -142,7 +142,7 @@ class HistorianHandler:
             The MQTT message. String is expected to be JSON formatted
         """
         if timestamp is None:
-            db_timestamp = datetime.now()
+            db_timestamp = datetime.now(UTC)
         else:
             # Timestamp is normally in milliseconds and needs to be converted prior to insertion
             db_timestamp = datetime.fromtimestamp(timestamp / 1000, UTC)

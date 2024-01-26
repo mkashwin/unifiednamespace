@@ -117,7 +117,7 @@ sample_spb_payload: bytes = (
                 ),
                 Message(
                     topic="spBv1.0/STATE/scada_1234",
-                    payload=b'{"status": "offline", "timestamp": 123456789}',
+                    payload=b'{ "online" : true,  "timestamp" : 1668114759262}',
                     qos=1,
                     retain=False,
                     mid=10,
@@ -318,7 +318,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
                 ),
                 Message(
                     topic="spBv1.0/STATE/scada_2345",
-                    payload=b'{"status": "offline", "timestamp": 123456789}',
+                    payload=b'{ "online" : false,  "timestamp" : 1668114759262}',
                     qos=1,
                     retain=False,
                     mid=10,

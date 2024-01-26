@@ -1,31 +1,33 @@
 import logging
 import typing
-from datetime import datetime
-from enum import Enum
+from datetime import UTC, datetime
 
 import strawberry
-from strawberry.types import Info
-from uns_sparkplugb.uns_spb_helper import SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
+from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
+from uns_sparkplugb.uns_spb_enums import SPBParameterTypes
+from uns_sparkplugb.uns_spb_helper import (
+    SPBDataSetDataTypes,
+    SPBMetricDataTypes,
+    SPBPropertyValueTypes,
+    convert_dict_to_payload,
+)
 
-from uns_graphql.type.basetype import BytesPayload, JSONPayload
+from uns_graphql.type.basetype import BytesPayload
 
 LOGGER = logging.getLogger(__name__)
 
 
-@strawberry.enum
-class SPBDataTypeEnum(Enum):
-    SPBMetricDataTypes = SPBMetricDataTypes
+@strawberry.type(
+    description="""Wrapper for primitive types in Sparkplug.: int, float, str, bool, list
+                 Needed because GraphQL does not support str for unions.
+                 Data is converted to its String representation for convenience.
+                 Use the datatype to convert to actual type if needed """
+)
+class SPBPrimitive:
+    data: str
 
-
-@strawberry.enum
-class SPBPropertyTypeEnum(Enum):
-    SPBPropertyValueTypeEnum = SPBPropertyValueTypes
-
-
-@strawberry.type
-class SPBDataSetTypeEnum(Enum):
-    SPBDataSetDataType = SPBDataSetDataTypes
-    pass
+    def __init__(self, data: typing.Union[int, float, bool, str, list[int, float, bool, str]]):
+        self.data = str(data)
 
 
 @strawberry.type
@@ -34,55 +36,84 @@ class SPBMetadata:
     Model of Metadata in SPBv1.0 payload
     """
 
-    is_multi_part: bool
-    content_type: str
-    size: int
-    seq: int
-    file_name: str
-    file_type: str
-    md5: str
-    description: str
+    is_multi_part: typing.Optional[bool]
+    content_type: typing.Optional[str]
+    size: typing.Optional[int]
+    seq: typing.Optional[int]
+    file_name: typing.Optional[str]
+    file_type: typing.Optional[str]
+    md5: typing.Optional[str]
+    description: typing.Optional[str]
+
+    def __init__(self, metadata: Payload.MetaData):
+        self.is_multi_part = metadata.is_multi_part if metadata.HasField("is_multi_part") else None
+        self.content_type = metadata.content_type if metadata.HasField("content_type") else None
+        self.size = metadata.size if metadata.HasField("size") else None
+        self.seq = metadata.seq if metadata.HasField("seq") else None
+        self.file_name = metadata.file_name if metadata.HasField("file_name") else None
+        self.file_type = metadata.file_type if metadata.HasField("file_type") else None
+        self.md5 = metadata.md5 if metadata.HasField("md5") else None
+        self.description = metadata.description if metadata.HasField("description") else None
 
 
-@strawberry.lazy_type
+@strawberry.type
 class SPBPropertySet:
     """
     Model of PropertySet in SPBv1.0 payload
     """
 
     keys: list[str]
-    values: list["SPBPropertyValue"]
+    values: list[typing.Annotated["SPBPropertyValue", strawberry.lazy(".sparkplugb_node")]]
+
+    def __init__(self, propertyset: Payload.PropertySet) -> None:
+        self.keys = propertyset.keys
+        self.values = [SPBPropertyValue(value) for value in propertyset.values]
 
 
-@strawberry.lazy_type
+@strawberry.type
+class SPBPropertySetList:
+    """
+    Model of PropertySetList in SPBv1.0 payload
+    Wrapper needed because graphQl doesn't support list in Unions
+    """
+
+    propertysets: list[typing.Annotated[SPBPropertySet, strawberry.lazy(".sparkplugb_node")]]
+
+
+@strawberry.type
 class SPBPropertyValue:
     """
     Model of PropertyValue in SPBv1.0 payload
     """
 
-    is_null: bool
-    datatype: SPBPropertyTypeEnum
-    value: [int, float, str, SPBPropertySet, list[SPBPropertySet]]
+    is_null: typing.Optional[bool]
+    datatype: str
+    value: typing.Union[
+        SPBPrimitive,
+        typing.Annotated[SPBPropertySet, strawberry.lazy(".sparkplugb_node")],
+        typing.Annotated[SPBPropertySetList, strawberry.lazy(".sparkplugb_node")],
+    ]
 
-    @strawberry.field(name="value")
-    def resolve_value(self, info: Info):  # noqa: ARG002
-        """
-        Resolve value based on type
-        """
-        datatype: int = self.datatype
+    def __init__(self, property_value: Payload.PropertyValue):
+        self.is_null = property_value.is_null if property_value.HasField("is_null") else None
+        self.datatype = SPBPropertyValueTypes(property_value.type).name
         if self.is_null:
-            return None
-        match datatype:
-            case SPBPropertyTypeEnum.UInt32 | SPBPropertyTypeEnum.UInt64:
-                return int(self.value)
-            case SPBPropertyTypeEnum.Float | SPBPropertyTypeEnum.Double:
-                return float(self.value)
-            case SPBPropertyTypeEnum.String:
-                return str(self.value)
-            case SPBPropertyTypeEnum.PropertySet:
-                return SPBPropertySet(value=self.value)
-            case SPBPropertyTypeEnum.PropertySetList:
-                return list(SPBPropertySet(self.value))
+            self.value = None
+        else:
+            match property_value.type:
+                case SPBPropertyValueTypes.PropertySet:
+                    self.value = SPBPropertySet(property_value.propertyset_value)
+
+                case SPBPropertyValueTypes.PropertySetList:
+                    self.value = SPBPropertySetList(
+                        propertysets=[
+                            SPBPropertySet(propertyset) for propertyset in property_value.propertysets_value.propertyset
+                        ]
+                    )
+                case _:
+                    self.value = SPBPrimitive(
+                        SPBPropertyValueTypes(property_value.type).get_value_from_sparkplug(property_value)
+                    )
 
 
 @strawberry.type
@@ -91,24 +122,13 @@ class SPBDataSetValue:
     Model of DataSet->Row->Value in SPBv1.0 payload
     """
 
-    datatype: strawberry.Private[SPBDataSetTypeEnum]
-    value: typing.Union(int, float, bool, str)
+    datatype: strawberry.Private[SPBDataSetDataTypes]
+    # graphql doesn't support Unions
+    value: SPBPrimitive
 
-    @strawberry.field(name="value")
-    def resolve_value(self, info: Info):  # noqa: ARG002
-        datatype = self.datatype
-        match datatype:
-            case SPBDataSetTypeEnum.UInt32 | SPBDataSetTypeEnum.UInt64:
-                return int(self.value)
-
-            case SPBDataSetTypeEnum.Float | SPBDataSetTypeEnum.Double:
-                return float(self.value)
-
-            case SPBDataSetTypeEnum.Boolean:
-                return bool(self.value)
-
-            case SPBDataSetTypeEnum.String:
-                return str(self.value)
+    def __init__(self, datatype: int, dataset_value: Payload.DataSet.DataSetValue):
+        self.datatype = SPBDataSetDataTypes(datatype)
+        self.value = SPBPrimitive(self.datatype.get_value_from_sparkplug(dataset_value))
 
 
 @strawberry.type
@@ -117,15 +137,13 @@ class SPBDataSetRow:
     Model of DataSet->Row in SPBv1.0 payload
     """
 
-    elements = list[SPBDataSetValue]
+    elements: list[SPBDataSetValue]
 
-    def __init__(self, datatypes: list[SPBDataSetTypeEnum], elements: list[int | float | bool | str]):
-        if len(datatypes) == len(elements):
-            self.elements = list[SPBDataSetValue]
-            for datatype, value in zip(datatypes, elements):
-                self.elements.append(SPBDataSetValue(datatype=datatype, value=value))
-        else:
-            raise ValueError(f"length of datatypes: {len(datatypes)} should match length of  elements: {len(elements)}")
+    def __init__(self, datatypes: list[int], row: Payload.DataSet.Row):
+        self.elements = [
+            SPBDataSetValue(datatype=datatype, dataset_value=dataset_value)
+            for datatype, dataset_value in zip(datatypes, row.elements)
+        ]
 
 
 @strawberry.type
@@ -137,82 +155,51 @@ class SPBDataSet:
     num_of_columns: int
     columns: list[str]
     # maps to spb data types
-    types: list[SPBDataTypeEnum]
-    rows: list[SPBDataSetRow(SPBDataSetValue())]
+    types: list[str]
+    rows: list[SPBDataSetRow]
 
-    def __init__(self, columns: list[str], types: list[SPBDataTypeEnum], rows: list[int, float, bool, str]):
-        if len(types) == len(columns):
-            self.types = types
-            self.num_of_columns = len(types)
-            self.columns = columns
-            self.rows = list[SPBDataSetRow]
-            for row in rows:
-                self.rows.append(SPBDataSetRow(datatypes=types, elements=row))
-        else:
-            raise ValueError(f"Length of types array: {len(types)} should be same as length of values:{len(rows)}")
+    def __init__(self, dataset: Payload.DataSet):
+        self.types = [SPBDataSetDataTypes(datatype).name for datatype in dataset.types]
+        self.num_of_columns = dataset.num_of_columns
+        self.columns = dataset.columns
+        self.rows = [SPBDataSetRow(datatypes=dataset.types, row=row) for row in dataset.rows]
 
 
+@strawberry.type
 class SPBTemplateParameter:
     """
     Model of a SPB Template Parameter,
     """
 
-    # pylint: disable=too-few-public-methods
     name: str
-    datatype: SPBDataTypeEnum
-    value: any
+    datatype: str
+    # graphql doesn't support Unions
+    value: SPBPrimitive
 
-    @strawberry.field(name="value")
-    def resolve_value(self, info: Info):  # noqa: ARG002
-        """
-        Resolve value based on datatype
-        """
-        # Logic to dynamically resolve 'value' based on 'datatype'
-
-        datatype: int = self.datatype
-        match datatype:
-            case SPBDataTypeEnum.Float | SPBDataTypeEnum.Double:
-                return float(self.value)
-
-            case SPBDataTypeEnum.Boolean:
-                return bool(self.value)
-
-            case SPBDataTypeEnum.String | SPBDataTypeEnum.Text:
-                return str(self.value)
-
-            case SPBDataTypeEnum.ID:
-                return strawberry.ID(value=str(self.value))
-
-            case SPBDataTypeEnum.Bytes | SPBDataTypeEnum.File:
-                return bytes(self.value)
-
-            case SPBDataTypeEnum.DataSet:
-                return SPBDataSet(value=self.value)
-
-            case SPBDataTypeEnum.Template:
-                return SPBTemplate(value=self.value)
-            case _:
-                LOGGER.error(
-                    "Invalid type: %s.\n Trying Value: %s as String",
-                    str(self.datatype),
-                    str(self.value),
-                    stack_info=True,
-                    exc_info=True,
-                )
-                return str(self.value)
+    def __init__(self, parameter: Payload.Template.Parameter) -> None:
+        self.name = parameter.name
+        self.datatype = SPBParameterTypes(parameter.type).name
+        self.value = SPBPrimitive(SPBParameterTypes(parameter.type).get_value_from_sparkplug(parameter))
 
 
-@strawberry.lazy_type
+@strawberry.type
 class SPBTemplate:
     """
     Model of Template in SPBv1.0 payload
     """
 
-    version: str
-    metrics: list["SPBMetric"]
-    parameters: list[SPBTemplateParameter]
-    template_ref: str
-    is_definition: bool
+    version: typing.Optional[str]
+    metrics: list[typing.Annotated["SPBMetric", strawberry.lazy(".sparkplugb_node")]]
+    parameters: typing.Optional[list[SPBTemplateParameter]]
+    template_ref: typing.Optional[str]
+    is_definition: typing.Optional[bool]
+
+    def __init__(self, template: Payload.Template):
+        self.version = template.version if template.HasField("version") else None
+        self.metrics = [SPBMetric(metric) for metric in template.metrics]
+        self.template_ref = template.template_ref if template.HasField("template_ref") else None
+        self.is_definition = template.is_definition if template.HasField("is_definition") else None
+        self.parameters = [SPBTemplateParameter(parameter) for parameter in template.parameters]
 
 
 @strawberry.type
@@ -222,76 +209,53 @@ class SPBMetric:
     """
 
     name: str
-    alias: int
+    alias: typing.Optional[int]
     timestamp: datetime
-    datatype: SPBDataTypeEnum
-    is_historical: bool
-    is_transient: bool
-    is_null: bool
-    metadata: SPBMetadata
-    properties: SPBPropertySet
-    value: strawberry.union[int, float, bool, str, strawberry.ID, bytes, SPBDataSet, SPBTemplate]
+    datatype: str
+    is_historical: typing.Optional[bool]
+    is_transient: typing.Optional[bool]
+    is_null: typing.Optional[bool]
+    metadata: typing.Optional[SPBMetadata]
+    properties: typing.Optional[SPBPropertySet]
+    value: typing.Union[
+        SPBPrimitive,
+        BytesPayload,
+        SPBDataSet,
+        typing.Annotated[SPBTemplate, strawberry.lazy(".sparkplugb_node")],
+    ]
 
-    @strawberry.field(name="value")
-    def resolve_value(self, info: Info):  # noqa: ARG002
-        """
-        Resolve value based on datatype
-        """
-        # Logic to dynamically resolve 'value' based on 'datatype'
+    def __init__(self, metric: Payload.Metric):
+        self.name = metric.name
+        self.alias = metric.alias if metric.HasField("alias") else None
+        self.timestamp = metric.timestamp
+        self.datatype = SPBMetricDataTypes(metric.datatype).name
+        self.is_historical = metric.is_historical if metric.HasField("is_historical") else None
+        self.is_transient = metric.is_transient if metric.HasField("is_transient") else None
+        self.is_null = metric.is_null if metric.HasField("is_null") else None
+        self.metadata = SPBMetadata(metric.metadata) if metric.HasField("metadata") else None
+        self.properties = SPBPropertySet(metric.properties) if metric.HasField("properties") else None
 
-        datatype: int = self.datatype
         if self.is_null:
-            return None
-        match datatype:
-            case (
-                SPBDataTypeEnum.Int8
-                | SPBDataTypeEnum.Int16
-                | SPBDataTypeEnum.Int32
-                | SPBDataTypeEnum.Int64
-                | SPBDataTypeEnum.UInt8
-                | SPBDataTypeEnum.UInt16
-                | SPBDataTypeEnum.UInt32
-                | SPBDataTypeEnum.UInt64
-                | SPBDataTypeEnum.DateTime
-            ):
-                return int(self.value)
+            self.value = None
+        else:
+            match metric.datatype:
+                case SPBMetricDataTypes.Bytes | SPBMetricDataTypes.File:
+                    self.value = BytesPayload(data=SPBMetricDataTypes(metric.datatype).get_value_from_sparkplug(metric))
 
-            case SPBDataTypeEnum.Float | SPBDataTypeEnum.Double:
-                return float(self.value)
+                case SPBMetricDataTypes.DataSet:
+                    self.value = SPBDataSet(SPBMetricDataTypes.DataSet.get_value_from_sparkplug(metric))
 
-            case SPBDataTypeEnum.Boolean:
-                return bool(self.value)
+                case SPBMetricDataTypes.Template:
+                    self.value = SPBTemplate(SPBMetricDataTypes.Template.get_value_from_sparkplug(metric))
 
-            case SPBDataTypeEnum.String | SPBDataTypeEnum.Text:
-                return str(self.value)
-
-            case SPBDataTypeEnum.ID:
-                return strawberry.ID(value=str(self.value))
-
-            case SPBDataTypeEnum.Bytes | SPBDataTypeEnum.File:
-                return bytes(self.value)
-
-            case SPBDataTypeEnum.DataSet:
-                return SPBDataSet(value=self.value)
-
-            case SPBDataTypeEnum.Template:
-                return SPBTemplate(value=self.value)
-            # FIXME enhance to support arrays also.
-            case _:
-                LOGGER.error(
-                    "Invalid type: %s.\n Trying Value: %s as String",
-                    str(self.datatype),
-                    str(self.value),
-                    stack_info=True,
-                    exc_info=True,
-                )
-                return str(self.value)
+                case _:
+                    self.value = SPBPrimitive(SPBMetricDataTypes(metric.datatype).get_value_from_sparkplug(metric))
 
 
 @strawberry.type
 class SPBNode:
     """
-    Model of a SPB Node,
+    Model of a SPB Node representing the Payload Object
     """
 
     # Fully qualified path of the namespace including current name
@@ -307,13 +271,36 @@ class SPBNode:
     # Metrics published to the spBv1.0 namespace using protobuf payloads
     metrics: list[SPBMetric]
 
-    # Properties / message payload for non protobuf messages e.g. STATE
-    properties: JSONPayload
-
     # sequence
     seq: int
 
     # UUID for this message
-    uuid: strawberry.ID
+    uuid: typing.Optional[strawberry.ID]
 
-    body: list[BytesPayload]
+    # array of bytes used for any custom binary encoded data.
+    body: typing.Optional[strawberry.scalars.Base64]
+
+    def __init__(self, topic: str, payload: Payload | bytes | dict):
+        """
+        Creates the SPBNode
+        topic: The MQTT Topic / namespace to which the SPBPayload was published
+        payload: The SparkPlugB Payload. Can be either the Payload object or a bytes/dict representation.
+                 In case of dict or bytes the payload will be parsed and transformed in a Payload object
+        """
+        self.topic = topic
+
+        if isinstance(payload, bytes):
+            parsed_payload = Payload()
+            parsed_payload.ParseFromString(payload)
+            payload = parsed_payload
+        elif isinstance(payload, dict):
+            payload = convert_dict_to_payload(payload)
+        # Timestamp is normally in milliseconds and needs to be converted to microsecond
+        # All payloads have a timestamp
+        self.timestamp = datetime.fromtimestamp(payload.timestamp / 1000, UTC)
+        # Set other fields only if they were initialized in the payload
+        self.seq = payload.seq if payload.HasField("seq") else None
+        self.uuid = strawberry.ID(payload.uuid) if payload.HasField("uuid") else None
+        self.body = strawberry.scalars.Base64(payload.body) if payload.HasField("body") else None
+        # The HasField method does not work for repeated fields
+        self.metrics = [SPBMetric(metric) for metric in payload.metrics]

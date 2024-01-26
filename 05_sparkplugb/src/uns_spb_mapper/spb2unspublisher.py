@@ -4,12 +4,13 @@ after correctly decoding the protobuf payloads
 """
 import json
 import logging
-from typing import Any, ClassVar, Final, Optional
+from typing import Any, Final, Optional
 
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 from uns_sparkplugb.generated import sparkplug_b_pb2
+from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,61 +24,51 @@ class Spb2UNSPublisher:
     This also temporarily stores the mapping of SparkPlugB Metric aliases
     """
 
-    SPB_NAME: Optional[str] = "name"
-    SPB_ALIAS: Optional[str] = "alias"
-    SPB_TIMESTAMP: Optional[str] = "timestamp"
-    SPB_DATATYPE: Optional[str] = "datatype"
-    SPB_IS_NULL = "is_null"
-    SPB_IS_HISTORICAL = "is_historical"
-
-    # TODO currently not yet handled correctly. need to figure how to handle this
-    SPB_METADATA = "metadata"
-    SPB_PROPERTIES = "properties"
-
-    SPB_DATATYPE_KEYS: Final[str] = {
-        sparkplug_b_pb2.Unknown: "Unknown",
-        sparkplug_b_pb2.Int8: "int_value",
-        sparkplug_b_pb2.Int16: "int_value",
-        sparkplug_b_pb2.Int32: "int_value",
-        sparkplug_b_pb2.UInt8: "int_value",
-        sparkplug_b_pb2.UInt16: "int_value",
-        sparkplug_b_pb2.UInt32: "int_value",
-        sparkplug_b_pb2.Int64: "long_value",
-        sparkplug_b_pb2.UInt64: "long_value",
-        sparkplug_b_pb2.DateTime: "long_value",
-        sparkplug_b_pb2.Float: "float_value",
-        sparkplug_b_pb2.Double: "double_value",
-        sparkplug_b_pb2.String: "string_value",
-        sparkplug_b_pb2.Text: "string_value",
-        sparkplug_b_pb2.UUID: "string_value",
-        sparkplug_b_pb2.DataSet: "dataset_value",
-        sparkplug_b_pb2.Bytes: "bytes_value",
-        sparkplug_b_pb2.File: "bytes_value",
-        sparkplug_b_pb2.Boolean: "boolean_value",
-        sparkplug_b_pb2.Template: "template_value",
-    }
-
-    # stores the message aliases as uses in the SparkPlugB message payload
-    metric_name_alias_map: ClassVar[dict[int, str]] = {}
-    # Flag indicating this an MQTTv5 connection
-    is_mqtt_v5: bool = False
-    # stores the topic aliases to be used if the protocol is MQTTv5
-    topic_alias: ClassVar[dict[str, str]] = {}
-    # the Mqtt client used to publish the messages
-    mqtt_client: UnsMQTTClient = None
-    # maximum topic alias
-    max_topic_alias: int = 0
+    SPB_NAME: Final[str] = "name"
+    SPB_ALIAS: Final[str] = "alias"
+    SPB_TIMESTAMP: Final[str] = "timestamp"
+    SPB_DATATYPE: Final[str] = "datatype"
+    SPB_IS_NULL: Final[str] = "is_null"
+    SPB_IS_HISTORICAL: Final[str] = "is_historical"
+    SPB_METADATA: Final[str] = "metadata"
+    SPB_PROPERTIES: Final[str] = "properties"
 
     def __init__(self, mqtt_client: UnsMQTTClient):
+        # stores the message aliases as uses in the SparkPlugB message payload
+        # NBIRTH and DBIRTH messages MUST include both a metric name and alias.
+        # NDATA, DDATA, NCMD, and DCMD messages MUST only include an alias and the metric name MUST be excluded
+        # alias_map needs to be maintained per node and per device, to be cleared on DDEATH & NDEATH for a specific group_id
+        # dict[<group_id_node_id_device_id>,dict[<alias>, <metric name>] ]
+        self.node_device_metric_alias_map: dict[str, dict[int, str]] = {}
+
+        # stores the topic aliases to be used if the protocol is MQTTv5
+        self.topic_alias: dict[str, str] = {}
+
+        # the Mqtt client used to publish the messages
         self.mqtt_client = mqtt_client
+
+        # Flag indicating this an MQTTv5 connection
         self.is_mqtt_v5 = mqtt_client.protocol == MQTTVersion.MQTTv5
 
-    def clear_metric_alias(self):
+    def clear_metric_alias(self, cache_key: str):
         """
-        Clear all metric aliases stored.
-        Typically called if a node rebirth / death message is received.
+        Clear all metric aliases stored for the provided cache key
+        Typically called if a node or device rebirth / death message is received.
+        cache_key: created from the sparkplug topic "<edge_node_id>/<device_id>"
         """
-        self.metric_name_alias_map.clear()
+        cache = self.node_device_metric_alias_map.pop(cache_key, None)  # metric_name_alias_map
+        LOGGER.debug(f"Clears alias cache for key: {cache_key}. Cache value: {cache}")
+
+    def get_name_for_alias(self, cache_key: str, alias: int):
+        if cache_key not in self.node_device_metric_alias_map:
+            LOGGER.error(f"Trying to get an alias for a cache which has not been set:{cache_key}")
+        return self.node_device_metric_alias_map[cache_key][alias]
+
+    def save_name_for_alias(self, cache_key: str, name: str, alias: int):
+        if cache_key not in self.node_device_metric_alias_map:
+            # create the cache
+            self.node_device_metric_alias_map[cache_key] = {}
+        self.node_device_metric_alias_map[cache_key][alias] = name
 
     def transform_spb_and_publish_to_uns(
         self,
@@ -87,7 +78,6 @@ class Spb2UNSPublisher:
         edge_node_id: str,
         device_id: Optional[str] = None,
     ) -> dict:
-        # pylint: disable=too-many-arguments
         """
         Parses the SPB payload and depending on message type
         will appropriately publish the message to the UNS
@@ -99,19 +89,20 @@ class Spb2UNSPublisher:
         - DDATA
         - NCMD
         - DCMD
+        - NDEATH
 
         Currently not supporting
         - DDEATH : no metrics published at device death
-        - NDEATH: no metrics published at node death
         - STATE:  no metrics published with STATE message
         """
         all_uns_messages: dict = {}
+        metric_alias_cache_key: str = group_id + "/" + edge_node_id + "/" + str(device_id)  # as device_id may be None
         match message_type:
-            case "NBIRTH":  # Birth certificate for MQTT EoN nodes.
+            case "NBIRTH" | "NDEATH" | "DBIRTH":
                 LOGGER.debug("Received message type : %s", str(message_type))
-                # payload = self.getPayload(spBPayload)
                 # reset all metric aliases on node birth
-                self.clear_metric_alias()
+                self.clear_metric_alias(metric_alias_cache_key)
+
                 all_uns_messages = self.handle_spb_messages(
                     spb_payload=spb_payload,
                     group_id=group_id,
@@ -119,55 +110,15 @@ class Spb2UNSPublisher:
                     edge_node_id=edge_node_id,
                     device_id=device_id,
                 )
-
-            case "NDEATH":  # Death certificate for MQTT EoN nodes.
-                LOGGER.debug("Received message type : %s", str(message_type))
-                # reset all metric aliases on node death
-                self.clear_metric_alias()
-                all_uns_messages = self.handle_spb_messages(
-                    spb_payload=spb_payload,
-                    group_id=group_id,
-                    message_type=message_type,
-                    edge_node_id=edge_node_id,
-                    device_id=device_id,
-                )
-
-            case "DBIRTH":  # Birth certificate for Devices.
-                LOGGER.debug("Received message type : %s", str(message_type))
-                # at device birth and death there are no metrics published
 
             case "DDEATH":  # Death certificate for Devices.
+                # clear any alias cache
+                self.clear_metric_alias(metric_alias_cache_key)
+
                 LOGGER.debug("Received message type : %s", str(message_type))
-                # at device birth and death there are no metrics published
+                # at device death there are no metrics published
 
-            case "NDATA":  # Node data message.
-                all_uns_messages = self.handle_spb_messages(
-                    spb_payload=spb_payload,
-                    group_id=group_id,
-                    message_type=message_type,
-                    edge_node_id=edge_node_id,
-                    device_id=device_id,
-                )
-
-            case "DDATA":  # Device data message.
-                all_uns_messages = self.handle_spb_messages(
-                    spb_payload=spb_payload,
-                    group_id=group_id,
-                    message_type=message_type,
-                    edge_node_id=edge_node_id,
-                    device_id=device_id,
-                )
-
-            case "NCMD":  # Node command message.
-                all_uns_messages = self.handle_spb_messages(
-                    spb_payload=spb_payload,
-                    group_id=group_id,
-                    message_type=message_type,
-                    edge_node_id=edge_node_id,
-                    device_id=device_id,
-                )
-
-            case "DCMD":  # device command message.
+            case "NDATA" | "NCMD" | "DDATA" | "DCMD":  # Node data message.
                 all_uns_messages = self.handle_spb_messages(
                     spb_payload=spb_payload,
                     group_id=group_id,
@@ -193,19 +144,18 @@ class Spb2UNSPublisher:
         edge_node_id: str,
         device_id: Optional[str] = None,
     ) -> dict:
-        # pylint: disable=too-many-arguments
-        # pylint: disable=too-many-locals
         """
         Parse the SPBPayload for message types
         """
         # convert spb payload and extract metrics array
-        metrics_list: list = self.get_metrics_from_payload(spb_payload)
+        metrics_list: list = self.get_metrics_from_payload(payload=spb_payload)
+        metric_alias_cache_key: str = group_id + "/" + edge_node_id + "/" + str(device_id)  # as device_id may be None
 
         # collate all metrics to the same topic and send them as one payload
         all_uns_messages: dict = {}
         spb_context = self.get_spb_context(group_id, message_type, edge_node_id, device_id)
         for metric in metrics_list:
-            name = self.get_metric_name(metric)
+            name = self.get_metric_name(cache_key=metric_alias_cache_key, metric=metric)
             name_list = name.rsplit("/", 1)
             uns_topic = name_list[0]
             tag_name = name_list[1]
@@ -216,7 +166,7 @@ class Spb2UNSPublisher:
             is_historical: bool = getattr(metric, Spb2UNSPublisher.SPB_IS_HISTORICAL, False)
             metric_value = None
             if not getattr(metric, Spb2UNSPublisher.SPB_IS_NULL):
-                metric_value = getattr(metric, Spb2UNSPublisher.SPB_DATATYPE_KEYS.get(datatype))
+                metric_value = SPBMetricDataTypes(datatype).get_value_from_sparkplug(metric)
 
             uns_message: dict[str, Any] = Spb2UNSPublisher.extract_uns_message_for_topic(
                 parsed_message=all_uns_messages.get(uns_topic),
@@ -232,26 +182,27 @@ class Spb2UNSPublisher:
 
         return all_uns_messages
 
-    def get_metric_name(self, metric):
+    def get_metric_name(self, cache_key, metric):
         """
         Extract metric name from metric payload
         Encapsulate metric name alias handling
         """
-        name: Optional[str] = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
+        metric_name: Optional[str] = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
         try:
             metric_alias: int = int(getattr(metric, Spb2UNSPublisher.SPB_ALIAS))
         except (AttributeError, TypeError, ValueError):
             metric_alias = None
 
-        if name is None or name == "":
+        if metric_name is None or metric_name == "":
             if metric_alias is not None:
-                name = self.metric_name_alias_map.get(metric_alias)
-            if name is None or name == "":
+                metric_name = self.get_name_for_alias(cache_key, metric_alias)
+            if metric_name is None or metric_name == "":
                 LOGGER.error("Skipping as metric Name is null and alias not yet provided: %s", str(metric))
         elif metric_alias is not None:
             # if metric_alias was provided then store it in the map
-            self.metric_name_alias_map[metric_alias] = name
-        return name
+            self.save_name_for_alias(cache_key=cache_key, name=metric_name, alias=metric_alias)
+
+        return metric_name
 
     @staticmethod
     def get_spb_context(group_id: str, message_type: str, edge_node_id: str, device_id: str) -> dict[str, str]:
@@ -275,7 +226,7 @@ class Spb2UNSPublisher:
         return Spb2UNSPublisher.get_payload(payload).metrics
 
     @staticmethod
-    def get_payload(payload: sparkplug_b_pb2.Payload) -> dict:
+    def get_payload(payload: sparkplug_b_pb2.Payload) -> sparkplug_b_pb2.Payload():
         """
         Converts SparkplugB payload to a dict
         """
@@ -292,7 +243,6 @@ class Spb2UNSPublisher:
         is_historical: bool = False,
         spb_context: Optional[dict[str, str]] = None,
     ) -> dict[str, Any]:
-        # pylint: disable=too-many-arguments
         """
         Returns a dictionary where the key is the target topic name and value is the
         message payload in dict format

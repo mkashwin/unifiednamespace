@@ -114,8 +114,10 @@ This function is executed by the following command with the current folder as [`
 ```bash
 # Ensure that the poetry shell is activated
 poetry shell
-@FIXME
+poetry run uvicorn uns_graphql.uns_graphql_app:UNSGraphql.app --host 0.0.0.0 --port 8000
 ```
+
+Update the hostname and port appropriately
 
 #### Running the GraphQL API Server in development mode
 
@@ -164,7 +166,15 @@ docker run --name uns_graphql -d -v $PWD/conf:/app/conf uns/graphql:latest
 
 - If you are running this image on the host as the MQTT broker  and/or neo4j pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
-## Limitations / workarounds
+## Limitations / workarounds / pending
+
+1. [] customize docker image to allow all possible [uvicorn deployment](https://www.uvicorn.org/deployment/) options
+1. [] Document Guidelines for securing deployment ( Reverse Proxy | CDN ) etc.
+1. [] Implement authorization / RBAC for the API queries & subscriptions
+1. [] Implement Caching, Pagination support.
+1. [] Explore if using ´gunicorn -k uvicorn.workers.UvicornWorker´ adds any value given [this thread on stack overflow](https://stackoverflow.com/questions/66362199/what-is-the-difference-between-uvicorn-and-gunicornuvicorn)
+1. [] Stronger authentication and authorization, passing user principle to backend database to ensure RBAC / consistent fine grained security
+1. [] Architecture to secure the GraphQL server (reverse proxy, TLS, caching etc.)
 
 ## References
 

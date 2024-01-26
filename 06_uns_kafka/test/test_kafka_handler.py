@@ -19,92 +19,109 @@ def test_kafka_handler_init():
     KafkaHandler#init
     """
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
-    assert (kafka_handler.config == KAFKA_CONFIG
-            ), f"""The kafka configuration was not properly initialized.\n
+    assert kafka_handler.config == KAFKA_CONFIG, f"""The kafka configuration was not properly initialized.\n
             Expected config:{KAFKA_CONFIG}, received {kafka_handler.config}"""
-    assert kafka_handler.producer is not None and isinstance(
-        kafka_handler.producer, Producer)
+    assert kafka_handler.producer is not None and isinstance(kafka_handler.producer, Producer)
 
 
-@pytest.mark.parametrize("mqtt_topic, kafka_topic", [(
-    "a/b/c",
-    "a.b.c",
-), (
-    "abc",
-    "abc",
-)])
+@pytest.mark.parametrize(
+    "mqtt_topic, kafka_topic",
+    [
+        (
+            "a/b/c",
+            "a.b.c",
+        ),
+        (
+            "abc",
+            "abc",
+        ),
+    ],
+)
 def test_convert_mqtt_kafka_topic(mqtt_topic: str, kafka_topic: str):
     """
     Test conversion of MQTT Topics to Kafka
     """
-    assert KafkaHandler.convert_mqtt_kafka_topic(
-        mqtt_topic,
-    ) == kafka_topic, "Topic name in Kafka shouldn't have any '/'"
+    assert (
+        KafkaHandler.convert_mqtt_kafka_topic(
+            mqtt_topic,
+        )
+        == kafka_topic
+    ), "Topic name in Kafka shouldn't have any '/'"
 
 
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
-    "mqtt_topic, message", [(
-        "a/b/c",
-        '{"timestamp": 12345678, "message": "test message1"}',
-    ), (
-        "abc",
-        '{"timestamp": 12345678, "message": "test message2"}',
-    ),
-                            ("spBv1.0/uns_group/NBIRTH/eon1", """{
-         "timestamp":"1671554024644",
+    "mqtt_topic, message",
+    [
+        (
+            "a/b/c",
+            '{"timestamp": 12345678, "message": "test message1"}',
+        ),
+        (
+            "abc",
+            '{"timestamp": 12345678, "message": "test message2"}',
+        ),
+        (
+            "spBv1.0/uns_group/NBIRTH/eon1",
+            """{
+         "timestamp":1671554024644,
          "metrics": [{
              "name": "Inputs/A",
-             "timestamp": "1486144502122",
-             "alias": "0",
-             "datatype": "11",
-             "booleanValue": "False"
+             "timestamp": 1486144502122,
+             "alias": 0,
+             "datatype": 11,
+             "value": false
          }, {
              "name": "Inputs/B",
-             "timestamp": "1486144502122",
-             "alias": "1",
-             "datatype": "11",
-             "booleanValue": "False"
+             "timestamp": 1486144502122,
+             "alias": 1,
+             "datatype": 11,
+             "value": "false"
          }, {
              "name": "Outputs/E",
-             "timestamp": "1486144502122",
-             "alias": "2",
-             "datatype": "11",
-             "booleanValue": "False"
+             "timestamp": 1486144502122,
+             "alias": 2,
+             "datatype": 11,
+             "value": false
          }, {
              "name": "Outputs/F",
-             "timestamp": "1486144502122",
-             "alias": "3",
-             "datatype": "11",
-             "booleanValue": "False"
+             "timestamp": 1486144502122,
+             "alias": 3,
+             "datatype": 11,
+             "value": false
          }, {
              "name": "Properties/Hardware Make",
-             "timestamp": "1486144502122",
+             "timestamp": 1486144502122,
              "alias": "4",
              "datatype": "12",
-             "stringValue": "Sony"
+             "value": "Sony"
          }, {
              "name": "Properties/Weight",
-             "timestamp": "1486144502122",
-             "alias": "5",
-             "datatype": "3",
-             "intValue": "200"
+             "timestamp": 1486144502122,
+             "alias": 5,
+             "datatype": 3,
+             "value": 200
          }],
-         "seq":"0" }""")])
+         "seq":0 }""",
+        ),
+    ],
+)
 def test_publish(mqtt_topic: str, message):
     """
     KafkaHandler#publish
     """
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
     assert kafka_handler is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKA_CONFIG}"
-    assert kafka_handler.producer.list_topics(
-        timeout=10,
-    ) is not None, f"Kafka configurations did allow connectivity to broker: {KAFKA_CONFIG}"
+    assert (
+        kafka_handler.producer.list_topics(
+            timeout=10,
+        )
+        is not None
+    ), f"Kafka configurations did allow connectivity to broker: {KAFKA_CONFIG}"
     admin_client: AdminClient = AdminClient(KAFKA_CONFIG)
 
     consumer_config: dict = {}
-    consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get(
-        "bootstrap.servers")
+    consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_test_consumer"
     consumer_config["group.id"] = "uns_kafka_test_consumers"
     consumer_config["auto.offset.reset"] = "latest"
@@ -131,8 +148,7 @@ def test_publish(mqtt_topic: str, message):
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:
-                assert json.loads(
-                    msg.value().decode("utf-8")) == json.loads(message)
+                assert json.loads(msg.value().decode("utf-8")) == json.loads(message)
                 break
 
     except KeyboardInterrupt:

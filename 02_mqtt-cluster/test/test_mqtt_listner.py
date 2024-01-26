@@ -50,7 +50,6 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
 @pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
 def test_01_unauthenticated_connections(clean_session, protocol, transport, port, reconnect_on_failure, topics, tls, qos):
-    # pylint: disable=too-many-arguments
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
@@ -130,7 +129,6 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport, port
 def test_02_authenticated_connections(
     clean_session, protocol, transport, port, reconnect_on_failure, username, password, topics, tls, qos
 ):
-    # pylint: disable=too-many-arguments
     """
     Test all the parameters ( including username password against Mosquitto's hosted broker)
     """
@@ -426,10 +424,8 @@ def test_filter_ignored_attributes(topic: str, json_dict: dict, mqtt_ignored_att
         ),
         (
             "spBv1.0/STATE/scada_1",
-            b"OFFLINE",
-            {
-                "WILL_MESSAGE": "OFFLINE",
-            },
+            b'{"online": true, "timestamp": 1668114759262}',
+            {"online": True, "timestamp": 1668114759262},
         ),
         (
             "spBv1.0/uns_group/NBIRTH/eon1",
@@ -439,52 +435,52 @@ def test_filter_ignored_attributes(topic: str, json_dict: dict, mqtt_ignored_att
             b"\x0bp\x00\x12+\n\x18Properties/Hardware Make\x10\x04\x18\xea\xf2\xf5\xa8\xa0+ \x0cz\x04Sony\x12!\n\x11"
             b"Properties/Weight\x10\x05\x18\xea\xf2\xf5\xa8\xa0+ \x03P\xc8\x01\x18\x00",
             {
-                "timestamp": "1671554024644",
+                "timestamp": 1671554024644,
                 "metrics": [
                     {
                         "name": "Inputs/A",
-                        "timestamp": "1486144502122",
-                        "alias": "0",
+                        "timestamp": 1486144502122,
+                        "alias": 0,
                         "datatype": 11,
-                        "booleanValue": False,
+                        "value": False,
                     },
                     {
                         "name": "Inputs/B",
-                        "timestamp": "1486144502122",
-                        "alias": "1",
+                        "timestamp": 1486144502122,
+                        "alias": 1,
                         "datatype": 11,
-                        "booleanValue": False,
+                        "value": False,
                     },
                     {
                         "name": "Outputs/E",
-                        "timestamp": "1486144502122",
-                        "alias": "2",
+                        "timestamp": 1486144502122,
+                        "alias": 2,
                         "datatype": 11,
-                        "booleanValue": False,
+                        "value": False,
                     },
                     {
                         "name": "Outputs/F",
-                        "timestamp": "1486144502122",
-                        "alias": "3",
+                        "timestamp": 1486144502122,
+                        "alias": 3,
                         "datatype": 11,
-                        "booleanValue": False,
+                        "value": False,
                     },
                     {
                         "name": "Properties/Hardware Make",
-                        "timestamp": "1486144502122",
-                        "alias": "4",
+                        "timestamp": 1486144502122,
+                        "alias": 4,
                         "datatype": 12,
-                        "stringValue": "Sony",
+                        "value": "Sony",
                     },
                     {
                         "name": "Properties/Weight",
-                        "timestamp": "1486144502122",
-                        "alias": "5",
+                        "timestamp": 1486144502122,
+                        "alias": 5,
                         "datatype": 3,
-                        "intValue": 200,
+                        "value": 200,
                     },
                 ],
-                "seq": "0",
+                "seq": 0,
             },
         ),
     ],

@@ -10,7 +10,7 @@
 #       docker run --name uns_kafka_mapper -v <full path to conf>/:/app/conf  --network=host uns/kafka_mapper:v0.5.0 
 
 # Use the official Python image
-FROM python:3.11-alpine3.18
+FROM python:3.12-alpine3.18
 
 # Set the environment variable for the entrypoint command
 ENV UNS_MODULE="06_uns_kafka"\

@@ -271,9 +271,9 @@ docker run --name uns_mqtt_graphdb -d -v $PWD/conf:/app/conf uns/graphdb:latest
   Neo4j does not support nested attributes. so for nested attributes we create a child node for type dict
   Current handling logic could be improved disparate lists of dict and primitives but works with consistent lists of dicts
   See the function [graphdb_handler.py#separate_plain_composite_attributes()](./src/uns_graphdb/graphdb_handler.py#separate_plain_composite_attributes) and [graphdb_handler.py#save_attribute_nodes](./src/uns_graphdb/graphdb_handler.py#save_attribute_nodes)
-  ~~If your message contains nested data the current logic will flatten the JSON object. See the function [graphdb_handler.py#flatten_json_for_neo4j()](./src/uns_graphdb/graphdb_handler.py#flatten_json_for_neo4j)~~
+
 1. [x] ~~Handling exceptional case of mqtt message containing the key ***"node_name"***.~~
-  If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name.
+  If your MQTT message contains the key ***"node_name"***, The key will be changed to uppercase before storing. This is because our application uses the key ***"node_name"*** to uniquely identify the node. This is the stripped topic name or the key of the compound attribute
 1. [x] ~~Add and improve automated test coverage~~
 1. [x] ~~Neo4j Container fails to restart sometimes~~
 

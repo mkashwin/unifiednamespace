@@ -18,7 +18,6 @@ class UNSNode:
     Model of a UNS Node,
     """
 
-    # pylint: disable=too-few-public-methods
     # Name of the node. Also present as part of the namespace
     node_name: str
     # Type of the Node depending on the topic hierarchy in accordance with ISA-95 Part 2

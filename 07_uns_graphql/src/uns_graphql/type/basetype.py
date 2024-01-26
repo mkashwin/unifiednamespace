@@ -33,16 +33,6 @@ class BytesPayload:
     data: strawberry.scalars.Base64
 
 
-@strawberry.type(description="Same as String. Needed because GraphQL does not support str for unions")
-class StateString:
-    """
-    # This is needed because GraphQL does not support str for unions
-    # use only in unions and not as a data field
-    """
-
-    data: str
-
-
 # This is needed because GraphQL does not support int64
 Int64 = strawberry.scalar(
     cls=Union[int, str],

@@ -1,111 +1,14 @@
 """
 Tests for GraphDBHandler
 """
+import sys
 from typing import Optional
 
 import pytest
 from neo4j import Session, exceptions
 from uns_graphdb.graphdb_config import GraphDBConfig
-from uns_graphdb.graphdb_handler import NODE_RELATION_NAME, GraphDBHandler
+from uns_graphdb.graphdb_handler import NODE_NAME_KEY, NODE_RELATION_NAME, REL_ATTR_KEY, GraphDBHandler
 from uns_mqtt.mqtt_listener import UnsMQTTClient
-
-
-@pytest.mark.parametrize(
-    "nested_dict, expected_result",
-    [
-        # blank
-        ({}, {}),
-        # test for existing flat dict
-        (
-            {
-                "a": "value1",
-                "b": "value2",
-            },
-            {
-                "a": "value1",
-                "b": "value2",
-            },
-        ),
-        # test attribute node_name
-        (
-            {
-                "a": "value1",
-                "node_name": "toUpper(*)",
-            },
-            {
-                "a": "value1",
-                "NODE_NAME": "toUpper(*)",
-            },
-        ),
-        # test for existing  dict containing a list
-        (
-            {
-                "a": "value1",
-                "b": [10, 23, 23, 34],
-            },
-            {
-                "a": "value1",
-                "b_0": 10,
-                "b_1": 23,
-                "b_2": 23,
-                "b_3": 34,
-            },
-        ),
-        # test for existing  dict containing dict and list
-        (
-            {
-                "a": "value1",
-                "b": [10, 23, 23, 34],
-                "c": {
-                    "k1": "v1",
-                    "k2": 100,
-                },
-            },
-            {
-                "a": "value1",
-                "b_0": 10,
-                "b_1": 23,
-                "b_2": 23,
-                "b_3": 34,
-                "c_k1": "v1",
-                "c_k2": 100,
-            },
-        ),
-        # test for 3 level nested
-        (
-            {
-                "a": "value1",
-                "l1": {
-                    "l2": {
-                        "l3k1": "va1",
-                        "l3k2": [10, 12],
-                        "l3k3": 3.141,
-                    },
-                    "l2kb": 100,
-                },
-            },
-            {
-                "a": "value1",
-                "l1_l2_l3k1": "va1",
-                "l1_l2_l3k2_0": 10,
-                "l1_l2_l3k2_1": 12,
-                "l1_l2_l3k3": 3.141,
-                "l1_l2kb": 100,
-            },
-        ),
-        (None, {}),
-    ],
-)
-def test_flatten_json_for_neo4j(nested_dict: dict, expected_result: dict):
-    """
-    Testcase for GraphDBHandler.flatten_json_for_neo4j.
-    Validate that the nested dict object is properly flattened
-    """
-    result = GraphDBHandler.flatten_json_for_neo4j(nested_dict)
-    assert result == expected_result, f"""
-            Json/dict to flatten:{nested_dict},
-            Expected Result:{expected_result},
-            Actual Result: {result}"""
 
 
 @pytest.mark.parametrize(
@@ -154,11 +57,11 @@ def test_get_node_name(current_depth: int, expected_result):
                 "b": "value2",
             },
             {
-                "node_name": "value1",
+                "NODE_NAME": "value1",
                 "b": "value2",
             },
             {},
-        ),  # test only plain with node name
+        ),  # test for restricted property node_name
         (
             {
                 "a": "value1",
@@ -178,7 +81,7 @@ def test_get_node_name(current_depth: int, expected_result):
                     "k2": 100,
                 },
             },
-        ),  # test composite
+        ),  # test composite dict
         (
             {
                 "a": "value1",
@@ -193,19 +96,29 @@ def test_get_node_name(current_depth: int, expected_result):
                         "k2": 200,
                     },
                 ],
+                "d": {
+                    "k1": "v1",
+                    "k2": 100,
+                },
             },
             {
                 "a": "value1",
                 "b": [10, 23],
             },
             {
-                "v1": {
-                    "name": "v1",
+                "c": [
+                    {
+                        "name": "v1",
+                        "k2": 100,
+                    },
+                    {
+                        "name": "v2",
+                        "k2": 200,
+                    },
+                ],
+                "d": {
+                    "k1": "v1",
                     "k2": 100,
-                },
-                "v2": {
-                    "name": "v2",
-                    "k2": 200,
                 },
             },
         ),  # test composite with name
@@ -246,6 +159,19 @@ def test_separate_plain_composite_attributes(message: dict, plain: dict, composi
             "test/uns/ar2/ln4",
             {
                 "timestamp": 1486144500000,
+                "TestMetric2": "TestUNSwithNestedDict",
+                "my_dict": {
+                    "a": "b",
+                },
+                "my_other_dict": {
+                    "x": "y",
+                },
+            },
+        ),
+        (
+            "test/uns/ar2/ln5",
+            {
+                "timestamp": 1486144500000,
                 "TestMetric2": "TestUNSwithNestedLists",
                 "dict_list": [
                     {
@@ -283,20 +209,20 @@ def test_persist_mqtt_msg(topic: str, message: dict):
         graph_db_handler.persist_mqtt_msg(topic=topic, message=message, node_types=node_types, attr_node_type=attr_nd_typ)
         # validate data which was persisted
         with graph_db_handler.connect().session(database=graph_db_handler.database) as session:
-            session.execute_read(read_nodes, node_types, attr_nd_typ, topic, message)
+            session.execute_read(read_topic_nodes, node_types, attr_nd_typ, topic, message)
 
     except (exceptions.TransientError, exceptions.TransactionError) as ex:
         pytest.fail("Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
     finally:
         # After successfully validating the data run a new transaction to delete
         with graph_db_handler.connect().session(database=graph_db_handler.database) as session:
-            session.execute_write(cleanup_test_data, node_types, attr_nd_typ, topic, message)
+            session.execute_write(cleanup_test_data, topic.split("/")[0], node_types[0])
 
         if graph_db_handler is not None:
             graph_db_handler.close()
 
 
-def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str, topic: str, message: dict):
+def read_topic_nodes(session: Session, topic_node_types: tuple, attr_node_type: str, topic: str, message: dict):
     """
     Helper function to read the database and compare the persisted data
     """
@@ -304,131 +230,156 @@ def read_nodes(session: Session, topic_node_types: tuple, attr_node_type: str, t
     records: list = []
     index = 0
     last_node_id = None
-    for node, topic_name in zip(topic_list, topic_node_types):
+    for node, node_label in zip(topic_list, topic_node_types):
         if index == 0:
-            query = f"MATCH (node:{topic_name}{{ node_name: $node_name }})\n"
+            query = f"MATCH (node:{node_label}{{ node_name: $node_name }})\n"
+            query = query + " RETURN node"
         else:
-            query = f"MATCH(parent) -[r:{NODE_RELATION_NAME}]->"
-            query = query + f" (node:{topic_name}{{ node_name: $node_name }})"
+            query = f"MATCH(parent) -[rel:{NODE_RELATION_NAME}]->"
+            query = query + f" (node:{node_label}{{ node_name: $node_name }})"
             query = query + "WHERE elementId(parent) = $parent_id "
-        query = query + " RETURN node"
+            query = query + " RETURN node, rel"
 
         result = session.run(query, node_name=node, parent_id=last_node_id)
         records = list(result)
         assert result is not None and len(records) == 1
+        if index > 0:
+            assert records[0].values()[1].type == NODE_RELATION_NAME
 
-        db_node_properties = records[0].values()[0]
+        db_node = records[0].values()[0]
         last_node_id = records[0][0].element_id
         # check node_name
-        assert db_node_properties.get("node_name") == node
+        assert db_node.get("node_name") == node
         # labels is a frozen set
-        assert topic_name in db_node_properties.labels
+        assert node_label in db_node.labels
 
         if index == len(topic_list) - 1:
             # this is a leaf node and the message attributes must match
-            parent_id = db_node_properties.element_id
-            for attr_key in message:
-                value = message[attr_key]
+            parent_id = db_node.element_id
+            primitive_props, compound_props = GraphDBHandler.separate_plain_composite_attributes(message)
 
-                is_only_primitive: bool = True
+            read_primitive_attr_nodes(db_node, primitive_props)
+
+            for attr_key, value in compound_props.items():
                 if isinstance(value, dict):
-                    is_only_primitive = False
                     read_dict_attr_node(session, attr_node_type, parent_id, attr_key, value)
-                # elif isinstance(value, list) or isinstance(value, tuple):
+
                 elif isinstance(value, (list, tuple)):
-                    is_only_primitive = read_list_attr_nodes(
-                        session, db_node_properties.get(attr_key), attr_node_type, parent_id, attr_key, value
-                    )
-                if is_only_primitive:
-                    assert db_node_properties.get(attr_key) == value
+                    read_list_attr_nodes(session, attr_node_type, parent_id, attr_key, value)
+
+                else:
+                    pytest.fail("compound properties should only be list of dict or dict ")
         index = index + 1
 
 
-def read_list_attr_nodes(session, db_attr_list, attr_node_type, parent_id, attr_key, value):
+def read_primitive_attr_nodes(db_node, primitive_props: dict):
+    """
+    Validate teh that  graphDb node contains al the properties and the values match
+    """
+    for attr_key, value in primitive_props.items():
+        if isinstance(value, int) and not (-sys.maxsize - 1) < value < sys.maxsize:
+            assert isinstance(db_node.get(attr_key), str)
+            assert int(db_node.get(attr_key)) == value
+
+        elif isinstance(value, list):
+            for db, expected in zip(db_node.get(attr_key), value):
+                if isinstance(expected, int):
+                    assert expected == int(db)
+                else:
+                    assert expected == db
+        else:
+            assert db_node.get(attr_key) == value
+
+
+def read_list_attr_nodes(session: Session, attr_node_type: str, parent_id: str, attr_key: str, node_array: list[dict]):
     """
     Reads a list of attribute nodes to check values
     """
-    counter: int = 0
-    is_only_primitive = True
-    for item in value:
-        name_key = attr_key + "_" + str(counter)
-        if isinstance(item, (list, tuple)):
-            is_only_primitive = False
-            read_list_attr_nodes(session, db_attr_list, attr_node_type, parent_id, name_key, item)
-        elif isinstance(item, dict):
-            is_only_primitive = False
-            # special handling. if there is a sub attribute "name", use it for the node name
-            if "name" in item:
-                name_key = item["name"]
-            read_dict_attr_node(session, attr_node_type, parent_id, name_key, item)
-        counter = counter + 1
-    if is_only_primitive:
-        assert db_attr_list == value
-    return is_only_primitive
-
-
-def read_dict_attr_node(session, attr_node_type: str, parent_id: str, attr_key: str, value: dict):
+    list_query: str = f"""
+    MATCH (parent) -[rel:{NODE_RELATION_NAME}]-> (child: {attr_node_type})
+    where rel.type = 'list'
+    AND rel.attribute_name=$attribute_name
+    AND elementId(parent) = $parent_id
+    return child, rel
     """
+    list_query_result = session.run(query=list_query, parent_id=parent_id, attribute_name=attr_key)
+    db_list_records = list(list_query_result)
+
+    assert len(db_list_records) == len(node_array)
+
+    # iterate through node_array, split into primitive and compound
+    # iterate through db_list_records[i].values()[0] for matching node_name. then match primitive values
+    matched_nodes = 0
+    for record in db_list_records:
+        db_node = record.values()[0]
+        relation = record.values()[1]
+        index = 0
+        db_node_id = db_node.element_id
+
+        assert relation.get(REL_ATTR_KEY) == attr_key
+
+        # Need to do this as the order of array may not have been retained while saving.
+        for node in node_array:
+            node_name = node.get("name", attr_key + "_" + str(index))
+            primitive_props, compound_props = GraphDBHandler.separate_plain_composite_attributes(node)
+            if db_node.get(NODE_NAME_KEY) == node_name:
+                matched_nodes = matched_nodes + 1
+                read_primitive_attr_nodes(db_node, primitive_props)
+
+                for child_key, child_value in compound_props.items():
+                    if isinstance(child_value, dict):
+                        read_dict_attr_node(session, attr_node_type, db_node_id, child_key, child_value)
+
+                    elif isinstance(child_value, (list, tuple)):
+                        read_list_attr_nodes(session, attr_node_type, db_node_id, child_key, child_value)
+
+                    else:
+                        pytest.fail("compound properties should only be list of dict or dict ")
+                break  # since the node was matched, we can break out of the inner loop
+            index = index + 1
+    assert matched_nodes == len(node_array)
+
+
+def read_dict_attr_node(session, attr_node_type: str, parent_id: str, attr_key: str, node: dict):
+    """;
     Read and compare node created for nested dict attributes in the message
     """
     # Need to enhance test to handle nested dicts
-    attr_node_query: str = f"""
-                        MATCH (parent) -[r:PARENT_OF]-> (n:{attr_node_type}{{ node_name: $node_name }})
-                        WHERE  elementId(parent)= $parent_id
-                        RETURN n
-                    """
-    attr_nodes_result = session.run(attr_node_query, node_name=attr_key, parent_id=parent_id)
-    attr_nodes = list(attr_nodes_result)
-    assert attr_nodes is not None and len(attr_nodes) == 1
-    for sub_items in value:
-        assert value[sub_items] == attr_nodes[0].values()[0][sub_items], "Attributes of child attribute not matching"
+    db_node_query: str = f"""
+        MATCH (parent) -[r:{NODE_RELATION_NAME}]-> (n:{attr_node_type}{{ node_name: $node_name }})
+        WHERE  elementId(parent)= $parent_id
+        AND r.type='dict'
+        AND r.attribute_name= $attribute_name
+        RETURN n, r
+        """
+    db_result = session.run(db_node_query, node_name=attr_key, parent_id=parent_id, attribute_name=attr_key)
+    db_nodes = list(db_result)
+
+    assert db_nodes is not None and len(db_nodes) == 1
+    assert db_nodes[0][1].get(REL_ATTR_KEY) == attr_key
+
+    node_id = db_nodes[0][0].element_id
+
+    primitive_props, compound_props = GraphDBHandler.separate_plain_composite_attributes(node)
+    read_primitive_attr_nodes(db_nodes[0][0], primitive_props)
+    for child_key, child_value in compound_props.items():
+        if isinstance(child_value, dict):
+            read_dict_attr_node(session, attr_node_type, node_id, child_key, child_value)
+
+        elif isinstance(child_value, (list, tuple)):
+            read_list_attr_nodes(session, attr_node_type, node_id, child_key, child_value)
+
+        else:
+            pytest.fail("compound properties should only be list of dict or dict ")
 
 
-def cleanup_test_data(session: Session, topic_node_types: tuple, attr_node_type: str, topic: str, message: dict):
+def cleanup_test_data(session: Session, node: str, node_type: str):
     """
     Cleans up the test data which was inserted in the test case
+    recursively deleted provided node and all nodes in its child tree
     """
-    topic_list: list = topic.split("/")
-    index: int = 0
-    for node, topic_name in zip(topic_list, topic_node_types):
-        query: str = f"MATCH (node:{topic_name}{{ node_name: $node_name }})\n"
-        query = query + " DETACH DELETE node"
-        session.run(query=query, node_name=node)
-        index = index + 1
-        if index == len(topic_list) - 1:
-            for attr_key in message:
-                value = message[attr_key]
-                if isinstance(value, (dict)):
-                    # dicts in the message payload are always made into nodes. Kist delete the node
-                    delete_dict_nodes(session, attr_node_type, attr_key)
-                elif isinstance(value, ((list, tuple))):
-                    delete_list_attr_nodes(session, attr_node_type, attr_key, value)
-
-
-def delete_list_attr_nodes(session: Session, attr_node_type: str, attr_key: str, value: list | tuple):
-    """
-    Delete Nodes created from array of no primitive attributes in the message payload
-    """
-    counter: int = 0
-    for item in value:
-        name_key = attr_key + "_" + str(counter)
-        if isinstance(item, (list, tuple)):
-            # Nested list, check for non primitive values which might been converted to a node
-            delete_list_attr_nodes(session, attr_node_type, name_key, item)
-        elif isinstance(item, dict):
-            # special handling. if there is a sub attribute "name", use it for the node name
-            if "name" in item:
-                name_key = item["name"]
-            delete_dict_nodes(session, attr_node_type, name_key)
-        counter = counter + 1
-
-
-def delete_dict_nodes(session: Session, attr_node_type: str, attr_key: str):
-    """
-    Delete Nodes created from the dict in the message payload
-    """
-    attr_node_query: str = f"""
-                                    MATCH (node:{attr_node_type}{{ node_name: $node_name }})
-                                    DETACH DELETE node
-                                    """
-    session.run(attr_node_query, node_name=attr_key)
+    delete_query = f"""
+        MATCH (parent:{node_type}{{ node_name: $node_name }})-[*]->(child)
+        DETACH DELETE parent, child;
+        """
+    session.run(query=delete_query, node_name=node)

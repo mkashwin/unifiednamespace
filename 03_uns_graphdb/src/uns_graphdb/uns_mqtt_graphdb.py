@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class UnsMqttGraphDb:
-    # pylint: disable=too-many-instance-attributes
+
     """
     Class instantiating MQTT listener that listens to ISA-95 UNS and SparkplugB and
     persists all messages to the GraphDB
@@ -30,25 +30,27 @@ class UnsMqttGraphDb:
             userdata=None,
             protocol=MQTTConfig.version,
             transport=MQTTConfig.transport,
-            reconnect_on_failure=MQTTConfig.reconnect_on_failure)
+            reconnect_on_failure=MQTTConfig.reconnect_on_failure,
+        )
 
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
         # Connect to the database
-        self.graph_db_handler = GraphDBHandler(uri=GraphDBConfig.db_url,
-                                               user=GraphDBConfig.user,
-                                               password=GraphDBConfig.password,
-                                               database=GraphDBConfig.database)
+        self.graph_db_handler = GraphDBHandler(
+            uri=GraphDBConfig.db_url, user=GraphDBConfig.user, password=GraphDBConfig.password, database=GraphDBConfig.database
+        )
 
-        self.uns_client.run(host=MQTTConfig.host,
-                            port=MQTTConfig.port,
-                            username=MQTTConfig.username,
-                            password=MQTTConfig.password,
-                            tls=MQTTConfig.tls,
-                            keepalive=MQTTConfig.keepalive,
-                            topics=MQTTConfig.topics,
-                            qos=MQTTConfig.qos)
+        self.uns_client.run(
+            host=MQTTConfig.host,
+            port=MQTTConfig.port,
+            username=MQTTConfig.username,
+            password=MQTTConfig.password,
+            tls=MQTTConfig.tls,
+            keepalive=MQTTConfig.keepalive,
+            topics=MQTTConfig.topics,
+            qos=MQTTConfig.qos,
+        )
 
     # end of init
 
@@ -56,11 +58,7 @@ class UnsMqttGraphDb:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{"
-                     "Client: %s,"
-                     "Userdata: %s,"
-                     "Message: %s,"
-                     "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
                 node_types = GraphDBConfig.spb_node_types
@@ -68,18 +66,17 @@ class UnsMqttGraphDb:
                 node_types = GraphDBConfig.uns_node_types
             # get the payload as a dict object
             filtered_message = self.uns_client.get_payload_as_dict(
-                topic=msg.topic,
-                payload=msg.payload,
-                mqtt_ignored_attributes=MQTTConfig.ignored_attributes)
+                topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=MQTTConfig.ignored_attributes
+            )
 
             # save message
             self.graph_db_handler.persist_mqtt_msg(
                 topic=msg.topic,
                 message=filtered_message,
-                timestamp=filtered_message.get(MQTTConfig.timestamp_key,
-                                               time.time()),
+                timestamp=filtered_message.get(MQTTConfig.timestamp_key, time.time()),
                 node_types=node_types,
-                attr_node_type=GraphDBConfig.nested_attributes_node_type)
+                attr_node_type=GraphDBConfig.nested_attributes_node_type,
+            )
         except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
@@ -87,7 +84,8 @@ class UnsMqttGraphDb:
                 msg.topic,
                 msg.payload,
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
 
         except Exception as ex:
             # pylint: disable=broad-exception-caught
@@ -97,25 +95,23 @@ class UnsMqttGraphDb:
                 msg.topic,
                 msg.payload,
                 stack_info=True,
-                exc_info=True)
+                exc_info=True,
+            )
 
     # end of on_message----------------------------------------------------------------------------
 
     def on_disconnect(
-            self,
-            client,  # noqa: ARG002
-            userdata,  # noqa: ARG002
-            result_code,
-            properties=None):  # noqa: ARG002
+        self,
+        client,  # noqa: ARG002
+        userdata,  # noqa: ARG002
+        result_code,
+        properties=None,  # noqa: ARG002
+    ):
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
-        # pylint: disable=unused-argument
         if result_code != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         str(result_code),
-                         stack_info=True,
-                         exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(result_code), stack_info=True, exc_info=True)
 
     # end of on_disconnect-------------------------------------------------------------------------
 
@@ -133,8 +129,7 @@ def main():
         if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
 
-        if ((uns_mqtt_graphdb is not None)
-                and (uns_mqtt_graphdb.graph_db_handler is not None)):
+        if (uns_mqtt_graphdb is not None) and (uns_mqtt_graphdb.graph_db_handler is not None):
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
