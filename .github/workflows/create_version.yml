@@ -114,8 +114,8 @@ jobs:
             }
           - {
               module: 07_uns_graphql,
-              image: uns/kafka_mapper,
-              container_description: "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka",
+              image: uns/graphql,
+              container_description: "Provided GrqphQL query capabilites to the UNS system",
             }            
 
     env:
