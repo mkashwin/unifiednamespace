@@ -27,15 +27,16 @@ jobs:
 
     env:
       SHA_TAG: ${{ github.sha }}
+      VERSION_TAG: local #default
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Setup with python environment
+        uses: ./.github/include/setup_python/
         with:
-          python-version: "3.11"
+          module: .
 
       - name: Read version.txt
         id: read_version
@@ -122,7 +123,7 @@ jobs:
       VERSION_TAG: ${{ needs.update-version.outputs.version_tag }}
     steps:
       - name: Login to Github Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -142,10 +143,10 @@ jobs:
       - # Add support for more platforms with QEMU (optional)
         # https://github.com/docker/setup-qemu-action
         name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker Image - Branches
         if: ${{ ! startsWith( github.ref_name , 'main') }}
