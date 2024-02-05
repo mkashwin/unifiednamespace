@@ -26,7 +26,7 @@ packages = [{ include = "uns_graphql", from = "src" }]
 python = "^3.11"
 logger = "^1.4"
 dynaconf = "^3.2.4"
-strawberry-graphql = { version = "^0.217", extras = ["fastapi", "cli"] }
+strawberry-graphql = { version = "^0.219", extras = ["fastapi", "cli"] }
 aiohttp = "^3.9"
 uvicorn = { version = "^0.27", extras = ["standard"] }
 
@@ -39,7 +39,7 @@ asyncpg = "^0.29"
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
-strawberry-graphql = { version = "^0.217", extras = ["debug-server"] }
+strawberry-graphql = { version = "^0.219", extras = ["debug-server"] }
 pytest = "^7.4.4"
 pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
 pytest-asyncio = "^0.23.4"

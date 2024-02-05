@@ -1676,13 +1676,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyam
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.217.1"
+version = "0.219.1"
 description = "A library for creating GraphQL APIs"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "strawberry_graphql-0.217.1-py3-none-any.whl", hash = "sha256:b54ecd323f88a86d184012ac7049c8f58879c6913a75b69d9be5e0fb1b3ba0b5"},
-    {file = "strawberry_graphql-0.217.1.tar.gz", hash = "sha256:3246dfe871d8ee4d57ff98ea0678080a3bcd242cdd287a60fd180cb66a6554ff"},
+    {file = "strawberry_graphql-0.219.1-py3-none-any.whl", hash = "sha256:b152fa7a71f56dabe60454145a33f0aa8ea19c837d00ab12d2833cf86ff28704"},
+    {file = "strawberry_graphql-0.219.1.tar.gz", hash = "sha256:53557e297ef23f8eb527afe33990fe51396065c6fb5ef0f5bdfe276a3c8e578f"},
 ]
 
 [package.dependencies]
@@ -1709,6 +1709,7 @@ debug-server = ["libcst (>=0.4.7)", "pygments (>=2.3,<3.0)", "python-multipart (
 django = ["Django (>=3.2)", "asgiref (>=3.2,<4.0)"]
 fastapi = ["fastapi (>=0.65.2)", "python-multipart (>=0.0.5,<0.0.7)"]
 flask = ["flask (>=1.1)"]
+litestar = ["litestar (>=2)"]
 opentelemetry = ["opentelemetry-api (<2)", "opentelemetry-sdk (<2)"]
 pydantic = ["pydantic (>1.6.1)"]
 pyinstrument = ["pyinstrument (>=4.0.0)"]
@@ -2140,4 +2141,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "108adf59a41a673ba44ca85e0468e243957c313ba1eee029ea11a9ed1a6e1da9"
+content-hash = "7a407f03b2eaa2a67662e55329e722746664327e82302c90b690c9844b7ff8bb"
