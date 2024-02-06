@@ -1036,12 +1036,12 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.16.0"
+version = "5.17.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.16.0.tar.gz", hash = "sha256:3d04334f5f99dc06c8150e75f2d608a560789ef35670494ecdcec31c0af276a9"},
+    {file = "neo4j-5.17.0.tar.gz", hash = "sha256:dcd7150a0c3834a89a6e27505e614f340376f31c97c48ba60dc70a220ee85e3b"},
 ]
 
 [package.dependencies]
