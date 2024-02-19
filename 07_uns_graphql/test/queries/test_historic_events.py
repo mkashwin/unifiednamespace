@@ -140,7 +140,7 @@ async def test_strawberry_get_historic_events_in_time_range(
 )
 async def test_strawberry_get_historic_events_by_property(
     properties: list[str],
-    binary_operator: Literal,
+    binary_operator: Literal["OR", "AND", "NOT"],
     topics: list[str],
     from_date: str,
     to_date: str,
