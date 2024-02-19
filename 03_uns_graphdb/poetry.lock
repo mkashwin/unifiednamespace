@@ -714,7 +714,7 @@ develop = true
 [package.dependencies]
 logger = "^1.4"
 paho-mqtt = "^1.6.1"
-protobuf = "^4.25.2"
+protobuf = "^4.25.3"
 
 [package.source]
 type = "directory"
