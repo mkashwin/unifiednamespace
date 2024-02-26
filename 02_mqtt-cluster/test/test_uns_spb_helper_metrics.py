@@ -683,7 +683,7 @@ def test_add_null_metric():
 def test_get_dataset_metric(
     name: str,
     columns: list[str],
-    types: list[SPBDataSetDataTypes],
+    types: list[SPBDataSetDataTypes],  # type: ignore
     rows: Optional[list[list[int | float | bool | str]]],
 ):
     """
@@ -819,7 +819,7 @@ def test_add_metadata_to_metric(
 )
 def test_add_properties_to_metric(
     keys: list[str],
-    datatypes: list[SPBPropertyValueTypes],
+    datatypes: list[SPBPropertyValueTypes],  # type: ignore
     values: list[str | float | bool | int | Payload.PropertySet | Payload.PropertySetList],
 ):
     """
@@ -879,7 +879,7 @@ def test_add_properties_to_metric(
 )
 def test_create_propertyset(
     keys: list[str],
-    datatypes: list[SPBPropertyValueTypes],
+    datatypes: list[SPBPropertyValueTypes],  # type: ignore
     values: list[str | float | bool | int | Payload.PropertySet | Payload.PropertySetList],
 ):
     """
@@ -929,7 +929,7 @@ def test_create_propertyset(
 )
 def test_create_propertyset_list(
     keys: list[str],
-    datatypes: list[SPBPropertyValueTypes],
+    datatypes: list[SPBPropertyValueTypes],  # type: ignore
     values: list[str | float | bool | int | Payload.PropertySet | Payload.PropertySetList],
 ):
     """

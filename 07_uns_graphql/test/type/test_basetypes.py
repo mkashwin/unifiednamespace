@@ -66,7 +66,7 @@ def test_bytes_payload(input_data):
 def test_int64_type(input_data, expected_output):
     @strawberry.type
     class Query:
-        value: Int64
+        value: Int64  # type: ignore
 
     query = "{ value }"
     schema = strawberry.Schema(query=Query)

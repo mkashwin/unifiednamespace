@@ -109,7 +109,7 @@ def convert_dict_to_metric(metric_dict: dict) -> Payload.Metric:
         match key:
             # Handle the various attributes of Metric
             case "value":
-                datatype: SPBMetricDataTypes = SPBMetricDataTypes(metric_dict["datatype"])
+                datatype: SPBMetricDataTypes = SPBMetricDataTypes(metric_dict["datatype"])  # type: ignore
                 match datatype:
                     # Set value based on datatype and special handling to get template and dataset
                     case SPBMetricDataTypes.DataSet:
@@ -393,7 +393,7 @@ class SpBMessageGenerator:
         self,
         payload_or_template: Payload | Payload.Template,
         name: str,
-        datatype: SPBMetricDataTypes,
+        datatype: SPBMetricDataTypes,  # type: ignore
         value=None,
         alias: Optional[int] = None,
         timestamp: Optional[int] = None,
@@ -436,7 +436,7 @@ class SpBMessageGenerator:
         self,
         payload: Payload | Payload.Template,
         name: str,
-        datatype: SPBMetricDataTypes,
+        datatype: SPBMetricDataTypes,  # type: ignore
         value,
         timestamp,
         alias: Optional[int] = None,
@@ -472,7 +472,7 @@ class SpBMessageGenerator:
         self,
         payload_or_template: Payload | Payload.Template,
         name: str,
-        datatype: SPBMetricDataTypes,
+        datatype: SPBMetricDataTypes,  # type: ignore
         alias: Optional[int] = None,
     ):
         """
@@ -501,7 +501,7 @@ class SpBMessageGenerator:
         payload: Payload,
         name: str,
         columns: list[str],  # column headers
-        types: list[SPBDataSetDataTypes],  # type of the value in the inner list of rows
+        types: list[SPBDataSetDataTypes],  # type: ignore , type of the value in the inner list of rows
         rows: Optional[
             list[list[int | float | bool | str]]
         ],  # list of row values . row value can be of type int, float, bool or str
@@ -566,7 +566,7 @@ class SpBMessageGenerator:
         metrics: Optional[list[Payload.Metric]],
         version: Optional[str] = None,
         template_ref: Optional[str] = None,
-        parameters: Optional[list[tuple[str, SPBParameterTypes, int | float | bool | str]]] = None,
+        parameters: Optional[list[tuple[str, SPBParameterTypes, int | float | bool | str]]] = None,  # type: ignore
         alias: Optional[int] = None,
     ) -> Payload.Template:
         """
@@ -679,7 +679,7 @@ class SpBMessageGenerator:
         self,
         metric: Payload.Metric,
         keys: list[str],
-        datatypes: list[SPBPropertyValueTypes],
+        datatypes: list[SPBPropertyValueTypes],  # type: ignore
         values: list[str | float | bool | int | Payload.PropertySet | Payload.PropertySetList],
     ) -> Payload.PropertySet:
         """

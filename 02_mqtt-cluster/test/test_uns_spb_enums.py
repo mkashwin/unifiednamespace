@@ -283,7 +283,7 @@ def test_dataset_via_enum(value: sparkplug_b_pb2.Payload.DataSet, spb_obj):
     Test case for value setting Template via the ENUMs
     """
     if isinstance(value, sparkplug_b_pb2.Payload.DataSet):
-        spb_obj.datatype: int = sparkplug_b_pb2.DataSet
+        spb_obj.datatype: int = sparkplug_b_pb2.DataSet  # type: ignore
         SPBMetricDataTypes(sparkplug_b_pb2.DataSet).set_value_in_sparkplug(value=value, spb_object=spb_obj)
         # check raw value in the slot
         assert spb_obj.dataset_value == value

@@ -122,7 +122,7 @@ class SPBDataSetValue:
     Model of DataSet->Row->Value in SPBv1.0 payload
     """
 
-    datatype: strawberry.Private[SPBDataSetDataTypes]
+    datatype: strawberry.Private[SPBDataSetDataTypes]  # type: ignore
     # graphql doesn't support Unions
     value: SPBPrimitive
 
