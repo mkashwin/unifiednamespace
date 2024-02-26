@@ -226,7 +226,7 @@ class Spb2UNSPublisher:
         return Spb2UNSPublisher.get_payload(payload).metrics
 
     @staticmethod
-    def get_payload(payload: sparkplug_b_pb2.Payload) -> sparkplug_b_pb2.Payload():
+    def get_payload(payload: sparkplug_b_pb2.Payload) -> sparkplug_b_pb2.Payload:
         """
         Converts SparkplugB payload to a dict
         """

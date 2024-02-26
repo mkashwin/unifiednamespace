@@ -320,7 +320,7 @@ DUMMY_PROPERTY_SET = Payload.PropertySet(
 DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
 
 
-def _create_sample_spb_payload() -> Payload():
+def _create_sample_spb_payload() -> Payload:
     spb_mgs_gen = SpBMessageGenerator()
     payload = spb_mgs_gen.get_device_data_payload()
 
