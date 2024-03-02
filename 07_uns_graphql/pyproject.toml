@@ -32,7 +32,7 @@ uvicorn = { version = "^0.27", extras = ["standard"] }
 
 aiomqtt = "^2.0.0"
 confluent-kafka = "^2.3.0"
-neo4j = "^5.15"
+neo4j = "^5.18"
 asyncpg = "^0.29"
 
 [tool.poetry.group.dev.dependencies]

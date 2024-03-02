@@ -391,12 +391,12 @@ tests = ["pytest", "pytz", "simplejson"]
 
 [[package]]
 name = "neo4j"
-version = "5.17.0"
+version = "5.18.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.17.0.tar.gz", hash = "sha256:dcd7150a0c3834a89a6e27505e614f340376f31c97c48ba60dc70a220ee85e3b"},
+    {file = "neo4j-5.18.0.tar.gz", hash = "sha256:4014406ae5b8b485a8ba46c9f00b6f5b4aaf88e7c3a50603445030c2aab701c9"},
 ]
 
 [package.dependencies]
@@ -739,4 +739,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a8dfe3bb249dd8c6f6c3778beed999eafc1de80c24e963d00ecbe2d888c8acc7"
+content-hash = "f26f7557ac8cbfb80b8a40b6578fe1212c7f1246ed28e50d415658f2a83ad9ee"
