@@ -32,7 +32,7 @@ dynaconf = "^3.2.4"
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.1.0"
+pytest = "^8.1.1"
 pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
