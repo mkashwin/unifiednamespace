@@ -36,7 +36,7 @@ pytest = "^8.1.1"
 pytest-xdist = { version="^3.5.0",extras =["psutil2"]}
 pytest-cov = "^4.1.0"
 safety = "^2.4.0b2"
-ruff = "^0.3.0"
+ruff = "^0.3.2"
 
 [tool.poetry.scripts]
 uns_spb_mapper = "uns_spb_mapper.uns_sparkplugb_listener:main"
