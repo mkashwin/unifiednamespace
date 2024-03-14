@@ -674,7 +674,7 @@ testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jar
 
 [[package]]
 name = "uns-mqtt"
-version = "0.8.20"
+version = "0.8.21"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 optional = false
 python-versions = "^3.11"
