@@ -9,11 +9,9 @@
 #       docker run --name uns_mqtt_graphdb -v <full path to conf>/:/app/conf --network=host uns/graphdb:<version> 
 
 # Use the official Python image
-FROM python:3.12-alpine3.18
+FROM python:3.12-alpine3.19
 
 # Set the environment variable for the entrypoint command
-# Don't buffer `stdout`
-# Don't create `.pyc` files:
 ENV UNS_MODULE="03_uns_graphdb" \
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
@@ -29,7 +27,7 @@ LABEL org.opencontainers.image.licenses=MIT
 WORKDIR /app
 
 # Copy the contents of the project into the container
-COPY ./${UNS_MODULE}/pyproject.toml ./poetry.lock ./README.md ./
+COPY ./${UNS_MODULE}/pyproject.toml ./${UNS_MODULE}/poetry.lock ./${UNS_MODULE}/README.md ./LICENSE* ./
 COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/README.md /02_mqtt-cluster/
 
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
@@ -38,7 +36,7 @@ COPY ./${UNS_MODULE}/src ./src/
 # install minimalistic missing packages & security fixes
 RUN apk update && \ 
     apk add --no-cache libffi-dev libc-dev gcc && \
-    apk upgrade --no-cache libcrypto3 libssl3 && \
+    apk upgrade --no-cache libexpat libcrypto3 libssl3 && \
     rm -rf /var/cache/apk/*
 
 # Install pip & poetry
