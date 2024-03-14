@@ -27,7 +27,7 @@ LABEL org.opencontainers.image.licenses=MIT
 WORKDIR /app
 
 # Copy the contents of the project into the container
-COPY ./${UNS_MODULE}/pyproject.toml /${UNS_MODULE}poetry.lock ./${UNS_MODULE}/README.md ./LICENSE* ./
+COPY ./${UNS_MODULE}/pyproject.toml /${UNS_MODULE}/poetry.lock ./${UNS_MODULE}/README.md ./LICENSE* ./
 COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/README.md /02_mqtt-cluster/
 
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
