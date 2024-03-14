@@ -30,7 +30,7 @@ strawberry-graphql = { version = "^0.220", extras = ["fastapi", "cli"] }
 aiohttp = "^3.9"
 uvicorn = { version = "^0.28", extras = ["standard"] }
 
-aiomqtt = "^2.0.0"
+aiomqtt = "^2.0.1"
 confluent-kafka = "^2.3.0"
 neo4j = "^5.18"
 asyncpg = "^0.29"
