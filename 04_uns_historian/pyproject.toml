@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_historian"
-version = "0.8.20"
+version = "0.8.21"
 description = "Historian implementation for a UNS setup"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -23,11 +23,8 @@ keywords = ["uns", "mqtt", "timescaledb", "postgres", "historian"]
 packages = [{ include = "uns_historian", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 logger = "^1.4"
-# psycopg2-binary = "^2.9.8"
-# pytz = "^2023.3"
-
 asyncpg = "^0.29"
 dynaconf = "^3.2.4"
 
