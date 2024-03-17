@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns-mqtt"
-version = "0.8.20"
+version = "0.8.21"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -25,7 +25,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 logger = "^1.4"
 paho-mqtt = "^1.6.1"
 protobuf = "^4.25.3"

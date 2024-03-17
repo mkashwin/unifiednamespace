@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_graphql"
-version = "0.8.20"
+version = "0.8.21"
 description = "Provide GraphQL capabilities to the UNS across all data sources -MQTT, KAFKA, Historian & GraphDB"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -23,14 +23,14 @@ keywords = ["uns", "graphql", "mqtt", "graphDB", "historian", "kafka"]
 packages = [{ include = "uns_graphql", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.220", extras = ["fastapi", "cli"] }
 aiohttp = "^3.9"
 uvicorn = { version = "^0.28", extras = ["standard"] }
 
-aiomqtt = "^2.0.0"
+aiomqtt = "^2.0.1"
 confluent-kafka = "^2.3.0"
 neo4j = "^5.18"
 asyncpg = "^0.29"

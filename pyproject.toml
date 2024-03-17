@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Unified Name Space"
-version = "0.8.20"
+version = "0.8.21"
 description = "Set of modules / tools to realize an UNS for your organization"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -29,7 +29,7 @@ keywords = [
 # ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 # All modules need the logger
 logger = "^1.4"
 # List of sub modules

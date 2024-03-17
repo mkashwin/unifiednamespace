@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_graphdb"
-version = "0.8.20"
+version = "0.8.21"
 description = "Graph Database implementation for a UNS setup"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
@@ -23,7 +23,7 @@ keywords = ["uns", "mqtt", "neo4j", "graphdb"]
 packages = [{ include = "uns_graphdb", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 logger = "^1.4"
 neo4j = "^5.18"
 paho-mqtt = "^1.6.1"
