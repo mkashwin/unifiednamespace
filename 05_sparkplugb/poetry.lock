@@ -677,7 +677,7 @@ name = "uns-mqtt"
 version = "0.8.21"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 optional = false
-python-versions = "^3.11"
+python-versions = "^3.12"
 files = []
 develop = true
 
@@ -709,5 +709,5 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.11"
-content-hash = "244a77550ce65dbb8e5a4bc525b30e60b3b3575bf2327c8ff4e2f4df42728200"
+python-versions = "^3.12"
+content-hash = "144cd0ba38c83690bc1308b5edc878f6e628f05fa1005c92eb8831b2d4c1b1fe"

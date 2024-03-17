@@ -23,7 +23,7 @@ keywords = ["uns", "graphql", "mqtt", "graphDB", "historian", "kafka"]
 packages = [{ include = "uns_graphql", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.220", extras = ["fastapi", "cli"] }

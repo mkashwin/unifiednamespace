@@ -23,7 +23,7 @@ keywords = ["uns", "mqtt", "sparkplugb"]
 packages = [{ include = "uns_spb_mapper", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
 
