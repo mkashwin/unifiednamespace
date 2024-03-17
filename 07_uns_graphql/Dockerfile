@@ -56,7 +56,9 @@ RUN  pip install --upgrade pip poetry && \
     adduser --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
     # Install the required dependencies for the project using poetry as that user
-    su uns_user -c "poetry lock --no-update \
+    # disabling new-installer based on https://github.com/python-poetry/poetry/issues/3352
+    su uns_user -c "poetry config experimental.new-installer false \
+    && poetry lock --no-update \
     && poetry add /02_mqtt-cluster -n  --lock  \
     && poetry install --only main -n"
 
