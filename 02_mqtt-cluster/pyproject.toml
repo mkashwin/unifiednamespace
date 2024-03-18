@@ -13,12 +13,12 @@ readme = "README.md"
 repository = "https://github.com/mkashwin/unifiednamespace/tree/main/02_mqtt-cluster"
 # documentation = ""
 keywords = ["uns", "mqtt", "sparkplugB"]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Topic :: Software Development :: Libraries :: MQTT"
-#   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client"
-# ]
+classifiers = [
+   "License :: OSI Approved :: MIT License",
+   "Intended Audience :: Manufacturing",
+   "Topic :: Software Development :: Libraries :: MQTT",
+   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client wrapper"
+ ]
 packages = [
     { include = "uns_mqtt", from = "src" },
     { include = "uns_sparkplugb", from = "src" },

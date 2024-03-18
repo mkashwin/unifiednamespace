@@ -21,12 +21,13 @@ keywords = [
     "kafka",
     "graphql",
 ]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Topic :: Software Development :: Libraries :: MQTT"
-#   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client"
-# ]
+package-mode = false 
+classifiers = [
+   "License :: OSI Approved :: MIT License",
+   "Intended Audience :: Manufacturing",
+   "Topic :: Software Development :: Libraries :: MQTT",
+   "Topic :: Industry 4.0 :: Unified Name Space :: MQTT client"
+ ]
 
 [tool.poetry.dependencies]
 python = "^3.12"

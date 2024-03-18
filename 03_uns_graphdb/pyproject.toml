@@ -13,13 +13,13 @@ readme = "README.md"
 repository = "https://github.com/mkashwin/unifiednamespace/tree/main/03_uns_graphdb"
 # documentation = ""
 keywords = ["uns", "mqtt", "neo4j", "graphdb"]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Operating System :: OS Independent",
-#   "Topic :: Software Development :: Libraries :: Graph DB",
-#   "Topic :: Industry 4.0 :: Unified Name Space :: GraphDB Client"
-# ]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Manufacturing",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Graph DB",
+  "Topic :: Industry 4.0 :: Unified Name Space :: GraphDB Client"
+]
 packages = [{ include = "uns_graphdb", from = "src" }]
 
 [tool.poetry.dependencies]

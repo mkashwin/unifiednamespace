@@ -13,13 +13,13 @@ readme = "README.md"
 repository = "https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql"
 # documentation = ""
 keywords = ["uns", "graphql", "mqtt", "graphDB", "historian", "kafka"]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Operating System :: OS Independent",
-#   "Topic :: Software Development :: Libraries :: UNS GraphQL",
-#   "Topic :: Industry 4.0 :: Unified Name Space :: UNS GraphQL Resolver"
-# ]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Manufacturing",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: UNS GraphQL",
+  "Topic :: Industry 4.0 :: Unified Name Space :: UNS GraphQL Resolver"
+]
 packages = [{ include = "uns_graphql", from = "src" }]
 
 [tool.poetry.dependencies]

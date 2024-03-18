@@ -13,13 +13,13 @@ readme = "README.md"
 repository = "https://github.com/mkashwin/unifiednamespace/tree/main/04_uns_historian"
 # documentation = ""
 keywords = ["uns", "mqtt", "timescaledb", "postgres", "historian"]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Operating System :: OS Independent",
-#   "Topic :: Software Development :: Libraries :: Historian",
-#   "Topic :: Industry 4.0 :: Unified Name Space :: Historian Client"
-# ]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Manufacturing",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Historian",
+  "Topic :: Industry 4.0 :: Unified Name Space :: Historian Client"
+]
 packages = [{ include = "uns_historian", from = "src" }]
 
 [tool.poetry.dependencies]

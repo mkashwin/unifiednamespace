@@ -13,13 +13,13 @@ readme = "README.md"
 repository = "https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka"
 # documentation = ""
 keywords = ["uns", "mqtt", "kafka"]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Operating System :: OS Independent",
-#   "Topic :: Software Development :: Libraries :: UNS to Kafka ",
-#   "Topic :: Industry 4.0 :: Unified Name Space :: UNS to Kafka Mapper Client"
-# ]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Manufacturing",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: UNS to Kafka ",
+  "Topic :: Industry 4.0 :: Unified Name Space :: UNS to Kafka Mapper Client"
+]
 packages = [{ include = "uns_kafka", from = "src" }]
 
 [tool.poetry.dependencies]

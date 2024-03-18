@@ -13,13 +13,13 @@ readme = "README.md"
 repository = "https://github.com/mkashwin/unifiednamespace/tree/main/05_sparkplugb"
 # documentation = ""
 keywords = ["uns", "mqtt", "sparkplugb"]
-#classifiers = [
-#   "License :: OSI Approved :: MIT License",
-#   "Intended Audience :: Manufacturing",
-#   "Operating System :: OS Independent",
-#   "Topic :: Software Development :: Libraries :: spB to UNS ",
-#   "Topic :: Industry 4.0 :: Unified Name Space :: spB to UNS Mapper Client"
-# ]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Manufacturing",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: spB to UNS ",
+  "Topic :: Industry 4.0 :: Unified Name Space :: spB to UNS Mapper Client"
+]
 packages = [{ include = "uns_spb_mapper", from = "src" }]
 
 [tool.poetry.dependencies]
