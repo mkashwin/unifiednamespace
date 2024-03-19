@@ -497,13 +497,13 @@ pipenv = ["pipenv (<=2022.12.19)"]
 
 [[package]]
 name = "dynaconf"
-version = "3.2.4"
+version = "3.2.5"
 description = "The dynamic configurator for your Python Project"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dynaconf-3.2.4-py2.py3-none-any.whl", hash = "sha256:858f9806fab2409c4f5442614c2605d4c4071d5e5153b0e7f24a225f27465aed"},
-    {file = "dynaconf-3.2.4.tar.gz", hash = "sha256:2e6adebaa587f4df9241a16a4bec3fda521154d26b15f3258fde753a592831b6"},
+    {file = "dynaconf-3.2.5-py2.py3-none-any.whl", hash = "sha256:12202fc26546851c05d4194c80bee00197e7c2febcb026e502b0863be9cbbdd8"},
+    {file = "dynaconf-3.2.5.tar.gz", hash = "sha256:42c8d936b32332c4b84e4d4df6dd1626b6ef59c5a94eb60c10cd3c59d6b882f2"},
 ]
 
 [package.extras]
@@ -511,7 +511,7 @@ all = ["configobj", "hvac", "redis", "ruamel.yaml"]
 configobj = ["configobj"]
 ini = ["configobj"]
 redis = ["redis"]
-test = ["configobj", "django", "flake8", "flake8-debugger", "flake8-print", "flake8-todo", "flask (>=0.12)", "hvac (>=1.1.0)", "pep8-naming", "pytest", "pytest-cov", "pytest-mock", "pytest-xdist", "python-dotenv", "radon", "redis", "toml"]
+test = ["configobj", "django", "flask (>=0.12)", "hvac (>=1.1.0)", "pytest", "pytest-cov", "pytest-mock", "pytest-xdist", "python-dotenv", "radon", "redis", "toml"]
 toml = ["toml"]
 vault = ["hvac"]
 yaml = ["ruamel.yaml"]
@@ -1253,13 +1253,13 @@ testing = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygm
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.23.5.post1"
+version = "0.23.6"
 description = "Pytest support for asyncio"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-asyncio-0.23.5.post1.tar.gz", hash = "sha256:b9a8806bea78c21276bc34321bbf234ba1b2ea5b30d9f0ce0f2dea45e4685813"},
-    {file = "pytest_asyncio-0.23.5.post1-py3-none-any.whl", hash = "sha256:30f54d27774e79ac409778889880242b0403d09cabd65b727ce90fe92dd5d80e"},
+    {file = "pytest-asyncio-0.23.6.tar.gz", hash = "sha256:ffe523a89c1c222598c76856e76852b787504ddb72dd5d9b6617ffa8aa2cde5f"},
+    {file = "pytest_asyncio-0.23.6-py3-none-any.whl", hash = "sha256:68516fdd1018ac57b846c9846b954f0393b26f094764a28c955eabb0536a4e8a"},
 ]
 
 [package.dependencies]
@@ -1770,13 +1770,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "uvicorn"
-version = "0.28.0"
+version = "0.28.1"
 description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "uvicorn-0.28.0-py3-none-any.whl", hash = "sha256:6623abbbe6176204a4226e67607b4d52cc60ff62cda0ff177613645cefa2ece1"},
-    {file = "uvicorn-0.28.0.tar.gz", hash = "sha256:cab4473b5d1eaeb5a0f6375ac4bc85007ffc75c3cc1768816d9e5d589857b067"},
+    {file = "uvicorn-0.28.1-py3-none-any.whl", hash = "sha256:5162f6d652f545be91b1feeaee8180774af143965ca9dc8a47ff1dc6bafa4ad5"},
+    {file = "uvicorn-0.28.1.tar.gz", hash = "sha256:08103e79d546b6cf20f67c7e5e434d2cf500a6e29b28773e407250c54fc4fa3c"},
 ]
 
 [package.dependencies]
