@@ -230,7 +230,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Updating version to ${{ needs.update-version.outputs.version_tag }} "
-          label: "v${{  needs.update-version.outputs.version_tag }}, version-update"
+          label: "v${{  needs.update-version.outputs.version_tag }},version-update"
           source_branch: "${{ needs.update-version.outputs.branch_name }}"
-          target_branch: main
+          target_branch: "main"
           get_diff: true
