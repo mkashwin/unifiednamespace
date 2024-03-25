@@ -2,6 +2,7 @@
 Publish messages received on the spbV1.0 name space to the UNS
 after correctly decoding the protobuf payloads
 """
+
 import json
 import logging
 from typing import Any, Final, Optional
@@ -62,6 +63,7 @@ class Spb2UNSPublisher:
     def get_name_for_alias(self, cache_key: str, alias: int):
         if cache_key not in self.node_device_metric_alias_map:
             LOGGER.error(f"Trying to get an alias for a cache which has not been set:{cache_key}")
+            return None
         return self.node_device_metric_alias_map[cache_key][alias]
 
     def save_name_for_alias(self, cache_key: str, name: str, alias: int):
