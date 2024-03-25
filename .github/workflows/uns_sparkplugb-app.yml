@@ -62,7 +62,7 @@ jobs:
         with:
           module: 05_sparkplugb
           integration_tests: true
-          pytest_flags: "-v"
+#          pytest_flags: "-v"
 
   build_docker:
     runs-on: ubuntu-latest
