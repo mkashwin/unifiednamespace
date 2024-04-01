@@ -1977,7 +1977,7 @@ confluent-kafka = "^2.3.0"
 dynaconf = "^3.2.4"
 logger = "^1.4"
 neo4j = "^5.18"
-strawberry-graphql = {version = "^0.224.1", extras = ["cli", "fastapi"]}
+strawberry-graphql = {version = "^0.224", extras = ["cli", "fastapi"]}
 uvicorn = {version = "^0.29", extras = ["standard"]}
 
 [package.source]
