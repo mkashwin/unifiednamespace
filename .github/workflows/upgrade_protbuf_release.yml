@@ -98,7 +98,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Updating protocol buffers version to ${{env.latest_release}}"
-          label: "${{env.latest_release}}, ProtocolBuffers version-update"
+          label: "${{env.latest_release}},ProtocolBuffers,version-update"
           source_branch: "features/upgrade_protobuf_to_${{env.latest_release}}"
-          target_branch: main
+          target_branch: "main"
           get_diff: true
