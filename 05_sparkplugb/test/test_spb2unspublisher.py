@@ -1,6 +1,7 @@
 """
 Test cases for uns_spb_mapper.spb2unspublisher#Spb2UNSPublisher
 """
+
 import math
 import time
 from types import SimpleNamespace
@@ -155,12 +156,12 @@ def test_negative_get_metric_name(cache_key, metric):
         (
             SimpleNamespace(
                 **{
-                    Spb2UNSPublisher.SPB_NAME: "metric_name1",
+                    Spb2UNSPublisher.SPB_NAME: "metric_name2",
                     Spb2UNSPublisher.SPB_ALIAS: 1,
                     Spb2UNSPublisher.SPB_DATATYPE: "Int8",
                 }
             ),
-            "metric_name1",
+            "metric_name2",
             1,
         )
     ],
