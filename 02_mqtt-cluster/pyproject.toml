@@ -34,8 +34,8 @@ protobuf = "^5.26.0"
 pytest = "^8.2.0"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-cov = "^5.0.0"
-safety = "^3.1.0"
-ruff = "^0.4.2"
+safety = "^3.2.0"
+ruff = "^0.4.3"
 
 
 [build-system]
