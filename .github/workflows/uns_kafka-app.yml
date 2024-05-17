@@ -38,6 +38,7 @@ permissions:
 jobs:
   build_code:
     runs-on: ubuntu-latest
+    environment: dev
     env:
       UNS_mqtt.host: "localhost"
       UNS_mqtt.port: 1883
@@ -75,6 +76,7 @@ jobs:
         with:
           module: 06_uns_kafka
           integration_tests: true
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
 
   build_docker:
     runs-on: ubuntu-latest
