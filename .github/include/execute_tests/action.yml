@@ -37,9 +37,16 @@ runs:
                   poetry run pytest -m "not integrationtest" ${{inputs.pytest_flags}}
               fi
 
-        - name: Test for security vulnerabilities
-          shell: bash
-          run: |
-              # change to current directory of module        
-              cd ./${{ inputs.module }} 
-              poetry run safety check
+        # - name: Test for security vulnerabilities
+        #   shell: bash
+        #   run: |
+        #       # change to current directory of module
+        #       cd ./${{ inputs.module }}
+        #       poetry run safety check
+
+        - name: Run Safety CLI to check for vulnerabilities
+          uses: pyupio/safety-3-beta/safety-3@main
+          with:
+              api-key: ${{ secrets.SAFETY_API_KEY }}
+              args:
+                  args: --target ./${{ inputs.module }} --policy-file ./.safety-policy.yml
