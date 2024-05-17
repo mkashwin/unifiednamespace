@@ -53,4 +53,4 @@ runs:
           with:
               api-key: ${{ inputs.SAFETY_API_KEY }}
               args:
-                  args: --target ./${{ inputs.module }} --policy-file ./.safety-policy.yml
+                  args: "--target ./${{ inputs.module }} --policy-file ./.safety-policy.yml"
