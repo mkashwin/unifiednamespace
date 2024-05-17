@@ -38,6 +38,7 @@ permissions:
 jobs:
   build_code:
     runs-on: ubuntu-latest
+    environment: dev
     env:
       UNS_mqtt.host: "localhost"
       UNS_mqtt.port: 1883

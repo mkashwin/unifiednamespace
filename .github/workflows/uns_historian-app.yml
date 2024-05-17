@@ -50,6 +50,7 @@ jobs:
   build_code:
     runs-on: ubuntu-latest
     needs: generate_random_password
+    environment: dev
     env:
       UNS_mqtt__host: "localhost"
       UNS_mqtt__port: 1883
