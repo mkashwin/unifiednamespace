@@ -38,6 +38,7 @@ permissions:
 jobs:
   build_code:
     runs-on: ubuntu-latest
+    environment: dev
     env:
       UNS_mqtt.host: "localhost"
       UNS_mqtt.port: 1883
@@ -62,7 +63,8 @@ jobs:
         with:
           module: 05_sparkplugb
           integration_tests: true
-#          pytest_flags: "-v"
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+          # pytest_flags: "-v"
 
   build_docker:
     runs-on: ubuntu-latest
