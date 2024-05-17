@@ -49,7 +49,7 @@ runs:
         #       poetry run safety check
 
         - name: Run Safety CLI to check for vulnerabilities
-          uses: pyupio/safety-3-beta/safety-3@main
+          uses: pyupio/safety-action@v1
           with:
               api-key: ${{ inputs.SAFETY_API_KEY }}
               args: --target ./${{ inputs.module }} --policy-file ./.safety-policy.yml
