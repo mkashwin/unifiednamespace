@@ -45,3 +45,4 @@ jobs:
         with:
           module: 02_mqtt-cluster
           integration_tests: true
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
