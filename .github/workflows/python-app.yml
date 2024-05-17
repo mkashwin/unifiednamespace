@@ -55,4 +55,4 @@ jobs:
         with:
           module: ${{ matrix.module }}
           integration_tests: false
-#          pytest_flags: "-v"
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
