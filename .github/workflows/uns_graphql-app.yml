@@ -142,6 +142,7 @@ jobs:
         with:
           module: 07_uns_graphql
           integration_tests: true
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
 
       - name: Create graphQL schema
         env:

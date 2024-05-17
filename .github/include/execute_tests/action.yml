@@ -13,6 +13,10 @@ inputs:
         description: "String, additional flags to be passed to pytest while running tests"
         required: False
         default: ""
+    SAFETY_API_KEY:
+        description: "API Key to invoke safety scanner. see https://safetycli.com/"
+        required: True
+
 runs:
     using: "composite"
     steps:
@@ -47,6 +51,6 @@ runs:
         - name: Run Safety CLI to check for vulnerabilities
           uses: pyupio/safety-3-beta/safety-3@main
           with:
-              api-key: ${{ secrets.SAFETY_API_KEY }}
+              api-key: ${{ inputs.SAFETY_API_KEY }}
               args:
                   args: --target ./${{ inputs.module }} --policy-file ./.safety-policy.yml

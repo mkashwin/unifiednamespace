@@ -75,6 +75,7 @@ jobs:
         with:
           module: 06_uns_kafka
           integration_tests: true
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
 
   build_docker:
     runs-on: ubuntu-latest

@@ -108,6 +108,7 @@ jobs:
         with:
           module: 04_uns_historian
           integration_tests: true
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
 
   build_docker:
     runs-on: ubuntu-latest

@@ -83,6 +83,7 @@ jobs:
         with:
           module: 03_uns_graphdb
           integration_tests: true
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
 
   build_docker_image:
     runs-on: ubuntu-latest

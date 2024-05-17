@@ -62,7 +62,8 @@ jobs:
         with:
           module: 05_sparkplugb
           integration_tests: true
-#          pytest_flags: "-v"
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+          # pytest_flags: "-v"
 
   build_docker:
     runs-on: ubuntu-latest
