@@ -55,17 +55,17 @@ RUN apk update && \
     apk add --no-cache  libffi-dev libc-dev gcc bash g++ make && \
     apk upgrade --no-cache libexpat libcrypto3 libssl3 && \
     rm -rf /var/cache/apk/* && \
-    # Need to install https://github.com/confluentinc/librdkafka/tree/v2.3.0 as alpine does not have this version   
-    wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.3.0.zip && \
-    unzip -o v2.3.0.zip && \
-    cd  librdkafka-2.3.0 && \
+    # Need to install https://github.com/confluentinc/librdkafka/releases/tag/v2.4.0 as alpine does not have this version   
+    wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.4.0.zip && \
+    unzip -o v2.4.0.zip && \
+    cd  librdkafka-2.4.0 && \
     bash -c "./configure && \
     ./configure --prefix /usr && \
     make && \
     make install" && \
     cd .. && \
-    rm v2.3.0.zip && \
-    rm -rf librdkafka-2.3.0
+    rm v2.4.0.zip && \
+    rm -rf librdkafka-2.4.0
 
 # Install pip & poetry
 RUN  pip install --upgrade pip poetry && \
