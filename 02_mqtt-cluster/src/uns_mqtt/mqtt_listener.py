@@ -29,6 +29,7 @@ from os import path
 from typing import Final, Literal, Optional
 
 import paho.mqtt.client as mqtt_client
+import paho.mqtt.enums as paho_mqtt
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
@@ -106,7 +107,6 @@ class UnsMQTTClient(mqtt_client.Client):
         if protocol not in MQTTVersion.__members__.values():
             raise ValueError(f"Unknown MQTT Protocol Id:{protocol}")
         # Need these values in the connect operation
-        self.protocol = protocol
         self.clean_session = clean_session
 
         if protocol == mqtt_client.MQTTv5:
@@ -116,7 +116,15 @@ class UnsMQTTClient(mqtt_client.Client):
         if transport not in ["tcp", "websockets"]:
             raise ValueError("Invalid transport. Must be 'tcp' or 'websockets'")
 
-        super().__init__(client_id, clean_session, userdata, protocol, transport, reconnect_on_failure)
+        super().__init__(
+            callback_api_version=paho_mqtt.CallbackAPIVersion.VERSION1,
+            client_id=client_id,
+            clean_session=clean_session,
+            userdata=userdata,
+            protocol=protocol,
+            transport=transport,
+            reconnect_on_failure=reconnect_on_failure,
+        )
         self.topics: list = None
         self.qos: int = 0
 
@@ -126,7 +134,11 @@ class UnsMQTTClient(mqtt_client.Client):
             Call back method when a mqtt connection happens
             """
             LOGGER.debug(
-                "{ Client: %s, Userdata: %s, Flags: %s, rc: %s}", str(client), str(userdata), str(flags), str(return_code)
+                "{ Client: %s, Userdata: %s, Flags: %s, reason_code: %s}",
+                str(client),
+                str(userdata),
+                str(flags),
+                str(return_code),
             )
             if return_code == 0:
                 LOGGER.debug("Connection established. Returned code=%s", str(return_code))
@@ -138,15 +150,15 @@ class UnsMQTTClient(mqtt_client.Client):
                 LOGGER.error("Bad connection. Returned code=%s", str(return_code))
                 client.bad_connection_flag = True
 
-        def on_uns_subscribe(client: mqtt_client, userdata, mid, granted_qos, properties=None):
+        def on_uns_subscribe(client: mqtt_client, userdata, mid, reason_codes, properties=None):
             """
             Callback method when client subscribes to a topic
             Unfortunately information about the topic subscribed to is not available here
             """
             LOGGER.info(
-                "Successfully connected: %s with QOS: %s, userdata:%s , mid:%s, properties:%s",
+                "Successfully connected: %s with reason_code: %s, userdata:%s , mid:%s, properties:%s",
                 str(client),
-                str(granted_qos),
+                str(reason_codes),
                 str(userdata),
                 str(mid),
                 str(properties),
