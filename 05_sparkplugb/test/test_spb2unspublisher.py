@@ -517,7 +517,7 @@ def test_publish_to_uns_connected(
         client,  # noqa: ARG001
         userdata,  # noqa: ARG001
         flags,  # noqa: ARG001
-        return_code,  # noqa: ARG001
+        reason_code,  # noqa: ARG001
         properties=None,  # noqa: ARG001
     ):
         """

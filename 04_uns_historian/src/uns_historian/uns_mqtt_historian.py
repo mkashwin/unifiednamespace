@@ -111,14 +111,14 @@ class UnsMqttHistorian:
         self,
         client,  # noqa: ARG002
         userdata,  # noqa: ARG002
-        result_code,
+        reason_codes,
         properties=None,  # noqa: ARG002
     ) -> None:
         """
         Callback function executed every time the client is disconnected from the MQTT broker
         """
-        if result_code != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(result_code), stack_info=True, exc_info=True)
+        if reason_codes != 0:
+            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True, exc_info=True)
         # dont close the DB Pool as the client may disconnect multiple times and reconnect
 
 
