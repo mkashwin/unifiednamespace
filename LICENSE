@@ -19,3 +19,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+This software depends on other components who are covered by the following different licenses
+
+- CC0-1.0
+- MPL-2.0
+- BSD-3-Clause
+- Apache-2.0
+- ISC
+- MIT
+- GPL-2.0-only
+- Python-2.0
+- BSD-2-Clause
