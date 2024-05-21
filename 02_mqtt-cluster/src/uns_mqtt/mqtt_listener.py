@@ -117,7 +117,7 @@ class UnsMQTTClient(mqtt_client.Client):
             raise ValueError("Invalid transport. Must be 'tcp' or 'websockets'")
 
         super().__init__(
-            callback_api_version=paho_mqtt.CallbackAPIVersion.VERSION1,
+            callback_api_version=paho_mqtt.CallbackAPIVersion.VERSION2,
             client_id=client_id,
             clean_session=clean_session,
             userdata=userdata,

@@ -111,6 +111,7 @@ class UnsMqttHistorian:
         self,
         client,  # noqa: ARG002
         userdata,  # noqa: ARG002
+        flags,  # noqa: ARG002
         reason_codes,
         properties=None,  # noqa: ARG002
     ) -> None:

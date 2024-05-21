@@ -289,4 +289,4 @@ docker run --name uns_mqtt_graphdb -d -v $PWD/conf:/app/conf uns/graphdb:latest
 
 1. [ ] Enhancing ACLs on the nodes for the various nodes to secure access
 1. [ ] Securing the Neo4j database
-1. [ ]
+1. [ ] .
