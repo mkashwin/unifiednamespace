@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
+from paho.mqtt.enums import MQTTErrorCode
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_historian.historian_config import HistorianConfig, MQTTConfig
@@ -50,7 +51,13 @@ def mock_historian_handler():
 def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historian_handler):  # noqa: ARG001
     uns_mqtt_historian = UnsMqttHistorian()
     # simulate the disconnection by calling the callback directly
-    uns_mqtt_historian.uns_client.on_disconnect(uns_mqtt_historian.uns_client, None, 0, None)
+    uns_mqtt_historian.uns_client.on_disconnect(
+        client=uns_mqtt_historian.uns_client,
+        userdata=None,
+        flags=None,
+        reason_codes=MQTTErrorCode.MQTT_ERR_SUCCESS,
+        properties=None,
+    )
     # verify the pool was closed
     mock_historian_handler.close_pool.assert_not_called()
 
@@ -187,7 +194,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
+            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=False, properties=publish_properties)
             # allow for the message to be received
             time.sleep(1)
 

@@ -170,10 +170,7 @@ async def test_get_mqtt_messages(topics: list[MQTTTopicInput], expected_messages
         mock_client.messages = mock_messages
 
         subscription = MQTTSubscription()
-        received_messages: list[MQTTMessage] = []
-        # Await the subscription result directly to collect the messages
-        async for message in subscription.get_mqtt_messages(topics):
-            received_messages.append(message)  # noqa: PERF402
+        received_messages: list[MQTTMessage] = [message async for message in subscription.get_mqtt_messages(topics)]
 
     assert len(received_messages) == len(expected_messages)
 
@@ -190,7 +187,7 @@ class AsyncContextManagerMock:
 
 
 # Function to create an async generator from the provided messages
-async def async_message_generator(messages):
+async def async_message_generator(messages):  # noqa: RUF029
     for msg in messages:
         yield msg
 

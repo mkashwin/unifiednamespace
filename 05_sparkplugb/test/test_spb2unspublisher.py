@@ -505,7 +505,7 @@ def test_publish_to_uns_connected(
 
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
 
-    def on_publish(client, userdata, result):  # noqa: ARG001
+    def on_publish(client, userdata, mid, reason_codes, properties):  # noqa: ARG001
         """
         Call back for publish to MQTT
         """

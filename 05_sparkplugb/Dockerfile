@@ -53,7 +53,7 @@ COPY ./${UNS_MODULE}/src ./src/
 # install minimalistic missing packages
 RUN apk update && \ 
     apk add --no-cache libffi-dev libc-dev gcc && \
-    apk upgrade --no-cache libexpat libcrypto3 libssl3 && \
+    apk upgrade --no-cache libexpat libcrypto3 libssl3 busybox ssl_client && \
     rm -rf /var/cache/apk/*
 
 # Install pip & poetry
