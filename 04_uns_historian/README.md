@@ -40,9 +40,6 @@ docker run \
 #- d : run the container detached
 #-e POSTGRES_PASSWORD=uns_historian \ #<super user password>. REMEMBER to update the password
 
-# Create the db and enable the timescaledb extension
-psql -U postgres -h localhost -f './sql_scripts/01_setup_db.sql'
-
 #create DBA
 docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --createdb --createrole --login -e uns_dba -P'" 
 # Manually enter the password for the dba
@@ -50,6 +47,9 @@ docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --createdb -
 #create application user (to be used in the configuration by the application)
 docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --login -e uns_dbuser -P'"
 #Manually enter the password for application user
+
+# Create the db and enable the timescaledb extension
+psql -U postgres -h localhost -f './sql_scripts/01_setup_db.sql'
 
 # create the hypertable with the application user 
 psql -U uns_dbuser  -h localhost -d uns_historian -f './sql_scripts/02_setup_hypertable.sql'

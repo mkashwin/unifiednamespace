@@ -18,3 +18,5 @@ CREATE EXTENSION IF NOT EXISTS timescaledb;
 -- CREATEROLE
 -- LOGIN 
 -- PASSWORD 'uns_password';
+
+ALTER DATABASE uns_historian OWNER TO uns_dbuser;
