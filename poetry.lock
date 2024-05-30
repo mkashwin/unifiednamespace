@@ -1580,6 +1580,20 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
+name = "pytest-timeout"
+version = "2.3.1"
+description = "pytest plugin to abort hanging tests"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest-timeout-2.3.1.tar.gz", hash = "sha256:12397729125c6ecbdaca01035b9e5239d4db97352320af155b3f5de1ba5165d9"},
+    {file = "pytest_timeout-2.3.1-py3-none-any.whl", hash = "sha256:68188cb703edfc6a18fad98dc25a3c61e9f24d644b0b70f33af545219fc7813e"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0"
+
+[[package]]
 name = "pytest-xdist"
 version = "3.6.1"
 description = "pytest xdist plugin for distributed testing, most importantly across multiple CPUs"
@@ -1714,13 +1728,13 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.32.2"
+version = "2.32.3"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "requests-2.32.2-py3-none-any.whl", hash = "sha256:fc06670dd0ed212426dfeb94fc1b983d917c4f9847c863f313c9dfaaffb7c23c"},
-    {file = "requests-2.32.2.tar.gz", hash = "sha256:dd951ff5ecf3e3b3aa26b40703ba77495dab41da839ae72ef3c8e5d8e2433289"},
+    {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
+    {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
 ]
 
 [package.dependencies]
@@ -1972,13 +1986,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.232.1"
+version = "0.232.2"
 description = "A library for creating GraphQL APIs"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "strawberry_graphql-0.232.1-py3-none-any.whl", hash = "sha256:d1a23560c0170e068d9ff23743c3de569e65e78ad7729e2012760a3bcfb1ebcd"},
-    {file = "strawberry_graphql-0.232.1.tar.gz", hash = "sha256:60314158bb7a5cd75c89ee6e811ac8111bea434c7ba8e2b8a109215caf13c43e"},
+    {file = "strawberry_graphql-0.232.2-py3-none-any.whl", hash = "sha256:7370380698692ab0e59a46da9f96fc9bd62d857e1867bb0cdfe899aff5a7c22d"},
+    {file = "strawberry_graphql-0.232.2.tar.gz", hash = "sha256:1805426fbe7d4871440e8eaf2a6168d77f3361e8e5cca6224b31aebc9aea3125"},
 ]
 
 [package.dependencies]
@@ -2599,4 +2613,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "fbfcaf784db8b624338ac02d2f35485ac8e1d3536b7c4db3f4500ecde5f73e02"
+content-hash = "3267c4eba1034befa6023f4a0d6116815ae41f76e23f964ff56b1838d38adb5c"

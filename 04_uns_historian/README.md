@@ -33,15 +33,12 @@ docker run \
     -v $HOME/timescaledb/data:/var/lib/postgresql/data \
     -d \
     -e POSTGRES_PASSWORD=uns_historian \
-    timescale/timescaledb:latest-pg14
+    timescale/timescaledb:latest-pg16
 # =--name : name given to your container
 # -p : provide ports of operation 
 # -v : volume to persist data 
 #- d : run the container detached
 #-e POSTGRES_PASSWORD=uns_historian \ #<super user password>. REMEMBER to update the password
-
-# Create the db and enable the timescaledb extension
-psql -U postgres -h localhost -f './sql_scripts/01_setup_db.sql'
 
 #create DBA
 docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --createdb --createrole --login -e uns_dba -P'" 
@@ -50,6 +47,9 @@ docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --createdb -
 #create application user (to be used in the configuration by the application)
 docker exec -ti uns_timescaledb bash -c "su postgres -c 'createuser --login -e uns_dbuser -P'"
 #Manually enter the password for application user
+
+# Create the db and enable the timescaledb extension
+psql -U postgres -h localhost -f './sql_scripts/01_setup_db.sql'
 
 # create the hypertable with the application user 
 psql -U uns_dbuser  -h localhost -d uns_historian -f './sql_scripts/02_setup_hypertable.sql'
@@ -205,6 +205,14 @@ docker run --name uns_mqtt_historian -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/
 * **\<full path to conf\>** (Mandatory): Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
 
 * If you are running this image on the host as the MQTT broker  and/or timescaledb pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
+
+## Upgrade from postgres 14 to postgres 16
+
+As part of upgrading to postgres16 there are a few steps needed to performed. The following guides provide information on proceeding with it. **It is strongly recommended to backup your existing database before performing the upgrade.** In case of your dev & test environment you can just delete the mount specified during [Deploying TimescaleDB docker](#deploying-and-running-timescaledb).
+
+* [Upgrade postgres in docker](https://www.cloudytuts.com/tutorials/docker/how-to-upgrade-postgresql-in-docker-and-kubernetes/)
+* [TimescaleDB Guide for upgrading Postgres](https://docs.timescale.com/self-hosted/latest/upgrades/upgrade-pg/r)
+* [Upgrade TimescaleDB in the docker](https://docs.timescale.com/self-hosted/latest/upgrades/upgrade-docker/). Use the *bind mount* guide
 
 ## Limitations
 

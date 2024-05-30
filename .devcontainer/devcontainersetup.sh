@@ -66,7 +66,7 @@ dynaconf_merge: true
       -v $HOME/timescaledb/data:/var/lib/postgresql/data \
       -d \
       -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-      timescale/timescaledb:latest-pg14
+      timescale/timescaledb:latest-pg16
   # 2.2.2 wait for docker to be up and running
   # first wait for the database to be running
   # Function to check if PostgreSQL is ready
@@ -98,7 +98,8 @@ dynaconf_merge: true
     echo \"CREATE DATABASE ${UNS_historian__database};\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432
     echo \"CREATE EXTENSION IF NOT EXISTS timescaledb;\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
     echo \"CREATE ROLE ${UNS_historian__username} LOGIN PASSWORD '${UNS_historian__password}'; \" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
-
+    echo \"ALTER DATABASE ${UNS_historian__database} OWNER TO ${UNS_historian__username} ;\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
+    
     echo \"
       CREATE TABLE ${UNS_historian__table} (
         time TIMESTAMPTZ NOT NULL,

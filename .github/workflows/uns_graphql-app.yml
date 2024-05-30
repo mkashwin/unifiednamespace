@@ -86,7 +86,7 @@ jobs:
           NEO4J_PLUGINS: '["apoc"]'
 
       uns_timescaledb:
-        image: timescale/timescaledb:latest-pg14
+        image: timescale/timescaledb:latest-pg16
         ports:
           - "5432:5432"
         env:
@@ -125,6 +125,8 @@ jobs:
           CREATE ROLE $UNS_historian__username
           LOGIN
           PASSWORD '$UNS_historian__password';
+
+          ALTER DATABASE $UNS_historian__database OWNER TO $UNS_historian__username;
           " | PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${UNS_historian__hostname} -U postgres  -p 5432
 
           echo "CREATE TABLE $UNS_historian__table (

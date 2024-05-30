@@ -42,7 +42,7 @@ services:
       retries: 5
 
   uns_timescale_db:
-    image: timescale/timescaledb:latest-pg14
+    image: timescale/timescaledb:latest-pg16
     ports:
       - "5432:5432"
     environment:
@@ -109,6 +109,7 @@ services:
         PGPASSWORD=$${PGPASSWORD} psql -h $${UNS_historian__hostname} -U postgres -p 5432 -c "CREATE DATABASE $${UNS_historian__database};"
         PGPASSWORD=$${PGPASSWORD} psql -h $${UNS_historian__hostname} -U postgres -p 5432 -d $${UNS_historian__database} -c "CREATE EXTENSION IF NOT EXISTS timescaledb;"
         PGPASSWORD=$${PGPASSWORD} psql -h $${UNS_historian__hostname} -U postgres -p 5432 -c "CREATE ROLE $${UNS_historian__username} LOGIN PASSWORD '$${UNS_historian__password}';"
+        PGPASSWORD=$${PGPASSWORD} psql -h $${UNS_historian__hostname} -U postgres -p 5432 -c "ALTER DATABASE $${UNS_historian__database} OWNER TO $${UNS_historian__username};"
         PGPASSWORD=$${UNS_historian__password} psql -h $${UNS_historian__hostname} -U $${UNS_historian__username} -d $${UNS_historian__database} -p 5432 -c "CREATE TABLE $${UNS_historian__table} (time TIMESTAMPTZ NOT NULL, topic TEXT NOT NULL, client_id TEXT, mqtt_msg JSONB, CONSTRAINT unique_event UNIQUE (time, topic, client_id, mqtt_msg));"
         PGPASSWORD=$${UNS_historian__password} psql -h $${UNS_historian__hostname} -U $${UNS_historian__username} -d $${UNS_historian__database} -p 5432 -c "SELECT create_hypertable('$${UNS_historian__table}', 'time');"
         echo "Successfully created & configured timescaledb for the UNS"

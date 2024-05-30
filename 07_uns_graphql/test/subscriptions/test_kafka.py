@@ -53,14 +53,13 @@ ONE_TOPIC_ONE_MSG = (
 
 
 @pytest_asyncio.fixture(scope="function")
-@pytest.mark.integrationtest
 async def create_topics(message_vals):
     kafka_config = {
         "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
     }
 
     # Function to Delete topics if present
-    async def delete_existing_topics():
+    async def delete_existing_topics():  # noqa: RUF029
         # Create Kafka admins
         admin = AdminClient(kafka_config)
         existing_topics = admin.list_topics().topics  # Get a list of existing topics
@@ -69,7 +68,7 @@ async def create_topics(message_vals):
                 admin.delete_topics([topic])
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
-    async def produce_messages():
+    async def produce_messages():  # noqa: RUF029
         # Create Kafka producer
         producer = Producer(kafka_config)
 
@@ -79,8 +78,7 @@ async def create_topics(message_vals):
         # Produce messages
         for topic, msg in message_vals:
             producer.produce(topic, value=msg, callback=delivery_report)
-
-        producer.flush()
+            producer.flush()
 
     # Delete topics
     await delete_existing_topics()

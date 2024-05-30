@@ -59,7 +59,6 @@ def my_event_loop(request):  # noqa: ARG001
 
 
 @pytest_asyncio.fixture(scope="session")
-@pytest.mark.integrationtest
 async def historian_pool(my_event_loop):  # noqa: ARG001
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
@@ -71,7 +70,6 @@ async def historian_pool(my_event_loop):  # noqa: ARG001
 
 
 @pytest_asyncio.fixture(scope="session")
-@pytest.mark.integrationtest
 async def prepare_database(historian_pool):  # noqa: ARG001
     """
     Prepare the database with test data based on the pytest marker integrationtest
