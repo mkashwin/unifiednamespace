@@ -33,7 +33,7 @@ docker run \
     -v $HOME/timescaledb/data:/var/lib/postgresql/data \
     -d \
     -e POSTGRES_PASSWORD=uns_historian \
-    timescale/timescaledb:latest-pg14
+    timescale/timescaledb:latest-pg16
 # =--name : name given to your container
 # -p : provide ports of operation 
 # -v : volume to persist data 
