@@ -144,7 +144,7 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
 @pytest.mark.integrationtest()
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-# @pytest.mark.xdist_group(name="graphql_kafka")
+@pytest.mark.xdist_group(name="graphql_kafka")
 @pytest.mark.parametrize(
     "kafka_topics, message_vals",
     [
