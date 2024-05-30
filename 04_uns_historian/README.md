@@ -206,6 +206,14 @@ docker run --name uns_mqtt_historian -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/
 
 * If you are running this image on the host as the MQTT broker  and/or timescaledb pass the flag  `--network host` along with docker run to enure `localhost` services on the host are correctly resolved
 
+## Upgrade from postgres 14 to postgres 16
+
+As part of upgrading to postgres16 there are a few steps needed to performed. The following guides provide information on proceeding with it. **It is strongly recommended to backup your existing database before performing the upgrade.** In case of your dev & test environment you can just delete the mount specified during [Deploying TimescaleDB docker](#deploying-and-running-timescaledb).
+
+* [Upgrade postgres in docker](https://www.cloudytuts.com/tutorials/docker/how-to-upgrade-postgresql-in-docker-and-kubernetes/)
+* [TimescaleDB Guide for upgrading Postgres](https://docs.timescale.com/self-hosted/latest/upgrades/upgrade-pg/r)
+* [Upgrade TimescaleDB in the docker](https://docs.timescale.com/self-hosted/latest/upgrades/upgrade-docker/). Use the *bind mount* guide
+
 ## Limitations
 
 1. [x] ~~Add and improve automated test coverage~~
