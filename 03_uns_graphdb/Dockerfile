@@ -26,7 +26,7 @@
 #       docker run --name uns_mqtt_graphdb -v <full path to conf>/:/app/conf --network=host uns/graphdb:<version> 
 
 # Use the official Python image
-FROM python:3.12-alpine3.19
+FROM python:3.12-alpine3.20
 
 # Set the environment variable for the entrypoint command
 ENV UNS_MODULE="03_uns_graphdb" \
