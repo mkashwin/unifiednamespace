@@ -1,0 +1,32 @@
+#
+# pipeline to raise a pull request
+#
+name: Raise Pull request for specified Branch
+
+on:
+    workflow_dispatch:
+
+jobs:
+    raise_pr:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name:  "Check if a valid branch name is selected. Not main and not any tag"
+              run: |
+                if [ "${{ github.ref_name }}" == "main" || "${{ github.ref_type}}" == "tag" ]; then
+                    echo "Cant create a pull on main or a tag. choose valid branch."
+                    exit 1
+                fi
+
+            - name: Raise Pull Request
+              uses: devops-infra/action-pull-request@v0.5.5
+              with:
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                title: "Creating PR for branch ${{ github.ref_name }} "
+                label: "v${{ github.ref_name }},version-update"
+                source_branch: "${{ github.ref_name }}"
+                target_branch: "main"
+                get_diff: true
+        

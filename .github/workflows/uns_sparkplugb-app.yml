@@ -31,6 +31,12 @@ on:
       - "05_sparkplugb/Dockerfile"
       - ".github/workflows/uns_sparkplugb-app.yml"
       - ".github/include/**"
+  
+  workflow_dispatch:
+    inputs:
+        pytest_add_opts:
+          description: "additional pytest options"
+          type: string
 
 permissions:
   contents: read
@@ -64,7 +70,7 @@ jobs:
           module: 05_sparkplugb
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
-          # pytest_flags: "-v"
+          pytest_flags: ${{ inputs.pytest_add_opts }}
 
   build_docker:
     runs-on: ubuntu-latest
