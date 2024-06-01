@@ -163,6 +163,8 @@ jobs:
             "annotations": { "org.opencontainers.image.source" : https://github.com/mkashwin/unifiednamespace/tree/main/${{ matrix.image }} }
             "annotations": { "org.opencontainers.image.licenses" : MIT }
           file: ./${{ matrix.module }}/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build Docker Image - Main
         if: ${{ startsWith( github.ref_name , 'main') }}
@@ -180,6 +182,8 @@ jobs:
             "annotations": { "org.opencontainers.image.source" : https://github.com/mkashwin/unifiednamespace/tree/main/${{ matrix.image }} }
             "annotations": { "org.opencontainers.image.licenses" : MIT }
           file: ./${{ matrix.module }}/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   create_tag:
     name: Tag the repository
