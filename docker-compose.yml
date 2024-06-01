@@ -207,6 +207,10 @@ services:
     depends_on:
       uns_mqtt_broker:
         condition: service_healthy
+      uns_neo4j_db:
+        condition: service_healthy
+      uns_timescale_db:
+        condition: service_healthy
       uns_kakfa_broker:
         condition: service_healthy
 
