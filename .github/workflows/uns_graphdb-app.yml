@@ -31,6 +31,13 @@ on:
       - "03_uns_graphdb/Dockerfile"
       - ".github/workflows/uns_graphdb-app.yml"
       - ".github/include/**"
+
+  workflow_dispatch:
+    inputs:
+        pytest_add_opts:
+          description: "additional pytest options"
+          type: string
+
 permissions:
   contents: read
 
@@ -85,6 +92,7 @@ jobs:
           module: 03_uns_graphdb
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+          pytest_flags: ${{ inputs.pytest_add_opts }}
 
   build_docker_image:
     runs-on: ubuntu-latest

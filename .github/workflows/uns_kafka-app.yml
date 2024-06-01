@@ -17,6 +17,12 @@ on:
       - "06_uns_kafka/Dockerfile"
       - ".github/workflows/uns_kafka-app.yml"
       - ".github/include/**"
+  
+  workflow_dispatch:
+    inputs:
+        pytest_add_opts:
+          description: "additional pytest options"
+          type: string
 
   pull_request:
     branches:
@@ -77,6 +83,7 @@ jobs:
           module: 06_uns_kafka
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+          pytest_flags: ${{ inputs.pytest_add_opts }}
 
   build_docker:
     runs-on: ubuntu-latest

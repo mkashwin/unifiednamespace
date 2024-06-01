@@ -23,6 +23,11 @@ on:
       - "**/poetry.lock"
       - ".github/workflows/*.yml"
       - ".github/include/**"
+  workflow_dispatch:
+    inputs:
+        pytest_add_opts:
+          description: "additional pytest options"
+          type: string
 
 permissions:
   contents: read
@@ -56,3 +61,4 @@ jobs:
           module: ${{ matrix.module }}
           integration_tests: false
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+          pytest_flags: ${{ inputs.pytest_add_opts }}
