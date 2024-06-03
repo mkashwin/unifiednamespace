@@ -26,7 +26,7 @@
 #       e.g.
 #       docker run --name uns_graphql -v <full path to conf>/:/app/conf  --network=host uns/graphql:v0.5.0 
 # Use the official Python image
-FROM python:3.12-alpine3.20
+FROM python:3.12-alpine3.19
 
 # Set the environment variable for the entrypoint command
 ENV UNS_MODULE="07_uns_graphql"\
