@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_historian"
-version = "0.8.21"
+version = "0.8.50"
 description = "Historian implementation for a UNS setup"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
