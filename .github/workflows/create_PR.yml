@@ -12,6 +12,8 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
 
             - name:  "Check if a valid branch name is selected. Not main and not any tag"
               run: |
