@@ -24,7 +24,7 @@ import strawberry
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
-from uns_graphql.queries import historic_events
+from uns_graphql.queries import historic_events, uns_events
 from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.subscriptions.mqtt import MQTTSubscription
 from uns_graphql.type.basetype import Int64
@@ -33,7 +33,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @strawberry.type(description="Query the UNS for current or historic Nodes/Events ")
-class Query(historic_events.Query):
+class Query(historic_events.Query):  # , uns_events.Query):
     pass
 
 

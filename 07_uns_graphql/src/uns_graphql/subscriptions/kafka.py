@@ -62,7 +62,7 @@ class KAFKASubscription:
         consumer: Consumer = Consumer(KAFKAConfig.config_map)
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
-        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:
+        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:  # noqa: RUF029
             try:
                 while True:
                     msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)  # Poll for messages
