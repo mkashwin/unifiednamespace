@@ -28,7 +28,7 @@ packages = [
 python = "^3.12"
 logger = "^1.4"
 paho-mqtt = "^2.1.0"
-protobuf = "^5.26.0"
+protobuf = "^5.27.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.2.1"
