@@ -31,8 +31,8 @@ TWO_TOPICS_MULTIPLE_MSGS = (
     [KAFKATopicInput(topic="graphql_test_a.b.c"), KAFKATopicInput(topic="graphql_test_abc")],
     [
         ("graphql_test_a.b.c", b'{"timestamp": 123456, "val1": 1234}'),
-        ("graphql_test_a.b.c", b'{"timestamp": 234567, "val1": 2345}'),
         ("graphql_test_abc", b'{"timestamp": 123987, "val1": 9876}'),
+        ("graphql_test_a.b.c", b'{"timestamp": 234567, "val1": 2345}'),
         ("graphql_test_abc", b'{"timestamp": 456789, "val2": "test different"}'),
     ],
 )
@@ -78,7 +78,7 @@ async def create_topics(message_vals):
         # Produce messages
         for topic, msg in message_vals:
             producer.produce(topic, value=msg, callback=delivery_report)
-            producer.flush()
+        producer.flush()
 
     # Delete topics
     await delete_existing_topics()
@@ -154,7 +154,6 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
     ],
 )
 async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[KAFKATopicInput], message_vals: list[tuple]):  # noqa: ARG001
-    #    create_topics(message_vals)
     received_messages = []
     subscription = KAFKASubscription()
     try:
@@ -172,4 +171,5 @@ async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[
     assert len(received_messages) == len(message_vals)
     for topic, msg in message_vals:
         # order of messages may not be same hence check after all messages were provided
+        print(f"Comparing: {StreamingMessage(topic, payload=msg)} with {received_messages}")
         assert any(StreamingMessage(topic=topic, payload=msg) == received_message for received_message in received_messages)

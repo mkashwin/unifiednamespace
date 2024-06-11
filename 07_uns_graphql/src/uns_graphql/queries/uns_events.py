@@ -84,3 +84,11 @@ class Query:
             # convert single topic to array for consistent handling
             topics = [topics]
         # TBD
+
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up Db connection pool
+        """
+        pass
+        # @FIXME Need to release the Neo4J driver

@@ -22,6 +22,7 @@ import logging
 
 import strawberry
 from fastapi import FastAPI
+from fastapi.concurrency import asynccontextmanager
 from strawberry.fastapi import GraphQLRouter
 
 from uns_graphql.queries import historic_events, uns_events
@@ -33,13 +34,27 @@ LOGGER = logging.getLogger(__name__)
 
 
 @strawberry.type(description="Query the UNS for current or historic Nodes/Events ")
-class Query(historic_events.Query):  # , uns_events.Query):
-    pass
+class Query(historic_events.Query, uns_events.Query):
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up connections, db pools etc.
+        """
+        try:
+            await historic_events.Query.on_shutdown()
+        finally:
+            await uns_events.Query.on_shutdown()
 
 
 @strawberry.type(description="Subscribe to UNS Events or Streams")
 class Subscription(MQTTSubscription, KAFKASubscription):
-    pass
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up connections, db pools etc.
+        """
+        await MQTTSubscription.on_shutdown()
+        await KAFKASubscription.on_shutdown()
 
 
 class UNSGraphql:
@@ -47,38 +62,20 @@ class UNSGraphql:
     Class providing the entry point for all GraphQL queries to the UNS & SPB Namespaces
     """
 
+    @asynccontextmanager
+    async def lifespan(self, app: FastAPI):
+        """
+        lifespan manager to ensure cleanup
+        """
+        try:
+            yield
+        finally:
+            await Query.on_shutdown()
+            await Subscription.on_shutdown()
+            pass
+
     schema = strawberry.Schema(query=Query, subscription=Subscription, scalar_overrides={int: Int64})
     graphql_app = GraphQLRouter(schema)
     LOGGER.info("GraphQL app created")
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)
     app.include_router(graphql_app, prefix="/graphql")
-
-
-def main():
-    #     """
-    #     Main function invoked from command line
-    #     """
-    LOGGER.error(
-        "Dont invoke main. Invoke via Uvicorn in the manner below. Adapt host and port appropriately \n\n"
-        "uvicorn uns_graphql.uns_graphql_app:UNSGraphql.app --host 0.0.0.0 --port 8000\n\n"
-    )
-
-
-#     try:
-#         graphql_server = UNSGraphql()
-#         LOGGER.info("GraphQL server started successfully")
-
-#         # Add Strawberry ASGI application
-#         graphql_app = GraphQLRouter(graphql_server.schema)
-#         graphql_app.include_schema = False  # Ensure the schema is not included in the response
-
-#         @graphql_server.app.get("/")  # Expose GraphQL endpoint
-#         async def graphql():
-#             return graphql_app
-
-#     except Exception as e:
-#         LOGGER.exception("Failed to start GraphQL server: %s", str(e))
-
-
-if __name__ == "__main__":
-    main()

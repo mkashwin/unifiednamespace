@@ -82,3 +82,11 @@ class KAFKASubscription:
 
         async for message in kafka_listener():
             yield message
+
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up KAFKA subscription if required
+        """
+        # Not needed as the consumer is closed in #kafka_listener()
+        pass

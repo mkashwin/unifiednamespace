@@ -193,7 +193,6 @@ async def async_message_generator(messages):  # noqa: RUF029
 
 
 @pytest_asyncio.fixture(scope="function")
-@pytest.mark.asyncio
 async def publish_to_mqtt(expected_messages: list[Message]):
     client_id = f"test_graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
     publish_properties = None
