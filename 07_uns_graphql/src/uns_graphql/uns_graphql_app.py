@@ -25,7 +25,7 @@ from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from strawberry.fastapi import GraphQLRouter
 
-from uns_graphql.queries import historic_events, uns_events
+from uns_graphql.queries import graph, historian
 from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.subscriptions.mqtt import MQTTSubscription
 from uns_graphql.type.basetype import Int64
@@ -34,16 +34,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 @strawberry.type(description="Query the UNS for current or historic Nodes/Events ")
-class Query(historic_events.Query, uns_events.Query):
+class Query(historian.Query, graph.Query):
     @classmethod
     async def on_shutdown(cls):
         """
         Clean up connections, db pools etc.
         """
         try:
-            await historic_events.Query.on_shutdown()
+            await historian.Query.on_shutdown()
         finally:
-            await uns_events.Query.on_shutdown()
+            await graph.Query.on_shutdown()
 
 
 @strawberry.type(description="Subscribe to UNS Events or Streams")
@@ -63,7 +63,7 @@ class UNSGraphql:
     """
 
     @asynccontextmanager
-    async def lifespan(self, app: FastAPI):
+    async def lifespan(self, app: FastAPI):  # noqa: ARG002
         """
         lifespan manager to ensure cleanup
         """
@@ -72,7 +72,6 @@ class UNSGraphql:
         finally:
             await Query.on_shutdown()
             await Subscription.on_shutdown()
-            pass
 
     schema = strawberry.Schema(query=Query, subscription=Subscription, scalar_overrides={int: Int64})
     graphql_app = GraphQLRouter(schema)

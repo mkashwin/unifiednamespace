@@ -23,6 +23,7 @@ from typing import Optional
 
 import strawberry
 
+from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.input.mqtt import MQTTTopicInput
 from uns_graphql.type.basetype import BinaryOperator
 from uns_graphql.type.isa95_node import UNSNode
@@ -90,5 +91,4 @@ class Query:
         """
         Clean up Db connection pool
         """
-        pass
-        # @FIXME Need to release the Neo4J driver
+        await GraphDB.release_graphdb_driver()

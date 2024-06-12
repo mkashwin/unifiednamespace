@@ -45,13 +45,14 @@ class KAFKASubscription:
         Subscribe to Kafka messages based on provided topics.
 
         Args:
-            topics (List of KAFKATopicInput): Kafka topics to subscribe to.
-                                  Doesn't supports wildcards or regEx
+            topics (list[KAFKATopicInput]): List of Kafka topics to subscribe to.
+                                            Does not support wildcards or regex.
 
         Yields:
-            typing.AsyncGenerator[StreamingMessage, None]: Asynchronously generates UNS event messages
+            typing.AsyncGenerator[StreamingMessage, None]: Asynchronously generates UNS event messages.
         """
 
+        # Inner function to reset the offset of the consumer to the beginning
         # Connect to Kafka broker and subscribe to the specified topic
         # Set up a callback to handle the '--reset' flag.
         def reset_offset(consumer, partitions):
@@ -59,27 +60,37 @@ class KAFKASubscription:
                 part.offset = OFFSET_BEGINNING
             consumer.assign(partitions)
 
+        # Initialize the Kafka consumer with the configuration
         consumer: Consumer = Consumer(KAFKAConfig.config_map)
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
-        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:  # noqa: RUF029
+        # Inner async function to poll and yield messages from Kafka
+        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:
             try:
                 while True:
-                    msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)  # Poll for messages
+                    # Poll for messages with a specified timeout
+                    msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)
                     if msg is None:
+                        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
                         continue
 
                     if msg.error():
-                        # Handle errors here if needed
-                        LOGGER.error(f"Error Message received from Kafka Broker msg:{msg.error()!s}")
+                        # Log and raise an error if there is an issue with the message
+                        LOGGER.error(f"Error Message received from Kafka Broker msg: {msg.error()!s}")
                         raise ValueError(msg.error())
 
+                    # Yield the received message as a StreamingMessage
                     yield StreamingMessage(topic=msg.topic(), payload=msg.value())
             except asyncio.CancelledError:
-                pass
+                LOGGER.info("Kafka listener cancelled.")
+            except Exception as e:
+                LOGGER.error(f"Unexpected error in Kafka listener: {e!s}", exc_info=True)
             finally:
-                consumer.close()  # Close the consumer when done
+                # Ensure the consumer is closed properly
+                LOGGER.info("Closing Kafka consumer.")
+                consumer.close()
 
+        # Yield messages from the Kafka listener
         async for message in kafka_listener():
             yield message
 
