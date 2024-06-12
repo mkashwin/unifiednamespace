@@ -229,7 +229,9 @@ async def publish_to_mqtt(expected_messages: list[Message]):
         async with client:
             for msg in expected_messages:
                 # Publish the test data
-                await client.publish(topic=str(msg.topic), payload=None, properties=publish_properties)
+                await client.publish(
+                    topic=str(msg.topic), payload=b"", qos=msg.qos, retain=True, properties=publish_properties
+                )
     except MqttError as ex:
         pytest.fail(f"Error cleaning up messages after the test: {ex!s}")
 
