@@ -39,6 +39,7 @@ runs:
                 PYTEST_CMD="poetry run pytest"
               else
                 PYTEST_CMD="poetry run pytest --debug "
+              fi
                 
               if ${{ inputs.integration_tests }} ; then
                $PYTEST_CMD ${{inputs.pytest_flags}}
