@@ -36,9 +36,9 @@ runs:
               # change to current directory of module            
               cd ./${{ inputs.module }}
               if [[ ${RUNNER_DEBUG} == 1 ]] ; then
-                PYTEST_CMD="poetry run pytest"
-              else
                 PYTEST_CMD="poetry run pytest --debug "
+              else
+                PYTEST_CMD="poetry run pytest"
               fi
                 
               if ${{ inputs.integration_tests }} ; then
