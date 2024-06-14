@@ -44,8 +44,11 @@ def mock_uns_client():
 
 @pytest.fixture
 def mock_historian_handler():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     with patch("uns_historian.uns_mqtt_historian.HistorianHandler", autospec=True) as mock_handler:
         yield mock_handler
+    loop.close()
 
 
 def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historian_handler):  # noqa: ARG001
@@ -193,15 +196,16 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=False, properties=publish_properties)
+            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
             # allow for the message to be received
-            time.sleep(1)
+            time.sleep(0.1)
 
         # wait for uns_mqtt_historian to have persisted to the database
         while len(mgs_received) < len(messages):
-            asyncio.sleep(1)
+            time.sleep(0.1)
         # disconnect the historian listener to free the asyncio loop
         uns_mqtt_historian.uns_client.disconnect()
+        uns_mqtt_historian.uns_client.loop_stop()
         # connect to the database and validate
         select_query = f""" SELECT * FROM {HistorianConfig.table} WHERE
                                topic = $1 AND
@@ -225,5 +229,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
             assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
 
     finally:
+        # clean up the topic and diconnect the publiher
+        uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
         uns_publisher.disconnect()
         uns_mqtt_historian.uns_client.disconnect()
