@@ -35,18 +35,16 @@ runs:
           run: |
               # change to current directory of module            
               cd ./${{ inputs.module }}
+              if [[ ${RUNNER_DEBUG} == 1 ]]
+                PYTEST_CMD="poetry run pytest"
+              else
+                PYTEST_CMD="poetry run pytest --debug "
+                
               if ${{ inputs.integration_tests }} ; then
-                  poetry run pytest ${{inputs.pytest_flags}}
+               $PYTEST_CMD ${{inputs.pytest_flags}}
               else 
-                  poetry run pytest -m "not integrationtest" ${{inputs.pytest_flags}}
+                $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest" 
               fi
-
-        # - name: Test for security vulnerabilities
-        #   shell: bash
-        #   run: |
-        #       # change to current directory of module
-        #       cd ./${{ inputs.module }}
-        #       poetry run safety check
 
         - name: Run Safety CLI to check for vulnerabilities
           uses: pyupio/safety-action@v1
