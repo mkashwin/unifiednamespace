@@ -155,7 +155,7 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
     [
         ONE_TOPIC_ONE_MSG,
         ONE_TOPIC_MULTIPLE_MSGS,
-        #        TWO_TOPICS_MULTIPLE_MSGS,
+        TWO_TOPICS_MULTIPLE_MSGS,
     ],
 )
 async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[KAFKATopicInput], message_vals: list[tuple]):  # noqa: ARG001

@@ -65,13 +65,13 @@ class KAFKASubscription:
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
         # Inner async function to poll and yield messages from Kafka
-        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:
+        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:  # noqa: RUF029
             try:
                 while True:
                     # Poll for messages with a specified timeout
                     msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)
                     if msg is None:
-                        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
+                        # await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
                         continue
 
                     if msg.error():
