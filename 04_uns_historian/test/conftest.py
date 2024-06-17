@@ -33,7 +33,6 @@ def my_event_loop(request):  # noqa: ARG001
 
 
 @pytest_asyncio.fixture(scope="session")
-@pytest.mark.integrationtest
 async def historian_pool(my_event_loop):  # noqa: ARG001
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
