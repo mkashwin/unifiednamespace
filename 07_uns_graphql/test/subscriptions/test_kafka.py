@@ -28,12 +28,12 @@ from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.type.streaming_event import StreamingMessage
 
 TWO_TOPICS_MULTIPLE_MSGS = (
-    [KAFKATopicInput(topic="graphql_test_a.b.c"), KAFKATopicInput(topic="graphql_test_abc")],
+    [KAFKATopicInput(topic="graphql_test_a.b.c"), KAFKATopicInput(topic="graphql_test.abc")],
     [
         ("graphql_test_a.b.c", b'{"timestamp": 123456, "val1": 1234}'),
-        ("graphql_test_abc", b'{"timestamp": 123987, "val1": 9876}'),
+        ("graphql_test.abc", b'{"timestamp": 123987, "val1": 9876}'),
         ("graphql_test_a.b.c", b'{"timestamp": 234567, "val1": 2345}'),
-        ("graphql_test_abc", b'{"timestamp": 456789, "val2": "test different"}'),
+        ("graphql_test.abc", b'{"timestamp": 456789, "val2": "test different"}'),
     ],
 )
 
@@ -52,25 +52,29 @@ ONE_TOPIC_ONE_MSG = (
 )
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def create_topics(message_vals):
-    kafka_config = {
-        "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
-    }
-
     # Function to Delete topics if present
     async def delete_existing_topics():  # noqa: RUF029
         # Create Kafka admins
-        admin = AdminClient(kafka_config)
-        existing_topics = admin.list_topics().topics  # Get a list of existing topics
-        for topic in existing_topics:
-            if topic in [msg_val[0] for msg_val in message_vals]:
-                admin.delete_topics([topic])
+        admin = AdminClient(
+            {
+                "client.id": "test_admin",
+                "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
+            }
+        )
+        for msg_val in message_vals:
+            admin.delete_topics([msg_val[0]])
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
     async def produce_messages():  # noqa: RUF029
         # Create Kafka producer
-        producer = Producer(kafka_config)
+        producer = Producer(
+            {
+                "client.id": "test_producer",
+                "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
+            }
+        )
 
         def delivery_report(err, msg):  # noqa: ARG001
             pass
@@ -78,7 +82,7 @@ async def create_topics(message_vals):
         # Produce messages
         for topic, msg in message_vals:
             producer.produce(topic, value=msg, callback=delivery_report)
-            producer.flush()
+        producer.flush()
 
     # Delete topics
     await delete_existing_topics()
@@ -177,5 +181,5 @@ async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[
     assert len(received_messages) == len(message_vals)
     for topic, msg in message_vals:
         # order of messages may not be same hence check after all messages were provided
-        print(f"Comparing: {StreamingMessage(topic, payload=msg)} with {received_messages}")
+        # print(f"Comparing: {StreamingMessage(topic, payload=msg)} with {received_messages}")
         assert any(StreamingMessage(topic=topic, payload=msg) == received_message for received_message in received_messages)
