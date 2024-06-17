@@ -23,6 +23,7 @@ from typing import Optional
 
 import strawberry
 
+from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.input.mqtt import MQTTTopicInput
 from uns_graphql.type.basetype import BinaryOperator
 from uns_graphql.type.isa95_node import UNSNode
@@ -84,3 +85,10 @@ class Query:
             # convert single topic to array for consistent handling
             topics = [topics]
         # TBD
+
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up Db connection pool
+        """
+        await GraphDB.release_graphdb_driver()

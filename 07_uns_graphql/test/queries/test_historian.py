@@ -27,7 +27,7 @@ import strawberry
 import strawberry.tools
 from uns_graphql.backend.historian import HistorianDBPool
 from uns_graphql.input.mqtt import MQTTTopic, MQTTTopicInput
-from uns_graphql.queries.historic_events import Query as HistorianQuery
+from uns_graphql.queries.historian import Query as HistorianQuery
 from uns_graphql.type.basetype import JSONPayload
 from uns_graphql.type.historical_event import HistoricalUNSEvent
 
@@ -85,7 +85,7 @@ async def test_get_historic_events_in_time_range(
     has_result_errors: bool,
 ):
     mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
-    with patch("uns_graphql.queries.historic_events.HistorianDBPool", return_value=mocked_db_pool):
+    with patch("uns_graphql.queries.historian.HistorianDBPool", return_value=mocked_db_pool):
         historian_query = HistorianQuery()
         try:
             result = await historian_query.get_historic_events_in_time_range(mqtt_topic_list, from_date, to_date)
@@ -133,7 +133,7 @@ async def test_strawberry_get_historic_events_in_time_range(
     mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics]
     schema = strawberry.Schema(query=HistorianQuery)
 
-    with patch("uns_graphql.queries.historic_events.HistorianDBPool", return_value=mocked_db_pool):
+    with patch("uns_graphql.queries.historian.HistorianDBPool", return_value=mocked_db_pool):
         result = await schema.execute(
             query=query, variable_values={"mqtt_topics": mqtt_topics, "from_date": from_date, "to_date": to_date}
         )
@@ -186,7 +186,7 @@ async def test_strawberry_get_historic_events_by_property(
     mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics] if topics is not None else None
     schema = strawberry.Schema(query=HistorianQuery)
 
-    with patch("uns_graphql.queries.historic_events.HistorianDBPool", return_value=mocked_db_pool):
+    with patch("uns_graphql.queries.historian.HistorianDBPool", return_value=mocked_db_pool):
         result = await schema.execute(
             query=query,
             variable_values={
@@ -244,7 +244,7 @@ async def test_strawberry_get_historic_events_by_publishers(publishers, topics, 
         mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics]
     schema = strawberry.Schema(query=HistorianQuery)
 
-    with patch("uns_graphql.queries.historic_events.HistorianDBPool", return_value=mocked_db_pool):
+    with patch("uns_graphql.queries.historian.HistorianDBPool", return_value=mocked_db_pool):
         result = await schema.execute(
             query=query,
             variable_values={"publishers": publishers, "mqtt_topics": mqtt_topics, "from_date": from_date, "to_date": to_date},

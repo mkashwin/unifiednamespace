@@ -76,3 +76,11 @@ class MQTTSubscription:
         except MqttError as ex:
             LOGGER.error("Error while connecting to MQTT Broker %s", str(ex), stack_info=True, exc_info=True)
             await asyncio.sleep(MQTTConfig.retry_interval)
+
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up MQTT subscription if required
+        """
+        # Not needed as the consumer is closed implicitly in client.__aexit__()
+        pass
