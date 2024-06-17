@@ -32,6 +32,8 @@ from uns_historian.historian_handler import HistorianHandler
 @pytest.fixture
 def mock_asyncpg():
     # Mock asyncpg module and its functions
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     with patch("asyncpg.create_pool") as create_pool_mock:
         create_pool_mock.return_value = asyncio.Future()
         pool_instance = AsyncMock(spec=asyncpg.Pool)
@@ -39,6 +41,7 @@ def mock_asyncpg():
         create_pool_mock.return_value.set_result(pool_instance)
 
         yield create_pool_mock
+    loop.close()
 
 
 @pytest.mark.asyncio
