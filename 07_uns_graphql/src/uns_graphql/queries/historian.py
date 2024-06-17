@@ -113,3 +113,10 @@ class Query:
                 to_datetime=to_datetime,
             )
             return result
+
+    @classmethod
+    async def on_shutdown(cls):
+        """
+        Clean up Db connection pool
+        """
+        await HistorianDBPool.close_pool()

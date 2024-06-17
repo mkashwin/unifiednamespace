@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script is to be executed on creation of the dev container in order to create a working development enviornment
-
+WORKSPACE=/workspaces/unifiednamespace
 # 1. setup the python enviornment
 pip3 install --upgrade poetry 
 poetry run pip install --upgrade pip poetry 
@@ -17,7 +17,7 @@ else
   username: "${UNS_graphdb__username}"
   password: "${UNS_graphdb__password}"
 dynaconf_merge: true
-  " > ./03_uns_graphdb/conf/.secrets.yaml
+  " > $WORKSPACE/03_uns_graphdb/conf/.secrets.yaml
   # 2.1.1 New instance of Graph DB used by 03_uns_graphdb
   sudo rm -rf $HOME/neo4j
   
@@ -56,7 +56,7 @@ else
 dynaconf_merge: true
   # This password is for your reference if you ever need to login as postgres user
   # POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  " > ./04_uns_historian/conf/.secrets.yaml
+  " > $WORKSPACE/04_uns_historian/conf/.secrets.yaml
 
   # 2.2.1 Historian DB used by 04_uns_historian
   sudo rm -rf $HOME/timescaledb
@@ -147,10 +147,10 @@ fi
 
 # 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
 # always created
-INPUT_FILES=$(find . -type f -not -path "./07_uns_graphql/*" -name ".secrets.yaml")
+INPUT_FILES=$(find . -type f -not -path "$WORKSPACE/07_uns_graphql/*" -name ".secrets.yaml")
 
 # Define the output file
-OUTPUT_FILE=07_uns_graphql/conf/.secrets.yaml
+OUTPUT_FILE=$WORKSPACE/07_uns_graphql/conf/.secrets.yaml
 
 merge_command="docker run --rm -v \"$(pwd)\":/workdir mikefarah/yq eval-all '. as \$item ireduce ({}; . * \$item )'"
 
