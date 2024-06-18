@@ -38,7 +38,7 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-asyncio = "^0.23.7"
 pytest-cov = "^5.0.0"
 safety = "^3.2.3"
-ruff = "^0.4.3"
+ruff = "^0.4.9"
 
 
 [tool.poetry.scripts]
