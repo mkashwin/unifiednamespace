@@ -109,6 +109,8 @@ class GraphDB:
             except Exception as ex:
                 LOGGER.error("Error executing query: %s", str(ex), stack_info=True, exc_info=True)
                 raise
+            finally:
+                result.aclose()
 
     async def execute_write_query(self, query: str, *args, **kwargs):
         """
@@ -136,3 +138,5 @@ class GraphDB:
             except Exception as ex:
                 LOGGER.error("Error executing write query: %s", str(ex), stack_info=True, exc_info=True)
                 raise
+            finally:
+                result.aclose()
