@@ -16,12 +16,13 @@
 *******************************************************************************
 """
 
+import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
 from confluent_kafka import Producer
-from confluent_kafka.admin import AdminClient
+from confluent_kafka.admin import AdminClient, NewTopic
 from uns_graphql.graphql_config import KAFKAConfig
 from uns_graphql.input.kafka import KAFKATopicInput
 from uns_graphql.subscriptions.kafka import KAFKASubscription
@@ -54,17 +55,26 @@ ONE_TOPIC_ONE_MSG = (
 
 @pytest_asyncio.fixture
 async def create_topics(message_vals):
+    # Create Kafka admins
+    admin = AdminClient(
+        {
+            "client.id": "test_admin",
+            "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
+        }
+    )
+    topics = list({msg[0] for msg in message_vals})
+
     # Function to Delete topics if present
-    async def delete_existing_topics():  # noqa: RUF029
-        # Create Kafka admins
-        admin = AdminClient(
-            {
-                "client.id": "test_admin",
-                "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
-            }
-        )
-        for msg_val in message_vals:
-            admin.delete_topics([msg_val[0]])
+    async def delete_existing_topics(admin, topics):
+        admin.delete_topics(topics)
+        # Give some time for the topics to be deleted
+        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
+
+    async def create_new_topics(admin, topics):
+        new_topics = [NewTopic(topic, num_partitions=1, replication_factor=1) for topic in topics]
+        admin.create_topics(new_topics)
+        # Give some time for the topics to be created
+        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
     async def produce_messages():  # noqa: RUF029
@@ -85,12 +95,13 @@ async def create_topics(message_vals):
         producer.flush()
 
     # Delete topics
-    await delete_existing_topics()
+    await delete_existing_topics(admin, topics)
+    await create_new_topics(admin, topics)
     # Run message producer in a separate thread
     await produce_messages()
     yield
     # Delete topics
-    await delete_existing_topics()
+    await delete_existing_topics(admin, topics)
 
 
 @pytest.mark.asyncio
@@ -177,6 +188,10 @@ async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[
     finally:
         await async_message_list.aclose()
 
+    # Ensure messages from both topics are received correctly
+    topics_set = {msg.topic for msg in received_messages}
+    expected_topics_set = {topic.topic for topic in kafka_topics}
+    assert topics_set == expected_topics_set, f"Expected topics: {expected_topics_set}, but got: {topics_set}"
     # Validate that all published messages were received
     assert len(received_messages) == len(message_vals)
     for topic, msg in message_vals:

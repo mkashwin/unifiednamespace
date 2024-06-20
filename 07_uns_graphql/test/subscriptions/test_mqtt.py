@@ -164,15 +164,19 @@ async def test_get_mqtt_messages(topics: list[MQTTTopicInput], expected_messages
     async_context_manager = AsyncContextManagerMock(mock_client)
 
     # Patch Client and mock the messages context manager
-    with patch("uns_graphql.subscriptions.mqtt.Client", return_value=async_context_manager):
-        # Mock the client.messages context manager to return an async generator
-        mock_messages = async_message_generator(expected_messages)
-        mock_client.messages = mock_messages
+    try:
+        with patch("uns_graphql.subscriptions.mqtt.Client", return_value=async_context_manager):
+            # Mock the client.messages context manager to return an async generator
 
-        subscription = MQTTSubscription()
-        received_messages: list[MQTTMessage] = [message async for message in subscription.get_mqtt_messages(topics)]
+            mock_messages = async_message_generator(expected_messages)
+            mock_client.messages = mock_messages
+            subscription = MQTTSubscription()
+            async_message_list = subscription.get_mqtt_messages(topics)
+            received_messages: list[MQTTMessage] = [message async for message in async_message_list]
 
-    assert len(received_messages) == len(expected_messages)
+        assert len(received_messages) == len(expected_messages)
+    finally:
+        async_message_list.aclose()
 
 
 class AsyncContextManagerMock:
@@ -321,7 +325,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
             ],
         ),
         (  # Test with topics from  sparkplugB with protobuf responses
-            [MQTTTopicInput(topic="topic/+"), MQTTTopicInput(topic="topic/#")],
+            [MQTTTopicInput(topic="topic/+"), MQTTTopicInput(topic="spBv1.0/#")],
             [
                 Message(
                     topic="topic/1",
@@ -355,9 +359,13 @@ async def publish_to_mqtt(expected_messages: list[Message]):
 async def test_get_mqtt_messages_integration(publish_to_mqtt, topics: list[MQTTTopicInput], expected_messages: list[Message]):  # noqa: ARG001
     subscription = MQTTSubscription()
     received_messages: list[MQTTMessage] = []
-    # Await the subscription result directly to collect the messages
-    async for message in subscription.get_mqtt_messages(topics):
-        received_messages.append(message)
-        if len(received_messages) == len(expected_messages):
-            break
-    assert len(received_messages) == len(expected_messages)
+    try:
+        async_message_list = subscription.get_mqtt_messages(topics)
+        # Await the subscription result directly to collect the messages
+        async for message in async_message_list:
+            received_messages.append(message)
+            if len(received_messages) == len(expected_messages):
+                break
+        assert len(received_messages) == len(expected_messages)
+    finally:
+        await async_message_list.aclose()

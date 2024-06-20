@@ -52,10 +52,12 @@ class KAFKASubscription:
             typing.AsyncGenerator[StreamingMessage, None]: Asynchronously generates UNS event messages.
         """
 
-        # Inner function to reset the offset of the consumer to the beginning
-        # Connect to Kafka broker and subscribe to the specified topic
-        # Set up a callback to handle the '--reset' flag.
         def reset_offset(consumer, partitions):
+            """
+            Inner function to reset the offset of the consumer to the beginning
+            Connect to Kafka broker and subscribe to the specified topic
+            Set up a callback to handle the '--reset' flag.
+            """
             for part in partitions:
                 part.offset = OFFSET_BEGINNING
             consumer.assign(partitions)
@@ -65,13 +67,13 @@ class KAFKASubscription:
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
         # Inner async function to poll and yield messages from Kafka
-        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:  # noqa: RUF029
+        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:
             try:
                 while True:
                     # Poll for messages with a specified timeout
                     msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)
                     if msg is None:
-                        # await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
+                        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
                         continue
 
                     if msg.error():

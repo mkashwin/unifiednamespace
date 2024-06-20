@@ -69,8 +69,9 @@ class MQTTSubscription:
                 tls_params=MQTTConfig.tls_params,
                 tls_insecure=MQTTConfig.tls_insecure,
             ) as client:
-                for mqtt_topic in topics:
-                    await client.subscribe(topic=mqtt_topic.topic, qos=MQTTConfig.qos, properties=MQTTConfig.properties)
+                await client.subscribe(
+                    topic=[(mqtt_topic.topic, MQTTConfig.qos) for mqtt_topic in topics], properties=MQTTConfig.properties
+                )
                 async for msg in client.messages:
                     yield MQTTMessage(topic=str(msg.topic), payload=msg.payload)
         except MqttError as ex:

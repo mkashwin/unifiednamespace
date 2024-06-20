@@ -53,7 +53,7 @@ ruff = "^0.4.9"
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
-addopts = "--import-mode=importlib -n auto --dist loadgroup"
+addopts = "--import-mode=importlib -n auto --dist loadgroup --timeout=300 --durations=10"
 testpaths = [
     "02_mqtt-cluster/test",
     "03_uns_graphdb/test",
