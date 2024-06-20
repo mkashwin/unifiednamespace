@@ -325,7 +325,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
             ],
         ),
         (  # Test with topics from  sparkplugB with protobuf responses
-            [MQTTTopicInput(topic="topic/+"), MQTTTopicInput(topic="topic/#")],
+            [MQTTTopicInput(topic="topic/+"), MQTTTopicInput(topic="spBv1.0/#")],
             [
                 Message(
                     topic="topic/1",
