@@ -3,7 +3,7 @@
 [![MQTT Client for Graphdb](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_graphdb-app.yml/badge.svg)](https://github.com/mkashwin/unifiednamespace/actions/workflows/uns_graphdb-app.yml)
 
 We will be publishing messages as per the ISA-95 part 2 specifications
-> \<enterprise\>/\<facility\>/\<area\>/\<line\>\<device\>
+> \<enterprise\>/\<facility\>/\<area\>/\<line\>/\<device\>
 
 We choose a graph database in this case because it allows us to define and maintain relationships and connections across our enterprise as well as merge messages to the same topic.
 e.g. the ERP system which is publishing to the Enterprise node can have a relationship with a device allowing us to easily correlate identifiers across the various systems.
