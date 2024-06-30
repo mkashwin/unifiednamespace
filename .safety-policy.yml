@@ -21,7 +21,7 @@ report:
           expires: "2025-01-01"
         70612:
           reason: Currently suppressing as jinja2 isn't explicitly used. Track closure
-          expires: "2024-06-30"
+          expires: "2024-12-31"
 
 fail-scan-with-exit-code:
   dependency-vulnerabilities:
