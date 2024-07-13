@@ -2208,7 +2208,7 @@ develop = true
 aiohttp = "^3.9"
 aiomqtt = "^2.2.0"
 asyncpg = "^0.29"
-confluent-kafka = "^2.4.0"
+confluent-kafka = "^2.5.0"
 dynaconf = "^3.2.4"
 logger = "^1.4"
 neo4j = "^5.20"
@@ -2247,7 +2247,7 @@ files = []
 develop = true
 
 [package.dependencies]
-confluent-kafka = "^2.4.0"
+confluent-kafka = "^2.5.0"
 dynaconf = "^3.2.4"
 logger = "^1.4"
 

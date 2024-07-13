@@ -34,7 +34,8 @@ ENV UNS_MODULE="06_uns_kafka"\
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1
+    POETRY_NO_INTERACTION=1  \
+    LIBRDKAFKA_VER="2.5.0"
 
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka
 LABEL org.opencontainers.image.description="Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
@@ -55,17 +56,17 @@ RUN apk update && \
     apk add --no-cache  libffi-dev libc-dev gcc bash g++ make && \
     apk upgrade --no-cache libexpat libcrypto3 libssl3 busybox ssl_client && \
     rm -rf /var/cache/apk/* && \
-    # Need to install https://github.com/confluentinc/librdkafka/releases/tag/v2.4.0 as alpine does not have this version   
-    wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.4.0.zip && \
-    unzip -o v2.4.0.zip && \
-    cd  librdkafka-2.4.0 && \
-    bash -c "./configure && \
+    # Need to install https://github.com/confluentinc/librdkafka/releases/tag/v${LIBRDKAFKA_VER} as alpine does not have this version   
+    wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VER}.zip && \
+    unzip -o v${LIBRDKAFKA_VER}.zip && \
+    cd  librdkafka-${LIBRDKAFKA_VER} && \
+    bash -c "./configure --install-deps --disable-gssapi --disable-lz4-ext --enable-static && \
     ./configure --prefix /usr && \
     make && \
     make install" && \
     cd .. && \
-    rm v2.4.0.zip && \
-    rm -rf librdkafka-2.4.0
+    rm v${LIBRDKAFKA_VER}.zip && \
+    rm -rf librdkafka-${LIBRDKAFKA_VER} 
 
 # Install pip & poetry
 RUN  pip install --upgrade pip poetry && \
