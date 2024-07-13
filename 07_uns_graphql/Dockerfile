@@ -54,7 +54,7 @@ COPY ./${UNS_MODULE}/src ./src/
 # install minimalistic missing packages
 RUN apk update && \ 
     apk add --no-cache  libffi-dev libc-dev gcc bash g++ make musl-dev rust cargo && \
-    apk upgrade --no-cache libexpat libcrypto3 libssl3 busybox ssl_client && \
+    apk upgrade --no-cache libexpat libcrypto3 libssl3 busybox ssl_client krb5-libs && \
     rm -rf /var/cache/apk/* && \
     # Need to install https://github.com/confluentinc/librdkafka/releases/tag/v${LIBRDKAFKA_VER} as alpine does not have this version   
     wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v${LIBRDKAFKA_VER}.zip && \
