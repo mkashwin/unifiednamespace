@@ -43,7 +43,7 @@ def check_other_slots(value, spb_obj, enum_list, enum):
             retrieved_value = getattr(spb_obj, datatype.get_field_name())
 
             if (
-                datatype.get_field_name() != enum.get_field_name() and type(retrieved_value) == type(value)
+                datatype.get_field_name() != enum.get_field_name() and type(retrieved_value) is type(value)
                 # need to check type to handle bool checks because 0 == False evaluates to True
             ):
                 assert retrieved_value != value, f"Datatype: {value} should be set in {spb_obj} for type {datatype}"
@@ -392,9 +392,9 @@ def test_unknown_via_enum(value, spb_obj, spb_enum_types):
     check_other_slots(value, spb_obj, spb_enum_types, SPBBasicDataTypes.Unknown)
     # check encoded value matches original value
     assert spb_enum_types(sparkplug_b_pb2.Unknown).get_value_from_sparkplug(spb_obj) is None
-    if type(spb_obj) == sparkplug_b_pb2.Payload.Metric:
+    if type(spb_obj) is sparkplug_b_pb2.Payload.Metric:
         assert spb_obj.datatype == sparkplug_b_pb2.Unknown
-    if type(spb_obj) == sparkplug_b_pb2.Payload.PropertyValue | sparkplug_b_pb2.Payload.Template.Parameter:
+    if type(spb_obj) is sparkplug_b_pb2.Payload.PropertyValue | sparkplug_b_pb2.Payload.Template.Parameter:
         assert spb_obj.type == sparkplug_b_pb2.Unknown
 
 
