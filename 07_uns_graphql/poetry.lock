@@ -1493,13 +1493,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
-version = "8.3.1"
+version = "8.3.2"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.1-py3-none-any.whl", hash = "sha256:e9600ccf4f563976e2c99fa02c7624ab938296551f280835ee6516df8bc4ae8c"},
-    {file = "pytest-8.3.1.tar.gz", hash = "sha256:7e8e5c5abd6e93cb1cc151f23e57adc31fcf8cfd2a3ff2da63e23f732de35db6"},
+    {file = "pytest-8.3.2-py3-none-any.whl", hash = "sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5"},
+    {file = "pytest-8.3.2.tar.gz", hash = "sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce"},
 ]
 
 [package.dependencies]
@@ -1974,13 +1974,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.236.0"
+version = "0.236.2"
 description = "A library for creating GraphQL APIs"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "strawberry_graphql-0.236.0-py3-none-any.whl", hash = "sha256:685f775be47c0753c39e0ef601d7f2b6f0e15dd4dfe5d57094d29a9cceb066f4"},
-    {file = "strawberry_graphql-0.236.0.tar.gz", hash = "sha256:26dcae2c0b506330db60624194cdd0b49c1e773166791bd4f729126bf872b65c"},
+    {file = "strawberry_graphql-0.236.2-py3-none-any.whl", hash = "sha256:de76ae2a1191e82a46f598666cc76e1e4e6f66a0ab8234faae8605d3e0abc12f"},
+    {file = "strawberry_graphql-0.236.2.tar.gz", hash = "sha256:7b1bf5b8c4b6c19f6929561d3cfff4df803755cfbd54b44e167a2cb19186b8b4"},
 ]
 
 [package.dependencies]
