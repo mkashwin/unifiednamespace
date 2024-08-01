@@ -27,7 +27,7 @@ python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.237", extras = ["fastapi", "cli"] }
-aiohttp = "^3.9"
+aiohttp = "^3.10"
 uvicorn = { version = "^0.30", extras = ["standard"] }
 
 aiomqtt = "^2.2.0"
