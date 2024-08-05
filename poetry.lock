@@ -1196,13 +1196,13 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.23.0"
+version = "5.23.1"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.23.0-py3-none-any.whl", hash = "sha256:5d8d2f45227c12d6ba564720cbc3e2f57aac472e4fa14fe69270e4f952791020"},
-    {file = "neo4j-5.23.0.tar.gz", hash = "sha256:26b06dac3a4b93d882a61714c5ca8d06fe68f697cbdfe113ab840d651a2d46a2"},
+    {file = "neo4j-5.23.1-py3-none-any.whl", hash = "sha256:97996fbf39421e0677fdcb8afe50b6810cbe8027e055a9dcf81da6070a82a009"},
+    {file = "neo4j-5.23.1.tar.gz", hash = "sha256:e2d3399d1124319489b25d5eda99833ae086e1fffef9946d36241652d26b26a0"},
 ]
 
 [package.dependencies]
@@ -1966,7 +1966,7 @@ develop = true
 [package.dependencies]
 dynaconf = "^3.2.4"
 logger = "^1.4"
-neo4j = "^5.21"
+neo4j = "^5.23"
 
 [package.source]
 type = "directory"
@@ -1988,7 +1988,7 @@ asyncpg = "^0.29"
 confluent-kafka = "^2.5.0"
 dynaconf = "^3.2.4"
 logger = "^1.4"
-neo4j = "^5.20"
+neo4j = "^5.23"
 strawberry-graphql = {version = "^0.237", extras = ["cli", "fastapi"]}
 uvicorn = {version = "^0.30", extras = ["standard"]}
 
