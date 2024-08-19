@@ -51,7 +51,7 @@ class GraphDB:
         if cls._graphdb_driver is None:
             LOGGER.info("Creating a new GraphDB driver")
             cls._graphdb_driver = AsyncGraphDatabase.driver(
-                uri=GraphDBConfig.conn_url, auth=(GraphDBConfig.user, GraphDBConfig.password)
+                uri=GraphDBConfig.conn_url, auth=(GraphDBConfig.user, GraphDBConfig.password), database=GraphDBConfig.database
             )
         try:
             await cls._graphdb_driver.verify_connectivity()
@@ -86,12 +86,12 @@ class GraphDB:
         else:
             LOGGER.warning("Trying to close an already closed driver")
 
-    async def execute_read_query(self, query: str, *args, **kwargs) -> list[Record]:  # -> list:
+    async def execute_query(self, query: str, *args, **kwargs) -> list[Record]:
         """
-        Executes a read (CQL) query with the provided positional and keyword parameters.
+        Executes a (CQL) query with the provided positional and keyword parameters.
 
         Args:
-            query (str): The CQL query to execute.
+            query (str): The CQL query to execute. Using the auto commit feature for transaction
             *args: Positional parameters for the CQL query.
             **kwargs: Keyword parameters for the CQL query.
 
@@ -100,7 +100,8 @@ class GraphDB:
         """
 
         LOGGER.debug("Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
-        async with self.get_graphdb_driver().session() as session:
+        driver = await self.get_graphdb_driver()
+        async with driver.session() as session:
             try:
                 result: AsyncResult = await session.run(query, *args, **kwargs)
                 records: list[Record] = [record async for record in result]
@@ -110,33 +111,4 @@ class GraphDB:
                 LOGGER.error("Error executing query: %s", str(ex), stack_info=True, exc_info=True)
                 raise
             finally:
-                result.aclose()
-
-    async def execute_write_query(self, query: str, *args, **kwargs):
-        """
-        Executes a write (CQL) query with the provided positional and keyword parameters.
-        Supports transactional operations.
-
-        Args:
-            query (str): The CQL query to execute.
-            *args: Positional parameters for the CQL query.
-            **kwargs: Keyword parameters for the CQL query.
-
-        Returns:
-            list: The results of the query.
-        """
-
-        LOGGER.debug("Executing write query: %s with args: %s and kwargs: %s", query, args, kwargs)
-        async with self.get_graphdb_driver().session() as session:
-            try:
-                async with session.begin_transaction() as tx:
-                    result = await tx.run(query, *args, **kwargs)
-                    await tx.commit()
-                    records = [record async for record in result]
-                    LOGGER.debug("Write query executed successfully, committed records: %s", records)
-                    return records
-            except Exception as ex:
-                LOGGER.error("Error executing write query: %s", str(ex), stack_info=True, exc_info=True)
-                raise
-            finally:
-                result.aclose()
+                await session.close()
