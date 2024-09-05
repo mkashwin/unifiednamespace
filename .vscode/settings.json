@@ -112,7 +112,7 @@
         "./07_uns_graphql/src",
         "./07_uns_graphql/test",
     ],
-    "python.languageServer": "Pylance",
+    "python.languageServer": "Default",
     "python.missingPackage.severity": "Error",
     "ruff.showNotifications": "always",
     "ruff.trace.server": "messages",

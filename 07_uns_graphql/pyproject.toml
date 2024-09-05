@@ -31,7 +31,7 @@ aiohttp = "^3.10"
 uvicorn = { version = "^0.30", extras = ["standard"] }
 
 aiomqtt = "^2.2.0"
-confluent-kafka = "^2.5.0"
+confluent-kafka = "^2.5.3"
 neo4j = "^5.24"
 asyncpg = "^0.29"
 
