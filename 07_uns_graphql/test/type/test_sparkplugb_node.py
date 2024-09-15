@@ -463,27 +463,20 @@ def test_spb_node(topic: str, payload: Payload | bytes):
         compare_metrics(spb_node_metric, payload_metric)
 
 
-def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
+def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):  # noqa: C901
     """
     Utility method to compare metrics and handle float in value, template , dataset
     """
     spb_metric = SPBMetric(payload_metric)
-
-    assert graphql_metric.alias == spb_metric.alias
-    if payload_metric.HasField("alias"):
-        assert spb_metric.alias == payload_metric.alias
-
-    assert graphql_metric.is_null == spb_metric.is_null
-    if payload_metric.HasField("is_null"):
-        assert spb_metric.is_null == payload_metric.is_null
-
-    assert graphql_metric.is_historical == spb_metric.is_historical
-    if payload_metric.HasField("is_historical"):
-        assert spb_metric.is_historical == payload_metric.is_historical
-
-    assert graphql_metric.is_transient == spb_metric.is_transient
-    if payload_metric.HasField("is_transient"):
-        assert spb_metric.is_transient == payload_metric.is_transient
+    fields = [
+        "alias",
+        "is_null",
+        "is_historical",
+        "is_transient",
+        "timestamp",
+    ]
+    for field in fields:
+        assert getattr(graphql_metric, field) == getattr(spb_metric, field)
 
     assert graphql_metric.metadata == spb_metric.metadata
     if payload_metric.HasField("metadata"):
@@ -492,8 +485,6 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
     assert graphql_metric.properties == spb_metric.properties
     if payload_metric.HasField("properties"):
         compare_propertyset(graphql_metric.properties, payload_metric.properties)
-
-    assert graphql_metric.timestamp == spb_metric.timestamp
 
     assert graphql_metric.datatype == spb_metric.datatype == SPBMetricDataTypes(payload_metric.datatype).name
 

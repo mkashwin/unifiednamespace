@@ -25,6 +25,56 @@ import pytest_asyncio
 from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.graphql_config import GraphDBConfig
 
+QUERY = """
+    WITH $propertyNames AS propertyNames
+    UNWIND propertyNames AS propertyName
+    // Step 1: Find all nodes containing the specified property
+    // Use a sub query to handle both MATCH conditions
+    CALL (propertyName)  {
+        // Match nodes that directly contain the specified property
+        MATCH (simple_node) // dynamically add the label filter here
+        WHERE simple_node[propertyName] IS NOT NULL
+        RETURN DISTINCT simple_node AS resultNode
+    UNION
+    // Match nodes that are related via a specific relationship property
+        MATCH (nested_node)-[r:PARENT_OF {attribute_name: propertyName}]->(:NESTED_ATTRIBUTE)
+        WHERE r.type IN ["list", "dict"]
+        RETURN DISTINCT nested_node AS resultNode
+    }
+
+    // Step 2: Use APOC to find the path from each node to the root, excluding 'NESTED_ATTRIBUTE' nodes
+    CALL apoc.path.subgraphNodes(resultNode, {
+        relationshipFilter: 'PARENT_OF<',
+        labelFilter: '-NESTED_ATTRIBUTE',
+        maxLevel: -1
+        }) YIELD node AS pathNode
+
+    // Step 3: Collect the nodes along the path and construct the full name
+    WITH resultNode,
+        COLLECT(pathNode) AS pathNodes
+    WITH resultNode,
+        REDUCE(fullPath = '', n IN pathNodes |
+                CASE
+                    WHEN fullPath = '' THEN n.node_name
+                    ELSE  n.node_name + '/' + fullPath
+                END) AS fullName
+    // Step 4: Apply the topic filter (array of regex expressions)
+    WITH resultNode, fullName, $topicFilter AS topicFilter
+    WHERE ANY(regex IN topicFilter WHERE fullName =~ regex)
+
+    // Step 5: Find nested children with label "NESTED_ATTRIBUTE" and their relationships
+    OPTIONAL MATCH (resultNode)-[r:PARENT_OF]->(nestedChild:NESTED_ATTRIBUTE)
+    OPTIONAL MATCH (nestedChild)-[nestedRel:PARENT_OF*]->(child:NESTED_ATTRIBUTE)
+
+    // Step 6: Return the full path, resultNode, nested children, and relationships
+    RETURN DISTINCT
+    fullName,
+    resultNode,
+    COLLECT(DISTINCT nestedChild) AS nestedChildren,
+    COLLECT(DISTINCT r) + COLLECT(DISTINCT nestedRel) AS relationships
+    """
+QUERY_PARAMS = {"propertyNames": ["seq", "dict_list"], "topicFilter": ["(.)*"]}
+
 
 @pytest_asyncio.fixture
 async def mock_graphdb_driver():
@@ -39,7 +89,7 @@ async def mock_graphdb_driver():
 @pytest.mark.asyncio
 async def test_get_graphdb_driver(mock_config, mock_driver_class, mock_graphdb_driver):
     """
-    Test with mock object to validate singulatiry of the neo4j driver
+    Test with mock object to validate singularity of the neo4j driver
     """
     mock_driver_class.return_value = mock_graphdb_driver
     mock_config.conn_url = GraphDBConfig.conn_url
@@ -59,7 +109,7 @@ async def test_get_graphdb_driver(mock_config, mock_driver_class, mock_graphdb_d
         driver2 = await GraphDB.get_graphdb_driver()
         mock_driver_class.assert_called_once()  # Should still be called only once
 
-        assert driver1 == driver2, "The driver instace should be same befor releasing"
+        assert driver1 is driver2, "The driver instance should be same before releasing"
     finally:
         await GraphDB.release_graphdb_driver()
 
@@ -68,7 +118,7 @@ async def test_get_graphdb_driver(mock_config, mock_driver_class, mock_graphdb_d
 @pytest.mark.asyncio
 async def test_release_graphdb_driver(mock_graphdb_driver):
     """
-    Validatres that the driver was closed
+    Validates that the driver was closed
     """
     await GraphDB.release_graphdb_driver()
     mock_graphdb_driver.close.assert_called_once()
@@ -82,9 +132,10 @@ async def test_release_graphdb_driver(mock_graphdb_driver):
         ("MATCH (n:NOMAD {name: 'IamNotFound'}) RETURN n", None, None, False),  # Valid query but empty result, no params
         ("MATCH (n) RETURN n", None, None, False),  # Valid query valid results
         ("CREATE (n:NEW_NODE) RETURN n", None, None, False),  # Valid insert valid results
+        (QUERY, None, QUERY_PARAMS, False),
     ],
 )
-async def test_execute_read_query(
+async def test_execute_query(
     query: str,
     args: tuple,
     kwargs: dict,
@@ -96,10 +147,18 @@ async def test_execute_read_query(
     # Initialize the GraphDB
     graph_db = GraphDB()
     try:
-        result = await graph_db.execute_query(query=query, args=args, kwargs=kwargs)
+        # Pass args and kwargs only if they are not None
+        if args is None and kwargs is None:
+            result = await graph_db.execute_query(query)
+        elif args is None:
+            result = await graph_db.execute_query(query, **kwargs)
+        elif kwargs is None:
+            result = await graph_db.execute_query(query, *args)
+        else:
+            result = await graph_db.execute_query(query, *args, **kwargs)
         assert result is not None
     except Exception as ex:
         if is_error:
             assert True  # Error was expected
         else:
-            pytest.fail(f"Exception {ex} occurred while executing quwery: {query} ")
+            pytest.fail(f"Exception {ex} occurred while executing query: {query} ")
