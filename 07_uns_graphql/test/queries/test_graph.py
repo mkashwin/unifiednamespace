@@ -339,7 +339,7 @@ async def test_get_uns_nodes(
     with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_uns_graphdb):
         graph_query = GraphQuery()
         try:
-            result = await graph_query.get_uns_nodes(mqtt_topics=mqtt_topic_list)
+            result = await graph_query.get_uns_nodes(topics=mqtt_topic_list)
         except Exception as ex:
             assert has_result_errors, f"Should not throw any exceptions. Got {ex}"
         assert result is not None  # test was successful
@@ -443,251 +443,6 @@ def test_get_nested_properties(
         assert result == expected_result
     except Exception as ex:
         assert is_error, f"Should not throw any exceptions. Got {ex}"
-
-
-@pytest_asyncio.fixture(scope="module")
-async def setup_graphdb_data():
-    """Fixture to set up data in the GraphDB from the test_data.cypher file."""
-    # Read the Cypher script as read only
-    with open(file=Path(__file__).resolve().parent / "test_data.cypher") as file:
-        cypher_script = file.read()
-    # Filter out lines that are not valid Cypher queries
-    valid_queries = cypher_script.replace(":begin\n", "").replace(":commit\n", "").split(";")
-    # Initialize the GraphDB
-    graph_db = GraphDB()
-
-    # Execute each query separately
-    for query in valid_queries:
-        if query.strip():  # Make sure the query is not empty
-            await graph_db.execute_query(query=query)
-
-    # Yield control to the test
-    yield
-
-    # Teardown code i.e. clearing the database)
-    await graph_db.execute_query("MATCH (n) DETACH DELETE n;")
-    # Release the driver
-    await graph_db.release_graphdb_driver()
-
-
-@pytest.mark.asyncio
-@pytest.mark.integrationtest
-@pytest.mark.parametrize(
-    "topics, expected_result",
-    [
-        (
-            ["+", "test/uns/ar2/ln4"],
-            [
-                UNSNode(
-                    namespace="test",
-                    node_name="test",
-                    node_type="ENTERPRISE",
-                    payload={},
-                    created=datetime.fromtimestamp(1486144500, UTC),
-                    last_updated=datetime.fromtimestamp(1486144500, UTC),
-                ),
-                UNSNode(
-                    namespace="test/uns/ar2/ln4",
-                    node_name="ln4",
-                    node_type="LINE",
-                    payload={
-                        "TestMetric2": "TestUNSwithNestedLists",
-                        "timestamp": 1486144500000,
-                        "dict_list": [{"a": "b"}, {"x": "y"}],
-                    },
-                    created=datetime.fromtimestamp(1486144500, UTC),
-                    last_updated=datetime.fromtimestamp(1486144500, UTC),
-                ),
-            ],
-        ),
-        (
-            ["test/uns/ar2/#"],
-            [
-                UNSNode(
-                    namespace="test/uns/ar2/ln4",
-                    node_name="ln4",
-                    node_type="LINE",
-                    payload={
-                        "TestMetric2": "TestUNSwithNestedLists",
-                        "timestamp": 1486144500000,
-                        "dict_list": [{"a": "b"}, {"x": "y"}],
-                    },
-                    created=datetime.fromtimestamp(1486144500, UTC),
-                    last_updated=datetime.fromtimestamp(1486144500, UTC),
-                ),
-                UNSNode(
-                    namespace="test/uns/ar2/ln3",
-                    node_name="ln3",
-                    node_type="LINE",
-                    payload={
-                        "TestMetric2": "TestUNSwithLists",
-                        "list": [1, 2, 3, 4, 5],
-                        "timestamp": 1486144502144,
-                        "dict_list": [{"a": "b"}, {"x": "y"}],
-                    },
-                    created=datetime.fromtimestamp(1486144502.144, UTC),
-                    last_updated=datetime.fromtimestamp(1486144502.144, UTC),
-                ),
-            ],
-        ),
-        (
-            ["test"],
-            [
-                UNSNode(
-                    namespace="test",
-                    node_name="test",
-                    node_type="ENTERPRISE",
-                    payload={},
-                    created=datetime.fromtimestamp(1486144500, UTC),
-                    last_updated=datetime.fromtimestamp(1486144500, UTC),
-                )
-            ],
-        ),
-    ],
-)
-async def test_get_uns_nodes_integration(setup_graphdb_data, topics: list[str], expected_result: list[UNSNode]):  # noqa: ARG001
-    mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
-    graph_query = GraphQuery()
-    try:
-        result = await graph_query.get_uns_nodes(mqtt_topics=mqtt_topic_list)
-    except Exception as ex:
-        pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result  # Ensure the result matches the expected result
-
-
-@pytest.mark.asyncio
-@pytest.mark.integrationtest
-@pytest.mark.parametrize(
-    "property_keys, topics, exclude_topics,expected_result",
-    [
-        (
-            ["dict_list"],
-            None,
-            None,
-            [
-                UNSNode(
-                    namespace="test/uns/ar2/ln4",
-                    node_name="ln4",
-                    node_type="LINE",
-                    payload={
-                        "TestMetric2": "TestUNSwithNestedLists",
-                        "timestamp": 1486144500000,
-                        "dict_list": [{"a": "b"}, {"x": "y"}],
-                    },
-                    created=datetime.fromtimestamp(1486144500, UTC),
-                    last_updated=datetime.fromtimestamp(1486144500, UTC),
-                ),
-            ],
-        ),
-        (
-            ["node_name"],
-            ["test/uns/ar1"],
-            False,
-            [
-                UNSNode(
-                    namespace="test/uns/ar1",
-                    node_name="ar1",
-                    node_type="AREA",
-                    payload={},
-                    created=datetime.fromtimestamp(1486144502.122, UTC),
-                    last_updated=datetime.fromtimestamp(1486144502.122, UTC),
-                )
-            ],
-        ),
-        (
-            ["TestMetric2"],
-            ["test/uns/ar1/#"],
-            False,
-            [
-                UNSNode(
-                    namespace="test/uns/ar1/ln2",
-                    node_name="ln2",
-                    node_type="LINE",
-                    payload={"TestMetric2": "TestUNS", "timestamp": 1486144502122},
-                    created=datetime.fromtimestamp(1486144502.122, UTC),
-                    last_updated=datetime.fromtimestamp(1486144502.122, UTC),
-                )
-            ],
-        ),
-        (
-            ["TestMetric2"],
-            ["test/uns/ar1/#"],
-            True,
-            [
-                UNSNode(
-                    namespace="test/uns/ar2/ln4",
-                    node_name="ln4",
-                    node_type="LINE",
-                    payload={
-                        "TestMetric2": "TestUNSwithNestedLists",
-                        "timestamp": 1486144500000,
-                        "dict_list": [{"a": "b"}, {"x": "y"}],
-                    },
-                    created=datetime.fromtimestamp(1486144500, UTC),
-                    last_updated=datetime.fromtimestamp(1486144500, UTC),
-                ),
-                UNSNode(
-                    namespace="test/uns/ar2/ln3",
-                    node_name="ln3",
-                    node_type="LINE",
-                    payload={
-                        "TestMetric2": "TestUNSwithLists",
-                        "list": [1, 2, 3, 4, 5],
-                        "timestamp": 1486144502144,
-                        "dict_list": [{"a": "b"}, {"x": "y"}],
-                    },
-                    created=datetime.fromtimestamp(1486144502.144, UTC),
-                    last_updated=datetime.fromtimestamp(1486144502.144, UTC),
-                ),
-            ],
-        ),
-    ],
-)
-async def test_get_uns_nodes_by_property_integration(
-    setup_graphdb_data,  # noqa: ARG001
-    property_keys,
-    topics: list[str],
-    exclude_topics: bool,
-    expected_result: dict,
-):
-    mqtt_topic_list = None
-    if topics is not None:
-        mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
-
-    graph_query = GraphQuery()
-    try:
-        result = await graph_query.get_uns_nodes_by_property(
-            property_keys=property_keys, topics=mqtt_topic_list, exclude_topics=exclude_topics
-        )
-    except Exception as ex:
-        pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result  # Ensure the result matches the expected result
-
-
-@pytest.mark.asyncio
-@pytest.mark.integrationtest
-@pytest.mark.parametrize(
-    "metric_names, expected_result",
-    [
-        (["Inputs/A"], [SPBNode(topic="", payload={})]),
-        ("Inputs/A", [SPBNode(topic="", payload={})]),
-        (["Inputs/A", "Inputs/B"], [SPBNode(topic="", payload={})]),
-        (["Output/F"], [SPBNode(topic="", payload={})]),
-        ([], []),
-        (None, []),
-    ],
-)
-async def test_get_spb_nodes_integration(
-    setup_graphdb_data,  # noqa: ARG001
-    metric_names: list[str],
-    expected_result: list[SPBNode],
-):
-    graph_query = GraphQuery()
-    try:
-        result = await graph_query.get_spb_nodes_by_metric(metric_names=metric_names)
-    except Exception as ex:
-        pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result
 
 
 @pytest.mark.asyncio
@@ -835,3 +590,248 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
             assert not result.errors
         else:
             assert result.errors
+
+
+# @pytest_asyncio.fixture(scope="module")
+# async def setup_graphdb_data():
+#     """Fixture to set up data in the GraphDB from the test_data.cypher file."""
+#     # Read the Cypher script as read only
+#     with open(file=Path(__file__).resolve().parent / "test_data.cypher") as file:
+#         cypher_script = file.read()
+#     # Filter out lines that are not valid Cypher queries
+#     valid_queries = cypher_script.replace(":begin\n", "").replace(":commit\n", "").split(";")
+#     # Initialize the GraphDB
+#     graph_db = GraphDB()
+
+#     # Execute each query separately
+#     for query in valid_queries:
+#         if query.strip():  # Make sure the query is not empty
+#             await graph_db.execute_query(query=query)
+
+#     # Yield control to the test
+#     yield
+
+#     # Teardown code i.e. clearing the database)
+#     await graph_db.execute_query("MATCH (n) DETACH DELETE n;")
+#     # Release the driver
+#     await graph_db.release_graphdb_driver()
+
+
+# @pytest.mark.asyncio
+# @pytest.mark.integrationtest
+# @pytest.mark.parametrize(
+#     "topics, expected_result",
+#     [
+#         (
+#             ["+", "test/uns/ar2/ln4"],
+#             [
+#                 UNSNode(
+#                     namespace="test",
+#                     node_name="test",
+#                     node_type="ENTERPRISE",
+#                     payload={},
+#                     created=datetime.fromtimestamp(1486144500, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
+#                 ),
+#                 UNSNode(
+#                     namespace="test/uns/ar2/ln4",
+#                     node_name="ln4",
+#                     node_type="LINE",
+#                     payload={
+#                         "TestMetric2": "TestUNSwithNestedLists",
+#                         "timestamp": 1486144500000,
+#                         "dict_list": [{"a": "b"}, {"x": "y"}],
+#                     },
+#                     created=datetime.fromtimestamp(1486144500, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
+#                 ),
+#             ],
+#         ),
+#         (
+#             ["test/uns/ar2/#"],
+#             [
+#                 UNSNode(
+#                     namespace="test/uns/ar2/ln4",
+#                     node_name="ln4",
+#                     node_type="LINE",
+#                     payload={
+#                         "TestMetric2": "TestUNSwithNestedLists",
+#                         "timestamp": 1486144500000,
+#                         "dict_list": [{"a": "b"}, {"x": "y"}],
+#                     },
+#                     created=datetime.fromtimestamp(1486144500, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
+#                 ),
+#                 UNSNode(
+#                     namespace="test/uns/ar2/ln3",
+#                     node_name="ln3",
+#                     node_type="LINE",
+#                     payload={
+#                         "TestMetric2": "TestUNSwithLists",
+#                         "list": [1, 2, 3, 4, 5],
+#                         "timestamp": 1486144502144,
+#                         "dict_list": [{"a": "b"}, {"x": "y"}],
+#                     },
+#                     created=datetime.fromtimestamp(1486144502.144, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144502.144, UTC),
+#                 ),
+#             ],
+#         ),
+#         (
+#             ["test"],
+#             [
+#                 UNSNode(
+#                     namespace="test",
+#                     node_name="test",
+#                     node_type="ENTERPRISE",
+#                     payload={},
+#                     created=datetime.fromtimestamp(1486144500, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
+#                 )
+#             ],
+#         ),
+#     ],
+# )
+# async def test_get_uns_nodes_integration(setup_graphdb_data, topics: list[str], expected_result: list[UNSNode]):  # noqa: ARG001
+#     mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+#     graph_query = GraphQuery()
+#     try:
+#         result = await graph_query.get_uns_nodes(mqtt_topics=mqtt_topic_list)
+#     except Exception as ex:
+#         pytest.fail(f"Should not throw any exceptions. Got {ex}")
+#     assert result == expected_result  # Ensure the result matches the expected result
+
+
+# @pytest.mark.asyncio
+# @pytest.mark.integrationtest
+# @pytest.mark.parametrize(
+#     "property_keys, topics, exclude_topics,expected_result",
+#     [
+#         (
+#             ["dict_list"],
+#             None,
+#             None,
+#             [
+#                 UNSNode(
+#                     namespace="test/uns/ar2/ln4",
+#                     node_name="ln4",
+#                     node_type="LINE",
+#                     payload={
+#                         "TestMetric2": "TestUNSwithNestedLists",
+#                         "timestamp": 1486144500000,
+#                         "dict_list": [{"a": "b"}, {"x": "y"}],
+#                     },
+#                     created=datetime.fromtimestamp(1486144500, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
+#                 ),
+#             ],
+#         ),
+#         (
+#             ["node_name"],
+#             ["test/uns/ar1"],
+#             False,
+#             [
+#                 UNSNode(
+#                     namespace="test/uns/ar1",
+#                     node_name="ar1",
+#                     node_type="AREA",
+#                     payload={},
+#                     created=datetime.fromtimestamp(1486144502.122, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144502.122, UTC),
+#                 )
+#             ],
+#         ),
+#         (
+#             ["TestMetric2"],
+#             ["test/uns/ar1/#"],
+#             False,
+#             [
+#                 UNSNode(
+#                     namespace="test/uns/ar1/ln2",
+#                     node_name="ln2",
+#                     node_type="LINE",
+#                     payload={"TestMetric2": "TestUNS", "timestamp": 1486144502122},
+#                     created=datetime.fromtimestamp(1486144502.122, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144502.122, UTC),
+#                 )
+#             ],
+#         ),
+#         (
+#             ["TestMetric2"],
+#             ["test/uns/ar1/#"],
+#             True,
+#             [
+#                 UNSNode(
+#                     namespace="test/uns/ar2/ln4",
+#                     node_name="ln4",
+#                     node_type="LINE",
+#                     payload={
+#                         "TestMetric2": "TestUNSwithNestedLists",
+#                         "timestamp": 1486144500000,
+#                         "dict_list": [{"a": "b"}, {"x": "y"}],
+#                     },
+#                     created=datetime.fromtimestamp(1486144500, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
+#                 ),
+#                 UNSNode(
+#                     namespace="test/uns/ar2/ln3",
+#                     node_name="ln3",
+#                     node_type="LINE",
+#                     payload={
+#                         "TestMetric2": "TestUNSwithLists",
+#                         "list": [1, 2, 3, 4, 5],
+#                         "timestamp": 1486144502144,
+#                         "dict_list": [{"a": "b"}, {"x": "y"}],
+#                     },
+#                     created=datetime.fromtimestamp(1486144502.144, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144502.144, UTC),
+#                 ),
+#             ],
+#         ),
+#     ],
+# )
+# async def test_get_uns_nodes_by_property_integration(
+#     setup_graphdb_data,  # noqa: ARG001
+#     property_keys,
+#     topics: list[str],
+#     exclude_topics: bool,
+#     expected_result: dict,
+# ):
+#     mqtt_topic_list = None
+#     if topics is not None:
+#         mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+
+#     graph_query = GraphQuery()
+#     try:
+#         result = await graph_query.get_uns_nodes_by_property(
+#             property_keys=property_keys, topics=mqtt_topic_list, exclude_topics=exclude_topics
+#         )
+#     except Exception as ex:
+#         pytest.fail(f"Should not throw any exceptions. Got {ex}")
+#     assert result == expected_result  # Ensure the result matches the expected result
+
+
+# @pytest.mark.asyncio
+# @pytest.mark.integrationtest
+# @pytest.mark.parametrize(
+#     "metric_names, expected_result",
+#     [
+#         (["Inputs/A"], [SPBNode(topic="", payload={})]),
+#         ("Inputs/A", [SPBNode(topic="", payload={})]),
+#         (["Inputs/A", "Inputs/B"], [SPBNode(topic="", payload={})]),
+#         (["Output/F"], [SPBNode(topic="", payload={})]),
+#         ([], []),
+#         (None, []),
+#     ],
+# )
+# async def test_get_spb_nodes_integration(
+#     setup_graphdb_data,  # noqa: ARG001
+#     metric_names: list[str],
+#     expected_result: list[SPBNode],
+# ):
+#     graph_query = GraphQuery()
+#     try:
+#         result = await graph_query.get_spb_nodes_by_metric(metric_names=metric_names)
+#     except Exception as ex:
+#         pytest.fail(f"Should not throw any exceptions. Got {ex}")
+#     assert result == expected_result
