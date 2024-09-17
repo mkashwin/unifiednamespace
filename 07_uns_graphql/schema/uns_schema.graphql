@@ -77,7 +77,7 @@ type Query {
   """
   getUnsNodes(topics: [MQTTTopicInput!]!): [UNSNode!]!
 
-  "Get all UNSNodes published which have specific attribute name as 'property_keys'. \n Optionally Filter results with list of  topics. \nIf topics are provided then optional boolean value exclude_topics attribute can be set to true .\nto exclude the nodes which match the topics.\n"
+  "Get all UNSNodes published which have specific attribute name as 'propertyKeys'. \n Optionally Filter results with list of  topics. \nIf topics are provided then optional boolean value 'excludeTopics' attribute can be set to true .\nto exclude the nodes which match the topics.\n"
   getUnsNodesByProperty(propertyKeys: [String!]!, topics: [MQTTTopicInput!], excludeTopics: Boolean = false): [UNSNode!]!
 
   """Get all the SPBNode by the provided metric name"""

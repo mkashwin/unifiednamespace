@@ -247,7 +247,8 @@ class SPBMetric:
     def __init__(self, metric: Payload.Metric):
         self.name = metric.name
         self.alias = metric.alias if metric.HasField("alias") else None
-        self.timestamp = metric.timestamp
+        # Timestamp is normally in milliseconds and needs to be converted to microsecond
+        self.timestamp = datetime.fromtimestamp(metric.timestamp / 1000, UTC)
         self.datatype = SPBMetricDataTypes(metric.datatype).name
         self.is_historical = metric.is_historical if metric.HasField("is_historical") else None
         self.is_transient = metric.is_transient if metric.HasField("is_transient") else None

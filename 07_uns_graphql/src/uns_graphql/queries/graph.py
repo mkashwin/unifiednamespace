@@ -30,6 +30,7 @@ from uns_mqtt.mqtt_listener import UnsMQTTClient
 from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.graphql_config import GraphDBConfig
 from uns_graphql.input.mqtt import MQTTTopicInput
+from uns_graphql.type.basetype import JSONPayload
 from uns_graphql.type.isa95_node import UNSNode
 from uns_graphql.type.sparkplugb_node import SPBNode
 
@@ -256,18 +257,18 @@ class Query:
     @strawberry.field(description="Get consolidation of nodes for given array of topics. MQTT wildcards are supported")
     async def get_uns_nodes(
         self,
-        mqtt_topics: list[MQTTTopicInput],
+        topics: list[MQTTTopicInput],
     ) -> list[UNSNode]:
-        LOGGER.debug("Query for Nodes in UNS with Params :\n" f"topics={mqtt_topics}")
-        if type(mqtt_topics) is not list:
+        LOGGER.debug("Query for Nodes in UNS with Params :\n" f"topics={topics}")
+        if type(topics) is not list:
             # convert single topic to array for consistent handling. Done need to convert to regex
-            mqtt_topics = [mqtt_topics]
+            topics = [topics]
         # Initialize the GraphDB
         graph_db = GraphDB()
         results: list[Record] = await graph_db.execute_query(
-            query=self._SEARCH_BY_TOPIC_QUERY,
-            topics=[mqtt_topic.topic for mqtt_topic in mqtt_topics],
-            labels=self.UNS_LABEL_FILTER,
+            query=Query._SEARCH_BY_TOPIC_QUERY,
+            topics=[mqtt_topic.topic for mqtt_topic in topics],
+            labels=Query.UNS_LABEL_FILTER,
         )
         uns_node_list: list[UNSNode] = []
         for record in results:
@@ -277,17 +278,20 @@ class Query:
             relationships: list[Relationship] = record["relationships"]
 
             if node[MODIFIED_TIMESTAMP_KEY]:
+                # Timestamp is normally in milliseconds and needs to be converted to microsecond
                 modified_timestamp = datetime.fromtimestamp(node[MODIFIED_TIMESTAMP_KEY] / 1000, UTC)
             else:
                 # if the DB doesn't have any value, then created and modified timestamps are the same
+                # Timestamp is normally in milliseconds and needs to be converted to microsecond
                 modified_timestamp = datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC)
 
             uns_node: UNSNode = UNSNode(
                 node_name=node[NODE_NAME_KEY],
                 # As the node can have multiple labels extract only those which are of UNS Node types
-                node_type=self.get_node_type(list(node.labels), GraphDBConfig.uns_node_types),
+                node_type=Query.get_node_type(list(node.labels), GraphDBConfig.uns_node_types),
                 namespace=topic,
-                payload=self.get_nested_properties(node, child_nodes, relationships),
+                payload=JSONPayload(Query.get_nested_properties(node, child_nodes, relationships)),
+                # Timestamp is normally in milliseconds and needs to be converted to microsecond
                 created=datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC),
                 last_updated=modified_timestamp,
             )
@@ -295,9 +299,9 @@ class Query:
         return uns_node_list
 
     @strawberry.field(
-        description="Get all UNSNodes published which have specific attribute name as 'property_keys'. \n "
+        description="Get all UNSNodes published which have specific attribute name as 'propertyKeys'. \n "
         "Optionally Filter results with list of  topics. \n"
-        "If topics are provided then optional boolean value exclude_topics attribute can be set to true .\n"
+        "If topics are provided then optional boolean value 'excludeTopics' attribute can be set to true .\n"
         "to exclude the nodes which match the topics.\n"
     )
     async def get_uns_nodes_by_property(
@@ -345,17 +349,20 @@ class Query:
             relationships: list[Relationship] = record["relationships"]
 
             if node[MODIFIED_TIMESTAMP_KEY]:
+                # Timestamp is normally in milliseconds and needs to be converted to microsecond
                 modified_timestamp = datetime.fromtimestamp(node[MODIFIED_TIMESTAMP_KEY] / 1000, UTC)
             else:
                 # if the DB doesn't have any value, then created and modified timestamps are the same
+                # Timestamp is normally in milliseconds and needs to be converted to microsecond
                 modified_timestamp = datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC)
 
             uns_node: UNSNode = UNSNode(
                 node_name=node[NODE_NAME_KEY],
                 # As the node can have multiple labels extract only those which are of UNS Node types
-                node_type=self.get_node_type(list(node.labels), GraphDBConfig.uns_node_types),
+                node_type=Query.get_node_type(list(node.labels), GraphDBConfig.uns_node_types),
                 namespace=topic,
-                payload=self.get_nested_properties(node, child_nodes, relationships),
+                payload=JSONPayload(Query.get_nested_properties(node, child_nodes, relationships)),
+                # Timestamp is normally in milliseconds and needs to be converted to microsecond
                 created=datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC),
                 last_updated=modified_timestamp,
             )
@@ -371,7 +378,9 @@ class Query:
             metric_names = [metric_names]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_query(query=self._SEARCH_SPB_BY_METRIC_QUERY, metric_names=metric_names)
+        results: list[Record] = await graph_db.execute_query(
+            query=Query._SEARCH_SPB_BY_METRIC_QUERY, metric_names=metric_names
+        )
         spb_metric_nodes: list[SPBNode] = []
         for record in results:
             topic: str = record["fullName"]
@@ -379,11 +388,11 @@ class Query:
             child_nodes: list[Node] = record["nestedChildren"]
             relationships: list[Relationship] = record["relationships"]
 
-            spb_metric = SPBNode(
+            spb_node = SPBNode(
                 topic=topic,
-                payload=self.get_nested_properties(node, child_nodes, relationships),
+                payload=Query.get_nested_properties(node, child_nodes, relationships),
             )
-            spb_metric_nodes.append(spb_metric)
+            spb_metric_nodes.append(spb_node)
 
         return spb_metric_nodes
 

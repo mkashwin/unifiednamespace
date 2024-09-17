@@ -24,17 +24,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
-
-# import strawberry
-# import strawberry.tools
+import strawberry
 from neo4j import Record
 from neo4j.graph import Node, Relationship
 from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.graphql_config import GraphDBConfig
 from uns_graphql.input.mqtt import MQTTTopic, MQTTTopicInput
-from uns_graphql.queries.graph import NODE_RELATION_NAME, REL_ATTR_KEY, REL_ATTR_TYPE, REL_INDEX
+from uns_graphql.queries.graph import NODE_NAME_KEY, NODE_RELATION_NAME, REL_ATTR_KEY, REL_ATTR_TYPE, REL_INDEX
 from uns_graphql.queries.graph import Query as GraphQuery
 from uns_graphql.type.isa95_node import UNSNode
+from uns_graphql.type.sparkplugb_node import SPBNode
 
 main_node = MagicMock(spec=Node, autospec=True)
 main_node.element_id = "main_node_id"
@@ -46,17 +45,45 @@ main_node.items.return_value = {
     "TestMetric2": "Test_UNS_with_NestedLists",
     "timestamp": 1486144510000,
 }.items()
+main_node.__getitem__.side_effect = (
+    lambda key: "ln4"
+    if key == NODE_NAME_KEY
+    else 1486144500000
+    if key == "_created_timestamp" or key == "_modified_timestamp" or key == "timestamp"
+    else "Test_UNS_with_NestedLists"
+    if key == "TestMetric2"
+    else None
+)
+
 
 uns_child_1 = MagicMock(spec=Node, autospec=True)
 uns_child_1.element_id = "nested_child_1"
 uns_child_1.labels = frozenset({"NESTED_ATTRIBUTE", "TEST_MULTIPLE_LABELS"})
 uns_child_1.items.return_value = {"node_name": "dict_list_1", "_created_timestamp": 1486144500000, "x": "y"}.items()
+uns_child_1.__getitem__.side_effect = (
+    lambda key: "dict_list_1"
+    if key == NODE_NAME_KEY
+    else 1486144500000
+    if key == "_created_timestamp"
+    else "y"
+    if key == "x"
+    else None
+)
 
 
 uns_child_2 = MagicMock(spec=Node, autospec=True)
 uns_child_2.element_id = "nested_child_2"
 uns_child_2.labels = frozenset({"NESTED_ATTRIBUTE"})
 uns_child_2.items.return_value = {"node_name": "dict_list_0", "_created_timestamp": 1486144500000, "a": "b"}.items()
+uns_child_2.__getitem__.side_effect = (
+    lambda key: "dict_list_0"
+    if key == NODE_NAME_KEY
+    else 1486144500000
+    if key == "_created_timestamp"
+    else "b"
+    if key == "a"
+    else None
+)
 
 uns_child_3 = MagicMock(spec=Node, autospec=True)
 uns_child_3.element_id = "nested_child_3"
@@ -66,7 +93,15 @@ uns_child_3.items.return_value = {
     "_created_timestamp": 1486144500000,
     "nest 1": "nest val 1",
 }.items()
-
+uns_child_3.__getitem__.side_effect = (
+    lambda key: "nested"
+    if key == NODE_NAME_KEY
+    else 1486144500000
+    if key == "_created_timestamp"
+    else "nest val 1"
+    if key == "nest 1"
+    else None
+)
 
 uns_rel_1 = MagicMock(spec=Relationship, autospec=True)
 uns_rel_1.element_id = "relationship_1 main_node->nested_child_1"
@@ -91,7 +126,6 @@ uns_rel_3.type = NODE_RELATION_NAME
 uns_rel_3.__getitem__.side_effect = (
     lambda key: "nested_dict" if key == REL_ATTR_KEY else "dict" if key == REL_ATTR_TYPE else None
 )
-
 uns_result: list[Record] = [
     Record(
         {
@@ -118,6 +152,15 @@ sbp_node.items.return_value = {
     "seq": 0,
     "timestamp": 1671554024644,
 }.items()
+sbp_node.__getitem__.side_effect = (
+    lambda key: "eon1"
+    if key == NODE_NAME_KEY
+    else 1486144500000
+    if key == "_created_timestamp" or key == "timestamp"
+    else 0
+    if key == "seq"
+    else None
+)
 
 spb_child_1 = MagicMock(spec=Node, autospec=True)
 spb_child_1.element_id = "4:957eb9e7-0a52-4e69-975c-087ce8dcb4c4:800"
@@ -131,6 +174,21 @@ spb_child_1.items.return_value = {
     "value": False,
     "timestamp": 1486144502122,
 }.items()
+spb_child_1.__getitem__.side_effect = (
+    lambda key: "Outputs/F"
+    if key == NODE_NAME_KEY or key == "name"
+    else 11
+    if key == "datatype"
+    else False
+    if key == "value"
+    else 3
+    if key == "alias"
+    else 1671554024644
+    if key == "_created_timestamp"
+    else 1486144502122
+    if key == "timestamp"
+    else None
+)
 
 spb_child_2 = MagicMock(spec=Node, autospec=True)
 spb_child_2.element_id = "4:957eb9e7-0a52-4e69-975c-087ce8dcb4c4:900"
@@ -144,6 +202,21 @@ spb_child_2.items.return_value = {
     "value": False,
     "timestamp": 1486144502122,
 }.items()
+spb_child_2.__getitem__.side_effect = (
+    lambda key: "Inputs/B"
+    if key == NODE_NAME_KEY or key == "name"
+    else 11
+    if key == "datatype"
+    else False
+    if key == "value"
+    else 1
+    if key == "alias"
+    else 1671554024644
+    if key == "_created_timestamp"
+    else 1486144502122
+    if key == "timestamp"
+    else None
+)
 
 spb_child_3 = MagicMock(spec=Node, autospec=True)
 spb_child_3.element_id = "4:957eb9e7-0a52-4e69-975c-087ce8dcb4c4:950"
@@ -157,6 +230,21 @@ spb_child_3.items.return_value = {
     "value": False,
     "timestamp": 1486144502122,
 }.items()
+spb_child_3.__getitem__.side_effect = (
+    lambda key: "Inputs/A"
+    if key == NODE_NAME_KEY or key == "name"
+    else 11
+    if key == "datatype"
+    else False
+    if key == "value"
+    else 0
+    if key == "alias"
+    else 1671554024644
+    if key == "_created_timestamp"
+    else 1486144502122
+    if key == "timestamp"
+    else None
+)
 
 spb_rel_1 = MagicMock(spec=Relationship, autospec=True)
 spb_rel_1.element_id = "4:957eb9e7-0a52-4e69-975c-087ce8dcb4c4:703"
@@ -357,17 +445,8 @@ def test_get_nested_properties(
         assert is_error, f"Should not throw any exceptions. Got {ex}"
 
 
-@pytest.fixture(scope="session")
-def my_event_loop(request):  # noqa: ARG001
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
 @pytest_asyncio.fixture(scope="module")
-async def setup_graphdb_data(my_event_loop):  # noqa: ARG001
+async def setup_graphdb_data():
     """Fixture to set up data in the GraphDB from the test_data.cypher file."""
     # Read the Cypher script as read only
     with open(file=Path(__file__).resolve().parent / "test_data.cypher") as file:
@@ -421,6 +500,49 @@ async def setup_graphdb_data(my_event_loop):  # noqa: ARG001
                 ),
             ],
         ),
+        (
+            ["test/uns/ar2/#"],
+            [
+                UNSNode(
+                    namespace="test/uns/ar2/ln4",
+                    node_name="ln4",
+                    node_type="LINE",
+                    payload={
+                        "TestMetric2": "TestUNSwithNestedLists",
+                        "timestamp": 1486144500000,
+                        "dict_list": [{"a": "b"}, {"x": "y"}],
+                    },
+                    created=datetime.fromtimestamp(1486144500, UTC),
+                    last_updated=datetime.fromtimestamp(1486144500, UTC),
+                ),
+                UNSNode(
+                    namespace="test/uns/ar2/ln3",
+                    node_name="ln3",
+                    node_type="LINE",
+                    payload={
+                        "TestMetric2": "TestUNSwithLists",
+                        "list": [1, 2, 3, 4, 5],
+                        "timestamp": 1486144502144,
+                        "dict_list": [{"a": "b"}, {"x": "y"}],
+                    },
+                    created=datetime.fromtimestamp(1486144502.144, UTC),
+                    last_updated=datetime.fromtimestamp(1486144502.144, UTC),
+                ),
+            ],
+        ),
+        (
+            ["test"],
+            [
+                UNSNode(
+                    namespace="test",
+                    node_name="test",
+                    node_type="ENTERPRISE",
+                    payload={},
+                    created=datetime.fromtimestamp(1486144500, UTC),
+                    last_updated=datetime.fromtimestamp(1486144500, UTC),
+                )
+            ],
+        ),
     ],
 )
 async def test_get_uns_nodes_integration(setup_graphdb_data, topics: list[str], expected_result: list[UNSNode]):  # noqa: ARG001
@@ -434,10 +556,91 @@ async def test_get_uns_nodes_integration(setup_graphdb_data, topics: list[str], 
 
 
 @pytest.mark.asyncio
+@pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics,expected_result",
     [
-        (["prop1"], ["topic1/#"], False, []),
+        (
+            ["dict_list"],
+            None,
+            None,
+            [
+                UNSNode(
+                    namespace="test/uns/ar2/ln4",
+                    node_name="ln4",
+                    node_type="LINE",
+                    payload={
+                        "TestMetric2": "TestUNSwithNestedLists",
+                        "timestamp": 1486144500000,
+                        "dict_list": [{"a": "b"}, {"x": "y"}],
+                    },
+                    created=datetime.fromtimestamp(1486144500, UTC),
+                    last_updated=datetime.fromtimestamp(1486144500, UTC),
+                ),
+            ],
+        ),
+        (
+            ["node_name"],
+            ["test/uns/ar1"],
+            False,
+            [
+                UNSNode(
+                    namespace="test/uns/ar1",
+                    node_name="ar1",
+                    node_type="AREA",
+                    payload={},
+                    created=datetime.fromtimestamp(1486144502.122, UTC),
+                    last_updated=datetime.fromtimestamp(1486144502.122, UTC),
+                )
+            ],
+        ),
+        (
+            ["TestMetric2"],
+            ["test/uns/ar1/#"],
+            False,
+            [
+                UNSNode(
+                    namespace="test/uns/ar1/ln2",
+                    node_name="ln2",
+                    node_type="LINE",
+                    payload={"TestMetric2": "TestUNS", "timestamp": 1486144502122},
+                    created=datetime.fromtimestamp(1486144502.122, UTC),
+                    last_updated=datetime.fromtimestamp(1486144502.122, UTC),
+                )
+            ],
+        ),
+        (
+            ["TestMetric2"],
+            ["test/uns/ar1/#"],
+            True,
+            [
+                UNSNode(
+                    namespace="test/uns/ar2/ln4",
+                    node_name="ln4",
+                    node_type="LINE",
+                    payload={
+                        "TestMetric2": "TestUNSwithNestedLists",
+                        "timestamp": 1486144500000,
+                        "dict_list": [{"a": "b"}, {"x": "y"}],
+                    },
+                    created=datetime.fromtimestamp(1486144500, UTC),
+                    last_updated=datetime.fromtimestamp(1486144500, UTC),
+                ),
+                UNSNode(
+                    namespace="test/uns/ar2/ln3",
+                    node_name="ln3",
+                    node_type="LINE",
+                    payload={
+                        "TestMetric2": "TestUNSwithLists",
+                        "list": [1, 2, 3, 4, 5],
+                        "timestamp": 1486144502144,
+                        "dict_list": [{"a": "b"}, {"x": "y"}],
+                    },
+                    created=datetime.fromtimestamp(1486144502.144, UTC),
+                    last_updated=datetime.fromtimestamp(1486144502.144, UTC),
+                ),
+            ],
+        ),
     ],
 )
 async def test_get_uns_nodes_by_property_integration(
@@ -447,8 +650,188 @@ async def test_get_uns_nodes_by_property_integration(
     exclude_topics: bool,
     expected_result: dict,
 ):
-    pytest.fail()
+    mqtt_topic_list = None
+    if topics is not None:
+        mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+
+    graph_query = GraphQuery()
+    try:
+        result = await graph_query.get_uns_nodes_by_property(
+            property_keys=property_keys, topics=mqtt_topic_list, exclude_topics=exclude_topics
+        )
+    except Exception as ex:
+        pytest.fail(f"Should not throw any exceptions. Got {ex}")
+    assert result == expected_result  # Ensure the result matches the expected result
 
 
-async def test_strawberry_get_uns_nodes(topics: list[str]):
-    pytest.fail()
+@pytest.mark.asyncio
+@pytest.mark.integrationtest
+@pytest.mark.parametrize(
+    "metric_names, expected_result",
+    [
+        (["Inputs/A"], [SPBNode(topic="", payload={})]),
+        ("Inputs/A", [SPBNode(topic="", payload={})]),
+        (["Inputs/A", "Inputs/B"], [SPBNode(topic="", payload={})]),
+        (["Output/F"], [SPBNode(topic="", payload={})]),
+        ([], []),
+        (None, []),
+    ],
+)
+async def test_get_spb_nodes_integration(
+    setup_graphdb_data,  # noqa: ARG001
+    metric_names: list[str],
+    expected_result: list[SPBNode],
+):
+    graph_query = GraphQuery()
+    try:
+        result = await graph_query.get_spb_nodes_by_metric(metric_names=metric_names)
+    except Exception as ex:
+        pytest.fail(f"Should not throw any exceptions. Got {ex}")
+    assert result == expected_result
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "topics,has_result_errors",
+    [
+        (["topic1/#"], False),
+        (["topic1/+"], False),
+        (["topic1/testString"], False),
+        (["#"], False),
+        (["topic1/#", "topic3"], False),
+        (["topic1/subtopic1", "topic2/topic3"], False),
+        (["+"], False),
+    ],
+)
+async def test_strawberry_get_uns_nodes(topics: list[str], has_result_errors: bool):
+    query: str = """query TestQuery($mqtt_topics:[MQTTTopicInput!]!){
+                getUnsNodes(topics: $mqtt_topics){
+                    nodeName
+                    nodeType
+                    namespace
+                    payload {
+                        data
+                    }
+                    created
+                    lastUpdated
+                }
+            }
+    """
+    mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics]
+    schema = strawberry.Schema(query=GraphQuery)
+    with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_uns_graphdb):
+        result = await schema.execute(query=query, variable_values={"mqtt_topics": mqtt_topics})
+        if not has_result_errors:
+            assert not result.errors
+        else:
+            assert result.errors
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "property_keys, topics, exclude_topics, has_result_errors",
+    [
+        (["prop1"], ["topic1/#"], False, False),
+        ("prop1", ["topic1/#"], False, False),
+        (["prop1", "prop2"], ["topic1/+"], True, False),
+        (["124"], None, None, False),
+        (["prop1", "prop2"], ["topic1/subtopic"], True, False),
+        (["prop1", "prop2"], ["topic1/#", "topic3"], True, False),
+        (["prop1", "prop2"], ["+"], True, False),
+    ],
+)
+async def test_strawberry_get_uns_nodes_by_property(
+    property_keys,
+    topics: list[str],
+    exclude_topics: bool,
+    has_result_errors: bool,
+):
+    query: str = """query TestQuery($property_keys:[String!]!, $mqtt_topics:[MQTTTopicInput!], $exclude_topics:Boolean){
+                getUnsNodesByProperty(propertyKeys: $property_keys,
+                    topics: $mqtt_topics,
+                    excludeTopics: $exclude_topics
+
+                    ){
+                        nodeName
+                        nodeType
+                        namespace
+                        payload {
+                            data
+                        }
+                        created
+                        lastUpdated
+                }
+            }
+    """
+    mqtt_topics = None
+    if topics is not None:
+        mqtt_topics: list[dict[str, str]] = [{"topic": x} for x in topics]
+    schema = strawberry.Schema(query=GraphQuery)
+    with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_uns_graphdb):
+        result = await schema.execute(
+            query=query,
+            variable_values={"property_keys": property_keys, "mqtt_topics": mqtt_topics, "exclude_topics": exclude_topics},
+        )
+        if not has_result_errors:
+            assert not result.errors
+        else:
+            assert result.errors
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "metric_names,has_result_errors",
+    [
+        (["Inputs/A"], False),
+        ("Inputs/A", False),
+        (["Inputs/A", "Inputs/B"], False),
+        (["Output/F"], False),
+        ([], False),
+        (None, True),
+    ],
+)
+async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_result_errors: bool):
+    query: str = """query TestQuery($metric_names:[String!]!){
+        getSpbNodesByMetric(metricNames:$metric_names ){
+            topic
+            nodeTimestamp: timestamp
+            seq
+            uuid
+            body
+            metrics {
+                name
+                alias
+                datatype
+                isNull
+                metricTimestamp: timestamp
+                value {
+                    ... on SPBPrimitive { data: data }
+                    ... on BytesPayload { bytes_data: data}
+                    ... on SPBDataSet {
+                                numOfColumns
+                                columns
+                                types
+                                rows {
+                                    elements {
+                                        value { data}
+                                    }
+                                }
+                        }
+                }
+            }
+        }
+
+    }
+    """
+    schema = strawberry.Schema(query=GraphQuery)
+    with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_spb_graphdb):
+        result = await schema.execute(
+            query=query,
+            variable_values={
+                "metric_names": metric_names,
+            },
+        )
+        if not has_result_errors:
+            assert not result.errors
+        else:
+            assert result.errors
