@@ -319,9 +319,9 @@ def test_dataset_via_enum(value: sparkplug_b_pb2.Payload.DataSet, spb_obj):
         ("String", sparkplug_b_pb2.Payload.Metric()),  # negative test case
     ],
 )
-def test_template_via_enum(value: sparkplug_b_pb2.Template, spb_obj):
+def test_template_via_enum(value, spb_obj):
     """
-    Test case for value setting Template via the ENUMs
+    Test case for value setting Template via the ENUMs  sparkplug_b_pb2.Template
     """
     if isinstance(value, sparkplug_b_pb2.Payload.Template):
         SPBMetricDataTypes(sparkplug_b_pb2.Template).set_value_in_sparkplug(value=value, spb_object=spb_obj)
