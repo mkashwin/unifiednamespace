@@ -117,7 +117,7 @@ class GraphDBHandler:
         """
         try:
             if self.driver is None:
-                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth)
+                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth, database=self.database)
             self.driver.verify_connectivity()
         except (
             exceptions.DatabaseError,
