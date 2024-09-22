@@ -98,7 +98,7 @@ class Query:
 
         // Step 3: Collect the nodes along the path and construct the full name
         WITH resultNode,
-            COLLECT(pathNode) AS pathNodes
+            COLLECT(DISTINCT pathNode) AS pathNodes
         WITH resultNode,
             REDUCE(fullPath = '', n IN pathNodes |
                     CASE
@@ -188,7 +188,7 @@ class Query:
 
         // Step 5: Collect the nodes along the path and construct the full name
         WITH resultNode,
-            COLLECT(pathNode) AS pathNodes
+            COLLECT(DISTINCT pathNode) AS pathNodes
         WITH resultNode,
             REDUCE(fullPath = '', n IN pathNodes |
                     CASE
@@ -220,7 +220,7 @@ class Query:
     """
     _SEARCH_SPB_BY_METRIC_QUERY = f"""WITH $metric_names as metric_names
         UNWIND metric_names as metric_name
-        MATCH (resultNode:{{{SPB_LABEL_FILTER}}})-[rel:{NODE_RELATION_NAME}*{{attribute_name:"metrics"}}]->
+        MATCH (resultNode:{SPB_LABEL_FILTER})-[ rel:{NODE_RELATION_NAME}*{{attribute_name:"metrics"}} ]->
             (:{ GraphDBConfig.nested_attribute_node_type }{{node_name:metric_name}})
 
         // Step 2: Use APOC to find the path from each node to the root,
@@ -233,7 +233,7 @@ class Query:
 
         // Step 3: Collect the nodes along the path and construct the full name
         WITH resultNode,
-            COLLECT(pathNode) AS pathNodes
+            COLLECT(DISTINCT pathNode) AS pathNodes
         WITH resultNode,
             REDUCE(fullPath = '', n IN pathNodes |
                     CASE
@@ -265,7 +265,7 @@ class Query:
             topics = [topics]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_query(
+        results: list[Record] = await graph_db.execute_read_query(
             query=Query._SEARCH_BY_TOPIC_QUERY,
             topics=[mqtt_topic.topic for mqtt_topic in topics],
             labels=Query.UNS_LABEL_FILTER,
@@ -338,7 +338,7 @@ class Query:
         )
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_query(
+        results: list[Record] = await graph_db.execute_read_query(
             query=final_query, propertyNames=property_keys, topicFilter=topic_regex_list
         )
         uns_node_list: list[UNSNode] = []
@@ -378,7 +378,7 @@ class Query:
             metric_names = [metric_names]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_query(
+        results: list[Record] = await graph_db.execute_read_query(
             query=Query._SEARCH_SPB_BY_METRIC_QUERY, metric_names=metric_names
         )
         spb_metric_nodes: list[SPBNode] = []

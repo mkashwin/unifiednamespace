@@ -25,6 +25,7 @@ from typing import Literal, Optional
 
 from aiomqtt import ProtocolVersion, TLSParameters
 from dynaconf import Dynaconf
+import neo4j
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 
@@ -104,7 +105,7 @@ class GraphDBConfig:
 
     password: str = settings.get("graphdb.password")
     # if we want to use a database different from the default
-    database: str = settings.get("graphdb.database", None)
+    database: str = settings.get("graphdb.database", neo4j.DEFAULT_DATABASE)
 
     uns_node_types: tuple = tuple(settings.get("graphdb.uns_node_types", ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
 

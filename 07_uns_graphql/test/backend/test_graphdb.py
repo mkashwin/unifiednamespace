@@ -131,7 +131,7 @@ async def test_release_graphdb_driver(mock_graphdb_driver):
     [
         ("MATCH (n:NOMAD {name: 'IamNotFound'}) RETURN n", None, None, False),  # Valid query but empty result, no params
         ("MATCH (n) RETURN n", None, None, False),  # Valid query valid results
-        ("CREATE (n:NEW_NODE) RETURN n", None, None, False),  # Valid insert valid results
+        ("CREATE (n:NEW_NODE) RETURN n", None, None, True),  # Valid insert valid results
         (QUERY, None, QUERY_PARAMS, False),
     ],
 )
@@ -149,13 +149,13 @@ async def test_execute_query(
     try:
         # Pass args and kwargs only if they are not None
         if args is None and kwargs is None:
-            result = await graph_db.execute_query(query)
+            result = await graph_db.execute_read_query(query)
         elif args is None:
-            result = await graph_db.execute_query(query, **kwargs)
+            result = await graph_db.execute_read_query(query, **kwargs)
         elif kwargs is None:
-            result = await graph_db.execute_query(query, *args)
+            result = await graph_db.execute_read_query(query, *args)
         else:
-            result = await graph_db.execute_query(query, *args, **kwargs)
+            result = await graph_db.execute_read_query(query, *args, **kwargs)
         assert result is not None
     except Exception as ex:
         if is_error:

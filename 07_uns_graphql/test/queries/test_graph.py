@@ -32,6 +32,7 @@ from uns_graphql.graphql_config import GraphDBConfig
 from uns_graphql.input.mqtt import MQTTTopic, MQTTTopicInput
 from uns_graphql.queries.graph import NODE_NAME_KEY, NODE_RELATION_NAME, REL_ATTR_KEY, REL_ATTR_TYPE, REL_INDEX
 from uns_graphql.queries.graph import Query as GraphQuery
+from uns_graphql.type.basetype import JSONPayload
 from uns_graphql.type.isa95_node import UNSNode
 from uns_graphql.type.sparkplugb_node import SPBNode
 
@@ -310,12 +311,12 @@ spb_result_dict: dict = {
 # Mock the datahandler for UNS queries
 mocked_uns_graphdb = MagicMock(spec=GraphDB, autospec=True)
 # Mocking all the query functions to give the same result
-mocked_uns_graphdb.execute_query.return_value = uns_result
+mocked_uns_graphdb.execute_read_query.return_value = uns_result
 
 # Mock the datahandler for SPB queries
 mocked_spb_graphdb = MagicMock(spec=GraphDB, autospec=True)
 # Mocking all the query functions to give the same result
-mocked_spb_graphdb.execute_query.return_value = spb_result
+mocked_spb_graphdb.execute_read_query.return_value = spb_result
 
 
 @pytest.mark.asyncio
@@ -592,29 +593,38 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
             assert result.errors
 
 
+@pytest.fixture(scope="module")
+def my_event_loop(request):  # noqa: ARG001
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    loop.close()
+
+
 # @pytest_asyncio.fixture(scope="module")
-# async def setup_graphdb_data():
+# async def setup_graphdb_data(my_event_loop):  # noqa: ARG001
 #     """Fixture to set up data in the GraphDB from the test_data.cypher file."""
 #     # Read the Cypher script as read only
 #     with open(file=Path(__file__).resolve().parent / "test_data.cypher") as file:
 #         cypher_script = file.read()
 #     # Filter out lines that are not valid Cypher queries
 #     valid_queries = cypher_script.replace(":begin\n", "").replace(":commit\n", "").split(";")
-#     # Initialize the GraphDB
-#     graph_db = GraphDB()
-
 #     # Execute each query separately
-#     for query in valid_queries:
-#         if query.strip():  # Make sure the query is not empty
-#             await graph_db.execute_query(query=query)
+#     driver = await GraphDB.get_graphdb_driver()
+#     async with driver.session() as session:
+#         for query in valid_queries:
+#             if query.strip():  # Make sure the query is not empty
+#                 await session.run(query=query)
 
 #     # Yield control to the test
 #     yield
 
 #     # Teardown code i.e. clearing the database)
-#     await graph_db.execute_query("MATCH (n) DETACH DELETE n;")
+#     async with driver.session() as session:
+#         await session.run("MATCH (n) DETACH DELETE n;")
 #     # Release the driver
-#     await graph_db.release_graphdb_driver()
+#     await GraphDB.release_graphdb_driver()
 
 
 # @pytest.mark.asyncio
@@ -629,7 +639,7 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test",
 #                     node_name="test",
 #                     node_type="ENTERPRISE",
-#                     payload={},
+#                     payload=JSONPayload(data={}),
 #                     created=datetime.fromtimestamp(1486144500, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144500, UTC),
 #                 ),
@@ -637,11 +647,13 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test/uns/ar2/ln4",
 #                     node_name="ln4",
 #                     node_type="LINE",
-#                     payload={
-#                         "TestMetric2": "TestUNSwithNestedLists",
-#                         "timestamp": 1486144500000,
-#                         "dict_list": [{"a": "b"}, {"x": "y"}],
-#                     },
+#                     payload=JSONPayload(
+#                         data={
+#                             "TestMetric2": "TestUNSwithNestedLists",
+#                             "timestamp": 1486144500000,
+#                             "dict_list": [{"a": "b"}, {"x": "y"}],
+#                         }
+#                     ),
 #                     created=datetime.fromtimestamp(1486144500, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144500, UTC),
 #                 ),
@@ -654,11 +666,13 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test/uns/ar2/ln4",
 #                     node_name="ln4",
 #                     node_type="LINE",
-#                     payload={
-#                         "TestMetric2": "TestUNSwithNestedLists",
-#                         "timestamp": 1486144500000,
-#                         "dict_list": [{"a": "b"}, {"x": "y"}],
-#                     },
+#                     payload=JSONPayload(
+#                         data={
+#                             "TestMetric2": "TestUNSwithNestedLists",
+#                             "timestamp": 1486144500000,
+#                             "dict_list": [{"a": "b"}, {"x": "y"}],
+#                         }
+#                     ),
 #                     created=datetime.fromtimestamp(1486144500, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144500, UTC),
 #                 ),
@@ -666,12 +680,13 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test/uns/ar2/ln3",
 #                     node_name="ln3",
 #                     node_type="LINE",
-#                     payload={
-#                         "TestMetric2": "TestUNSwithLists",
-#                         "list": [1, 2, 3, 4, 5],
-#                         "timestamp": 1486144502144,
-#                         "dict_list": [{"a": "b"}, {"x": "y"}],
-#                     },
+#                     payload=JSONPayload(
+#                         data={
+#                             "TestMetric2": "TestUNSwithLists",
+#                             "list": [1, 2, 3, 4, 5],
+#                             "timestamp": 1486144502144,
+#                         }
+#                     ),
 #                     created=datetime.fromtimestamp(1486144502.144, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144502.144, UTC),
 #                 ),
@@ -684,7 +699,7 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test",
 #                     node_name="test",
 #                     node_type="ENTERPRISE",
-#                     payload={},
+#                     payload=JSONPayload(data={}),
 #                     created=datetime.fromtimestamp(1486144500, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144500, UTC),
 #                 )
@@ -692,11 +707,15 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #         ),
 #     ],
 # )
-# async def test_get_uns_nodes_integration(setup_graphdb_data, topics: list[str], expected_result: list[UNSNode]):  # noqa: ARG001
+# async def test_get_uns_nodes_integration(
+#     setup_graphdb_data,  # noqa: ARG001
+#     topics: list[str],
+#     expected_result: list[UNSNode],
+# ):
 #     mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
 #     graph_query = GraphQuery()
 #     try:
-#         result = await graph_query.get_uns_nodes(mqtt_topics=mqtt_topic_list)
+#         result = await graph_query.get_uns_nodes(topics=mqtt_topic_list)
 #     except Exception as ex:
 #         pytest.fail(f"Should not throw any exceptions. Got {ex}")
 #     assert result == expected_result  # Ensure the result matches the expected result
@@ -716,11 +735,13 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test/uns/ar2/ln4",
 #                     node_name="ln4",
 #                     node_type="LINE",
-#                     payload={
-#                         "TestMetric2": "TestUNSwithNestedLists",
-#                         "timestamp": 1486144500000,
-#                         "dict_list": [{"a": "b"}, {"x": "y"}],
-#                     },
+#                     payload=JSONPayload(
+#                         data={
+#                             "TestMetric2": "TestUNSwithNestedLists",
+#                             "timestamp": 1486144500000,
+#                             "dict_list": [{"a": "b"}, {"x": "y"}],
+#                         }
+#                     ),
 #                     created=datetime.fromtimestamp(1486144500, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144500, UTC),
 #                 ),
@@ -735,7 +756,7 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test/uns/ar1",
 #                     node_name="ar1",
 #                     node_type="AREA",
-#                     payload={},
+#                     payload=JSONPayload(data={}),
 #                     created=datetime.fromtimestamp(1486144502.122, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144502.122, UTC),
 #                 )
@@ -750,7 +771,7 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #                     namespace="test/uns/ar1/ln2",
 #                     node_name="ln2",
 #                     node_type="LINE",
-#                     payload={"TestMetric2": "TestUNS", "timestamp": 1486144502122},
+#                     payload=JSONPayload(data={"TestMetric2": "TestUNS", "timestamp": 1486144502122}),
 #                     created=datetime.fromtimestamp(1486144502.122, UTC),
 #                     last_updated=datetime.fromtimestamp(1486144502.122, UTC),
 #                 )
@@ -758,34 +779,22 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #         ),
 #         (
 #             ["TestMetric2"],
-#             ["test/uns/ar1/#"],
+#             ["test/uns/ar2/#"],
 #             True,
 #             [
 #                 UNSNode(
-#                     namespace="test/uns/ar2/ln4",
-#                     node_name="ln4",
+#                     namespace="test/uns/ar1/ln2",
+#                     node_name="ln2",
 #                     node_type="LINE",
-#                     payload={
-#                         "TestMetric2": "TestUNSwithNestedLists",
-#                         "timestamp": 1486144500000,
-#                         "dict_list": [{"a": "b"}, {"x": "y"}],
-#                     },
-#                     created=datetime.fromtimestamp(1486144500, UTC),
-#                     last_updated=datetime.fromtimestamp(1486144500, UTC),
-#                 ),
-#                 UNSNode(
-#                     namespace="test/uns/ar2/ln3",
-#                     node_name="ln3",
-#                     node_type="LINE",
-#                     payload={
-#                         "TestMetric2": "TestUNSwithLists",
-#                         "list": [1, 2, 3, 4, 5],
-#                         "timestamp": 1486144502144,
-#                         "dict_list": [{"a": "b"}, {"x": "y"}],
-#                     },
-#                     created=datetime.fromtimestamp(1486144502.144, UTC),
-#                     last_updated=datetime.fromtimestamp(1486144502.144, UTC),
-#                 ),
+#                     payload=JSONPayload(
+#                         data={
+#                             "TestMetric2": "TestUNS",
+#                             "timestamp": 1486144502122,
+#                         }
+#                     ),
+#                     created=datetime.fromtimestamp(1486144502.122, UTC),
+#                     last_updated=datetime.fromtimestamp(1486144502.122, UTC),
+#                 )
 #             ],
 #         ),
 #     ],
@@ -811,15 +820,53 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
 #     assert result == expected_result  # Ensure the result matches the expected result
 
 
+# eon1_payload = {
+#     "timestamp": 1671554024644,
+#     "metrics": [
+#         {"name": "Inputs/A", "alias": 0, "timestamp": 1486144502122, "datatype": 11, "value": False},
+#         {"name": "Inputs/B", "alias": 1, "timestamp": 1486144502122, "datatype": 11, "value": False},
+#         {"name": "Outputs/E", "alias": 2, "timestamp": 1486144502122, "datatype": 11, "value": False},
+#         {"name": "Outputs/F", "alias": 3, "timestamp": 1486144502122, "datatype": 11, "value": False},
+#         {"name": "Properties/Hardware Make", "alias": 4, "timestamp": 1486144502122, "datatype": 12, "value": "Sony"},
+#         {"name": "Properties/Weight", "alias": 5, "timestamp": 1486144502122, "datatype": 3, "value": 200},
+#     ],
+#     "seq": 0,
+# }
+
+
 # @pytest.mark.asyncio
 # @pytest.mark.integrationtest
 # @pytest.mark.parametrize(
 #     "metric_names, expected_result",
 #     [
-#         (["Inputs/A"], [SPBNode(topic="", payload={})]),
-#         ("Inputs/A", [SPBNode(topic="", payload={})]),
-#         (["Inputs/A", "Inputs/B"], [SPBNode(topic="", payload={})]),
-#         (["Output/F"], [SPBNode(topic="", payload={})]),
+#         (
+#             ["Inputs/A"],
+#             [
+#                 SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
+#                 SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+#             ],
+#         ),
+#         (
+#             "Inputs/A",
+#             [
+#                 SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
+#                 SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+#             ],
+#         ),
+#         (
+#             ["Inputs/A", "Inputs/B"],
+#             [
+#                 SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
+#                 SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+#             ],
+#         ),
+#         (
+#             ["Outputs/F"],
+#             [
+#                 SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
+#                 SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+#             ],
+#         ),
 #         ([], []),
 #         (None, []),
 #     ],

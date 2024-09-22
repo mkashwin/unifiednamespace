@@ -21,7 +21,7 @@ Encapsulates integration with the Graph database database
 import asyncio
 import logging
 
-from neo4j import AsyncDriver, AsyncGraphDatabase, AsyncResult, Record
+from neo4j import AsyncDriver, AsyncGraphDatabase, Record
 
 from uns_graphql.graphql_config import GraphDBConfig
 
@@ -58,7 +58,6 @@ class GraphDB:
             AsyncDriver: The Neo4j async driver.
         """
         LOGGER.debug("GraphDB driver requested")
-        current_loop = asyncio.get_event_loop()
         if cls._graphdb_driver is None:
             LOGGER.info("Creating a new GraphDB driver")
             cls._graphdb_driver = AsyncGraphDatabase.driver(
@@ -99,7 +98,7 @@ class GraphDB:
         else:
             LOGGER.warning("Trying to close an already closed driver")
 
-    async def execute_query(self, query: str, *args, **kwargs) -> list[Record]:
+    async def execute_read_query(self, query: str, *args, **kwargs) -> list[Record]:
         """
         Executes a (CQL) query with the provided positional and keyword parameters.
 
@@ -114,10 +113,16 @@ class GraphDB:
 
         LOGGER.debug("Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
         driver = await self.get_graphdb_driver()
+
+        async def read(read_tx, query: str, *args, **kwargs) -> list[Record]:
+            result = await read_tx.run(query, *args, **kwargs)
+            records: list[Record] = [record async for record in result]
+            return records
+
         async with driver.session() as session:
             try:
-                result: AsyncResult = await session.run(query, *args, **kwargs)
-                records: list[Record] = [record async for record in result]
+                records = await session.execute_read(read, query=query, *args, **kwargs)  # noqa: B026
+
                 LOGGER.debug("Query executed successfully, retrieved records: %s", records)
                 return records
             except Exception as ex:
