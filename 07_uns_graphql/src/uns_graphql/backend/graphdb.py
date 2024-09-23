@@ -22,6 +22,7 @@ import asyncio
 import logging
 
 from neo4j import AsyncDriver, AsyncGraphDatabase, Record
+from neo4j.exceptions import Neo4jError
 
 from uns_graphql.graphql_config import GraphDBConfig
 
@@ -58,15 +59,18 @@ class GraphDB:
             AsyncDriver: The Neo4j async driver.
         """
         LOGGER.debug("GraphDB driver requested")
-        if cls._graphdb_driver is None:
-            LOGGER.info("Creating a new GraphDB driver")
-            cls._graphdb_driver = AsyncGraphDatabase.driver(
-                uri=GraphDBConfig.conn_url, auth=(GraphDBConfig.user, GraphDBConfig.password), database=GraphDBConfig.database
-            )
         try:
+            if cls._graphdb_driver is None:
+                LOGGER.info("Creating a new GraphDB driver")
+                cls._graphdb_driver = AsyncGraphDatabase.driver(
+                    uri=GraphDBConfig.conn_url,
+                    auth=(GraphDBConfig.user, GraphDBConfig.password),
+                    database=GraphDBConfig.database,
+                )
+
             await cls._graphdb_driver.verify_connectivity()
             LOGGER.debug("GraphDB driver connectivity verified")
-        except Exception as ex:
+        except Neo4jError as ex:
             LOGGER.error("Failed to verify GraphDB driver connectivity: %s", str(ex), stack_info=True, exc_info=True)
             # In case of connectivity failure, close the existing driver and create a new one
             await cls.release_graphdb_driver()
@@ -91,7 +95,7 @@ class GraphDB:
             try:
                 await cls._graphdb_driver.close()
                 LOGGER.info("GraphDB driver closed successfully")
-            except Exception as ex:
+            except Neo4jError as ex:
                 LOGGER.error("Error closing the GraphDB driver: %s", str(ex), stack_info=True, exc_info=True)
             finally:
                 cls._graphdb_driver = None
