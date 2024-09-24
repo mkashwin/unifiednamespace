@@ -95,7 +95,7 @@ async def prepare_database(historian_pool):  # noqa: ARG001
             await historian.execute_prepared(delete_sql_cmd, *list(row))
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
@@ -138,7 +138,7 @@ async def test_get_historic_events(
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_historian")
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.parametrize(
     "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
     [

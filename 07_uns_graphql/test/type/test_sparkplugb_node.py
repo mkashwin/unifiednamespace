@@ -463,7 +463,7 @@ def test_spb_node(topic: str, payload: Payload | bytes):
         compare_metrics(spb_node_metric, payload_metric)
 
 
-def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):  # noqa: C901
+def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
     """
     Utility method to compare metrics and handle float in value, template , dataset
     """

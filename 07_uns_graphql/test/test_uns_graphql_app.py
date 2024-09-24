@@ -38,7 +38,7 @@ def test_uns_graphql_app_attributes():
     assert UNSGraphql.app is not None
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 async def test_uns_graphql_app_test_cleanup_on_shutdown():
     """
     Test to validate that the app calls the cleanup method on the query and subscription classes
@@ -70,7 +70,7 @@ async def test_uns_graphql_app_test_cleanup_on_shutdown():
     mock_kafka_cleanup.assert_called_once()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 async def test_uns_graphql_app_db_pool_cleanup():
     """
     Test to validate that eventually the HistorianDBPool#close_pool() and GraphDB#release_graphdb_driver() were called

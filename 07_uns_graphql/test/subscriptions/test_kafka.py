@@ -53,7 +53,7 @@ ONE_TOPIC_ONE_MSG = (
 )
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def create_topics(message_vals):
     # Create Kafka admins
     admin = AdminClient(
@@ -86,7 +86,7 @@ async def create_topics(message_vals):
             }
         )
 
-        def delivery_report(err, msg):  # noqa: ARG001
+        def delivery_report(err, msg):
             pass
 
         # Produce messages
@@ -104,7 +104,7 @@ async def create_topics(message_vals):
     await delete_existing_topics(admin, topics)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "topics, message_vals",
     [
@@ -160,7 +160,7 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.integrationtest()
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI

@@ -44,7 +44,7 @@ def mock_asyncpg():
     loop.close()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 async def test_shared_pool(mock_asyncpg):
     # Test that shared pool is common across invocations
     create_pool_mock = mock_asyncpg
@@ -56,7 +56,7 @@ async def test_shared_pool(mock_asyncpg):
     create_pool_mock.assert_called_once()
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI

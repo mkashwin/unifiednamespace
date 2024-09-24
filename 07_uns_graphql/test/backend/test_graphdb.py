@@ -76,7 +76,7 @@ QUERY = """
 QUERY_PARAMS = {"propertyNames": ["seq", "dict_list"], "topicFilter": ["(.)*"]}
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def mock_graphdb_driver():
     """Fixture to mock the Neo4j async driver."""
     mock_driver = AsyncMock()
@@ -86,7 +86,7 @@ async def mock_graphdb_driver():
 
 @patch("uns_graphql.backend.graphdb.AsyncGraphDatabase.driver")
 @patch("uns_graphql.backend.graphdb.GraphDBConfig")
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 async def test_get_graphdb_driver(mock_config, mock_driver_class, mock_graphdb_driver):
     """
     Test with mock object to validate singularity of the neo4j driver
@@ -115,7 +115,7 @@ async def test_get_graphdb_driver(mock_config, mock_driver_class, mock_graphdb_d
 
 
 @patch("uns_graphql.backend.graphdb.GraphDB._graphdb_driver", new_callable=AsyncMock)
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 async def test_release_graphdb_driver(mock_graphdb_driver):
     """
     Validates that the driver was closed
@@ -124,7 +124,7 @@ async def test_release_graphdb_driver(mock_graphdb_driver):
     mock_graphdb_driver.close.assert_called_once()
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "query, args, kwargs, is_error",

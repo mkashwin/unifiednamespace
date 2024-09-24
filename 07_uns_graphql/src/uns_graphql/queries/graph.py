@@ -414,7 +414,7 @@ class Query:
                 return label
 
     @classmethod
-    def get_nested_properties(cls, parent: Node, nested_children: list[Node], relationships: list[Relationship]) -> dict:  # noqa: C901
+    def get_nested_properties(cls, parent: Node, nested_children: list[Node], relationships: list[Relationship]) -> dict:
         """
         Retrieves nested properties for a given parent node by merging the nested chid
 

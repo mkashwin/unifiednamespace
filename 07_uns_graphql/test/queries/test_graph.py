@@ -319,7 +319,7 @@ mocked_spb_graphdb = MagicMock(spec=GraphDB, autospec=True)
 mocked_spb_graphdb.execute_read_query.return_value = spb_result
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "topics,has_result_errors",
     [
@@ -346,7 +346,7 @@ async def test_get_uns_nodes(
         assert result is not None  # test was successful
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics, has_result_errors",
     [
@@ -379,7 +379,7 @@ async def test_get_uns_nodes_by_property(
         assert result is not None  # test was successful
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "metric_names",
     [(["Inputs/A"]), ("Inputs/A"), (["Inputs/A", "Inputs/B"]), (["Output/F"]), ([]), (None)],
@@ -446,7 +446,7 @@ def test_get_nested_properties(
         assert is_error, f"Should not throw any exceptions. Got {ex}"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "topics,has_result_errors",
     [
@@ -483,7 +483,7 @@ async def test_strawberry_get_uns_nodes(topics: list[str], has_result_errors: bo
             assert result.errors
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics, has_result_errors",
     [
@@ -534,7 +534,7 @@ async def test_strawberry_get_uns_nodes_by_property(
             assert result.errors
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "metric_names,has_result_errors",
     [

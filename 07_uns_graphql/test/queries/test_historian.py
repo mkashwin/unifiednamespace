@@ -65,7 +65,7 @@ mocked_db_pool.execute_prepared.return_value = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "topics, from_date, to_date, has_result_errors",
     [
@@ -93,7 +93,7 @@ async def test_get_historic_events_in_time_range(
         assert result is not None  # test was successful
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "topics, from_date, to_date, has_result_errors",
     [
@@ -140,7 +140,7 @@ async def test_strawberry_get_historic_events_in_time_range(
             assert not result.errors
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "properties, binary_operator, topics, from_date, to_date, has_result_errors",
     [
@@ -200,7 +200,7 @@ async def test_strawberry_get_historic_events_by_property(
             assert not result.errors
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "publishers, topics, from_date, to_date, has_result_errors",
     [

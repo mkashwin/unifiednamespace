@@ -40,7 +40,7 @@ sample_spb_payload: bytes = (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "topics, expected_messages",
     [
@@ -240,7 +240,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
         pytest.fail(f"Error cleaning up messages after the test: {ex!s}")
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "topics, expected_messages",
