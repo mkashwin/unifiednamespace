@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_graphql"
-version = "0.8.50"
+version = "0.9.0"
 description = "Provide GraphQL capabilities to the UNS across all data sources -MQTT, KAFKA, Historian & GraphDB"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
