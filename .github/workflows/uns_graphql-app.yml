@@ -31,13 +31,13 @@ on:
       - "07_uns_graphql/Dockerfile"
       - ".github/workflows/uns_graphql-app.yml"
       - ".github/include/**"
-      
+
   workflow_dispatch:
     inputs:
       pytest_add_opts:
         description: "additional pytest options"
         type: string
-        
+
 permissions:
   contents: read
 
@@ -152,7 +152,7 @@ jobs:
           module: 07_uns_graphql
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
-          pytest_flags: ${{ inputs.pytest_add_opts }}
+          pytest_flags: ${{ inputs.pytest_add_opts }} -v
 
       - name: Create graphQL schema
         env:
