@@ -25,6 +25,7 @@
         "DCMD",
         "DDATA",
         "DDEATH",
+        "DOCKERHUB",
         "dynaconf",
         "EMQX",
         "fastapi",
