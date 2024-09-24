@@ -23,9 +23,9 @@ import ssl
 from pathlib import Path
 from typing import Literal, Optional
 
+import neo4j
 from aiomqtt import ProtocolVersion, TLSParameters
 from dynaconf import Dynaconf
-import neo4j
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 
