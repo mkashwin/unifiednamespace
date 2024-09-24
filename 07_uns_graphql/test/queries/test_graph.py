@@ -619,7 +619,7 @@ async def setup_graphdb_data():
     await GraphDB.release_graphdb_driver()
 
 
-@pytest.mark.asyncio(scope="module", loop_scope="module")
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
@@ -716,7 +716,7 @@ async def test_get_uns_nodes_integration(
     assert result == expected_result  # Ensure the result matches the expected result
 
 
-@pytest.mark.asyncio(scope="module", loop_scope="module")
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
@@ -832,7 +832,7 @@ eon1_payload = {
 }
 
 
-@pytest.mark.asyncio(scope="module", loop_scope="module")
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
