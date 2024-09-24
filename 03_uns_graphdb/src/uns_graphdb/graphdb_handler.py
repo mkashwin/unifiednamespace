@@ -103,8 +103,8 @@ class GraphDBHandler:
         ----------
         retry: int
             Optional parameters to retry making a connection in case of errors.
-            The max number of retry is `GraphDBHandler.MAX_RETRIES`
-            The time between attempts is  `GraphDBHandler.SLEEP_BTW_ATTEMPT`
+            The max number of retry is `GraphDBHandler.max_retry`
+            The time between attempts is  `GraphDBHandler.sleep_btw_attempts`
         Returns:
             neo4j.Driver: The Neo4j driver object.
 
@@ -117,7 +117,7 @@ class GraphDBHandler:
         """
         try:
             if self.driver is None:
-                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth)
+                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth, database=self.database)
             self.driver.verify_connectivity()
         except (
             exceptions.DatabaseError,

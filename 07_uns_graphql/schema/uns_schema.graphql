@@ -77,15 +77,102 @@ type Query {
   """
   getUnsNodes(topics: [MQTTTopicInput!]!): [UNSNode!]!
 
-  """
-  Get all UNSNodes published which have specific attributes.Option binary_operator input allows chaining the list of property_keys. If NULL, property_keys will be ORed- OR: Either of the property_keys must exist in the same node. If only one property_keys provided will be ignored- AND:  All property_keys must exist in same node. If only one property_keys provided will be ignored- NOT: None of the provided property_keys should exist in the same nodeOther criteria - topics will always be ANDed to the query filter
-  """
-  getUnsNodesByProperty(propertyKeys: [String!]!, binaryOperator: BinaryOperator, topics: [MQTTTopicInput!]): [UNSNode!]!
+  "Get all UNSNodes published which have specific attribute name as 'propertyKeys'. \n Optionally Filter results with list of  topics. \nIf topics are provided then optional boolean value 'excludeTopics' attribute can be set to true .\nto exclude the nodes which match the topics.\n"
+  getUnsNodesByProperty(propertyKeys: [String!]!, topics: [MQTTTopicInput!], excludeTopics: Boolean = false): [UNSNode!]!
 
-  """
-  Get consolidation of sparkplugB nodes. MQTT wildcards are supportedEnsure that the topics are all in the SparkplugB namespace i.e. starts with 'spBv1.0/' Format of an SpB topic is spBv1.0/ <group_id> / <message_type> / <edge_node_id> / [<device_id>]
-  """
-  getSpbNodes(topics: [MQTTTopicInput!]!): [UNSNode!]!
+  """Get all the SPBNode by the provided metric name"""
+  getSpbNodesByMetric(metricNames: [String!]!): [SPBNode!]!
+}
+
+type SPBDataSet {
+  numOfColumns: Union!
+  columns: [String!]!
+  types: [String!]!
+  rows: [SPBDataSetRow!]!
+}
+
+type SPBDataSetRow {
+  elements: [SPBDataSetValue!]!
+}
+
+type SPBDataSetValue {
+  value: SPBPrimitive!
+}
+
+type SPBMetadata {
+  isMultiPart: Boolean
+  contentType: String
+  size: Union
+  seq: Union
+  fileName: String
+  fileType: String
+  md5: String
+  description: String
+}
+
+type SPBMetric {
+  name: String!
+  alias: Union
+  timestamp: DateTime!
+  datatype: String!
+  isHistorical: Boolean
+  isTransient: Boolean
+  isNull: Boolean
+  metadata: SPBMetadata
+  properties: SPBPropertySet
+  value: SPBPrimitiveBytesPayloadSPBDataSetSPBTemplate!
+}
+
+type SPBNode {
+  topic: String!
+  timestamp: DateTime!
+  metrics: [SPBMetric!]!
+  seq: Union!
+  uuid: ID
+  body: Base64
+}
+
+"""
+Wrapper for primitive types in Sparkplug.: int, float, str, bool, list
+                 Needed because GraphQL does not support str for unions.
+                 Data is converted to its String representation for convenience.
+                 Use the datatype to convert to actual type if needed 
+"""
+type SPBPrimitive {
+  data: String!
+}
+
+union SPBPrimitiveBytesPayloadSPBDataSetSPBTemplate = SPBPrimitive | BytesPayload | SPBDataSet | SPBTemplate
+
+union SPBPrimitiveSPBPropertySetSPBPropertySetList = SPBPrimitive | SPBPropertySet | SPBPropertySetList
+
+type SPBPropertySet {
+  keys: [String!]!
+  values: [SPBPropertyValue!]!
+}
+
+type SPBPropertySetList {
+  propertysets: [SPBPropertySet!]!
+}
+
+type SPBPropertyValue {
+  isNull: Boolean
+  datatype: String!
+  value: SPBPrimitiveSPBPropertySetSPBPropertySetList!
+}
+
+type SPBTemplate {
+  version: String
+  metrics: [SPBMetric!]!
+  parameters: [SPBTemplateParameter!]
+  templateRef: String
+  isDefinition: Boolean
+}
+
+type SPBTemplateParameter {
+  name: String!
+  datatype: String!
+  value: SPBPrimitive!
 }
 
 type StreamingMessage {
@@ -113,3 +200,6 @@ type UNSNode {
   created: DateTime!
   lastUpdated: DateTime!
 }
+
+"""Int 64 field since GraphQL doesn't support int64, only int 32"""
+scalar Union

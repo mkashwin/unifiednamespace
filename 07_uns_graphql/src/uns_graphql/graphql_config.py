@@ -23,6 +23,7 @@ import ssl
 from pathlib import Path
 from typing import Literal, Optional
 
+import neo4j
 from aiomqtt import ProtocolVersion, TLSParameters
 from dynaconf import Dynaconf
 from paho.mqtt.packettypes import PacketTypes
@@ -104,7 +105,7 @@ class GraphDBConfig:
 
     password: str = settings.get("graphdb.password")
     # if we want to use a database different from the default
-    database: str = settings.get("graphdb.database", None)
+    database: str = settings.get("graphdb.database", neo4j.DEFAULT_DATABASE)
 
     uns_node_types: tuple = tuple(settings.get("graphdb.uns_node_types", ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
 

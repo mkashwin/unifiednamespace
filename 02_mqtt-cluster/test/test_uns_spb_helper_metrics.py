@@ -318,13 +318,12 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
     sparkplug_message = SpBMessageGenerator()
     payload = sparkplug_message.get_device_data_payload(timestamp=timestamp)
     alias = 0
+    # creating the payload from the dict object provided as parameter
     for metric in metrics:
         name: str = metric["name"]
         datatype: int = metric["datatype"]
         value = metric.get("value", None)
-        metric_timestamp = metric.get("timestamp", None)
-        if metric_timestamp is None:
-            metric_timestamp = timestamp
+        metric_timestamp = metric.get("timestamp", timestamp)
         sparkplug_message.add_metric(
             payload_or_template=payload, name=name, alias=alias, datatype=datatype, value=value, timestamp=metric_timestamp
         )
@@ -594,9 +593,7 @@ def test_add_historical_metric_and_ddata_msg(metrics: list[dict]):
         name: str = metric["name"]
         datatype: int = metric["datatype"]
         value = metric.get("value", None)
-        metric_timestamp = metric.get("timestamp", None)
-        if metric_timestamp is None:
-            metric_timestamp = timestamp
+        metric_timestamp = metric.get("timestamp", timestamp)
         sparkplug_message.add_historical_metric(
             payload=payload, name=name, datatype=datatype, value=value, timestamp=metric_timestamp
         )

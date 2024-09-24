@@ -359,9 +359,9 @@ class UnsMQTTClient(mqtt_client.Client):
                 regex_exp += "[^/]*/"
             elif curr_value == "#":
                 if last_value is None:  # Handle if subscribed to #
-                    regex_exp += "(.)*/"
+                    regex_exp += "(.*)*/"
                 else:  # need to wrap the last / in optional too i.e. 'a/#' should map to just 'a' too
-                    regex_exp = regex_exp[:-1] + "(/.)*"
+                    regex_exp = regex_exp[:-1] + "(/.*)*"
             else:
                 regex_exp += curr_value + "/"
             last_value = curr_value

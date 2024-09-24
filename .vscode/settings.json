@@ -19,6 +19,7 @@
         "createdb",
         "createrole",
         "createuser",
+        "cypher",
         "DBIRTH",
         "dbuser",
         "DCMD",

@@ -166,6 +166,9 @@ def test_negative_get_metric_name(cache_key, metric):
 
 
 @pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
+# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
+@pytest.mark.xdist_group(name="spb_publisher")
 @pytest.mark.parametrize(
     "metric,name, alias",
     [
