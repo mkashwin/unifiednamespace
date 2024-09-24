@@ -2,8 +2,7 @@
 # This script is to be executed on creation of the dev container in order to create a working development enviornment
 WORKSPACE=/workspaces/unifiednamespace
 # 1. setup the python enviornment
-pip3 install --upgrade poetry 
-poetry run pip install --upgrade pip poetry 
+pip3 install --upgrade poetry pip
 poetry install
 
 # 2. create minimalistic secret files for all the modules. 
@@ -147,7 +146,7 @@ fi
 
 # 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
 # always created
-INPUT_FILES=$(find . -type f -not -path "$WORKSPACE/07_uns_graphql/*" -name ".secrets.yaml")
+INPUT_FILES=$(find $WORKSPACE -type f -not -path "$WORKSPACE/07_uns_graphql/*" -name ".secrets.yaml")
 
 # Define the output file
 OUTPUT_FILE=$WORKSPACE/07_uns_graphql/conf/.secrets.yaml

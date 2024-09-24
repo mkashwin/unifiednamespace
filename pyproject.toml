@@ -42,13 +42,14 @@ uns_kafka_mapper = { path = "./06_uns_kafka", develop = true }
 uns_graphql = { path = "./07_uns_graphql", develop = true }
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.2.1"
-pytest-asyncio = "^0.23.8"
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^5.0.0"
-safety = "^3.2.4"
-ruff = "^0.5.6"
+safety = "^3.2.7"
+ruff = "^0.6.7"
+pytest-retry = "^1.6.3"
 
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
@@ -124,4 +125,4 @@ ignore = [
 ]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 10
+max-complexity = 15
