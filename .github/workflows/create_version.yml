@@ -51,10 +51,10 @@ jobs:
           for folder in */; do
             if [ -f "${folder}poetry.lock" ]; then
                 echo "Found pyproject.toml in folder: ${folder}"
-                (cd "${folder}" && poetry update)
+                (cd "${folder}" && poetry install)
             fi
           done
-          poetry update
+          poetry install
 
       - id: commit_new_version
         name: Commit and push modified files
@@ -116,7 +116,7 @@ jobs:
               module: 07_uns_graphql,
               image: uns/graphql,
               container_description: "Provided GrqphQL query capabilites to the UNS system",
-            }            
+            }
 
     env:
       SHA_TAG: ${{ needs.update-version.outputs.sha_tag }}
@@ -133,7 +133,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
-      
+
       - name: Compile and Test Dockerfile
         uses: ./.github/include/test_docker_builds/
         with:
