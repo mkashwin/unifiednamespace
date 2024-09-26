@@ -165,14 +165,11 @@ def test_negative_get_metric_name(cache_key, metric):
     assert spb_to_uns_pub.get_metric_name(cache_key, metric) is None, f"Metric name should be none for metric:{metric}"
 
 
-@pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="spb_publisher")
 @pytest.mark.parametrize(
-    "metric,name, alias",
+    "cache_key, metric,name, alias",
     [
         (
+            "group1_/edge_node_1/None",
             SimpleNamespace(
                 **{
                     Spb2UNSPublisher.SPB_NAME: "metric_name2",
@@ -182,7 +179,19 @@ def test_negative_get_metric_name(cache_key, metric):
             ),
             "metric_name2",
             1,
-        )
+        ),
+        (
+            "group1_/edge_node_1/MyDevice",
+            SimpleNamespace(
+                **{
+                    Spb2UNSPublisher.SPB_NAME: "metric_name2",
+                    Spb2UNSPublisher.SPB_ALIAS: 1,
+                    Spb2UNSPublisher.SPB_DATATYPE: "Int8",
+                }
+            ),
+            "metric_name2",
+            1,
+        ),
     ],
 )
 def test_get_metric_name_from_alias(cache_key, metric, name: str, alias: int):

@@ -50,8 +50,8 @@ build-backend = "poetry.core.masonry.api"
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
-addopts = "-n 4 --timeout=300"
-
+addopts = "-n auto --timeout=300"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 # Extend the `pyproject.toml` file in the parent directory...

@@ -97,7 +97,7 @@ class UNSSparkPlugBMapper:
                 else:
                     LOGGER.error("Message received on an Unknown/non compliant SparkplugB topic: %s", msg.topic)
             else:
-                LOGGER.warn("Subscribed to a  non SparkplugB topic: %s. Message ignored", msg.topic)
+                LOGGER.waring("Subscribed to a  non SparkplugB topic: %s. Message ignored", msg.topic)
         except SystemError as system_error:
             LOGGER.error("Fatal Error while parsing Message: %s. Exiting", str(system_error), stack_info=True, exc_info=True)
             # raise system_error
