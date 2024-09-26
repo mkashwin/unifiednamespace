@@ -40,7 +40,7 @@ pytest-cov = "^5.0.0"
 safety = "^3.2.7"
 ruff = "^0.6.7"
 
-[tool.poetry.scripts] #TODO fix
+[tool.poetry.scripts] 
 uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
 
 [build-system]
@@ -52,6 +52,7 @@ norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
 addopts = "-n auto --timeout=300"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 # Extend the `pyproject.toml` file in the parent directory...

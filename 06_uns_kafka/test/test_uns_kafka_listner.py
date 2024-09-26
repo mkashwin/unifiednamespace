@@ -136,6 +136,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
     try:
         uns_kafka_mapper = UNSKafkaMapper()
         admin_client = AdminClient(KAFKAConfig.kafka_config_map)
+
         publish_properties = None
         if uns_kafka_mapper.uns_client.protocol == MQTTVersion.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
@@ -176,7 +177,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
         )
 
     except Exception as ex:
-        pytest.fail("Connection to either the MQTT Broker or Kafka broker did not happen" f" Exception {ex}")
+        pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
@@ -192,7 +193,7 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
     consumer_config["bootstrap.servers"] = kafka_producer_config.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_mapper_test_consumer"
     consumer_config["group.id"] = "uns_kafka_mapper_test_consumers"
-    consumer_config["auto.offset.reset"] = "latest"
+    consumer_config["auto.offset.reset"] = "earliest"
     return Consumer(consumer_config)
 
 

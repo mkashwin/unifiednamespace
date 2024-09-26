@@ -29,7 +29,7 @@ from uns_kafka.uns_kafka_config import settings
 KAFKA_CONFIG: dict = settings.get("kafka.config")
 
 
-@pytest.mark.integrationtest()
+@pytest.mark.integrationtest
 def test_kafka_handler_init():
     """
     KafkaHandler#init
@@ -140,7 +140,7 @@ def test_publish(mqtt_topic: str, message):
     consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_test_consumer"
     consumer_config["group.id"] = "uns_kafka_test_consumers"
-    consumer_config["auto.offset.reset"] = "latest"
+    consumer_config["auto.offset.reset"] = "earliest"
     kafka_handler.publish(mqtt_topic, message)
     kafka_handler.flush()
 
@@ -153,16 +153,17 @@ def test_publish(mqtt_topic: str, message):
         consumer.assign(partitions)
 
     kafka_topic = KafkaHandler.convert_mqtt_kafka_topic(mqtt_topic)
+
     kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
     try:
         # Run tests only when connectivity to broker is there
-        while kafka_handler.producer.list_topics(timeout=10) is not None:
+        while True:
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait
                 print("Waiting...")  # noqa: T201
             elif msg.error():
-                assert pytest.fail(), msg.error()
+                pytest.fail(f"Consumer error: {msg.error()}")
             else:
                 assert json.loads(msg.value().decode("utf-8")) == json.loads(message)
                 break
