@@ -8,7 +8,7 @@ on:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/**/*.py*"
       - "02_mqtt-cluster/pyproject.toml"
       - "02_mqtt-cluster/poetry.lock"
       - "06_uns_kafka/**/*.py"
@@ -17,18 +17,18 @@ on:
       - "06_uns_kafka/Dockerfile"
       - ".github/workflows/uns_kafka-app.yml"
       - ".github/include/**"
-  
+
   workflow_dispatch:
     inputs:
-        pytest_add_opts:
-          description: "additional pytest options"
-          type: string
+      pytest_add_opts:
+        description: "additional pytest options"
+        type: string
 
   pull_request:
     branches:
       - "**"
     paths:
-      - "02_mqtt-cluster/**/*.py"
+      - "02_mqtt-cluster/**/*.py*"
       - "02_mqtt-cluster/pyproject.toml"
       - "02_mqtt-cluster/poetry.lock"
       - "06_uns_kafka/**/*.py"

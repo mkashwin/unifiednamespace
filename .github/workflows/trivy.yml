@@ -8,6 +8,10 @@ name: Trivy Scanner
 on:
   push:
     branches: ["main"]
+    paths:
+      - "*/src/**/*.py*"
+      - "**/poetry.lock"
+
   pull_request:
     # The branches below must be a subset of the branches above
     branches: ["main"]
@@ -53,6 +57,6 @@ jobs:
           severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3 
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "trivy-results.sarif"
