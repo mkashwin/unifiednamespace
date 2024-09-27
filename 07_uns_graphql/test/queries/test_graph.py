@@ -593,7 +593,7 @@ async def test_strawberry_get_spb_nodes_by_metric(metric_names: list[str], has_r
             assert result.errors
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def setup_graphdb_data():
     current_loop = asyncio.get_event_loop()
     """Fixture to set up data in the GraphDB from the test_data.cypher file."""

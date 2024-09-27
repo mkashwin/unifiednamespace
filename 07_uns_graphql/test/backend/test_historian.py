@@ -18,7 +18,6 @@
 Test historian queries
 """
 
-import asyncio
 import json
 from datetime import UTC, datetime
 from typing import Literal
@@ -30,7 +29,6 @@ from uns_graphql.graphql_config import HistorianConfig
 
 # model for db entry
 DatabaseRow = tuple[datetime, str, str, dict]
-
 
 test_data_set: list[DatabaseRow] = [
     (datetime.fromtimestamp(1701232000, UTC), "a/b/c", "client4", json.dumps({"key1": "value1"})),
@@ -49,17 +47,8 @@ test_data_set: list[DatabaseRow] = [
 ]
 
 
-@pytest.fixture(scope="session")
-def my_event_loop(request):  # noqa: ARG001
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session")
-async def historian_pool(my_event_loop):  # noqa: ARG001
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def historian_pool():
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
     """
@@ -69,7 +58,7 @@ async def historian_pool(my_event_loop):  # noqa: ARG001
     await HistorianDBPool.close_pool()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def prepare_database(historian_pool):  # noqa: ARG001
     """
     Prepare the database with test data based on the pytest marker integrationtest
