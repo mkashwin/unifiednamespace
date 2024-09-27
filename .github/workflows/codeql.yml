@@ -14,8 +14,14 @@ name: "CodeQL"
 on:
   push:
     branches: ["main"]
+    paths:
+      - "*/src/**/*.py*"
+      - "**/poetry.lock"
   pull_request:
     branches: ["main"]
+    paths:
+      - "*/src/**/*.py*"
+      - "**/poetry.lock"
   schedule:
     - cron: "45 11 * * 4"
 
@@ -60,6 +66,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+          setup-python-dependencies: false
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.
           # Prefix the list here with "+" to use these queries and those in the config file.
