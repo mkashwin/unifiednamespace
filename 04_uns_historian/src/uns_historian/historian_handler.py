@@ -88,11 +88,12 @@ class HistorianHandler:
         """
         Close the connection pool
         """
-        if not cls._shared_pool.is_closing():
+        if cls._shared_pool is not None and not cls._shared_pool.is_closing():
             await cls._shared_pool.close()
+            cls._shared_pool = None
             LOGGER.info("Connection pool closed successfully")
         else:
-            LOGGER.warn("Connection pool was already closed ")
+            LOGGER.warning("Connection pool was already closed ")
 
     async def __aenter__(self):
         self._pool: Pool = await self.get_shared_pool()  # Acquire the shared pool directly

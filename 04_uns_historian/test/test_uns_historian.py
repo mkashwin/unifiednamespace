@@ -36,13 +36,13 @@ from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def mock_uns_client():
     with patch("uns_historian.uns_mqtt_historian.UnsMQTTClient", autospec=True) as mock_client:
         yield mock_client
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def mock_historian_handler():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -169,7 +169,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
         uns_mqtt_historian = UnsMqttHistorian()
         mgs_received: list = []
         old_on_message = uns_mqtt_historian.uns_client.on_message
-        # FIXME Loop inside on_message_decorator is null for some reason. hence trying to set outer loop in callback
+        # Loop inside on_message_decorator is null for some reason. hence trying to set outer loop in callback
         loop = asyncio.get_event_loop()
 
         def on_message_decorator(client, userdata, msg):
@@ -229,7 +229,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
             assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
 
     finally:
-        # clean up the topic and diconnect the publiher
+        # clean up the topic and disconnect the publisher
         uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
         uns_publisher.disconnect()
         uns_mqtt_historian.uns_client.disconnect()

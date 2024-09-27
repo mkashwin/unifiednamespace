@@ -54,6 +54,7 @@ norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
 addopts = "-n 4 --dist loadgroup --timeout=300"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.ruff]
 # Extend the `pyproject.toml` file in the parent directory...

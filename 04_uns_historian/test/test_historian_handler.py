@@ -29,11 +29,11 @@ from uns_historian.historian_config import HistorianConfig
 from uns_historian.historian_handler import HistorianHandler
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mock_asyncpg():
-    # Mock asyncpg module and its functions
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+    # Mock asyncpg module and its functions)
     with patch("asyncpg.create_pool") as create_pool_mock:
         create_pool_mock.return_value = asyncio.Future()
         pool_instance = AsyncMock(spec=asyncpg.Pool)
@@ -46,14 +46,15 @@ def mock_asyncpg():
 
 @pytest.mark.asyncio(loop_scope="function")
 async def test_shared_pool(mock_asyncpg):
-    # Test that shared pool is common across invocations
-    create_pool_mock = mock_asyncpg
-
+    """
+    @FIXME This test is executing fine individually but fails when run in the test suite with xdist
+    work around is to run the test with -n 4
+    """
     pool1 = await HistorianHandler.get_shared_pool()
     pool2 = await HistorianHandler.get_shared_pool()
 
     assert pool1 is pool2
-    create_pool_mock.assert_called_once()
+    mock_asyncpg.assert_called_once()
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -121,7 +122,7 @@ async def test_persist_mqtt_msg(
                 await uns_historian_handler_cleaner.execute_prepared(delete_sql_cmd, *[topic, publisher, json.dumps(message)])
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
