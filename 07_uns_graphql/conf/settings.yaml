@@ -29,6 +29,7 @@ kafka:
       client.id: "uns_graphql_server", # mandatory
       group.id: "graphql", # mandatory
       bootstrap.servers: "localhost:9092", # mandatory.
+      auto.offset.reset: "earliest",
     }
   consumer_timeout: 0.5
 dynaconf_merge: true
