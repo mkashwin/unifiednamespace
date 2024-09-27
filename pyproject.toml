@@ -48,13 +48,14 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^5.0.0"
 safety = "^3.2.7"
-ruff = "^0.6.7"
+ruff = "^0.6.8"
 pytest-retry = "^1.6.3"
 
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 addopts = "--import-mode=importlib -n auto --dist loadgroup --timeout=300 --durations=10"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = [
     "02_mqtt-cluster/test",
     "03_uns_graphdb/test",
