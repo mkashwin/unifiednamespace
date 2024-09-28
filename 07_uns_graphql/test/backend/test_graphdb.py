@@ -76,7 +76,7 @@ QUERY = """
 QUERY_PARAMS = {"propertyNames": ["seq", "dict_list"], "topicFilter": ["(.)*"]}
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(loop_scope="function", scope="function")
 async def mock_graphdb_driver():
     """Fixture to mock the Neo4j async driver."""
     mock_driver = AsyncMock()
