@@ -136,7 +136,7 @@ def create_publisher() -> UnsMQTTClient:
     return uns_publisher
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def clean_up_database():
     """
     Clean database from test data from the historian after execution of the tests

@@ -20,7 +20,7 @@ import pytest_asyncio
 from uns_historian.historian_handler import HistorianHandler
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def historian_pool():
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
