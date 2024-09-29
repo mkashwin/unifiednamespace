@@ -17,6 +17,7 @@
 """
 
 import pytest_asyncio
+
 from uns_historian.historian_handler import HistorianHandler
 
 

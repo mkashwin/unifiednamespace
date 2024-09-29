@@ -19,6 +19,7 @@
 import pytest
 import strawberry
 from pydantic import ValidationError
+
 from uns_graphql.input.kafka import KAFKATopic, KAFKATopicInput
 
 # Test data for parameterized tests

@@ -11,53 +11,54 @@ There are some preparation work required to setup the infrastructure and environ
 ## SparkplugB™ Topic Namespace{#sparkplugb}
 
 SparkplugB Topic namespace follows the following structure
->**spBv1.0**/*\<group_id\>*/*\<message_type\>*/*\<edge_node_id\>*/*[\<device_id\>]*
+
+> **spBv1.0**/_\<group_id\>_/_\<message_type\>_/_\<edge_node_id\>_/_[\<device_id\>]_
 
 Where in:
 
-* *\<group_id\>*:  provides for a logical grouping of MQTT EoN nodes
-* *\<message_type\>*  provides an indication as to how to handle the MQTT payload of the message. The following message_type elements are defined for the SparkplugB™ Topic Namespace:
-  * NBIRTH: Birth certificate for MQTT EoN nodes.
-  * NDEATH: Death certificate for MQTT EoN nodes.
-  * DBIRTH: Birth certificate for Devices.
-  * DDEATH: Death certificate for Devices.
-  * NDATA: Node data message.
-  * DDATA: Device data message.
-  * NCMD: Node command message.
-  * DCMD: Device command message.
-  * STATE: Critical application state message
+- _\<group_id\>_: provides for a logical grouping of MQTT EoN nodes
+- _\<message_type\>_ provides an indication as to how to handle the MQTT payload of the message. The following message_type elements are defined for the SparkplugB™ Topic Namespace:
+  - NBIRTH: Birth certificate for MQTT EoN nodes.
+  - NDEATH: Death certificate for MQTT EoN nodes.
+  - DBIRTH: Birth certificate for Devices.
+  - DDEATH: Death certificate for Devices.
+  - NDATA: Node data message.
+  - DDATA: Device data message.
+  - NCMD: Node command message.
+  - DCMD: Device command message.
+  - STATE: Critical application state message
     Please refer to the detailed specification of these message types in the [SparkplugB Specs](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
-* *\<edge_node_id\>*: uniquely identifies the MQTT EoN node within the factory context.
-* *[\<device_id\>]*: optional and  identifies a device attached (physically or logically) to the MQTT EoN node
+- _\<edge_node_id\>_: uniquely identifies the MQTT EoN node within the factory context.
+- _[\<device_id\>]_: optional and identifies a device attached (physically or logically) to the MQTT EoN node
 
 ### Preparation steps required to setup protocol buffer and SparkplugB dependencies
 
 1. **Step 1**: Download or install protoc. Refer
-    * [Installing on Linux/MacOs](https://grpc.io/docs/protoc-installation/)
-    * [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version  [Protocol Buffers v28.0](https://github.com/protocolbuffers/protobuf/releases/tag/v28.0)
-    and downloaded the pre-compiled versions for  linux-x86_64 and win64. For other platforms please replace with the appropriate runtime or compile the runtime directly
+   - [Installing on Linux/MacOs](https://grpc.io/docs/protoc-installation/)
+   - [Install pre-compiled version](https://github.com/protocolbuffers/protobuf/releases). This project currently is using version [Protocol Buffers v28.0](https://github.com/protocolbuffers/protobuf/releases/tag/v28.0)
+     and downloaded the pre-compiled versions for linux-x86_64 and win64. For other platforms please replace with the appropriate runtime or compile the runtime directly
 1. **Step 2**: Copy the [SparkPlugB protocol buffer specification](https://github.com/eclipse/tahu/tree/master/sparkplug_b/sparkplug_b.proto) from [Eclipse Tahu project](https://github.com/eclipse/tahu/tree/master/sparkplug_b) to the folder [./sparkplug_b](./sparkplug_b/)
 1. **Step 3**: Compile the SparkplugB protocol buffer into python class by the following command
-    >
-    ```bash
-    # Execute on Linux
-    ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated --pyi_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
-    ```
-    >
-    ```powershell
-    # Execute on windows
-    .\protobuf\bin\protoc.exe -I .\sparkplug_b\  --python_out=.\src\uns_sparkplugb\generated --pyi_out=.\src\uns_sparkplugb\generated .\sparkplug_b\sparkplug_b.proto
-    ```
+   >
+   ```bash
+   # Execute on Linux
+   ./protobuf/bin/protoc -I ./sparkplug_b/  --python_out=./src/uns_sparkplugb/generated --pyi_out=./src/uns_sparkplugb/generated ./sparkplug_b/sparkplug_b.proto
+   ```
+   >
+   ```powershell
+   # Execute on windows
+   .\protobuf\bin\protoc.exe -I .\sparkplug_b\  --python_out=.\src\uns_sparkplugb\generated --pyi_out=.\src\uns_sparkplugb\generated .\sparkplug_b\sparkplug_b.proto
+   ```
 
 The executables and the generated code are checked into the repository
 
-* The [`protoc` executable for Linux and Windows](./protobuf/bin)
-* The [`sparkplug_b.proto`](./sparkplug_b/sparkplug_b.proto) file
-* The [generated python files](./src/uns_sparkplugb/generated/) from sparkplug_b.proto specification
+- The [`protoc` executable for Linux and Windows](./protobuf/bin)
+- The [`sparkplug_b.proto`](./sparkplug_b/sparkplug_b.proto) file
+- The [generated python files](./src/uns_sparkplugb/generated/) from sparkplug_b.proto specification
 
 ## The MQTT Cluster
 
-The MQTT Cluster from EMQX is easily setup on a cluster. *There are other ways like within a docker or directly via the executable, but I choose to use the K8s setup to be able to leverage the benefits of scaling up, failover and other orchestration benefits.*
+The MQTT Cluster from EMQX is easily setup on a cluster. _There are other ways like within a docker or directly via the executable, but I choose to use the K8s setup to be able to leverage the benefits of scaling up, failover and other orchestration benefits._
 Before proceeding ensure that you have setup your K8s Cluster as described in [01_k8scluster](./../01_k8scluster/README.md)
 Also familiarize yourself with the K8s Storage class [Mayastor](https://mayastor.gitbook.io/introduction/quickstart/configure-mayastor#create-mayastor-storageclass-s)
 
@@ -90,7 +91,7 @@ EOF
 > # command to view the available storage classes.
 > kubectl get sc
 > ```
->
+
 ## MQTT Cluster for the edge
 
 Using `helm` install the MQTT Cluster on the edge. I choose to have each cluster in it's own namespace
@@ -161,9 +162,8 @@ SELECT * from '#'
 #### Step 7: Add Action Handler
 
 ![Create Resource](../images/MQTT_bridge-setup-07.png)
->
+
 > By using the payload template as ${payload} we ensure that the exact same message with no additional attributes is sent over the bridge otherwise EMQX adds a bunch of additional attributes and pushes the entire message to the attribute ´payload´.
->
 
 #### Step 5: Confirm Rule creation & activation
 
@@ -193,16 +193,16 @@ poetry install
 
 > While importing the folder into VSCode remember to do the following steps the first time
 >
->   1. Open a terminal in VSCode
->   1. Activate the poetry shell.
+> 1. Open a terminal in VSCode
+> 1. Activate the poetry shell.
 >
->      ```bash
->      poetry shell
->      poetry install
->      ```
+>    ```bash
+>    poetry shell
+>    poetry install
+>    ```
 >
->   1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
->
+> 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+
 ### Running tests
 
 The set of test for this module is executed after the poetry setup is done
@@ -216,10 +216,10 @@ poetry run pytest  test/
 
 ## Reference
 
-* [Eclipse Sparkplug B Specification](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
-* [Cirrus Link Sparkplug B MQTT Tutorials](https://docs.chariot.io/display/CLD79/B%3A+Example+Python+Client)
-* [Github Eclipse Tahu project](https://github.com/eclipse/tahu)
-* [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
+- [Eclipse Sparkplug B Specification](https://www.eclipse.org/tahu/spec/Sparkplug%20Topic%20Namespace%20and%20State%20ManagementV2.2-with%20appendix%20B%20format%20-%20Eclipse.pdf)
+- [Cirrus Link Sparkplug B MQTT Tutorials](https://docs.chariot.io/display/CLD79/B%3A+Example+Python+Client)
+- [Github Eclipse Tahu project](https://github.com/eclipse/tahu)
+- [Google Protocol Buffers Project](https://github.com/protocolbuffers/protobuf)
 
 ## Known Limitations / workarounds
 
@@ -233,13 +233,14 @@ poetry run pytest  test/
 
 1. The proto files were not being compiled correctly with [Protobuf Ver 3.20.0 and higher](https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.0). After raising the [issue](https://github.com/eclipse/tahu/issues/217) it was found that that from this version onwards we need to provide the additional parameter `--pyi_out`
 
-1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64  architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification.
+1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64 architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification.
    The protoc executable for [Windows](./protobuf/bin/protoc.exe) is for a 64 bit processor.
    For other architectures please download the appropriate pre compiled version of [Protobuf release v28.0](https://github.com/protocolbuffers/protobuf/releases/tag/v28.0) e.g.
-    * [protoc-28.0-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-linux-aarch_64.zip)
-    * [protoc-28.0-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-linux-ppcle_64.zip)
-    * [protoc-28.0-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-linux-x86_32.zip)
-    * [protoc-28.0-win32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-win32.zip)
+
+   - [protoc-28.0-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-linux-aarch_64.zip)
+   - [protoc-28.0-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-linux-ppcle_64.zip)
+   - [protoc-28.0-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-linux-x86_32.zip)
+   - [protoc-28.0-win32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v28.0/protoc-28.0-win32.zip)
 
 1. Need to understand how to handle metric types DataSet, Template
 

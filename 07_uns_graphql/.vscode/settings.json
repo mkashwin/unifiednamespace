@@ -1,37 +1,39 @@
 {
-    "cSpell.words": [
-        "graphql",
-        "aiomqtt",
-        "xdist",
-        "DBIRTH",
-        "DCMD",
-        "DDATA",
-        "DDEATH",
-        "NBIRTH",
-        "NCMD",
-        "NDATA",
-        "NDEATH",
-        "integrationtest",
-        "mqtt",
-        "packettypes",
-        "paho",
-        "propertyset",
-        "propertysets",
-        "proto",
-        "protobuf",
-    ],
-    "python.analysis.extraPaths": [
-        "src",
-        "../02_mqtt-cluster/src",
-        "./src/uns_graphql"
-    ],
-    "python.testing.pytestArgs": [
-        "test"
-    ],
-    "python.testing.pytestEnabled": true,
-    "[python]": {
-        "editor.formatOnSaveMode": "file",
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff"
+  "cSpell.words": [
+    "graphql",
+    "aiomqtt",
+    "xdist",
+    "DBIRTH",
+    "DCMD",
+    "DDATA",
+    "DDEATH",
+    "NBIRTH",
+    "NCMD",
+    "NDATA",
+    "NDEATH",
+    "integrationtest",
+    "mqtt",
+    "packettypes",
+    "paho",
+    "propertyset",
+    "propertysets",
+    "proto",
+    "protobuf"
+  ],
+  "python.analysis.extraPaths": [
+    "src",
+    "../02_mqtt-cluster/src",
+    "./src/uns_graphql"
+  ],
+  "python.testing.pytestArgs": ["test"],
+  "python.testing.pytestEnabled": true,
+  "[python]": {
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
     },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  }
 }

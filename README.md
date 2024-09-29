@@ -14,7 +14,7 @@ If you are looking for an alternative Unified Namespace implementation with ente
 
 ## What is the Unified Name Space?
 
-A Unified Namespace is an ***architecture*** that establishes a ***centralized repository*** of data, events,  information, and context ***across all IT and OT systems*** where any application or device can consume or publish data needed for a specific action via an ***event-driven*** and ***loosely coupled architecture*** ​along with the ***relevant context and history***
+A Unified Namespace is an **_architecture_** that establishes a **_centralized repository_** of data, events,  information, and context **_across all IT and OT systems_** where any application or device can consume or publish data needed for a specific action via an **_event-driven_** and **_loosely coupled architecture_** ​along with the **_relevant context and history_**
 
 This is a critical concept to allow scalability by preventing point to point connectivity.
 ![Credit Walter Reynolds -- IIOT University](./images/UNS.png)
@@ -34,31 +34,33 @@ This is a critical concept to allow scalability by preventing point to point con
 The overall architecture and the deployment setup is as follows
 
 1. Factory1
-    * K8s Cluster on the edge
-    * MQTT edge installed on K8s
-    * Bridge between Factory1 and the Enterprise MQTT clusters
-    * Graph DB installed and running on docker
-    * UNS graphdb client to persist messages to the Graph DB  instance
-    * UNS SparkplugB client to translate message from SparkPlug to UNS
+
+   - K8s Cluster on the edge
+   - MQTT edge installed on K8s
+   - Bridge between Factory1 and the Enterprise MQTT clusters
+   - Graph DB installed and running on docker
+   - UNS graphdb client to persist messages to the Graph DB instance
+   - UNS SparkplugB client to translate message from SparkPlug to UNS
 
 1. Factory2
-    * K8s Cluster on the edge
-    * MQTT edge installed on K8s
-    * Bridge between Factory2 and the Enterprise MQTT clusters
-    * Graph DB installed and running on docker
-    * UNS graphdb client to persist messages to the Graph DB  instance
-    * UNS SparkplugB client to translate message from SparkPlug to UNS
+
+   - K8s Cluster on the edge
+   - MQTT edge installed on K8s
+   - Bridge between Factory2 and the Enterprise MQTT clusters
+   - Graph DB installed and running on docker
+   - UNS graphdb client to persist messages to the Graph DB instance
+   - UNS SparkplugB client to translate message from SparkPlug to UNS
 
 1. Enterprise on Cloud
-    * K8s Cluster of the enterprise
-    * MQTT Broker installed on K8s
-    * TimescaleDB installed and running on docker / cluster / K8s / hosted service
-    * Graph DB installed and running on  docker / cluster / K8s  / hosted service
-    * Kafka cluster/ K8s / hosted service
-    * GraphQL service running and connected to the cloud data stores
-    * UNS graphdb client to persist messages to the Graph DB  instance
-    * UNS historian client to persist messages to the Graph DB  instance
-    * UNS Kafka listener to stream/convert MQTT messages to the Kafka instance
+   - K8s Cluster of the enterprise
+   - MQTT Broker installed on K8s
+   - TimescaleDB installed and running on docker / cluster / K8s / hosted service
+   - Graph DB installed and running on docker / cluster / K8s / hosted service
+   - Kafka cluster/ K8s / hosted service
+   - GraphQL service running and connected to the cloud data stores
+   - UNS graphdb client to persist messages to the Graph DB instance
+   - UNS historian client to persist messages to the Graph DB instance
+   - UNS Kafka listener to stream/convert MQTT messages to the Kafka instance
 
 ![Logical Architecture for implementing UNS](./images/UNS-Architecture.png)
 
@@ -72,7 +74,7 @@ The opinions below are my personal ones with no influence from the companies tha
 
 ### **Clustering at the Edge with Kubernetes**
 
-To run the MQTT broker on the Edge, a cluster is ***not*** a prerequisite.  If you do not have a business need for a high availability MQTT cluster, running just a single instance ( probably within a docker) would be a lot more easier.
+To run the MQTT broker on the Edge, a cluster is **_not_** a prerequisite. If you do not have a business need for a high availability MQTT cluster, running just a single instance ( probably within a docker) would be a lot more easier.
 
 Even for a clustered setup most of the MQTT brokers do provide an option for clustering however running this cluster on K8s provides significant benefits for scaling, auto healing etc.
 
@@ -83,36 +85,37 @@ I evaluated the following K8s options because it needs to be a extremely light w
 
 There are quite some comparisons between the the k8s distributions on the net so I am not going to list detailed comparison here.
 
-I finally choose to go ahead with ***MicroK8s*** because
+I finally choose to go ahead with **_MicroK8s_** because
 
-* Most of my environment was on Ubuntu hence enabling a snap for microk8s was very easy
-* The inbuilt addons and the ease of enabling them without wading through YAML files
-* The default CNI provided for the cluster is Calico which [claimed](https://www.suse.com/c/rancher_blog/comparing-kubernetes-cni-providers-flannel-calico-canal-and-weave/) to be more performant
-* Setting up a High Availability cluster is extremely easy by adding multiple master nodes
+- Most of my environment was on Ubuntu hence enabling a snap for microk8s was very easy
+- The inbuilt addons and the ease of enabling them without wading through YAML files
+- The default CNI provided for the cluster is Calico which [claimed](https://www.suse.com/c/rancher_blog/comparing-kubernetes-cni-providers-flannel-calico-canal-and-weave/) to be more performant
+- Setting up a High Availability cluster is extremely easy by adding multiple master nodes
 
-   > **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place.
+  > **Note:** Avoid setting up high availability and multiple masters for your edge cluster as this increases the resource consumption & load on the edge devices. A single master node should suffice majority of your availability requirements if you actually even need a k8s cluster on the edge in the first place.
 
-* Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting.
+- Having a bit more experience with Ubuntu I found the documentation and guides a lot more easy to find and follow, including the community support, especially troubleshooting.
 
 However microk8s did show up some limitations as well as bugs. Details of these are in **[01_k8scluster](./01_k8scluster/README.md)**. The link will provide details of all the addons, workarounds etc. that I did for bringing up my cluster. If you choose to setup your k8s with a different distribution, each of those addons could be setup / configured albeit in a different manner.
 
 Some key limitations to bear in mind
 
-* I faced some stability issues while trying to run this lower raspberry pi (pi3)
-* microk8s is not available for every linux distribution.
+- I faced some stability issues while trying to run this lower raspberry pi (pi3)
+- microk8s is not available for every linux distribution.
 
 ---
 
 ### **MQTT Broker**
 
-The backbone of the ***Unified Name Space*** is the MQTT broker.
+The backbone of the **_Unified Name Space_** is the MQTT broker.
 
 #### **Why MQTT**
 
 The overall structure of the UNS is based on the hierarchical structure as defined in ISA-95 part 2.
+
 > \<enterprise\>/\<facility\>/\<area\>/\<line\>/\<device\>
 
-The level at which the message is published has a direct implication on it's time sensitivity as well as guidance on being processed  at the edge or on the cloud.  
+The level at which the message is published has a direct implication on it's time sensitivity as well as guidance on being processed at the edge or on the cloud.  
 ![ISA-95 Part 2](./images/ISA-95-part2.png)
 
 I evaluated and read the user guides of the following brokers (open source versions only). All three also provide commercial / enterprise versions which is recommended for more robust setup and professional support
@@ -123,33 +126,33 @@ I evaluated and read the user guides of the following brokers (open source versi
 
 While HIVEMQ has the best documentation and community support I decided try out EMQX for the following reasons
 
-* EMQX is written in erlang which has a lower footprint than java (HIVEMQ).
-* They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment.
+- EMQX is written in erlang which has a lower footprint than java (HIVEMQ).
+- They also provide 2 versions of the broker, one specifically lightweight for edge deployment and the standard for enterprise or cloud deployment.
 
 The details of setting up the MQTT cluster are provided in **[02_mqtt-cluster](./02_mqtt-cluster/README.md)**. The link provides the guidance to install EMQX on a K8s cluster using helm.
 
-***Having said that, any of the above three would be perfectly good selections because***
+**_Having said that, any of the above three would be perfectly good selections because_**
 
-* All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages. Also EMQX seems to be supporting the ability to create plugins in multiple languages
+- All the three have extension capabilities via standard as well as custom plugins. However I liked the rules plugin from EMQX which comes by default allowing for lot of flexibility for pre and post processing messages. Also EMQX seems to be supporting the ability to create plugins in multiple languages
 
-* All three deploy very easily on K8s and all three have community (free) as well as commercial offering
-* All three support **MQTT 5** which is critical for manufacturers. e.g. The concept of [Shared  Subscriptions](https://www.hivemq.com/blog/mqtt5-essentials-part7-shared-subscriptions/) enables clustering of the subscribers in order to better scale message processing if needed)
-* All three support  **Sparkplug B**
-* All three support MQTT bridging allowing copying data between edge to cloud instances
-* Both [HiveMQ](hivemq.com/mqtt-cloud-broker/) and [EMQX](https://www.emqx.com/en/cloud) provide fully managed cloud services which might be interesting offer to explore for your cloud / enterprise MQTT Cluster
+- All three deploy very easily on K8s and all three have community (free) as well as commercial offering
+- All three support **MQTT 5** which is critical for manufacturers. e.g. The concept of [Shared Subscriptions](https://www.hivemq.com/blog/mqtt5-essentials-part7-shared-subscriptions/) enables clustering of the subscribers in order to better scale message processing if needed)
+- All three support **Sparkplug B**
+- All three support MQTT bridging allowing copying data between edge to cloud instances
+- Both [HiveMQ](hivemq.com/mqtt-cloud-broker/) and [EMQX](https://www.emqx.com/en/cloud) provide fully managed cloud services which might be interesting offer to explore for your cloud / enterprise MQTT Cluster
 
 #### Broker Plugins
->
->**Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database. You can further optimize this by subscribing to a subset e.g. `"<enterprise>/#"`
-However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-databases) provided here for better performance. But for most scenarios, an MQTT client should suffice and be broker independent.
 
-Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-databases)  as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
+> **Important Note:** The community edition of these brokers do not provide all functionalities. e.g. EMQX community doesn't allow plugins to be triggered on message delivery (this is an enterprise feature). As I wanted this solution to be completely open source and free, I decided to write an MQTT client subscribing to `"#"`. This works but is less efficient than creating a plugin within the broker and natively persisting the messages to a database. You can further optimize this by subscribing to a subset e.g. `"<enterprise>/#"`
+> However if you go for the enterprise version, I would recommend creating a plugin instead of the [MQTT Listeners](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-databases) provided here for better performance. But for most scenarios, an MQTT client should suffice and be broker independent.
+
+Hence I decided to write [my own plugin](#plugin--mqtt-client-to-subscribe-and-write-to-the-above-databases) as an MQTT client which listens to the broker and on message persists the message ( either the GraphDB or the Historian)
 
 ### **GraphDB**
 
-Normally I configured the MQTT publishers  to publish messages with retain flag so that consumers are able to get the latest message even if they weren't connected with broker at the time of publishing.
+Normally I configured the MQTT publishers to publish messages with retain flag so that consumers are able to get the latest message even if they weren't connected with broker at the time of publishing.
 
-However I realized that,  in order to merge messages, or provide the capability to add relationships across multiple messages, MQTT alone will not be able to support that. Hence after some deliberation decided to use a Graph Database.
+However I realized that, in order to merge messages, or provide the capability to add relationships across multiple messages, MQTT alone will not be able to support that. Hence after some deliberation decided to use a Graph Database.
 
 This provide the flexibility of defining relationships , simple way representing your object hierarchy as well as support merging of attributes
 
@@ -160,7 +163,7 @@ The GraphDB also allows for extremely fine grained access control across the nod
 
 ### **Historian**
 
-The other critical component of the ***Unified Name Space*** is the historian. This allows to keep a full history of all messages, entities and artifacts generated.
+The other critical component of the **_Unified Name Space_** is the historian. This allows to keep a full history of all messages, entities and artifacts generated.
 Since the graph databases are not suited for historian data (there were a couple of projects enhancing Neo4j but all were archived), it makes sense to delegate that to specialist.
 
 I evaluated and read the user guides of the following historians
@@ -176,16 +179,16 @@ For production systems you might want to consider the cloud versions of the hist
 
 Since I did not have the enterprise version of the MQTT brokers, I decided to develop a broker agnostic solution. Hence the MQTT client seems to be a the best option ( even if it may not be as performant as the Broker plugin/module).
 
-* The MQTT listener to persist UNS messages & SPB messages to the GraphDB can be found at [03_uns_graphdb](./03_uns_graphdb/README.md)
-* The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/README.md)
-* The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at  [05_sparkplugb](./05_sparkplugb/README.md)
-* The MQTT listener to publish UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
-* A module which connects with all the data sources; Neo4j, TimescaleDB, Kafka and MQTT to provide GraphQL apis to query the UNS [07_uns_graphql](./07_uns_graphql/README.md)
+- The MQTT listener to persist UNS messages & SPB messages to the GraphDB can be found at [03_uns_graphdb](./03_uns_graphdb/README.md)
+- The MQTT listener to persist UNS messages & SPB messages to the Historian can be found at [04_uns_historian](./04_uns_historian/README.md)
+- The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at [05_sparkplugb](./05_sparkplugb/README.md)
+- The MQTT listener to publish UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
+- A module which connects with all the data sources; Neo4j, TimescaleDB, Kafka and MQTT to provide GraphQL apis to query the UNS [07_uns_graphql](./07_uns_graphql/README.md)
 
 I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because
 
-* In the OT space most professionals  ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
-* Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
+- In the OT space most professionals ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
+- Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language
 
 ### **Plugin / MQTT Client to translate SparkplugB messages to UNS Namespace**
 
@@ -194,9 +197,9 @@ Sparkplug B consist of three primary features in its definition.
 1. The first is the MQTT topic namespace definition.
 1. The second is the definition of the order and flow of MQTT messages to and from various MQTT clients in the system.
 1. The final is the payload data format.
-As the  messages are published in the Sparkplug Namespace , they are not visible in the UNS hierarchy which is based on ISA-95 part 2. Also given that they are packaged in protocol buffers, these message payloads are not easily understandable and need some parsing / transformation to a JSON structure.
-This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages
-The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/README.md)
+   As the messages are published in the Sparkplug Namespace , they are not visible in the UNS hierarchy which is based on ISA-95 part 2. Also given that they are packaged in protocol buffers, these message payloads are not easily understandable and need some parsing / transformation to a JSON structure.
+   This plugin listens on the SparkplugB topic hierarchy and translate the protocol buffer messages into appropriate UNS messages
+   The detailed description of the plugin can be found at [05_sparkplugb](./05_sparkplugb/README.md)
 
 ### **GraphQL Support**
 
@@ -213,15 +216,15 @@ Some key benefits of adding this support to the UNS are:
 The current project contains the following microservices
 
 1. [01_k8scluster](./01_k8scluster/README.md): Scripts and utilities to create a K8s cluster (on the edge and in the cloud)
-1. [02_mqtt-cluster](./02_mqtt-cluster/README.md): Scripts and utilities to create a MQTT cluster (on the edge and in the cloud). Common python package for all uns mqtt listeners and  sparkplugB generated code and helper code
+1. [02_mqtt-cluster](./02_mqtt-cluster/README.md): Scripts and utilities to create a MQTT cluster (on the edge and in the cloud). Common python package for all uns mqtt listeners and sparkplugB generated code and helper code
 1. [03_uns_graphdb](./03_uns_graphdb/README.md): Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a GraphDB. Spb messages are translated from protocol buffers to JSON prior to persisting
-1. [04_uns_historian](./04_uns_historian/README.md):  Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a Historian. Spb messages are translated from protocol buffers to JSON prior to persisting
-1. [05_sparkplugb](./05_sparkplugb/README.md):  Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace
+1. [04_uns_historian](./04_uns_historian/README.md): Python project for mqtt listener that persists all message of the UNS and SparkplugB namespaces to a Historian. Spb messages are translated from protocol buffers to JSON prior to persisting
+1. [05_sparkplugb](./05_sparkplugb/README.md): Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace
 1. [06_uns_kafka](./06_uns_kafka/README.md): Python project for mqtt listener that subscribes to the MQTT broker and publishes to the KAFKA broker
 1. [07_uns_graphql](./07_uns_graphql/README.md): Python project for GraphQL server to query the Unified NameSpace
 
 Each microservice can be independently imported into VSCode by going into the specific microservice folder. Instructions on setting up the python pip & virtual environments are provided in the respective ´README.md´ within that folder
-However to import all  microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
+However to import all microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
 
 This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 
@@ -240,7 +243,7 @@ While importing the folder into VSCode remember to do the following steps the fi
 >
 >    ```bash
 >    poetry shell
->    python -m pip install --upgrade pip poetry    
+>    python -m pip install --upgrade pip poetry
 >    poetry install
 >    ```
 >
@@ -249,7 +252,7 @@ While importing the folder into VSCode remember to do the following steps the fi
 ### Running tests
 
 ```python
-# run all tests 
+# run all tests
 poetry run pytest
 ```
 
@@ -285,14 +288,14 @@ poetry run pytest -m "not integrationtest" ./07_uns_graphql
 
    ```bash
    powershell Set-ExecutionPolicy RemoteSigned
-    ```
+   ```
 
 1. **pytest-xdist & VSCode**:
-    To optimize and speed up the project is using the [pytest-xdist](https://pytest-xdist.readthedocs.io/en/latest/)
-    This however has some challenges [Working with VSCode Issue]( <https://github.com/microsoft/vscode-python/issues/19374>)
-    As a workaround run all tests which are marked `@pytest.mark.xdist_group` via the command line instead of within VSCode
+   To optimize and speed up the project is using the [pytest-xdist](https://pytest-xdist.readthedocs.io/en/latest/)
+   This however has some challenges [Working with VSCode Issue](https://github.com/microsoft/vscode-python/issues/19374)
+   As a workaround run all tests which are marked `@pytest.mark.xdist_group` via the command line instead of within VSCode
 
 1. **pytest-asyncio & Integration Testing**:
-    Similar to `pytest-xdist` I have also enabled `pytest-asyncio` for the project. While this has significantly decreased the execution time, for some integration tests ( marked by `@pytest.mark.integrationtest`) sometimes fail (*flaky tests*) if there is too much CPU / IO load. Executing them again normally works. Need to investigate how to make those more robust/race proof. The issue is not in the code but in the test case where the validation starts before the test data has completely been setup in the data store.
+   Similar to `pytest-xdist` I have also enabled `pytest-asyncio` for the project. While this has significantly decreased the execution time, for some integration tests ( marked by `@pytest.mark.integrationtest`) sometimes fail (_flaky tests_) if there is too much CPU / IO load. Executing them again normally works. Need to investigate how to make those more robust/race proof. The issue is not in the code but in the test case where the validation starts before the test data has completely been setup in the data store.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mkashwin/unifiednamespace)

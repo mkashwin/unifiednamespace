@@ -24,6 +24,7 @@ from pathlib import Path
 
 import pytest
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
+
 from uns_spb_mapper.sparkplugb_enc_config import MQTTConfig, settings
 
 is_configs_provided: bool = settings.get("mqtt.host") is not None

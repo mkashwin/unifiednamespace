@@ -6,73 +6,74 @@ This module provides a bridge between an MQTT (Message Queuing Telemetry Transpo
 
 ## Mapping logic for MQTT Topic to Kafka Topic
 
-Valid characters for Kafka topics are the ASCII alphanumerics, **```.```**, **```_```**, and **```-```** and it is better not to mix ```.``` and ```_``` to avoid metric namespace collisions
+Valid characters for Kafka topics are the ASCII alphanumerics, **`.`**, **`_`**, and **`-`** and it is better not to mix `.` and `_` to avoid metric namespace collisions
 
-Valid characters for MQTT topics are similar to above with the exception that **```/```** character is user to denote hierarchy.
+Valid characters for MQTT topics are similar to above with the exception that **`/`** character is user to denote hierarchy.
 
-Since  **```/```** is not allowed for Kafka topics, we replace all occurrences of  **```/```** in the MQTT topic name with **```_```**
+Since **`/`** is not allowed for Kafka topics, we replace all occurrences of **`/`** in the MQTT topic name with **`_`**
 see [kafka_handler.py.convert_MQTT_KAFKA_topic()](./src/uns_kafka/kafka_handler.py#convert_MQTT_KAFKA_topic)
 
-**IMPORTANT NOTE:** The Kafka broker must be configured to allow producer clients  to create topics in order to ease the operation of converting new MQTT topics to Kafka
+**IMPORTANT NOTE:** The Kafka broker must be configured to allow producer clients to create topics in order to ease the operation of converting new MQTT topics to Kafka
 
 ## Architectural options and choices
 
 1. **Integration Options to KAFKA**
-    There are two possibles ways to integrate the current setup
-    - *Bridge MQTT to KAFKA*:
-    Which is the approach I have chosen primarily because it provides flexibility and decoupling between all the service. Also most enterprise Kafka brokers have an inbuilt KAFKA plugin to ease the integration of MQTT to KAFKA
+   There are two possibles ways to integrate the current setup
 
-    - *Change Detect Capture via Debezium from the Graph database*:
-    This approach showed a lot of promise **([Refer this article](https://medium.com/neo4j/a-new-neo4j-integration-with-apache-kafka-6099c14851d2))**. I chose against this primarily because this was coupling the graph database with Kafka as well as adding additional complexity to the graph database
+   - _Bridge MQTT to KAFKA_:
+     Which is the approach I have chosen primarily because it provides flexibility and decoupling between all the service. Also most enterprise Kafka brokers have an inbuilt KAFKA plugin to ease the integration of MQTT to KAFKA
+
+   - _Change Detect Capture via Debezium from the Graph database_:
+     This approach showed a lot of promise **([Refer this article](https://medium.com/neo4j/a-new-neo4j-integration-with-apache-kafka-6099c14851d2))**. I chose against this primarily because this was coupling the graph database with Kafka as well as adding additional complexity to the graph database
 
 1. **Deployment of KAFKA Broker**
-    The primary location for deploying the KAFKA broker would be in the Enterprise hosting or the Cloud next to the Enterprise/Cloud based MQTT broker as opposed to deploying KAFKA on the manufacturing floor
-    @Kai Waehner has a brilliant [5 part Blog series](https://www.kai-waehner.de/blog/2021/03/15/apache-kafka-mqtt-sparkplug-iot-blog-series-part-1-of-5-overview-comparison/) on extracting the best by integrating MQTT and KAFKA
-    Just like the hosted enterprise versions of MQTT provided by various vendors, going with a hosted solution for KAFKA like [Confluent Cloud](https://www.confluent.io/), [AWS MSK](https://aws.amazon.com/msk/what-is-kafka/), [Aiven](https://aiven.io/), [cloudkarafka](https://www.cloudkarafka.com/) etc.
-    If you want to deploy and manage Kafka, I recommend also checking out [Strimzi](https://strimzi.io/) as a way to deploy and manage Kafka on Kubernetes.
-    I would recommend using Kafka in [Kraft mode](https://developer.confluent.io/learn/kraft/) which significantly improved the experience of deploying and managing Kafka
+   The primary location for deploying the KAFKA broker would be in the Enterprise hosting or the Cloud next to the Enterprise/Cloud based MQTT broker as opposed to deploying KAFKA on the manufacturing floor
+   @Kai Waehner has a brilliant [5 part Blog series](https://www.kai-waehner.de/blog/2021/03/15/apache-kafka-mqtt-sparkplug-iot-blog-series-part-1-of-5-overview-comparison/) on extracting the best by integrating MQTT and KAFKA
+   Just like the hosted enterprise versions of MQTT provided by various vendors, going with a hosted solution for KAFKA like [Confluent Cloud](https://www.confluent.io/), [AWS MSK](https://aws.amazon.com/msk/what-is-kafka/), [Aiven](https://aiven.io/), [cloudkarafka](https://www.cloudkarafka.com/) etc.
+   If you want to deploy and manage Kafka, I recommend also checking out [Strimzi](https://strimzi.io/) as a way to deploy and manage Kafka on Kubernetes.
+   I would recommend using Kafka in [Kraft mode](https://developer.confluent.io/learn/kraft/) which significantly improved the experience of deploying and managing Kafka
 
 1. **Choice of KAFKA Client library**
-    Of the many Kafka client libraries for python, I selected [confluent-kafka](https://docs.confluent.io/kafka-clients/python/current/overview.html) primarily for its slightly better performance and similarity to other libraries (owing to being a wrapper over the C library librdkafka)
+   Of the many Kafka client libraries for python, I selected [confluent-kafka](https://docs.confluent.io/kafka-clients/python/current/overview.html) primarily for its slightly better performance and similarity to other libraries (owing to being a wrapper over the C library librdkafka)
 
 ## Key Configurations to provide
 
 This application has two configuration file.
 
-1. [settings.yaml](./conf/settings.yaml):  Contain the key configurations need to connect with MQTT brokers as well as the Kafka brokers
-    **key** | **sub key** | **description**  | ***default value*** |
-    ------ | ------ | ------ | ------
-    **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | *None*
-    mqtt | port | Port of the mqtt broker (int) | *1883*
-    mqtt | topics | Array of topics to be subscribed to. Must be in the names space of SpB  i.e. **spBv1.0/#** | *["spBv1.0/#"]*
-    mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | *1*
-    mqtt | keep_alive | Maximum time interval in seconds between two control packet published by the client (int) | *60*
-    mqtt | reconnect_on_failure | Makes the client handle reconnection(s). Recommend keeping this True  (True,False)| *True*
-    mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | *5*
-    mqtt | clean_session | Boolean value to be specified only if MQTT Version is not 5 | *None*
-    mqtt | transport | Valid values are "websockets", "tcp" | *"tcp"*
-    mqtt | ignored_attributes | Map of topic &  list of attributes which are to be ignored from persistance. supports wild cards for topics  and nested via . notation for the attributes <br /> e.g.<br />  {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } |  None
-    mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"*
-    **kafka** | **config**\*  | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | *None*
-    **dynaconf_merge**\*  |  | Mandatory param. Always keep value as true  |
+1. [settings.yaml](./conf/settings.yaml): Contain the key configurations need to connect with MQTT brokers as well as the Kafka brokers
+   **key** | **sub key** | **description** | **_default value_** |
+   ------ | ------ | ------ | ------
+   **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | _None_
+   mqtt | port | Port of the mqtt broker (int) | _1883_
+   mqtt | topics | Array of topics to be subscribed to. Must be in the names space of SpB i.e. **spBv1.0/#** | _["spBv1.0/#"]_
+   mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | _1_
+   mqtt | keep*alive | Maximum time interval in seconds between two control packet published by the client (int) | \_60*
+   mqtt | reconnect*on_failure | Makes the client handle reconnection(s). Recommend keeping this True (True,False)| \_True*
+   mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | _5_
+   mqtt | clean*session | Boolean value to be specified only if MQTT Version is not 5 | \_None*
+   mqtt | transport | Valid values are "websockets", "tcp" | _"tcp"_
+   mqtt | ignored*attributes | Map of topic & list of attributes which are to be ignored from persistance. supports wild cards for topics and nested via . notation for the attributes <br /> e.g.<br /> {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } | None
+   mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"_
+   **kafka** | **config**\* | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | \_None_
+   **dynaconf_merge**\* | | Mandatory param. Always keep value as true |
 
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect
-    This file is not checked into the repository for security purposes. However there is a template file provided [**`.secrets_template.yaml`**](./conf/.secrets_template.yaml) which should be edited and renamed to **`.secrets.yaml`**
-    **key** | **sub key** | **sub key** | **description**  | ***default value*** |
-    :------ | :------ | :------ | :------ | :------
-   mqtt | username | | The user id needed to authenticate with the MQTT broker | *None*
-   mqtt | password | | The password needed to authenticate with the MQTT broker | *None*
-   mqtt | tls | |Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes | *None*
-   mqtt | tls | ca_certs | fully qualified path to the ca cert file. Mandatory for an SSL connection | *None*
-   mqtt | tls | certfile | fully qualified path to the cert file | *None*
-   mqtt | tls | keyfile | fully qualified path to the keyfile for the cert| *None*
-   mqtt | tls | cert_reqs | Boolean. If note provided then  ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | *None*
-   mqtt | tls | ciphers | Specify which encryption ciphers are allowed for this connection | *None*
-   mqtt | tls | keyfile_password | Password used to encrypt your certfile and keyfile | *None*
-   mqtt | tls | insecure_cert | Boolean. Skips hostname checking required for self signed certificates.  | *True*
-   kafka | config | | Dict. see [kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). Only the security related settings   |  *None*
+   This file is not checked into the repository for security purposes. However there is a template file provided [**`.secrets_template.yaml`**](./conf/.secrets_template.yaml) which should be edited and renamed to **`.secrets.yaml`**
+   **key** | **sub key** | **sub key** | **description** | **_default value_** |
+   :------ | :------ | :------ | :------ | :------
+   mqtt | username | | The user id needed to authenticate with the MQTT broker | _None_
+   mqtt | password | | The password needed to authenticate with the MQTT broker | _None_
+   mqtt | tls | |Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes | _None_
+   mqtt | tls | ca*certs | fully qualified path to the ca cert file. Mandatory for an SSL connection | \_None*
+   mqtt | tls | certfile | fully qualified path to the cert file | _None_
+   mqtt | tls | keyfile | fully qualified path to the keyfile for the cert| _None_
+   mqtt | tls | cert*reqs | Boolean. If note provided then ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | \_None*
+   mqtt | tls | ciphers | Specify which encryption ciphers are allowed for this connection | _None_
+   mqtt | tls | keyfile*password | Password used to encrypt your certfile and keyfile | \_None*
+   mqtt | tls | insecure*cert | Boolean. Skips hostname checking required for self signed certificates. | \_True*
+   kafka | config | | Dict. see [kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). Only the security related settings | _None_
 
-   **dynaconf_merge**\*  |  | | Mandatory param. Always keep value as true  |
+   **dynaconf_merge**\* | | | Mandatory param. Always keep value as true |
 
 ## Setting up the development environment for this module
 
@@ -151,7 +152,7 @@ poetry run pytest test/
 
 The docker container image for this module are built and store in the Dockerize module published to [Github Container Registry](https://github.com/mkashwin/unifiednamespace/pkgs/container/unifiednamespace%2Funs%2Fkafka_mapper)
 
-The way to run the container  is
+The way to run the container is
 
 ```bash
 # docker pull ghcr.io/mkashwin/unifiednamespace/uns/kafka_mapper:<tag>
@@ -165,9 +166,9 @@ docker run --name uns_mqtt_2_kafka -d -v $PWD/conf:/app/conf ghcr.io/mkashwin/un
 
 - **\<container name\>** (optional): Identifier for the container so you can work with the same container instance using
 
-   ```bash
-   docker start <container name>
-   docker stop <container name>
-   ```
+  ```bash
+  docker start <container name>
+  docker stop <container name>
+  ```
 
-- **\<full path to conf\>** (Mandatory): Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). *Give the complete path and not relative path*
+- **\<full path to conf\>** (Mandatory): Volume mounted to the container containing the configurations. See [Key Configurations to provide](#key-configurations-to-provide). _Give the complete path and not relative path_

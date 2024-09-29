@@ -116,13 +116,13 @@ Ideally, they also benefit from creating a similar UNS which can subscribe to an
 
 ### Key Risks and Mitigations
 
-| Sno | Risk (Description, Impact, Probability) | Mitigation |
-| --- | --- | --- |
-| 1.  | Cultural resistance due to change towards becoming more data-driven<br/><br/>Impact: High / Probability: High | Executive Support<br/><br/>Educational support<br/><br/>Showcases quick wins easing the pain on the shop floor |
-| 2   | Technical Limitations: non-compliance of current OT/IT inventory [to Key principles of UNS](#key-principles)<br/><br/>Impact: Low / Probability: High | Implement tactical Edge of Node Devices to translate legacy protocols to event-based.<br/><br/>Planned obsolesce of legacy systems |
-| 3.  | Technical Limitation: Large Payloads of more than 256MB are not supported by MQTT<br/><br/>Impact: High / Probability: Low | For the majority of IIOT systems with reporting by exception, this limit will not be reached. For IT Systems or high-res video systems implement tactical Edge of Node which can break the payloads into smaller chunks to be re-aggregated later. |
-| 4.  | Technical Limitation: High fidelity data generation or ultra-low latency required for OT system<br/><br/>Impact: Medium / Probability: High | Evaluate options like SparkPlugB or Edge of Node to package multiple payloads in one master to ensure data fidelity is maintained<br/><br/>Support point to point polling integrations just at the OT systems for ultra-low latency scenarios |
-| 5.  | Lack of support / complexity using FOSS solutions vs. expensive COTS solutions<br/><br/>Impact: Low / Probability: High | Start with FOSS and develop inhouse capability showcasing Value. Migrate to COTS when the value is justified |
+| Sno | Risk (Description, Impact, Probability)                                                                                                               | Mitigation                                                                                                                                                                                                                                         |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.  | Cultural resistance due to change towards becoming more data-driven<br/><br/>Impact: High / Probability: High                                         | Executive Support<br/><br/>Educational support<br/><br/>Showcases quick wins easing the pain on the shop floor                                                                                                                                     |
+| 2   | Technical Limitations: non-compliance of current OT/IT inventory [to Key principles of UNS](#key-principles)<br/><br/>Impact: Low / Probability: High | Implement tactical Edge of Node Devices to translate legacy protocols to event-based.<br/><br/>Planned obsolesce of legacy systems                                                                                                                 |
+| 3.  | Technical Limitation: Large Payloads of more than 256MB are not supported by MQTT<br/><br/>Impact: High / Probability: Low                            | For the majority of IIOT systems with reporting by exception, this limit will not be reached. For IT Systems or high-res video systems implement tactical Edge of Node which can break the payloads into smaller chunks to be re-aggregated later. |
+| 4.  | Technical Limitation: High fidelity data generation or ultra-low latency required for OT system<br/><br/>Impact: Medium / Probability: High           | Evaluate options like SparkPlugB or Edge of Node to package multiple payloads in one master to ensure data fidelity is maintained<br/><br/>Support point to point polling integrations just at the OT systems for ultra-low latency scenarios      |
+| 5.  | Lack of support / complexity using FOSS solutions vs. expensive COTS solutions<br/><br/>Impact: Low / Probability: High                               | Start with FOSS and develop inhouse capability showcasing Value. Migrate to COTS when the value is justified                                                                                                                                       |
 
 ## Key Stakeholders (WHO)
 
@@ -147,6 +147,7 @@ Manufacturing generates data at every stage, yet this data is not accessible or 
 
 ![Credit Walter Reynolds -- IIOT University](../images/ManufacturingProcess.png)<br/>
 _Figure 1: High-level view of systems generating data in the manufacturing value chain_
+
 </div>
 
 ### Understanding ISA Part 2 and its application to the UNS
@@ -165,6 +166,7 @@ The level at which the message is published has a direct implication on its time
 
 ![ISA-95 Part 2](../images/ISA-95-part2.png)<br/>
 _Figure 2: The hierarchical structure proposed by ISA 95 -Part 2_
+
 </div>
 
 ### Unified Name Space (UNS)
@@ -177,6 +179,7 @@ This is a critical concept to allow scalability by preventing point-to-point con
 
 ![Credit Walter Reynolds -- IIOT University](../images/UNS.png)<br/>
 _Figure 3: Unified Name Space_
+
 </div>
 
 ### Connecting Unified Name Space (UNS) across organisations to create the digital supply chain
@@ -187,6 +190,7 @@ As the information, events and insights of each enterprise are published into it
 
 ![Credit Walter Reynolds -- IIOT University](../images/Connected_UNS.png)<br/>
 _Figure 4: [LinkedIn Post](https://www.linkedin.com/posts/walkerdreynolds_unifiednamespace-iiot-digitaltransformation-activity-7212069188264157184-Rfrd) from Walker Reynolds_
+
 </div>
 
 ### Types of Manufacturing

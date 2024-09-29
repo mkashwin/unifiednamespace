@@ -19,6 +19,7 @@ All tests for uns_spb_helper  related to Templates within Metrics
 """
 
 import pytest
+
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes, SPBParameterTypes
 from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator

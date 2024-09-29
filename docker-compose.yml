@@ -15,7 +15,7 @@
 #    -
 ###############################################################################
 
-# This is a docker-compose to rapidly deploy all uns modules and assosciates services needed for deployment
+# This is a docker-compose to rapidly deploy all uns modules and  associated  services needed for deployment
 # DO NOT USE FOR PRODUCTION DELPOYMENT
 # This currently ignores the configurations present in the conf folders and uses the defaults for all configurations
 # Except for passwords of the databases which need to be provided as enviorment variables while running this compose file
@@ -28,7 +28,7 @@
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose up -d
 # Example for destroying  all the containers and volumes created
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose down --volumes
-version: '3'
+version: "3"
 services:
   uns_mqtt_broker:
     image: emqx/emqx:latest
@@ -48,9 +48,9 @@ services:
     environment:
       POSTGRES_PASSWORD: ${PGPASSWORD}
     healthcheck:
-        test: "pg_isready --username=postgres && psql --username=postgres --list"
-        timeout: 10s
-        retries: 20
+      test: "pg_isready --username=postgres && psql --username=postgres --list"
+      timeout: 10s
+      retries: 20
 
   uns_neo4j_db:
     image: neo4j:latest
@@ -213,4 +213,3 @@ services:
         condition: service_healthy
       uns_kakfa_broker:
         condition: service_healthy
-

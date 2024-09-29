@@ -21,6 +21,7 @@ import json
 
 import pytest
 import strawberry
+
 from uns_graphql.type.basetype import BytesPayload, JSONPayload
 from uns_graphql.type.mqtt_event import MQTTMessage
 

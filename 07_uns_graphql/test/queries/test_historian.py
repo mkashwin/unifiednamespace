@@ -24,6 +24,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import strawberry
+
 from uns_graphql.backend.historian import HistorianDBPool
 from uns_graphql.input.mqtt import MQTTTopic, MQTTTopicInput
 from uns_graphql.queries.historian import Query as HistorianQuery

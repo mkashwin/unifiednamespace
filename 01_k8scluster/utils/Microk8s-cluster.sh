@@ -38,16 +38,16 @@ sudo snap refresh
 sudo snap install microk8s --classic --channel=latest/stable
 
 # Adding the current user to Microk8s group
-sudo usermod -a -G microk8s $USER
+sudo usermod -a -G microk8s "${USER}"
 mkdir ~/.kube
 
-sudo chown root:$USER /var/snap/microk8s/current/credentials/
-sudo chown root:$USER /var/snap/microk8s/current/credentials/client.config
+sudo chown root:"${USER}" /var/snap/microk8s/current/credentials/
+sudo chown root:"${USER}" /var/snap/microk8s/current/credentials/client.config
 
-sudo chown root:$USER /var/snap/microk8s/current/args/
-sudo chown root:$USER /var/snap/microk8s/current/args/kubectl
+sudo chown root:"${USER}" /var/snap/microk8s/current/args/
+sudo chown root:"${USER}" /var/snap/microk8s/current/args/kubectl
 # Re-entering user session for group update to take effect
-su - $USER
+su - "${USER}"
 # Reload the mircok8s group users
 newgrp microk8s
 # change domain number per node 40, 42, 44 <= dont
@@ -67,7 +67,7 @@ microk8s add-node
 
 # microk8s.kubectl --kubeconfig ~/.kube/config
 sudo microk8s.config > ~/.kube/config
-sudo chown -f -R $USER ~/.kube
+sudo chown -f -R "${USER}" ~/.kube
 
 # On every node (including the master(s)):
 #     microk8s stop (Stop all nodes before changing configuration files)
@@ -107,7 +107,7 @@ microk8s enable metallb:198.168.220.1-198.168.220.126
 # Get the default token name
 token=$(microk8s kubectl -n kube-system get secret | grep default-token | cut -d " " -f1)
 # Display the token value
-microk8s kubectl -n kube-system describe secret $token
+microk8s kubectl -n kube-system describe secret "${token}"
 
 # microk8s kubectl port-forward -n kube-system service/kubernetes-dashboard 10443:443 --address 0.0.0.0 &
 #create a metal llb load balancer for the dashboard. This step is critical to ensure that the metallb, the routing rules etc. are correctly setup

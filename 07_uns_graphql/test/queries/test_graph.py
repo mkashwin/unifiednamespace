@@ -27,6 +27,7 @@ import pytest_asyncio
 import strawberry
 from neo4j import Record
 from neo4j.graph import Node, Relationship
+
 from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.graphql_config import GraphDBConfig
 from uns_graphql.input.mqtt import MQTTTopic, MQTTTopicInput

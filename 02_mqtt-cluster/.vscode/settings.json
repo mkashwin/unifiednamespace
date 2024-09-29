@@ -1,44 +1,44 @@
 {
-    "python.analysis.extraPaths": [
-        "./src"
-    ],
-    "python.testing.pytestArgs": [
-        "test"
-    ],
-    "python.testing.pytestEnabled": true,
-    "[python]": {
-        "editor.formatOnSaveMode": "file",
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff"
+  "python.analysis.extraPaths": ["./src"],
+  "python.testing.pytestArgs": ["test"],
+  "python.testing.pytestEnabled": true,
+  "[python]": {
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
     },
-    "cSpell.words": [
-        "aarch",
-        "DBIRTH",
-        "DCMD",
-        "DDATA",
-        "DDEATH",
-        "EMQX",
-        "hostpath",
-        "integrationtest",
-        "k8scluster",
-        "keepalive",
-        "microk8s",
-        "MOSQUITTO",
-        "mqtt",
-        "NBIRTH",
-        "NCMD",
-        "NDATA",
-        "NDEATH",
-        "openebs",
-        "mayastore",
-        "packettypes",
-        "paho",
-        "ppcle",
-        "proto",
-        "protobuf",
-        "sparkplugb",
-        "storageclass",
-        "Tahu",
-        "userdata"
-    ],
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "cSpell.words": [
+    "aarch",
+    "DBIRTH",
+    "DCMD",
+    "DDATA",
+    "DDEATH",
+    "EMQX",
+    "hostpath",
+    "integrationtest",
+    "k8scluster",
+    "keepalive",
+    "microk8s",
+    "MOSQUITTO",
+    "mqtt",
+    "NBIRTH",
+    "NCMD",
+    "NDATA",
+    "NDEATH",
+    "openebs",
+    "mayastore",
+    "packettypes",
+    "paho",
+    "ppcle",
+    "proto",
+    "protobuf",
+    "sparkplugb",
+    "storageclass",
+    "Tahu",
+    "userdata"
+  ]
 }

@@ -23,6 +23,7 @@ import time
 from pathlib import Path
 
 import pytest
+
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker

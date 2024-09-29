@@ -25,6 +25,7 @@ from unittest.mock import AsyncMock, patch
 
 import asyncpg
 import pytest
+
 from uns_historian.historian_config import HistorianConfig
 from uns_historian.historian_handler import HistorianHandler
 

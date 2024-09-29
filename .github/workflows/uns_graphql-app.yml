@@ -152,7 +152,7 @@ jobs:
           module: 07_uns_graphql
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
-          pytest_flags: ${{ inputs.pytest_add_opts }} 
+          pytest_flags: ${{ inputs.pytest_add_opts }}
 
       - name: Create graphQL schema
         env:
