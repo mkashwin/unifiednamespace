@@ -69,7 +69,7 @@ RUN apk update && \
     rm -rf librdkafka-${LIBRDKAFKA_VER} 
 
 # Install pip & poetry
-RUN  pip install  --no-cache-dir--upgrade pip poetry && \
+RUN  pip install  --no-cache-dir --upgrade pip poetry && \
     # create application user
     adduser --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
