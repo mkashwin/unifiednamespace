@@ -62,12 +62,12 @@ jobs:
       UNS_graphdb__password: ${{ needs.generate_random_password.outputs.neo4j_pwd }}
     services:
       uns_mqtt:
-        image: emqx/emqx:latest
+        image: "emqx/emqx:latest"
         ports:
           - "1883:1883"
           - "8083:8083"
       uns_graphdb:
-        image: neo4j:latest
+        image: "neo4j:latest"
         ports:
           - "7474:7474"
           - "7687:7687"

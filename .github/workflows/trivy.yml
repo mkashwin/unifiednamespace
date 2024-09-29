@@ -11,6 +11,7 @@ on:
     paths:
       - "*/src/**/*.py*"
       - "**/poetry.lock"
+      - "**/Dockerfile"
 
   pull_request:
     # The branches below must be a subset of the branches above

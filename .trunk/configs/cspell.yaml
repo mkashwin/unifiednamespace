@@ -2,7 +2,7 @@ version: "0.2"
 # Suggestions can sometimes take longer on CI machines,
 # leading to inconsistent results.
 suggestionsTimeout: 5000 # ms
-language: "en,en-GB"
+language: "en, en-GB, python, bash, softwareTerms"
 ignoreWords:
   [
     "aarch",
