@@ -150,5 +150,6 @@
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "cSpell.language": "en,en-GB"
+  "cSpell.language": "en,en-GB",
+  "trunk.addToolsToPath": true
 }
