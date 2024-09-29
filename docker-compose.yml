@@ -16,9 +16,9 @@
 ###############################################################################
 
 # This is a docker-compose to rapidly deploy all uns modules and  associated  services needed for deployment
-# DO NOT USE FOR PRODUCTION DELPOYMENT
+# DO NOT USE FOR PRODUCTION DEPLOYMENT
 # This currently ignores the configurations present in the conf folders and uses the defaults for all configurations
-# Except for passwords of the databases which need to be provided as enviorment variables while running this compose file
+# Except for passwords of the databases which need to be provided as environment variables while running this compose file
 # Env Variables which have to be set are
 #   - UNS_graphdb__password
 #   - UNS_historian__password
@@ -70,7 +70,7 @@ services:
       retries: 20
       start_period: 3s
 
-  uns_kakfa_broker:
+  uns_kafka_broker:
     image: bitnami/kafka:latest
     ports:
       - "9092:9092"
@@ -81,10 +81,10 @@ services:
       KAFKA_CFG_PROCESS_ROLES: controller,broker
       KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@uns_kakfa_broker:9093
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@uns_kafka_broker:9093
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
     healthcheck:
-      test: kafka-topics.sh --bootstrap-server uns_kakfa_broker:9092 --topic hc --create --if-not-exists && kafka-topics.sh --bootstrap-server uns_kakfa_broker:9092 --topic hc --describe
+      test: kafka-topics.sh --bootstrap-server uns_kafka_broker:9092 --topic hc --create --if-not-exists && kafka-topics.sh --bootstrap-server uns_kafka_broker:9092 --topic hc --describe
       start_period: 10s
       interval: 5s
       timeout: 10s
@@ -176,11 +176,11 @@ services:
     environment:
       UNS_MODULE: 06_uns_kafka
       UNS_mqtt__host: uns_mqtt_broker
-      UNS_kafka__config: '@json {"client.id": "uns_kafka_client", "bootstrap.servers": "uns_kakfa_broker:9092", "enable.idempotence": true, "retries": 10, "compression.type": "gzip"}'
+      UNS_kafka__config: '@json {"client.id": "uns_kafka_client", "bootstrap.servers": "uns_kafka_broker:9092", "enable.idempotence": true, "retries": 10, "compression.type": "gzip"}'
     depends_on:
       uns_mqtt_broker:
         condition: service_healthy
-      uns_kakfa_broker:
+      uns_kafka_broker:
         condition: service_healthy
 
   graphql_server:
@@ -203,7 +203,7 @@ services:
       UNS_historian__username: uns_dbuser
       UNS_historian__password: ${UNS_historian__password}
 
-      UNS_kafka__config: '@json {"group.id": "uns_graphql", "client.id": "uns_graphql_client", "bootstrap.servers": "uns_kakfa_broker:9092", "enable.idempotence": true, "retries": 10, "compression.type": "gzip"}'
+      UNS_kafka__config: '@json {"group.id": "uns_graphql", "client.id": "uns_graphql_client", "bootstrap.servers": "uns_kafka_broker:9092", "enable.idempotence": true, "retries": 10, "compression.type": "gzip"}'
     depends_on:
       uns_mqtt_broker:
         condition: service_healthy
@@ -211,5 +211,5 @@ services:
         condition: service_healthy
       uns_timescale_db:
         condition: service_healthy
-      uns_kakfa_broker:
+      uns_kafka_broker:
         condition: service_healthy

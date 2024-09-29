@@ -84,7 +84,7 @@ volumeBindingMode: WaitForFirstConsumer
 EOF
 ```
 
-> **Important Note:** Validate that you have the correct persistance storage class
+> **Important Note:** Validate that you have the correct persistence storage class
 > We are using mayastor which was installed as an addon
 >
 > ```bash

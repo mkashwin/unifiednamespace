@@ -41,37 +41,39 @@ see [kafka_handler.py.convert_MQTT_KAFKA_topic()](./src/uns_kafka/kafka_handler.
 This application has two configuration file.
 
 1. [settings.yaml](./conf/settings.yaml): Contain the key configurations need to connect with MQTT brokers as well as the Kafka brokers
-   **key** | **sub key** | **description** | **_default value_** |
-   ------ | ------ | ------ | ------
-   **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | _None_
-   mqtt | port | Port of the mqtt broker (int) | _1883_
-   mqtt | topics | Array of topics to be subscribed to. Must be in the names space of SpB i.e. **spBv1.0/#** | _["spBv1.0/#"]_
-   mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | _1_
-   mqtt | keep*alive | Maximum time interval in seconds between two control packet published by the client (int) | \_60*
-   mqtt | reconnect*on_failure | Makes the client handle reconnection(s). Recommend keeping this True (True,False)| \_True*
-   mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | _5_
-   mqtt | clean*session | Boolean value to be specified only if MQTT Version is not 5 | \_None*
-   mqtt | transport | Valid values are "websockets", "tcp" | _"tcp"_
-   mqtt | ignored*attributes | Map of topic & list of attributes which are to be ignored from persistance. supports wild cards for topics and nested via . notation for the attributes <br /> e.g.<br /> {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } | None
-   mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"_
-   **kafka** | **config**\* | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations | \_None_
-   **dynaconf_merge**\* | | Mandatory param. Always keep value as true |
+
+   | **key**              | **sub key**           | **description**                                                                                                                                                                                                                                                                                              | **_default value_** |
+   | -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+   | **mqtt**             | **host**\*            | Hostname of the mqtt broker instant. Mandatory configuration                                                                                                                                                                                                                                                 | _None_              |
+   | mqtt                 | port                  | Port of the mqtt broker (int)                                                                                                                                                                                                                                                                                | _1883_              |
+   | mqtt                 | topics                | Array of topics to be subscribed to. Must be in the names space of SpB i.e. **spBv1.0/#**                                                                                                                                                                                                                    | _["spBv1.0/#"]_     |
+   | mqtt                 | qos                   | QOS for the subscription. Valid values are 0,1,2                                                                                                                                                                                                                                                             | _1_                 |
+   | mqtt                 | keep\*alive           | Maximum time interval in seconds between two control packet published by the client (int)                                                                                                                                                                                                                    | \_60\*              |
+   | mqtt                 | reconnect\*on_failure | Makes the client handle reconnection(s). Recommend keeping this True (True,False)                                                                                                                                                                                                                            | \_True\*            |
+   | mqtt                 | version               | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31)                                                                                                                                                                               | _5_                 |
+   | mqtt                 | clean\*session        | Boolean value to be specified only if MQTT Version is not 5                                                                                                                                                                                                                                                  | \_None\*            |
+   | mqtt                 | transport             | Valid values are "websockets", "tcp"                                                                                                                                                                                                                                                                         | _"tcp"_             |
+   | mqtt                 | ignored\*attributes   | Map of topic & list of attributes which are to be ignored from persistence. supports wild cards for topics and nested via . notation for the attributes <br /> e.g.<br /> {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } | None                |
+   | mqtt                 | timestamp_attribute   | the attribute name which should contain the timestamp of the message's publishing                                                                                                                                                                                                                            | \*"timestamp"\_     |
+   | **kafka**            | **config**\*          | Mandatory Dict. see [Kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). All non security configurations                                                                                                                                                   | \_None\_            |
+   | **dynaconf_merge**\* |                       | Mandatory param. Always keep value as true                                                                                                                                                                                                                                                                   |
 
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect
    This file is not checked into the repository for security purposes. However there is a template file provided [**`.secrets_template.yaml`**](./conf/.secrets_template.yaml) which should be edited and renamed to **`.secrets.yaml`**
-   **key** | **sub key** | **sub key** | **description** | **_default value_** |
-   :------ | :------ | :------ | :------ | :------
-   mqtt | username | | The user id needed to authenticate with the MQTT broker | _None_
-   mqtt | password | | The password needed to authenticate with the MQTT broker | _None_
-   mqtt | tls | |Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes | _None_
-   mqtt | tls | ca*certs | fully qualified path to the ca cert file. Mandatory for an SSL connection | \_None*
-   mqtt | tls | certfile | fully qualified path to the cert file | _None_
-   mqtt | tls | keyfile | fully qualified path to the keyfile for the cert| _None_
-   mqtt | tls | cert*reqs | Boolean. If note provided then ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | \_None*
-   mqtt | tls | ciphers | Specify which encryption ciphers are allowed for this connection | _None_
-   mqtt | tls | keyfile*password | Password used to encrypt your certfile and keyfile | \_None*
-   mqtt | tls | insecure*cert | Boolean. Skips hostname checking required for self signed certificates. | \_True*
-   kafka | config | | Dict. see [kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). Only the security related settings | _None_
+
+   | **key** | **sub key** | **sub key**       | **description**                                                                                                                                     | **_default value_** |
+   | :------ | :---------- | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------ |
+   | mqtt    | username    |                   | The user id needed to authenticate with the MQTT broker                                                                                             | _None_              |
+   | mqtt    | password    |                   | The password needed to authenticate with the MQTT broker                                                                                            | _None_              |
+   | mqtt    | tls         |                   | Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes                                                    | _None_              |
+   | mqtt    | tls         | ca\*certs         | fully qualified path to the ca cert file. Mandatory for an SSL connection                                                                           | \_None\*            |
+   | mqtt    | tls         | certfile          | fully qualified path to the cert file                                                                                                               | _None_              |
+   | mqtt    | tls         | keyfile           | fully qualified path to the keyfile for the cert                                                                                                    | _None_              |
+   | mqtt    | tls         | cert\*reqs        | Boolean. If note provided then ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used                         | \_None\*            |
+   | mqtt    | tls         | ciphers           | Specify which encryption ciphers are allowed for this connection                                                                                    | _None_              |
+   | mqtt    | tls         | keyfile\*password | Password used to encrypt your certfile and keyfile                                                                                                  | \_None\*            |
+   | mqtt    | tls         | insecure\*cert    | Boolean. Skips hostname checking required for self signed certificates.                                                                             | \_True\*            |
+   | kafka   | config      |                   | Dict. see [kafka client configuration](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md). Only the security related settings | _None_              |
 
    **dynaconf_merge**\* | | | Mandatory param. Always keep value as true |
 

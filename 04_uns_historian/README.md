@@ -76,47 +76,49 @@ docker stop  uns_timescaledb #<container_name>
 This application has two configuration file.
 
 1. [settings.yaml](./conf/settings.yaml): Contain the key configurations need to connect with MQTT brokers as well as timescale db
-   **key** | **sub key** | **description** | **_default value_** |
-   ------ | ------ | ------ | ------
-   **mqtt** | **host**\*| Hostname of the mqtt broker instant. Mandatory configuration | _None_
-   mqtt | port | Port of the mqtt broker (int) | _1883_
-   mqtt | topics | Array of topics to be subscribed to. Recommend subscribing to a level +/# and spBv1.0 e.g. ["erp/#","spBv1.0/#"] | _["#"]_
-   mqtt | qos | QOS for the subscription. Valid values are 0,1,2 | _1_
-   mqtt | keep*alive | Maximum time interval in seconds between two control packet published by the client (int) | \_60*
-   mqtt | reconnect*on_failure | Makes the client handle reconnection(s). Recommend keeping this True (True,False)| \_True*
-   mqtt | version | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31) | _5_
-   mqtt | clean*session | Boolean value to be specified only if MQTT Version is not 5 | \_None*
-   mqtt | transport | Valid values are "websockets", "tcp" | _"tcp"_
-   mqtt | ignored*attributes | Map of topic & list of attributes which are to be ignored from persistance. supports wild cards for topics and nested via . notation for the attributes <br /> e.g.<br /> {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } | None
-   mqtt | timestamp_attribute | the attribute name which should contain the timestamp of the message's publishing| *"timestamp"_
-   **historian** | **hostname**\* | Mandatory. The db hostname of your TimescaleDB instance| \_None_
-   historian | port | The port for the instance of your TimescaleDB instance| _5432_
-   **historian** | **database**\* | Mandatory. The database name to write to. See [db script](./sql_scripts/01_setup_db.sql) | _None_
-   **historian** | **table**\*| Mandatory. The hypertable where the time-series of messages is stored. See [db script](./sql_scripts/02_setup_hypertable.sql)| _None_
-   **dynaconf_merge**\* | | Mandatory param. Always keep value as true |
+
+   | **key**              | **sub key**           | **description**                                                                                                                                                                                                                                                                                              | **_default value_** |
+   | -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+   | **mqtt**             | **host**\*            | Hostname of the mqtt broker instant. Mandatory configuration                                                                                                                                                                                                                                                 | _None_              |
+   | mqtt                 | port                  | Port of the mqtt broker (int)                                                                                                                                                                                                                                                                                | _1883_              |
+   | mqtt                 | topics                | Array of topics to be subscribed to. Recommend subscribing to a level +/# and spBv1.0 e.g. ["erp/#","spBv1.0/#"]                                                                                                                                                                                             | _["#"]_             |
+   | mqtt                 | qos                   | QOS for the subscription. Valid values are 0,1,2                                                                                                                                                                                                                                                             | _1_                 |
+   | mqtt                 | keep\*alive           | Maximum time interval in seconds between two control packet published by the client (int)                                                                                                                                                                                                                    | \_60\*              |
+   | mqtt                 | reconnect\*on_failure | Makes the client handle reconnection(s). Recommend keeping this True (True,False)                                                                                                                                                                                                                            | \_True\*            |
+   | mqtt                 | version               | The MQTT version to be used for connecting to the broker. Valid values are : 5 (for MQTTv5), 4 (for MQTTv311) , 3(for MQTTv31)                                                                                                                                                                               | _5_                 |
+   | mqtt                 | clean\*session        | Boolean value to be specified only if MQTT Version is not 5                                                                                                                                                                                                                                                  | \_None\*            |
+   | mqtt                 | transport             | Valid values are "websockets", "tcp"                                                                                                                                                                                                                                                                         | _"tcp"_             |
+   | mqtt                 | ignored\*attributes   | Map of topic & list of attributes which are to be ignored from persistence. supports wild cards for topics and nested via . notation for the attributes <br /> e.g.<br /> {<br /> 'topic1' : ["attr1", "attr2", "attr2.subAttr1" ],<br /> 'topic2/+' : ["A", "A.B.C"],<br /> 'topic3/#' : ["x", "Y"]<br /> } | None                |
+   | mqtt                 | timestamp_attribute   | the attribute name which should contain the timestamp of the message's publishing                                                                                                                                                                                                                            | \*"timestamp"\_     |
+   | **historian**        | **hostname**\*        | Mandatory. The db hostname of your TimescaleDB instance                                                                                                                                                                                                                                                      | \_None\_            |
+   | historian            | port                  | The port for the instance of your TimescaleDB instance                                                                                                                                                                                                                                                       | _5432_              |
+   | **historian**        | **database**\*        | Mandatory. The database name to write to. See [db script](./sql_scripts/01_setup_db.sql)                                                                                                                                                                                                                     | _None_              |
+   | **historian**        | **table**\*           | Mandatory. The hypertable where the time-series of messages is stored. See [db script](./sql_scripts/02_setup_hypertable.sql)                                                                                                                                                                                | _None_              |
+   | **dynaconf_merge**\* |                       | Mandatory param. Always keep value as true                                                                                                                                                                                                                                                                   |
 
 1. [.secret.yaml](./conf/.secrets_template.yaml) : Contains the username and passwords to connect to the MQTT cluster and the timescaledb
    This file is not checked into the repository for security purposes. However there is a template file provided **`.secrets_template.yaml`** which should be edited and renamed to **`.secrets.yaml`**
-   **key** | **sub key** | **sub key** | **description** | **_default value_** |
-   :------ | :------ | :------ | :------ | :------
-   mqtt | username | | The user id needed to authenticate with the MQTT broker | _None_
-   mqtt | password | | The password needed to authenticate with the MQTT broker | _None_
-   mqtt | tls | |Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes | _None_
-   mqtt | tls | ca*certs | fully qualified path to the ca cert file. Mandatory for an SSL connection | \_None*
-   mqtt | tls | certfile | fully qualified path to the cert file | _None_
-   mqtt | tls | keyfile | fully qualified path to the keyfile for the cert| _None_
-   mqtt | tls | cert*reqs | Boolean. If note provided then ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | \_None*
-   mqtt | tls | ciphers | Specify which encryption ciphers are allowed for this connection | _None_
-   mqtt | tls | keyfile*password | Password used to encrypt your certfile and keyfile | \_None*
-   mqtt | tls | insecure*cert | Boolean. Skips hostname checking required for self signed certificates. | \_True*
-   **historian** | **username**\* | | The user id needed to authenticate with TimescaleDB | _None_
-   **historian** | **password**\* | | The password needed to authenticate with TimescaleDB | _None_
-   historian | sslmode | | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full | _None_
-   historian | sslcert | | Specifies the file name of the client SSL certificate | _None_
-   historian | sslkey | | Specifies the location for the secret key used for the client certificate| _None_
-   historian | sslrootcert | | Specifies the name of a file containing SSL certificate authority (CA) certificate(s) | _None_
-   historian | sslcrl | | Specifies the file name of the SSL certificate revocation list (CRL) | _None_
-   **dynaconf_merge**\* | | | Mandatory param. Always keep value as true |
+
+   | **key**              | **sub key**    | **sub key**       | **description**                                                                                                             | **_default value_** |
+   | :------------------- | :------------- | :---------------- | :-------------------------------------------------------------------------------------------------------------------------- | :------------------ |
+   | mqtt                 | username       |                   | The user id needed to authenticate with the MQTT broker                                                                     | _None_              |
+   | mqtt                 | password       |                   | The password needed to authenticate with the MQTT broker                                                                    | _None_              |
+   | mqtt                 | tls            |                   | Provide a map of attributes needed for a TLS connection to the MQTT broker. See below attributes                            | _None_              |
+   | mqtt                 | tls            | ca\*certs         | fully qualified path to the ca cert file. Mandatory for an SSL connection                                                   | \_None\*            |
+   | mqtt                 | tls            | certfile          | fully qualified path to the cert file                                                                                       | _None_              |
+   | mqtt                 | tls            | keyfile           | fully qualified path to the keyfile for the cert                                                                            | _None_              |
+   | mqtt                 | tls            | cert\*reqs        | Boolean. If note provided then ssl.CERT_NONE is used. if True the ssl.CERT_REQUIRED is used. else ssl.CERT_OPTIONAL is used | \_None\*            |
+   | mqtt                 | tls            | ciphers           | Specify which encryption ciphers are allowed for this connection                                                            | _None_              |
+   | mqtt                 | tls            | keyfile\*password | Password used to encrypt your certfile and keyfile                                                                          | \_None\*            |
+   | mqtt                 | tls            | insecure\*cert    | Boolean. Skips hostname checking required for self signed certificates.                                                     | \_True\*            |
+   | **historian**        | **username**\* |                   | The user id needed to authenticate with TimescaleDB                                                                         | _None_              |
+   | **historian**        | **password**\* |                   | The password needed to authenticate with TimescaleDB                                                                        | _None_              |
+   | historian            | sslmode        |                   | Enables encrypted connection to TimescaleDB. valid values are disable, allow, prefer, require, verify-ca, verify-full       | _None_              |
+   | historian            | sslcert        |                   | Specifies the file name of the client SSL certificate                                                                       | _None_              |
+   | historian            | sslkey         |                   | Specifies the location for the secret key used for the client certificate                                                   | _None_              |
+   | historian            | sslrootcert    |                   | Specifies the name of a file containing SSL certificate authority (CA) certificate(s)                                       | _None_              |
+   | historian            | sslcrl         |                   | Specifies the file name of the SSL certificate revocation list (CRL)                                                        | _None_              |
+   | **dynaconf_merge**\* |                |                   | Mandatory param. Always keep value as true                                                                                  |
 
 ## The Logic for persisting the message into the historian
 

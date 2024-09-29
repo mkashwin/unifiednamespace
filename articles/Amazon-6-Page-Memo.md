@@ -68,7 +68,7 @@ OEE = Availability \* Performance \* Quality.
 - **Build a comprehensive Unified Namespace (UNS)** to which all data generated in the organisation across IT and OT (raw, calculated, dashboards, trained ML models) are stored in a semantic hierarchy, combined and historized
 - **Event-based Architecture** ensures loose coupling of OT & IT systems making replacement of any system simple, faster, and cheaper compared to point-to-point connections across OT & IT. Replace or retrofit systems to add messaging/pub-sub capabilities.
 - **Real-time decisioning** to enable manufacturers to decide on key aspects like optimal stock, just-in-time manufacturing, optimal scheduling of jobs, etc. by combining OT & IT data (Predictive and Prescriptive Analytics)
-- **Connect UNS** of current Organisation with suppliers to provide real-time insight on demand leading to just-in-time fulfilment, thereby reducing warehouse costs, and waiting costs. (Prescriptive Analytics)
+- **Connect UNS** of current Organisation with suppliers to provide real-time insight on demand leading to just-in-time fulfillment, thereby reducing warehouse costs, and waiting costs. (Prescriptive Analytics)
 
 ## Approach (HOW)
 

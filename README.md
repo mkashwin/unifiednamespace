@@ -185,7 +185,7 @@ Since I did not have the enterprise version of the MQTT brokers, I decided to de
 - The MQTT listener to publish UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
 - A module which connects with all the data sources; Neo4j, TimescaleDB, Kafka and MQTT to provide GraphQL apis to query the UNS [07_uns_graphql](./07_uns_graphql/README.md)
 
-I choose to wite the client in Python even thought Python is not as performant as Go, C or Rust primarily because
+I choose to write the client in Python even thought Python is not as performant as Go, C or Rust primarily because
 
 - In the OT space most professionals ( in my experience) were more familiar coding with Python than Go, C or Rust. Hence I hope this increases the adoptions and contributions from the community in further developing this tool
 - Should a team want to further optimize the code, given the readability and the inline comments in the code, they are hopefully able to rewrite the application in their choice of language

@@ -75,7 +75,7 @@ class UnsMqttHistorian:
                 topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=MQTTConfig.ignored_attributes
             )
 
-            # Async Historian persistance method
+            # Async Historian persistence method
             async def run_async_handler():
                 async with HistorianHandler() as uns_historian_handler:
                     await uns_historian_handler.persist_mqtt_msg(

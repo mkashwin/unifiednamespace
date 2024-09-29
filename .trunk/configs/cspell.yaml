@@ -2,6 +2,7 @@ version: "0.2"
 # Suggestions can sometimes take longer on CI machines,
 # leading to inconsistent results.
 suggestionsTimeout: 5000 # ms
+language: "en,en-GB"
 ignoreWords:
   [
     "aarch",
@@ -99,4 +100,32 @@ ignoreWords:
     "Waehner",
     "websockets",
     "xdist",
+    "Himanshu",
+    "Dhami",
+    "Johan",
+    "Jeppson",
+    "psutil",
+    "norecursed",
+    "addopts",
+    "loadgroup",
+    "testpaths",
+    "pycache",
+    "mccabe",
+    "norecursedirs",
+    "OT",
+    "libc",
+    "libexpat",
+    "libcrypto",
+    "gssapi",
+    "mkashwin",
+    "healthcheck",
+    "CISO",
+    "PYTHONUNBUFFERED",
+    "PYTHONFAULTHANDLER",
+    "PYTHONDONTWRITEBYTECODE",
+    "POETRY_VIRTUALENVS_IN_PROJECT",
+    "POETRY_NO_INTERACTION",
+    "LIBRDKAFKA_VER",
+    "pyproject",
+    "protoc",
   ]

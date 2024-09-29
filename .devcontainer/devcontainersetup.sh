@@ -1,7 +1,7 @@
 #!/bin/bash
-# This script is to be executed on creation of the dev container in order to create a working development enviornment
+# This script is to be executed on creation of the dev container in order to create a working development environment
 WORKSPACE=/workspaces/unifiednamespace
-# 1. setup the python enviornment
+# 1. setup the python environment
 pip3 install --upgrade poetry pip
 poetry install
 

@@ -156,7 +156,7 @@ def test_separate_plain_composite_attributes(message: dict, plain: dict, composi
 
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
-    "topic, message",  # Test spB message persistance
+    "topic, message",  # Test spB message persistence
     [
         (
             "test/uns/ar1/ln2",
