@@ -36,7 +36,7 @@ test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
 sys.path.insert(0, str(test_folder))
 # @FIXME Hack done to be able to import utility modules in the tests directories
 # @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
-from test_graphdb_handler import cleanup_test_data, read_topic_nodes
+import test_graphdb_handler  # noqa: E402
 
 
 @pytest.mark.integrationtest()
@@ -148,7 +148,7 @@ def test_mqtt_graphdb_persistence(topic: str, message: dict):
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                     database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_read(read_topic_nodes, node_type, attr_nd_typ, topic, message_dict)
+                    session.execute_read(test_graphdb_handler.read_topic_nodes, node_type, attr_nd_typ, topic, message_dict)
             except (exceptions.TransientError, exceptions.TransactionError) as ex:
                 pytest.fail("Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
             finally:
@@ -156,7 +156,7 @@ def test_mqtt_graphdb_persistence(topic: str, message: dict):
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                     database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_write(cleanup_test_data, topic.split("/")[0], node_type[0])
+                    session.execute_write(test_graphdb_handler.cleanup_test_data, topic.split("/")[0], node_type[0])
                 uns_mqtt_graphdb.uns_client.disconnect()
 
         # --- end of function
