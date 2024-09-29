@@ -26,10 +26,11 @@ import pytest
 from neo4j import exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_graphdb.graphdb_config import GraphDBConfig
-from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 from uns_mqtt.mqtt_listener import MQTTVersion
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
+
+from uns_graphdb.graphdb_config import GraphDBConfig
+from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 
 test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
 sys.path.insert(0, str(test_folder))
