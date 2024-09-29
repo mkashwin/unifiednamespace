@@ -28,7 +28,6 @@
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose up -d
 # Example for destroying  all the containers and volumes created
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose down --volumes
-version: "3"
 services:
   uns_mqtt_broker:
     image: "emqx/emqx:latest"
@@ -84,7 +83,7 @@ services:
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "0@uns_kafka_broker:9093"
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
     healthcheck:
-      test: "kafka-topics.sh --bootstrap-server uns_kafka_broker:9092 --topic hc --create --if-not-exists && kafka-topics.sh --bootstrap-server uns_kafka_broker:9092 --topic hc --describe"
+      test: "kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1"
       start_period: 10s
       interval: 5s
       timeout: 10s
