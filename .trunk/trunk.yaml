@@ -12,7 +12,10 @@ plugins:
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
   enabled:
-    - python@3.10.8
+    - python@>3.10.8
+  definitions:
+    - type: python
+      system_version: allowed
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
