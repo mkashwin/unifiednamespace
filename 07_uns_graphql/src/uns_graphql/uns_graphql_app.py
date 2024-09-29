@@ -24,6 +24,7 @@ import strawberry
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from strawberry.fastapi import GraphQLRouter
+
 from uns_graphql.queries import graph, historian
 from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.subscriptions.mqtt import MQTTSubscription
