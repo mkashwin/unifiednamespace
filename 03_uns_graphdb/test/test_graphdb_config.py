@@ -24,6 +24,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
+
 from uns_graphdb.graphdb_config import GraphDBConfig, MQTTConfig, settings
 
 is_configs_provided: bool = (

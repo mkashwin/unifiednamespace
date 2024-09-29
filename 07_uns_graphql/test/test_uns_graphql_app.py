@@ -22,6 +22,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
+
 from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.backend.historian import HistorianDBPool
 from uns_graphql.queries import graph, historian

@@ -27,6 +27,7 @@ from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
+
 from uns_spb_mapper.sparkplugb_enc_config import MQTTConfig
 from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 

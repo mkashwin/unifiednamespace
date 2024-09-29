@@ -406,7 +406,7 @@ class Query:
     @classmethod
     def get_node_type(cls, labels: list[str], valid_labels: tuple[str]) -> str:
         """
-        Compares teh labels on a node with the valid set of label types and returns the one which matches
+        Compares the labels on a node with the valid set of label types and returns the one which matches
         this allows the nodes to have multiple labels in the future
         """
         for label in labels:

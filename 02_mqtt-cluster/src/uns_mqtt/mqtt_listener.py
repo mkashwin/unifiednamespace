@@ -32,6 +32,7 @@ import paho.mqtt.client as mqtt_client
 import paho.mqtt.enums as paho_mqtt
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
 # Logger

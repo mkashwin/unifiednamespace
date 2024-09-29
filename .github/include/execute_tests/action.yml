@@ -1,54 +1,54 @@
 name: Execute Tests
 description: Execute all tests
 inputs:
-    module:
-        description: 'the actual module on which the tests should run. "."  for all modules'
-        required: True
-        default: "."
-    integration_tests:
-        description: "Boolean, If True all tests should run. If False skip tests tagged for integration"
-        required: False
-        default: "false"
-    pytest_flags:
-        description: "String, additional flags to be passed to pytest while running tests"
-        required: False
-        default: ""
-    SAFETY_API_KEY:
-        description: "API Key to invoke safety scanner. see https://safetycli.com/"
-        required: True
+  module:
+    description: 'the actual module on which the tests should run. "."  for all modules'
+    required: True
+    default: "."
+  integration_tests:
+    description: "Boolean, If True all tests should run. If False skip tests tagged for integration"
+    required: False
+    default: "false"
+  pytest_flags:
+    description: "String, additional flags to be passed to pytest while running tests"
+    required: False
+    default: ""
+  SAFETY_API_KEY:
+    description: "API Key to invoke safety scanner. see https://safetycli.com/"
+    required: True
 
 runs:
-    using: "composite"
-    steps:
-        - name: Lint with ruff
-          shell: bash
-          run: |
-              # change to current directory of module        
-              cd ./${{ inputs.module }} 
-              # stop the build if there are Python syntax errors or undefined names
-              poetry run ruff check --output-format=github  --select=E9,F63,F7,F82  .
-              # exit-zero treats all errors as warnings. report all other errors but don't fail the job
-              poetry run ruff check --output-format=github --exit-zero .
+  using: "composite"
+  steps:
+    - name: Lint with ruff
+      shell: bash
+      run: |
+        # change to current directory of module        
+        cd ./${{ inputs.module }} 
+        # stop the build if there are Python syntax errors or undefined names
+        poetry run ruff check --output-format=github  --select=E9,F63,F7,F82  .
+        # exit-zero treats all errors as warnings. report all other errors but don't fail the job
+        poetry run ruff check --output-format=github --exit-zero .
 
-        - name: Test with pytest
-          shell: bash
-          run: |
-              # change to current directory of module            
-              cd ./${{ inputs.module }}
-              if [[ ${RUNNER_DEBUG} == 1 ]] ; then
-                PYTEST_CMD="poetry run pytest --debug "
-              else
-                PYTEST_CMD="poetry run pytest"
-              fi
-                
-              if ${{ inputs.integration_tests }} ; then
-               $PYTEST_CMD ${{inputs.pytest_flags}}
-              else 
-                $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest" 
-              fi
+    - name: Test with pytest
+      shell: bash
+      run: |
+        # change to current directory of module            
+        cd ./${{ inputs.module }}
+        if [[ ${RUNNER_DEBUG} == 1 ]] ; then
+          PYTEST_CMD="poetry run pytest --debug "
+        else
+          PYTEST_CMD="poetry run pytest"
+        fi
+          
+        if ${{ inputs.integration_tests }} ; then
+         $PYTEST_CMD ${{inputs.pytest_flags}}
+        else 
+          $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest" 
+        fi
 
-        - name: Run Safety CLI to check for vulnerabilities
-          uses: pyupio/safety-action@v1
-          with:
-              api-key: ${{ inputs.SAFETY_API_KEY }}
-              args: --target ./${{ inputs.module }} --policy-file ./.safety-policy.yml
+    - name: Run Safety CLI to check for vulnerabilities
+      uses: pyupio/safety-action@v1
+      with:
+        api-key: ${{ inputs.SAFETY_API_KEY }}
+        args: --target ./${{ inputs.module }} --policy-file ./.safety-policy.yml

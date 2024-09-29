@@ -23,6 +23,7 @@ import json
 import pytest
 from confluent_kafka import OFFSET_BEGINNING, Consumer, Producer
 from confluent_kafka.admin import AdminClient
+
 from uns_kafka.kafka_handler import KafkaHandler
 from uns_kafka.uns_kafka_config import settings
 

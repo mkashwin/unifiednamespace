@@ -1,7 +1,10 @@
 """
 Represents binary data as Base64-encoded strings, using the standard alphabet.
 """
-scalar Base64 @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc4648.html#section-4")
+scalar Base64
+  @specifiedBy(
+    url: "https://datatracker.ietf.org/doc/html/rfc4648.html#section-4"
+  )
 
 enum BinaryOperator {
   OR
@@ -13,7 +16,9 @@ type BytesPayload {
   data: Base64!
 }
 
-"""Date with time (isoformat)"""
+"""
+Date with time (isoformat)
+"""
 scalar DateTime
 
 type HistoricalUNSEvent {
@@ -26,7 +31,10 @@ type HistoricalUNSEvent {
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf).
 """
-scalar JSON @specifiedBy(url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf")
+scalar JSON
+  @specifiedBy(
+    url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf"
+  )
 
 type JSONPayload {
   data: JSON!
@@ -34,43 +42,70 @@ type JSONPayload {
 
 union JSONPayloadBytesPayload = JSONPayload | BytesPayload
 
-"""Valid Kafka Topic to subscribe to. Does not accept wildcards or RegEx"""
+"""
+Valid Kafka Topic to subscribe to. Does not accept wildcards or RegEx
+"""
 input KAFKATopicInput {
   topic: String!
 }
 
-"""MQTT message which published in the UNS platform"""
+"""
+MQTT message which published in the UNS platform
+"""
 type MQTTMessage {
-  """Fully qualified path of the namespace. i.e. the MQTT Topic"""
+  """
+  Fully qualified path of the namespace. i.e. the MQTT Topic
+  """
   topic: String!
 
   """
   the payload of the MQTT message
-   -JSON for UNS 
+   -JSON for UNS
    -bytes for sparkplugB
   """
   payload: JSONPayloadBytesPayload
 }
 
-"""Valid MQTT Topic to subscribe to. Accepts wild cards"""
+"""
+Valid MQTT Topic to subscribe to. Accepts wild cards
+"""
 input MQTTTopicInput {
   topic: String!
 }
 
-"""Query the UNS for current or historic Nodes/Events """
+"""
+Query the UNS for current or historic Nodes/Events
+"""
 type Query {
   """
   Get all historical published on the given array of topics and between the time slots.
   """
-  getHistoricEventsInTimeRange(topics: [MQTTTopicInput!]!, fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+  getHistoricEventsInTimeRange(
+    topics: [MQTTTopicInput!]!
+    fromDatetime: DateTime
+    toDatetime: DateTime
+  ): [HistoricalUNSEvent!]!
 
-  """Get all historical events published by specified clients."""
-  getHistoricEventsByPublishers(publishers: [String!]!, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+  """
+  Get all historical events published by specified clients.
+  """
+  getHistoricEventsByPublishers(
+    publishers: [String!]!
+    topics: [MQTTTopicInput!]
+    fromDatetime: DateTime
+    toDatetime: DateTime
+  ): [HistoricalUNSEvent!]!
 
   """
   Get all historical events published which have specific attributes.Option binary_operator input allows chaining the list of property_keys. If NULL, property_keys will be ORed- OR: Either of the property_keys must exist in the same event.. If only one property_keys provided will be ignored- AND:  All property_keys must exist in same event. If only one property_keys provided will be ignored- NOT: None of the provided property_keys should exist in the same eventOther criteria - topics, from_datetime & to_datetime will always be ANDed to the query filter
   """
-  getHistoricEventsByProperty(propertyKeys: [String!]!, binaryOperator: BinaryOperator, topics: [MQTTTopicInput!], fromDatetime: DateTime, toDatetime: DateTime): [HistoricalUNSEvent!]!
+  getHistoricEventsByProperty(
+    propertyKeys: [String!]!
+    binaryOperator: BinaryOperator
+    topics: [MQTTTopicInput!]
+    fromDatetime: DateTime
+    toDatetime: DateTime
+  ): [HistoricalUNSEvent!]!
 
   """
   Get consolidation of nodes for given array of topics. MQTT wildcards are supported
@@ -78,9 +113,15 @@ type Query {
   getUnsNodes(topics: [MQTTTopicInput!]!): [UNSNode!]!
 
   "Get all UNSNodes published which have specific attribute name as 'propertyKeys'. \n Optionally Filter results with list of  topics. \nIf topics are provided then optional boolean value 'excludeTopics' attribute can be set to true .\nto exclude the nodes which match the topics.\n"
-  getUnsNodesByProperty(propertyKeys: [String!]!, topics: [MQTTTopicInput!], excludeTopics: Boolean = false): [UNSNode!]!
+  getUnsNodesByProperty(
+    propertyKeys: [String!]!
+    topics: [MQTTTopicInput!]
+    excludeTopics: Boolean = false
+  ): [UNSNode!]!
 
-  """Get all the SPBNode by the provided metric name"""
+  """
+  Get all the SPBNode by the provided metric name
+  """
   getSpbNodesByMetric(metricNames: [String!]!): [SPBNode!]!
 }
 
@@ -136,15 +177,22 @@ type SPBNode {
 Wrapper for primitive types in Sparkplug.: int, float, str, bool, list
                  Needed because GraphQL does not support str for unions.
                  Data is converted to its String representation for convenience.
-                 Use the datatype to convert to actual type if needed 
+                 Use the datatype to convert to actual type if needed
 """
 type SPBPrimitive {
   data: String!
 }
 
-union SPBPrimitiveBytesPayloadSPBDataSetSPBTemplate = SPBPrimitive | BytesPayload | SPBDataSet | SPBTemplate
+union SPBPrimitiveBytesPayloadSPBDataSetSPBTemplate =
+  | SPBPrimitive
+  | BytesPayload
+  | SPBDataSet
+  | SPBTemplate
 
-union SPBPrimitiveSPBPropertySetSPBPropertySetList = SPBPrimitive | SPBPropertySet | SPBPropertySetList
+union SPBPrimitiveSPBPropertySetSPBPropertySetList =
+  | SPBPrimitive
+  | SPBPropertySet
+  | SPBPropertySetList
 
 type SPBPropertySet {
   keys: [String!]!
@@ -180,9 +228,12 @@ type StreamingMessage {
   payload: JSONPayload!
 }
 
-"""Subscribe to UNS Events or Streams"""
+"""
+Subscribe to UNS Events or Streams
+"""
 type Subscription {
-  """ Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported 
+  """
+  Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported
   """
   getMqttMessages(topics: [MQTTTopicInput!]!): MQTTMessage!
 
@@ -201,5 +252,7 @@ type UNSNode {
   lastUpdated: DateTime!
 }
 
-"""Int 64 field since GraphQL doesn't support int64, only int 32"""
+"""
+Int 64 field since GraphQL doesn't support int64, only int 32
+"""
 scalar Union

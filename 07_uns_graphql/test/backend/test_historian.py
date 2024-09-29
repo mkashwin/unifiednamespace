@@ -24,6 +24,7 @@ from typing import Literal
 
 import pytest
 import pytest_asyncio
+
 from uns_graphql.backend.historian import HistorianDBPool
 from uns_graphql.graphql_config import HistorianConfig
 

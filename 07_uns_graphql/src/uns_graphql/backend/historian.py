@@ -90,7 +90,7 @@ class HistorianDBPool:
             await cls._shared_pool.close()
             LOGGER.info("Connection pool closed successfully")
         else:
-            LOGGER.waring("Connection pool was already closed ")
+            LOGGER.warning("Connection pool was already closed ")
 
     async def __aenter__(self):
         self._pool: Pool = await self.get_shared_pool()  # Acquire the shared pool directly

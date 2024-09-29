@@ -23,6 +23,7 @@ import pytest
 import pytest_asyncio
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, NewTopic
+
 from uns_graphql.graphql_config import KAFKAConfig
 from uns_graphql.input.kafka import KAFKATopicInput
 from uns_graphql.subscriptions.kafka import KAFKASubscription

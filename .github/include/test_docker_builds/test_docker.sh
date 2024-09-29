@@ -17,11 +17,11 @@ echo "Entrypoint for Docker is: ${entry_point}"
 command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
 # check in pyproject if it is a script.
 script_name=$( grep "^${command} =" ./pyproject.toml)
-if [[  ! $script_name == *':main"' ]]; then
+if [[  ! ${script_name} == *':main"' ]]; then
   # the script is not referencing a main function, must be a module
   echo "Validating if ${command} is a valid module command"
   # Check if command exists in the project
-  if [[ -z $script_name ]]; then
+  if [[ -z ${script_name} ]]; then
     echo "Error: Command ${command} not found in the project. Should have had a dependency  entry in pyproject.toml" 
     exit 1
   fi
@@ -35,17 +35,17 @@ else
   echo "Validate if ${main_entry} points to a valid python function"
   python_module=${main_entry%:*}
   function=${main_entry##*:}
-  if [[ -z $main_entry ]]; then
+  if [[ -z ${main_entry} ]]; then
     echo "Error: Script entry for ${command} not found in [tool.poetry.scripts] section of pyproject.toml "
     exit 1
   fi          
 fi
 echo "Static Validation successful!"
 echo "Creating Docker: ${image_name}:${SHA_TAG}"
-docker build -t "${image_name}:${SHA_TAG}" --build-arg GIT_HASH=${SHA_TAG::7} -f ./Dockerfile ..
+docker build -t "${image_name}:${SHA_TAG}" --build-arg GIT_HASH="${SHA_TAG::7}" -f ./Dockerfile ..
 # Run the Docker tests
 echo "Running tests for Docker image: ${image_name}:${SHA_TAG}"
-docker run --entrypoint "sh" -e python_module="$python_module" -e function="$function" -e class="$class" "${image_name}:${SHA_TAG}" -c '
+docker run --entrypoint "sh" -e python_module="${python_module}" -e function="${function}" -e class="${class}" "${image_name}:${SHA_TAG}" -c '
   if [ ! -d "/02_mqtt-cluster" ]; then
     echo "Error: Folder /02_mqtt-cluster not found in Docker image"
     exit 1

@@ -20,6 +20,7 @@
 import pytest
 import strawberry
 from pydantic import ValidationError
+
 from uns_graphql.input.mqtt import MQTTTopic, MQTTTopicInput
 
 test_data_valid = [

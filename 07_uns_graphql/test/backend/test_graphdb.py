@@ -22,6 +22,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
+
 from uns_graphql.backend.graphdb import GraphDB
 from uns_graphql.graphql_config import GraphDBConfig
 

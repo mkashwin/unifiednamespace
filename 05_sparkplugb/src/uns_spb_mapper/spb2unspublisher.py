@@ -277,7 +277,7 @@ class Spb2UNSPublisher:
             old_metric_tuple_list = parsed_message.get(tag_name)
             old_metric_timestamp = parsed_message.get(Spb2UNSPublisher.SPB_TIMESTAMP)
             if not isinstance(old_metric_tuple_list, list):
-                # replace current metric value with array of values if it is a singe value
+                # replace current metric value with array of values if it is a single value
                 old_metric_tuple_list = [old_metric_tuple_list]
 
             # If the value for the metric name already exists then we will have a list of tuples

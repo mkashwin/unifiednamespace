@@ -26,16 +26,17 @@ import pytest
 from neo4j import exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
-from uns_graphdb.graphdb_config import GraphDBConfig
-from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 from uns_mqtt.mqtt_listener import MQTTVersion
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
+
+from uns_graphdb.graphdb_config import GraphDBConfig
+from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 
 test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
 sys.path.insert(0, str(test_folder))
 # @FIXME Hack done to be able to import utility modules in the tests directories
 # @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
-from test_graphdb_handler import cleanup_test_data, read_topic_nodes  # noqa: E402
+import test_graphdb_handler  # noqa: E402
 
 
 @pytest.mark.integrationtest()
@@ -62,9 +63,9 @@ def test_uns_mqtt_graph_db():
 
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
-    "topic, message",  # Test spB message persistance
+    "topic, message",  # Test spB message persistence
     [
-        # Test UNS message persistance
+        # Test UNS message persistence
         (
             "test/uns/ar1/ln2",
             {
@@ -123,9 +124,9 @@ def test_uns_mqtt_graph_db():
         ),
     ],
 )
-def test_mqtt_graphdb_persistance(topic: str, message: dict):
+def test_mqtt_graphdb_persistence(topic: str, message: dict):
     """
-    Test the persistance of message (UNS & SpB) to the database
+    Test the persistence of message (UNS & SpB) to the database
     """
     uns_mqtt_graphdb = None
     try:
@@ -147,7 +148,7 @@ def test_mqtt_graphdb_persistance(topic: str, message: dict):
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                     database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_read(read_topic_nodes, node_type, attr_nd_typ, topic, message_dict)
+                    session.execute_read(test_graphdb_handler.read_topic_nodes, node_type, attr_nd_typ, topic, message_dict)
             except (exceptions.TransientError, exceptions.TransactionError) as ex:
                 pytest.fail("Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
             finally:
@@ -155,7 +156,7 @@ def test_mqtt_graphdb_persistance(topic: str, message: dict):
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                     database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_write(cleanup_test_data, topic.split("/")[0], node_type[0])
+                    session.execute_write(test_graphdb_handler.cleanup_test_data, topic.split("/")[0], node_type[0])
                 uns_mqtt_graphdb.uns_client.disconnect()
 
         # --- end of function

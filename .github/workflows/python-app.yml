@@ -25,9 +25,9 @@ on:
       - ".github/include/**"
   workflow_dispatch:
     inputs:
-        pytest_add_opts:
-          description: "additional pytest options"
-          type: string
+      pytest_add_opts:
+        description: "additional pytest options"
+        type: string
 
 permissions:
   contents: read

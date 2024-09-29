@@ -22,6 +22,7 @@ import math
 from typing import Literal
 
 import pytest
+
 from uns_sparkplugb.generated import sparkplug_b_pb2
 from uns_sparkplugb.uns_spb_enums import (
     SPBAdditionalDataTypes,

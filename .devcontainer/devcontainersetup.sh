@@ -1,35 +1,35 @@
 #!/bin/bash
-# This script is to be executed on creation of the dev container in order to create a working development enviornment
+# This script is to be executed on creation of the dev container in order to create a working development environment
 WORKSPACE=/workspaces/unifiednamespace
-# 1. setup the python enviornment
+# 1. setup the python environment
 pip3 install --upgrade poetry pip
 poetry install
 
 # 2. create minimalistic secret files for all the modules. 
 # 2.1 Neo4j
-if [[ $(docker ps -aq -f name=uns_graphdb) ]]; then
+if [[ -n $(docker ps -aq -f name=uns_graphdb) ]]; then
   docker start uns_graphdb && docker exec -it uns_graphdb bash -c "rm /var/lib/neo4j/run/*"
 else
   UNS_graphdb__username=neo4j
   UNS_graphdb__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
   echo "graphdb:
-  username: "${UNS_graphdb__username}"
-  password: "${UNS_graphdb__password}"
+  username: ""${UNS_graphdb__username}""
+  password: ""${UNS_graphdb__password}""
 dynaconf_merge: true
-  " > $WORKSPACE/03_uns_graphdb/conf/.secrets.yaml
+  " > "${WORKSPACE}"/03_uns_graphdb/conf/.secrets.yaml
   # 2.1.1 New instance of Graph DB used by 03_uns_graphdb
-  sudo rm -rf $HOME/neo4j
+  sudo rm -rf "${HOME}"/neo4j
   
   docker run \
     --name  uns_graphdb \
     -p7474:7474 -p7687:7687 \
     -d \
-    -v $HOME/neo4j/data:/data \
-    -v $HOME/neo4j/logs:/logs \
-    -v $HOME/neo4j/plugins:/plugins \
-    -v $HOME/neo4j/import:/var/lib/neo4j/import \
-    -v $HOME/neo4j/run:/var/lib/neo4j/run \
-    --env NEO4J_AUTH=${UNS_graphdb__username}/${UNS_graphdb__password} \
+    -v "${HOME}"/neo4j/data:/data \
+    -v "${HOME}"/neo4j/logs:/logs \
+    -v "${HOME}"/neo4j/plugins:/plugins \
+    -v "${HOME}"/neo4j/import:/var/lib/neo4j/import \
+    -v "${HOME}"/neo4j/run:/var/lib/neo4j/run \
+    --env NEO4J_AUTH="${UNS_graphdb__username}"/"${UNS_graphdb__password}" \
     --env apoc.export.file.enabled=true \
     --env apoc.import.file.enabled=true \
     --env apoc.import.file.use_neo4j_config=true \
@@ -39,7 +39,7 @@ dynaconf_merge: true
 fi
 
 # 2.2 Timescale DB
-if [[ $(docker ps -aq -f name=uns_timescaledb) ]]; then
+if [[ -n $(docker ps -aq -f name=uns_timescaledb) ]]; then
   docker start uns_timescaledb
 else
   POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
@@ -50,21 +50,21 @@ else
   UNS_historian__table=unifiednamespace
 
   echo "historian:
-  username: "${UNS_historian__username}"
-  password: "${UNS_historian__password}"
+  username: ""${UNS_historian__username}""
+  password: ""${UNS_historian__password}""
 dynaconf_merge: true
   # This password is for your reference if you ever need to login as postgres user
   # POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  " > $WORKSPACE/04_uns_historian/conf/.secrets.yaml
+  " > "${WORKSPACE}"/04_uns_historian/conf/.secrets.yaml
 
   # 2.2.1 Historian DB used by 04_uns_historian
-  sudo rm -rf $HOME/timescaledb
+  sudo rm -rf "${HOME}"/timescaledb
   docker run \
       --name uns_timescaledb  \
       -p 5432:5432  \
-      -v $HOME/timescaledb/data:/var/lib/postgresql/data \
+      -v "${HOME}"/timescaledb/data:/var/lib/postgresql/data \
       -d \
-      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+      -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
       timescale/timescaledb:latest-pg16
   # 2.2.2 wait for docker to be up and running
   # first wait for the database to be running
@@ -75,7 +75,7 @@ dynaconf_merge: true
   # loop to check 
   echo "Waiting for  timescaledb to start ."
   sleep 1
-  while [ "True" ] ; do
+  while [[ "True" ]] ; do
     if check_postgres_ready; then
       sleep 5
       break;
@@ -87,11 +87,11 @@ dynaconf_merge: true
 
   # 2.2.3 basic database setup needed for the historian ( create users, database, timeseries extension etc.)
   docker exec \
-    -e PGPASSWORD=${POSTGRES_PASSWORD} \
-    -e UNS_historian__database=${UNS_historian__database} \
-    -e UNS_historian__username=${UNS_historian__username} \
-    -e UNS_historian__password=${UNS_historian__password} \
-    -e UNS_historian__table=${UNS_historian__table} \
+    -e PGPASSWORD="${POSTGRES_PASSWORD}" \
+    -e UNS_historian__database="${UNS_historian__database}" \
+    -e UNS_historian__username="${UNS_historian__username}" \
+    -e UNS_historian__password="${UNS_historian__password}" \
+    -e UNS_historian__table="${UNS_historian__table}" \
     -it uns_timescaledb \
     bash -c "
     echo \"CREATE DATABASE ${UNS_historian__database};\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432
@@ -114,7 +114,7 @@ dynaconf_merge: true
 fi
 
 # 2.3 MQTT used by all modules 
-if [[ $(docker ps -aq -f name=uns_emqx_mqtt) ]]; then
+if [[ -n $(docker ps -aq -f name=uns_emqx_mqtt) ]]; then
   docker start uns_emqx_mqtt
 else
   docker run \
@@ -126,7 +126,7 @@ else
 fi
 
 # 2.4 Kafka used by 06_uns_kafka
-if [[ $(docker ps -aq -f name=uns_kafka) ]]; then
+if [[ -n $(docker ps -aq -f name=uns_kafka) ]]; then
   docker start uns_kafka
 else
   docker run \
@@ -146,16 +146,16 @@ fi
 
 # 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
 # always created
-INPUT_FILES=$(find $WORKSPACE -type f -not -path "$WORKSPACE/07_uns_graphql/*" -name ".secrets.yaml")
+INPUT_FILES=$(find "${WORKSPACE}" -type f -not -path "${WORKSPACE}/07_uns_graphql/*" -name ".secrets.yaml")
 
 # Define the output file
-OUTPUT_FILE=$WORKSPACE/07_uns_graphql/conf/.secrets.yaml
+OUTPUT_FILE=${WORKSPACE}/07_uns_graphql/conf/.secrets.yaml
 
 merge_command="docker run --rm -v \"$(pwd)\":/workdir mikefarah/yq eval-all '. as \$item ireduce ({}; . * \$item )'"
 
 # Iterate over the YAML files in the input directory
-for yaml_file in $INPUT_FILES; do
-  merge_command=$(echo "$merge_command" "/workdir/$yaml_file")
+for yaml_file in ${INPUT_FILES}; do
+  merge_command=$(echo "${merge_command}" "/workdir/${yaml_file}")
 done
 # Execute the merge command and write the output to the file
-eval "$merge_command" > "$OUTPUT_FILE"
+eval "${merge_command}" > "${OUTPUT_FILE}"

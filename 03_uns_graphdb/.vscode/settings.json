@@ -1,29 +1,31 @@
 {
-    "python.analysis.extraPaths": [
-        "src",
-        "../02_mqtt-cluster/src",
-        "./src/uns_graphdb"
-    ],
-    "python.testing.pytestArgs": [
-        "test"
-    ],
-    "python.testing.pytestEnabled": true,
-    "[python]": {
-        "editor.formatOnSaveMode": "file",
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff"
+  "python.analysis.extraPaths": [
+    "src",
+    "../02_mqtt-cluster/src",
+    "./src/uns_graphdb"
+  ],
+  "python.testing.pytestArgs": ["test"],
+  "python.testing.pytestEnabled": true,
+  "[python]": {
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
     },
-    "cSpell.words": [
-        "graphdb",
-        "integrationtest",
-        "lastnode",
-        "mqtt",
-        "packettypes",
-        "paho",
-        "protobuf",
-        "sparkplugb",
-        "userdata",
-        "venv",
-        "virtualenv"
-    ],
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "cSpell.words": [
+    "graphdb",
+    "integrationtest",
+    "lastnode",
+    "mqtt",
+    "packettypes",
+    "paho",
+    "protobuf",
+    "sparkplugb",
+    "userdata",
+    "venv",
+    "virtualenv"
+  ]
 }

@@ -10,7 +10,7 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
-      
+
   - package-ecosystem: "pip"
     directory: "./02_mqtt-cluster" # Location of package manifests
     schedule:

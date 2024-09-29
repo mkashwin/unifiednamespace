@@ -25,9 +25,10 @@ from confluent_kafka import OFFSET_END, Consumer
 from confluent_kafka.admin import AdminClient
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from uns_mqtt.mqtt_listener import MQTTVersion
+
 from uns_kafka.uns_kafka_config import KAFKAConfig
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
-from uns_mqtt.mqtt_listener import MQTTVersion
 
 
 @pytest.mark.integrationtest()

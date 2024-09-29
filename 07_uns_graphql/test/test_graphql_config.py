@@ -27,6 +27,7 @@ from urllib.parse import urlparse
 import pytest
 from aiomqtt import ProtocolVersion
 from confluent_kafka import Producer
+
 from uns_graphql.graphql_config import GraphDBConfig, HistorianConfig, KAFKAConfig, MQTTConfig, settings
 
 # run these tests only if both configuration files exists or mandatory environment vars are set
