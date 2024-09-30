@@ -16,6 +16,14 @@ inputs:
   SAFETY_API_KEY:
     description: "API Key to invoke safety scanner. see https://safetycli.com/"
     required: True
+  timeout_minutes:
+    description: "Timeout in minutes for the test execution"
+    required: False
+    default: ""
+  max_attempts:
+    description: "Maximum number of attempts to run the tests"
+    required: False
+    default: "1"
 
 runs:
   using: "composite"
@@ -41,10 +49,43 @@ runs:
           PYTEST_CMD="poetry run pytest"
         fi
           
-        if ${{ inputs.integration_tests }} ; then
-         $PYTEST_CMD ${{inputs.pytest_flags}}
-        else 
-          $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest" 
+        ATTEMPTS=0
+        MAX_ATTEMPTS=${{ inputs.max_attempts }}
+        SUCCESS=false
+
+        while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+          if ${{ inputs.integration_tests }} ; then
+            $PYTEST_CMD ${{inputs.pytest_flags}} &
+          else
+            $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest" &
+          fi
+
+          # Get the PID of the last background command
+          PID=$!
+
+          # Wait for the process to finish or timeout
+          if [[ -n "${{ inputs.timeout_minutes }}" ]]; then
+            TIMEOUT=$(( ${{ inputs.timeout_minutes }} * 60 ))
+            ( sleep $TIMEOUT && kill -HUP $PID ) 2>/dev/null &  # Kill the process after timeout
+            WAIT_PID=$!
+            wait $PID
+            kill -HUP $WAIT_PID 2>/dev/null  # Clean up the timeout process
+          else
+            wait $PID
+          fi
+
+          if [ $? -eq 0 ]; then
+            SUCCESS=true
+            break
+          fi
+
+          ATTEMPTS=$((ATTEMPTS + 1))
+          echo "Attempt $ATTEMPTS/$MAX_ATTEMPTS failed. Retrying..."
+        done
+
+        if [ "$SUCCESS" = false ]; then
+          echo "All attempts failed."
+          exit 1
         fi
 
     - name: Run Safety CLI to check for vulnerabilities

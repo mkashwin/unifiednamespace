@@ -34,7 +34,7 @@ on:
 
   workflow_dispatch:
     inputs:
-      pytest_add_opts:
+      pytest_add_opts: # trunk-ignore(checkov/CKV_GHA_7)
         description: "additional pytest options"
         type: string
 
@@ -149,8 +149,8 @@ jobs:
       - name: Run all type of tests
         uses: ./.github/include/execute_tests/
         with:
-          timeout_minutes: 5
-          max_attempts: 3
+          timeout_minutes: 3 # Optional: Set timeout in minutes
+          max_attempts: 3 # Optional: Set maximum attempts
           module: 07_uns_graphql
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}

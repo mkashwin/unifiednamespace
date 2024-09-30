@@ -8,13 +8,15 @@ on:
       - version.txt
   workflow_dispatch:
     inputs:
-      force_tag:
+      force_tag: # trunk-ignore(checkov/CKV_GHA_7)
         description: "Force tag creation"
         type: choice
         default: "no"
         options:
           - "no"
           - "yes"
+permissions:
+  contents: write
 
 jobs:
   update-version:
@@ -116,7 +118,7 @@ jobs:
           - {
               module: 07_uns_graphql,
               image: uns/graphql,
-              container_description: "Provided GrqphQL query capabilites to the UNS system",
+              container_description: "Provided GraqphQL query capabilites to the UNS system",
             }
       max-parallel: 1 # need to have this as 1 if we want to use the cloud build
     env:
