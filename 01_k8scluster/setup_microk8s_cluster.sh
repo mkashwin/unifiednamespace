@@ -16,41 +16,44 @@ FAILUREDOMAIN=40
 # spell-checker:enable
 source ./config.conf
 # Obtain the current IP of this node
-LOCAL_IP=$(ip address show dev ${DEFAULT_NETWORK_LINK} | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/["/24"]//g') 
+# trunk-ignore(shellcheck/SC2312)
+LOCAL_IP=$(ip address show dev "${DEFAULT_NETWORK_LINK}" | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/["/24"]//g')
 ## Needed due to a bug in core-dns
+# trunk-ignore(shellcheck/SC2312)
 CLUSTER_DNS=$(kubectl get svc kube-dns --namespace=kube-system | grep kube-dns | awk -F ' ' '{print $3}') 
 
 IS_THIS_MASTER=false
 ## Loop through to ensure that this node is actually a master node ( as per config.conf)
-for ((i=0; i<$COUNT_NODES; i++ )); 
+for ((i=0; i<${COUNT_NODES}; i++ ));
 do
     declare NODE_IP="NODE_${i}_IP"
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
-    if [ "$LOCAL_IP" = "${!NODE_IP}" ]; then
+    if [[ "${LOCAL_IP}" = "${!NODE_IP}" ]]; then
         IS_THIS_MASTER=${!NODE_ISMASTER}
     fi
 done
 
-for ((i=0; i<$COUNT_NODES; i++ )); 
+for ((i=0; i<${COUNT_NODES}; i++ ));
 do
     declare NODE_IP="NODE_${i}_IP"
     declare NODE_NAME="NODE_${i}_NAME"
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
     declare NODE_USER="NODE_${i}_USERNAME"
-    declare NODE_${i}_HAS_JOINED_K8S=false
+    declare NODE_"${i}"_HAS_JOINED_K8S=false
     # spell-checker:disable
-    if [ "$LOCAL_IP" = "${!NODE_IP}" ] && [ "${!NODE_ISMASTER}" = true ] ; then
+    if [[ "${LOCAL_IP}" = "${!NODE_IP}" ]] && [[ "${!NODE_ISMASTER}" = true ]] ; then
         echo "This is the same node as the master" 
         echo "failure-domain=${FAILUREDOMAIN}" >> /var/snap/microk8s/current/args/ha-conf
         FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
         IS_THIS_MASTER=true
 
-    elif if [ "$IS_THIS_MASTER" = true ] ; then 
-        ADD_NODE_CMD=$(microk8s add-node | grep $LOCAL_IP | awk '(NR>1)' )  
+    elif [[ "${IS_THIS_MASTER}" = true ]] ; then
+        # trunk-ignore(shellcheck/SC2312)
+        ADD_NODE_CMD=$(microk8s add-node | grep "${LOCAL_IP}" | awk '(NR>1)' )
 
-        if [ "${!NODE_ISMASTER}" = true ] ; then
+        if [[ "${!NODE_ISMASTER}" = true ]] ; then
         ## FIXME how do I pass the password securely / via certs
-            ssh -t ${!NODE_USER}@${!NODE_IP} bash -c"
+            ssh -t "${!NODE_USER}"@"${!NODE_IP}" bash -c"
                 ${ADD_NODE_CMD};
                 microk8s stop;
                 echo --node-ip=${!NODE_IP} >> /var/snap/microk8s/current/args/kubelet;
@@ -60,10 +63,10 @@ do
                 sudo chown -f -R ${!NODE_USER} ~/.kube
             "
             FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
-            NODE_${i}_HAS_JOINED_K8S=true
+            eval NODE_"${i}"_HAS_JOINED_K8S=true
         else
         ## FIXME how do I pass the password securely / via certs
-            ssh -t ${!NODE_USER}@${!NODE_IP} bash -c"
+            ssh -t "${!NODE_USER}"@"${!NODE_IP}" bash -c"
                 ${ADD_NODE_CMD} --worker ;
                 microk8s stop ;
                 echo --node-ip=${!NODE_IP} >> /var/snap/microk8s/current/args/kubelet ;
@@ -71,7 +74,7 @@ do
                 echo --cluster-dns=${CLUSTER_DNS}>> /var/snap/microk8s/current/args/kubelet ;
                 microk8s start;
             "
-            NODE_${i}_HAS_JOINED_K8S=true            
+            eval NODE_"${i}"_HAS_JOINED_K8S=true
         fi
     fi
 done
@@ -86,7 +89,7 @@ microk8s kubectl get pod -n mayastor
 microk8s kubectl get diskpool -n mayastor
 # spell-checker:enable
 # FIXME wait for them to be deployed and running
-microk8s enable metallb:${METALLB_IPRANGE}
+microk8s enable metallb:"${METALLB_IPRANGE}"
 # FIXME which IP address range to use? how to add the routing 198.168.200.100-198.168.200.150
 # e.g. if you specify 198.168.220.1-198.168.220.126
 

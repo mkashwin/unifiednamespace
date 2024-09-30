@@ -19,6 +19,7 @@ All tests for uns_spb_helper with different payloads
 """
 
 import pytest
+
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
