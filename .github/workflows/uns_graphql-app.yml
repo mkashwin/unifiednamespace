@@ -148,9 +148,8 @@ jobs:
 
       - name: Run all type of tests
         uses: ./.github/include/execute_tests/
+        timeout-minutes: 3
         with:
-          timeout_minutes: 3 # Optional: Set timeout in minutes
-          max_attempts: 3 # Optional: Set maximum attempts
           module: 07_uns_graphql
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}

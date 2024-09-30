@@ -24,7 +24,7 @@ dictionaryDefinitions: [
       #The name of the dictionary is used to look it up.
       name: "custom-words",
       #Path to the custom word file. Relative to this `cspell.json` file.
-      path: ".trunk/configs/.cspell-custom-words.txt",
+      path: ".cspell-custom-words.txt",
       #Some editor extensions will use `addWords` for adding words to your personal dictionary.
       addWords: true,
     },
@@ -46,3 +46,4 @@ ignorePaths:
   - "**/LICENSE.uvicorn"
   - "**/.trunk/**"
   - ".devcontainer/*"
+  - "**/*_cache/**"
