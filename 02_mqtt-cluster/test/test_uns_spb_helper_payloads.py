@@ -19,7 +19,6 @@ All tests for uns_spb_helper with different payloads
 """
 
 import pytest
-
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBMetricDataTypes
@@ -299,7 +298,7 @@ dict_payload_3: dict = {
 # #########  Test Data Payload 4 #########
 # spell-checker:disable
 bytes_payload_4: bytes = (
-    b"a8a42d159d5c815a80629c7ce443d404B\x0bdescription\x82\x01\x10I am a text file"
+    b"\x12x\n\rtest metadata\x18\x94\xb9\xaf\xcb\xd01 \x12BK\x08\x00\x12\x05utf-8\x189 \x01*\x08test.txt2\x03txt: "
     b"a8a42d159d5c815a80629c7ce443d404B\x0bdescription\x82\x01\x10I am a text file"
 )
 # spell-checker:enable
