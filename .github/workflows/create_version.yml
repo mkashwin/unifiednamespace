@@ -118,7 +118,7 @@ jobs:
           - {
               module: 07_uns_graphql,
               image: uns/graphql,
-              container_description: "Provided GraqphQL query capabilites to the UNS system",
+              container_description: "Provided GraphQL query capabilities to the UNS system",
             }
       max-parallel: 1 # need to have this as 1 if we want to use the cloud build
     env:
@@ -169,6 +169,7 @@ jobs:
         if: ${{ ! startsWith( github.ref_name , 'main') }}
         uses: docker/build-push-action@v6
         with:
+          # spell-checker:disable
           context: .
           push: true
           platforms: linux/amd64,linux/arm64 # linux/arm/v7 not working, causes error: command 'gcc' failed: No such file or directory
@@ -179,9 +180,11 @@ jobs:
             "annotations": { "org.opencontainers.image.description": ${{ matrix.container_description }} }
             "annotations": { "org.opencontainers.image.source" : https://github.com/mkashwin/unifiednamespace/tree/main/${{ matrix.image }} }
             "annotations": { "org.opencontainers.image.licenses" : MIT }
+
           file: ./${{ matrix.module }}/Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # spell-checker:enable
 
       - name: Build Docker Image - Main
         if: ${{ startsWith( github.ref_name , 'main') }}

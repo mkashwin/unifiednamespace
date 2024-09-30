@@ -15,11 +15,5 @@
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-  "cSpell.words": [
-    "createdb",
-    "createrole",
-    "createuser",
-    "hypertable",
-    "timescaledb"
-  ]
+  "cSpell.import": ["../../.trunk/configs/cspell.yaml"]
 }

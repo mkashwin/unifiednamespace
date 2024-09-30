@@ -4,7 +4,7 @@ CREATE database uns_historian;
 
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
--- Commenting this so that dbusers are created interactively with the 
+-- Commenting this so that dbuser are created interactively with the
 -- passwords not stored in the file
 
 -- CREATE ROLE uns_dba 

@@ -1,18 +1,19 @@
 #!/bin/bash
 ## This script is to be executed on any one master node of the cluster
 ## Ensure that both the config.conf must  be correctly updated and uploaded to each of the nodes
-## This script should be involked only after <code>pre_setup_nodes.sh</code> has been executed on all the nodes
+## This script should be invoked only after <code>pre_setup_nodes.sh</code> has been executed on all the nodes
 
-echo "Warning! This script should be involked only after pre_setup_nodes.sh has been executed on all the nodes"
+echo "Warning! This script should be invoked only after pre_setup_nodes.sh has been executed on all the nodes"
 echo "This script needs to be executed only once on any one of the designated master node of the K8s cluster "
 
 # Setting the default values before loading the conf file.
 COUNT_WORKERS=0
+# spell-checker:disable
 DEFAULT_NETWORK_LINK="enp0s3"
 MASTER_COUNT=0
 #This entry is inline wiht microK8s documentation to be done on each master node for high availability
 FAILUREDOMAIN=40
-
+# spell-checker:enable
 source ./config.conf
 # Obtain the current IP of this node
 LOCAL_IP=$(ip address show dev ${DEFAULT_NETWORK_LINK} | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/["/24"]//g') 
@@ -25,7 +26,7 @@ for ((i=0; i<$COUNT_NODES; i++ ));
 do
     declare NODE_IP="NODE_${i}_IP"
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
-    if [ "$LOCAL_IP" = "${!NODE_IP}" ] then 
+    if [ "$LOCAL_IP" = "${!NODE_IP}" ]; then
         IS_THIS_MASTER=${!NODE_ISMASTER}
     fi
 done
@@ -37,6 +38,7 @@ do
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
     declare NODE_USER="NODE_${i}_USERNAME"
     declare NODE_${i}_HAS_JOINED_K8S=false
+    # spell-checker:disable
     if [ "$LOCAL_IP" = "${!NODE_IP}" ] && [ "${!NODE_ISMASTER}" = true ] ; then
         echo "This is the same node as the master" 
         echo "failure-domain=${FAILUREDOMAIN}" >> /var/snap/microk8s/current/args/ha-conf
@@ -72,7 +74,6 @@ do
             NODE_${i}_HAS_JOINED_K8S=true            
         fi
     fi
-
 done
 
 # Enabling Kubernetes web dashboard
@@ -83,7 +84,7 @@ sudo microk8s enable core/mayastor --default-pool-size 20G
 
 microk8s kubectl get pod -n mayastor
 microk8s kubectl get diskpool -n mayastor
-
+# spell-checker:enable
 # FIXME wait for them to be deployed and running
 microk8s enable metallb:${METALLB_IPRANGE}
 # FIXME which IP address range to use? how to add the routing 198.168.200.100-198.168.200.150

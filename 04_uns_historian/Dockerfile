@@ -29,13 +29,14 @@
 FROM python:3.12-alpine3.20
 
 # Set the environment variable for the entrypoint command
+# spell-checker:disable
 ENV UNS_MODULE="04_uns_historian"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1
-
+# spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/04_uns_historian
 LABEL org.opencontainers.image.description="Stores MQTT messages to the historian database. Supports both UNS and SparkplugB"
 LABEL org.opencontainers.image.licenses=MIT

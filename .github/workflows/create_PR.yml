@@ -6,6 +6,9 @@ name: Raise Pull request for specified Branch
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write # Allow write access for checking in
+
 jobs:
   raise_pr:
     runs-on: ubuntu-latest

@@ -1,25 +1,5 @@
 {
-  "cSpell.words": [
-    "graphql",
-    "aiomqtt",
-    "xdist",
-    "DBIRTH",
-    "DCMD",
-    "DDATA",
-    "DDEATH",
-    "NBIRTH",
-    "NCMD",
-    "NDATA",
-    "NDEATH",
-    "integrationtest",
-    "mqtt",
-    "packettypes",
-    "paho",
-    "propertyset",
-    "propertysets",
-    "proto",
-    "protobuf"
-  ],
+  "cSpell.import": ["../../.trunk/configs/cspell.yaml"],
   "python.analysis.extraPaths": [
     "src",
     "../02_mqtt-cluster/src",

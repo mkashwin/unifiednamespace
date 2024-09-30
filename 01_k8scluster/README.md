@@ -66,22 +66,24 @@ This module has two scripts in `bash` and configuration file.
    - `vboxnet0` is the virtual box network adaptor setup
 
 1. Copy the configuration file and configuration scripts to all the nodes
+   <!-- spell-checker:disable -->
 
    ```bash
    scp pre_setup_nodes.sh setup_microk8s_cluster.sh config.conf <remoteuser>@<nodeip>:.
    ```
 
    replace the `<remoteuser>` and `<nodeip>` accordingly
+   <!-- spell-checker:enable -->
 
 1. It is highly advised that you also ensure that the unix user has sudo rights. You can do this by running the following commands on each of the node
-
+   <!-- spell-checker:disable -->
    ```bash
    sudo echo "$USER ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
    sudo chown root:root /etc/sudoers.d/$USER
    sudo chmod o-r,a-w /etc/sudoers.d/$USER
    su - $USER
    ```
-
+   <!-- spell-checker:enable -->
 1. Run the pre-configuration script **on each node** ensuring that the configuration file is in the same directory as the script and readable. **Run the script as the normal unix user and not as \***root**\*.**
 
    ```bash

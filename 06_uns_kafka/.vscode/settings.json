@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["kafka"],
+  "cSpell.import": ["../../.trunk/configs/cspell.yaml"],
   "python.analysis.extraPaths": [
     "src",
     "../02_mqtt-cluster/src",

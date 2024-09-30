@@ -29,13 +29,14 @@
 FROM python:3.12-alpine3.20
 
 # Set the environment variable for the entrypoint command
+# spell-checker:disable
 ENV UNS_MODULE="05_sparkplugb"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1
-
+# spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/05_sparkplugb
 LABEL org.opencontainers.image.description="Listens to the SparkplugB name space and translates them to UNS messages, then publishes to the UNS Namespace"
 LABEL org.opencontainers.image.licenses=MIT

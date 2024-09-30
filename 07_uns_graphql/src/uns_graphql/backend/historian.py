@@ -191,7 +191,6 @@ class HistorianDBPool:
             query_params.append([UnsMQTTClient.get_regex_for_topic_with_wildcard(topic) for topic in topics])
 
             # convert the topics wild cards into regex to be used with SIMILAR instead of LIKE
-            # conditions.append(f"( topic SIMILAR TO ANY (SELECT * FROM UNNEST( ${param_index}::text[]) ) ")
             conditions.append(f"( topic ~  ANY (  ${param_index}  ) ) ")
             param_index = param_index + 1
 

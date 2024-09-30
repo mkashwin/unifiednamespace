@@ -130,7 +130,7 @@ As this is an extremely disruptive and far-reaching transformation, it is import
 
 The key stakeholders to consider are
 
-1. **Core Crossfunctional UNS team:** responsible for assessing and implementing the UNS incrementally across manufacturing units and IT systems. The initial skills required are across full stack developers, Data Architects, DevOps, PLC/HMI programmers etc. The team skills will be adapted based on the inventory assessment and the rollout plan e.g. CRM, ERP developers etc.
+1. **Core Cross-functional UNS team:** responsible for assessing and implementing the UNS incrementally across manufacturing units and IT systems. The initial skills required are across full stack developers, Data Architects, DevOps, PLC/HMI programmers etc. The team skills will be adapted based on the inventory assessment and the rollout plan e.g. CRM, ERP developers etc.
 2. **Executive Leadership:** Key stakeholders whose buy-in and commitment are critical to unblock resistance from middle management.
 3. **CIO/CTO:** Key partner to help provide technical personnel needed to inventory assets, assess Key principles and execute the implementation of the UNS in an agile manner
 4. **CISO / Cyber Security / Data Protection:** Assess and sign needed for the assessment of OT/IT convergence and revised threat model

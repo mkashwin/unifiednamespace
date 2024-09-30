@@ -7,14 +7,16 @@ poetry install
 
 # 2. create minimalistic secret files for all the modules. 
 # 2.1 Neo4j
+# trunk-ignore(shellcheck/SC2312)
 if [[ -n $(docker ps -aq -f name=uns_graphdb) ]]; then
   docker start uns_graphdb && docker exec -it uns_graphdb bash -c "rm /var/lib/neo4j/run/*"
 else
   UNS_graphdb__username=neo4j
+  # trunk-ignore(shellcheck/SC2312)
   UNS_graphdb__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
   echo "graphdb:
-  username: ""${UNS_graphdb__username}""
-  password: ""${UNS_graphdb__password}""
+  username: ${UNS_graphdb__username}
+  password: ${UNS_graphdb__password}
 dynaconf_merge: true
   " > "${WORKSPACE}"/03_uns_graphdb/conf/.secrets.yaml
   # 2.1.1 New instance of Graph DB used by 03_uns_graphdb
@@ -39,19 +41,22 @@ dynaconf_merge: true
 fi
 
 # 2.2 Timescale DB
+# trunk-ignore(shellcheck/SC2312)
 if [[ -n $(docker ps -aq -f name=uns_timescaledb) ]]; then
   docker start uns_timescaledb
 else
+  # trunk-ignore(shellcheck/SC2312)
   POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
   UNS_historian__username=uns_dbuser
+  # trunk-ignore(shellcheck/SC2312)
   UNS_historian__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
 
   UNS_historian__database=uns_historian
   UNS_historian__table=unifiednamespace
 
   echo "historian:
-  username: ""${UNS_historian__username}""
-  password: ""${UNS_historian__password}""
+  username: ${UNS_historian__username}
+  password: ${UNS_historian__password}
 dynaconf_merge: true
   # This password is for your reference if you ever need to login as postgres user
   # POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -75,6 +80,7 @@ dynaconf_merge: true
   # loop to check 
   echo "Waiting for  timescaledb to start ."
   sleep 1
+  # trunk-ignore(shellcheck/SC2078)
   while [[ "True" ]] ; do
     if check_postgres_ready; then
       sleep 5

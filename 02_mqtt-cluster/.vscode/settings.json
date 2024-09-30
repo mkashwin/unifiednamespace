@@ -11,34 +11,5 @@
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-  "cSpell.words": [
-    "aarch",
-    "DBIRTH",
-    "DCMD",
-    "DDATA",
-    "DDEATH",
-    "EMQX",
-    "hostpath",
-    "integrationtest",
-    "k8scluster",
-    "keepalive",
-    "microk8s",
-    "MOSQUITTO",
-    "mqtt",
-    "NBIRTH",
-    "NCMD",
-    "NDATA",
-    "NDEATH",
-    "openebs",
-    "mayastore",
-    "packettypes",
-    "paho",
-    "ppcle",
-    "proto",
-    "protobuf",
-    "sparkplugb",
-    "storageclass",
-    "Tahu",
-    "userdata"
-  ]
+  "cSpell.import": ["../../.trunk/configs/cspell.yaml"]
 }

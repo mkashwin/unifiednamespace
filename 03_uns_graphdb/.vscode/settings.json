@@ -15,17 +15,5 @@
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-  "cSpell.words": [
-    "graphdb",
-    "integrationtest",
-    "lastnode",
-    "mqtt",
-    "packettypes",
-    "paho",
-    "protobuf",
-    "sparkplugb",
-    "userdata",
-    "venv",
-    "virtualenv"
-  ]
+  "cSpell.import": ["../../.trunk/configs/cspell.yaml"]
 }

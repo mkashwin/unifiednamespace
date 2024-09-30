@@ -297,10 +297,12 @@ dict_payload_3: dict = {
 }
 
 # #########  Test Data Payload 4 #########
+# spell-checker:disable
 bytes_payload_4: bytes = (
-    b"\x12x\n\rtest metadata\x18\x94\xb9\xaf\xcb\xd01 \x12BK\x08\x00\x12\x05utf-8\x189 \x01*\x08test.txt2\x03txt: "
+    b"a8a42d159d5c815a80629c7ce443d404B\x0bdescription\x82\x01\x10I am a text file"
     b"a8a42d159d5c815a80629c7ce443d404B\x0bdescription\x82\x01\x10I am a text file"
 )
+# spell-checker:enable
 spb_payload_4 = Payload()
 spb_payload_4.ParseFromString(bytes_payload_4)
 dict_payload_4: dict = {
@@ -325,6 +327,7 @@ dict_payload_4: dict = {
 }
 
 # #########  Test Data Payload 5 #########
+# spell-checker:disable
 bytes_payload_5: bytes = (
     b"\x08\xa2\xac\x85\x99\x08\x12\x1e\n\x0bInputs/int8\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ \x16\x82"
     b"\x01\x03\n\x0b\xe9\x12 \n\x0cInputs/int16\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x17\x82\x01\x04\xd0\x8a0u\x12$\n\x0c"
@@ -429,6 +432,7 @@ dict_payload_6: dict = {
     ]
 }
 # #########  Test Data Ends #########
+# spell-checker:enable
 
 
 @pytest.mark.parametrize(
