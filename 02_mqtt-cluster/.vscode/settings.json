@@ -11,5 +11,14 @@
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-  "cSpell.import": ["../../.trunk/configs/cspell.yaml"]
+  "cSpell.language": "en,en-GB",
+  "cSpell.import": ["${workspaceRoot}/../.trunk/configs/cspell.yaml"],
+  "cSpell.customDictionaries": {
+    "project_words": {
+      "name": "project_words",
+      "path": "${workspaceRoot}/../.trunk/configs/.cspell-custom-words.txt",
+      "scope": "user",
+      "addWords": true
+    }
+  }
 }

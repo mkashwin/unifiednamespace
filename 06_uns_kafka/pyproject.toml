@@ -27,7 +27,7 @@ python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
 confluent-kafka = "^2.5.3"
-
+psutil = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
