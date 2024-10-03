@@ -25,8 +25,9 @@ createdb
 createrole
 createuser
 cypher
-dbuser
+dashboarding
 DBIRTH
+dbuser
 DCMD
 DDATA
 DDEATH
@@ -37,16 +38,20 @@ dockerhub
 dynaconf
 elif
 EMQX
+exploitability
 fastapi
 graphdb
 gssapi
 healthcheck
 Himanshu
 historization
+historized
+historizing
 HIVEMQ
 hostpath
 hypertable
 IIOT
+inhouse
 integrationtest
 IPRANGE
 ireduce
@@ -55,6 +60,7 @@ isready
 itsmechlark
 Jeppson
 Johan
+k8scluster
 kafka
 keepalive
 keyfile
@@ -79,7 +85,6 @@ NBIRTH
 NCMD
 NDATA
 NDEATH
-# norecursed
 norecursedirs
 nvmf
 opencontainers
@@ -98,8 +103,11 @@ protoc
 psql
 psutil
 psycopg
+pydantic
 pyupio
+remoteuser
 reqs
+runtimes
 sarif
 sasl
 SCADA
@@ -116,6 +124,8 @@ testpaths
 timescaledb
 TIMESTAMPTZ
 unifiednamespace
+unixuser
+uns
 unspublisher
 userdata
 usermod
@@ -127,12 +137,3 @@ virtualenv
 Waehner
 websockets
 xdist
-unixuser
-uns
-exploitability
-historized
-historizing
-k8scluster
-inhouse
-dashboarding
-remoteuser

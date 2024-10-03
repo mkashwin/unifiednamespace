@@ -41,6 +41,7 @@ ruff = "^0.6.8"
 
 [tool.poetry.scripts]
 uns_spb_mapper = "uns_spb_mapper.uns_sparkplugb_listener:main"
+uns_spb_mapper_healthcheck = "uns_spb_mapper.health_check:main"
 
 [build-system]
 requires = ["poetry-core"]

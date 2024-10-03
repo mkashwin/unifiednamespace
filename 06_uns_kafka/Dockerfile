@@ -88,3 +88,4 @@ ENV GIT_HASH=${GIT_HASH:-dev}
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_kafka module
 ENTRYPOINT ["poetry", "run", "uns_kafka_mapper"]
+HEALTHCHECK --interval=60s --timeout=10s CMD ["poetry", "run",  "uns_kafka_healthcheck"]

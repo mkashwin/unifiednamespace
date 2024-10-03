@@ -90,3 +90,4 @@ EXPOSE 8000
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_graphql module using uvicorn
 ENTRYPOINT ["poetry", "run", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=60s --timeout=10s CMD ["poetry", "run",  "uns_graphql.health_check", "--port", "8000"]

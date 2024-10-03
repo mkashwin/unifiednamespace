@@ -6,7 +6,7 @@
       "source.fixAll": "explicit",
       "source.organizeImports": "explicit"
     },
-    "editor.defaultFormatter": "charliermarsh.ruff"
+    "editor.defaultFormatter": "trunk.io"
   },
   "python.testing.pytestEnabled": true,
   "python.analysis.extraPaths": [
@@ -25,13 +25,9 @@
   ],
   "python.languageServer": "Default",
   "python.missingPackage.severity": "Error",
-  "ruff.showNotifications": "always",
-  "ruff.trace.server": "messages",
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.inlayHints.callArgumentNames": "all",
   "python.analysis.typeCheckingMode": "off",
-  "editor.defaultFoldingRangeProvider": "charliermarsh.ruff",
-  "editor.defaultFormatter": "charliermarsh.ruff",
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
@@ -57,7 +53,7 @@
   },
   "trunk.addToolsToPath": true,
   "cSpell.language": "en,en-GB",
-  "cSpell.import": ["../.trunk/configs/cspell.yaml"],
+  "cSpell.import": ["${workspaceRoot}/.trunk/configs/cspell.yaml"],
   "cSpell.customDictionaries": {
     "project_words": {
       "name": "project_words",

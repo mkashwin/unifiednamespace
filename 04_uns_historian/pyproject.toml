@@ -44,6 +44,7 @@ ruff = "^0.6.8"
 
 [tool.poetry.scripts]
 uns_historian = "uns_historian.uns_mqtt_historian:main"
+uns_historian_healthcheck = "uns_historian.health_check:main"
 
 [build-system]
 requires = ["poetry-core"]

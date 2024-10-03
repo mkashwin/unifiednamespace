@@ -42,7 +42,7 @@ ruff = "^0.6.8"
 
 [tool.poetry.scripts]
 uns_graphdb = "uns_graphdb.uns_mqtt_graphdb:main"
-uns_graphdb_healthcheck = "uns_graphdb.health_check.py:main"
+uns_graphdb_healthcheck = "uns_graphdb.health_check:main"
 
 [build-system]
 requires = ["poetry-core"]

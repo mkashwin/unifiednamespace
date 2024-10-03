@@ -20,6 +20,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import uvicorn
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 
@@ -99,3 +100,25 @@ async def test_uns_graphql_app_db_pool_cleanup():
     # mock_close_pool.assert_called_once()
     mock_hist_close_pool.assert_called_once()
     mock_graphdb_close_pool.assert_called_once()
+
+
+def test_uns_graphql_app_uvicorn_compatibility():
+    """
+    Test to validate that UNSGraphql.app can be instantiated by uvicorn
+    """
+    uns_graphql_app = UNSGraphql()
+    app = uns_graphql_app.app
+
+    # Create a mock uvicorn config
+    config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="info")
+
+    # Attempt to create a Server instance
+    try:
+        server = uvicorn.Server(config)
+        assert server is not None
+    except Exception as e:
+        pytest.fail(f"Failed to create uvicorn Server instance: {e!s}")
+
+    # Optionally, you can add more assertions here if needed
+    assert isinstance(app, FastAPI)
+    assert app.router.routes is not None

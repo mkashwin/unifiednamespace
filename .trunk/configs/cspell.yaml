@@ -45,5 +45,5 @@ ignorePaths:
   - "**/LICENSE.strawberry-graphql"
   - "**/LICENSE.uvicorn"
   - "**/.trunk/**"
-  - ".devcontainer/*"
+  - "**/.devcontainer/*"
   - "**/*_cache/**"
