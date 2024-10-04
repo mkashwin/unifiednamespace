@@ -6,11 +6,8 @@
 echo "Warning! This script should be invoked only after pre_setup_nodes.sh has been executed on all the nodes"
 echo "This script needs to be executed only once on any one of the designated master node of the K8s cluster "
 
-# Setting the default values before loading the conf file.
-COUNT_WORKERS=0
 # spell-checker:disable
 DEFAULT_NETWORK_LINK="enp0s3"
-MASTER_COUNT=0
 #This entry is inline wiht microK8s documentation to be done on each master node for high availability
 FAILUREDOMAIN=40
 # spell-checker:enable
@@ -24,6 +21,7 @@ CLUSTER_DNS=$(kubectl get svc kube-dns --namespace=kube-system | grep kube-dns |
 
 IS_THIS_MASTER=false
 ## Loop through to ensure that this node is actually a master node ( as per config.conf)
+# trunk-ignore(shellcheck/SC2004)
 for ((i=0; i<${COUNT_NODES}; i++ ));
 do
     declare NODE_IP="NODE_${i}_IP"
@@ -33,9 +31,11 @@ do
     fi
 done
 
+# trunk-ignore(shellcheck/SC2004)
 for ((i=0; i<${COUNT_NODES}; i++ ));
 do
     declare NODE_IP="NODE_${i}_IP"
+    # trunk-ignore(shellcheck/SC2034)
     declare NODE_NAME="NODE_${i}_NAME"
     declare NODE_ISMASTER="NODE_${i}_ISMASTER"
     declare NODE_USER="NODE_${i}_USERNAME"
@@ -44,6 +44,7 @@ do
     if [[ "${LOCAL_IP}" = "${!NODE_IP}" ]] && [[ "${!NODE_ISMASTER}" = true ]] ; then
         echo "This is the same node as the master" 
         echo "failure-domain=${FAILUREDOMAIN}" >> /var/snap/microk8s/current/args/ha-conf
+        # trunk-ignore(shellcheck/SC2004)
         FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
         IS_THIS_MASTER=true
 
@@ -62,6 +63,7 @@ do
                 sudo microk8s.config > ~/.kube/config
                 sudo chown -f -R ${!NODE_USER} ~/.kube
             "
+            # trunk-ignore(shellcheck/SC2004)
             FAILUREDOMAIN=$((${FAILUREDOMAIN} + 2))
             eval NODE_"${i}"_HAS_JOINED_K8S=true
         else
@@ -96,4 +98,3 @@ microk8s enable metallb:"${METALLB_IPRANGE}"
 # you need to define that route on the host computer / LAN router to map to the virtual LAN DHCP server
 # e.g. route -p ADD 198.168.220.0 MASK 255.255.255.128 198.168.200.1
 # arp 198.168.220.2
-
