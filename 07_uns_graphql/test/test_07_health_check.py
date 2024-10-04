@@ -56,7 +56,9 @@ neo4j_conn_port = int(GraphDBConfig.conn_url.split("://")[1].split(":")[1])
 postgres_conn_port = HistorianConfig.port if HistorianConfig.port else 5432
 
 # Get KAFKA configuration
-kafka_host_port_list : list = [(url.split(":")[0],int(url.split(":")[1])) for url in KAFKAConfig.config_map.get("bootstrap.servers").split(",")]
+kafka_host_port_list: list = [(url.split(":")[0], int(url.split(":")[1]))
+                              for url in KAFKAConfig.config_map.get("bootstrap.servers").split(",")]
+
 
 @pytest.mark.parametrize(
     "args, port",
@@ -93,7 +95,8 @@ def test_main_positive(args: list[str], port: int):
         # mock socket reachability
         def mock_connect_ex(addr):
             host, port = addr  # noqa: F841
-            if port in (mqtt_conn_port, neo4j_conn_port, postgres_conn_port)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list):
+            if port in (mqtt_conn_port, neo4j_conn_port, postgres_conn_port, *tuple(
+                kafka_port for kafka_host, kafka_port in kafka_host_port_list)):
                 return 0  # Simulate successful connection for matching ports
             return 1  # Simulate failure for other ports
 
@@ -118,31 +121,35 @@ def test_main_positive(args: list[str], port: int):
         (
             {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port) + tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
+             *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             0,
         ),  # health green everything is working
         (
             {"cmdline": ["python", "something", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
+             *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # No service called uvicorn is running
         (
             {"cmdline": ["python", "something", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             False,
-            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
+             *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             2,
         ),  # No service called uvicorn is running, No service running on the port
         (
             {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             False,
-            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
+             *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # Uvicorn service isn't running on the port
         (
             {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (neo4j_conn_port, postgres_conn_port)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (neo4j_conn_port, postgres_conn_port, *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # No connectivity to MQTT server
         (
@@ -154,13 +161,13 @@ def test_main_positive(args: list[str], port: int):
         (
             {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (mqtt_conn_port, postgres_conn_port)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (mqtt_conn_port, postgres_conn_port, *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # No connectivity to Neo4j server
         (
             {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (mqtt_conn_port,)+ tuple(kafka_port for (kafka_host, kafka_port) in kafka_host_port_list),
+            (mqtt_conn_port, *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             2,
         ),  # No connectivity to Neo4j servers and  timescaledb
         (
