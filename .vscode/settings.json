@@ -6,7 +6,7 @@
       "source.fixAll": "explicit",
       "source.organizeImports": "explicit"
     },
-    "editor.defaultFormatter": "trunk.io"
+    "editor.defaultFormatter": "ms-python.autopep8"
   },
   "python.testing.pytestEnabled": true,
   "python.analysis.extraPaths": [
@@ -41,7 +41,7 @@
   "python.analysis.autoFormatStrings": true,
   "python.analysis.autoImportCompletions": true,
   "python.analysis.completeFunctionParens": true,
-  "python.analysis.gotoDefinitionInStringLiteral": false,
+  "python.analysis.gotoDefinitionInStringLiteral": true,
   "debug.confirmOnExit": "always",
   "debug.console.acceptSuggestionOnEnter": "on",
   "launch": {

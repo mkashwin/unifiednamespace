@@ -68,10 +68,10 @@ def test_check_existing_connection(host_ip: str, host: str | None, port: int, ma
          (mqtt_host, mqtt_port), (historian_host, historian_port)], 0),
         ({"cmdline": ["python", "something else"]}, [
          (mqtt_host, mqtt_port), (historian_host, historian_port)], 1),
-        ({"cmdline": ["python", "uns_historian"]}, [ (historian_host, historian_port)], 1),  
-        ({"cmdline": ["python", "uns_historian"]}, [ (mqtt_host, mqtt_port)], 1),    
-        ({"cmdline": ["python", "uns_historian"]}, [ ], 2),
-        ({"cmdline": ["python", "anything"]}, [ ], 3), 
+        ({"cmdline": ["python", "uns_historian"]}, [(historian_host, historian_port)], 1),
+        ({"cmdline": ["python", "uns_historian"]}, [(mqtt_host, mqtt_port)], 1),
+        ({"cmdline": ["python", "uns_historian"]}, [], 2),
+        ({"cmdline": ["python", "anything"]}, [], 3),
     ],
 )
 def test_main_multiple_scenarios(process_info: dict, remote_host_port_list: list[set], sys_err_ext_count: int):

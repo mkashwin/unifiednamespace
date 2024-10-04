@@ -25,7 +25,7 @@
 #   - PGPASSWORD
 
 # Example for running this would be
-#   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose up -d
+#   UNS_graphdb__password=password1 UNS_historian__password=password2 PGPASSWORD=password3 docker-compose up -d
 # Example for destroying  all the containers and volumes created
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose down --volumes
 services:
@@ -188,6 +188,8 @@ services:
       dockerfile: ./07_uns_graphql/Dockerfile
     # volumes:
     #   - ./conf:/app/conf
+    ports:
+      - "8000:8000"
     environment:
       UNS_MODULE: 07_uns_graphql
       UNS_mqtt__host: uns_mqtt_broker
