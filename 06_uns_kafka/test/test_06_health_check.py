@@ -12,9 +12,11 @@ mqtt_host = MQTTConfig.host
 mqtt_port = MQTTConfig.port
 
 # Get KAFKA configuration
-# FIXME handle multiple bootstrap servers 
-kafka_host: str = KAFKAConfig.kafka_config_map.get("bootstrap.servers").split(":")[0]
-kafka_port: int = int(KAFKAConfig.kafka_config_map.get("bootstrap.servers").split(":")[1])
+kafka_host_port_list : list = [(url.split(":")[0],int(url.split(":")[1])) for url in  KAFKAConfig.kafka_config_map.get("bootstrap.servers").split(",")]
+
+    
+# kafka_host: str = KAFKAConfig.kafka_config_map.get("bootstrap.servers").split(":")[0]
+# kafka_port: int = int(KAFKAConfig.kafka_config_map.get("bootstrap.servers").split(":")[1])
 
 
 def test_check_process():
@@ -36,11 +38,16 @@ def test_check_process():
         ("127.0.0.1", mqtt_host, mqtt_port, True),
         ("127.0.0.1", mqtt_host, mqtt_port, False),
         ("172.0.0.2", "uns_mqtt", mqtt_port, True),
-        ("172.0.0.2", "uns_mqtt", mqtt_port, False),
-        ("127.0.0.1", kafka_host, kafka_port, True),
-        ("127.0.0.1", kafka_host, kafka_port, False),
-        ("172.0.0.4", "uns_kafka", kafka_port, True),
-        ("172.0.0.4", "uns_kafka", kafka_port, False),
+        ("172.0.0.2", "uns_mqtt", mqtt_port, False)
+    ] + [
+        ("127.0.0.1", kafka_host, kafka_port, True) for (kafka_host, kafka_port) in kafka_host_port_list
+    ] + [
+        ("127.0.0.1", kafka_host, kafka_port, False) for (kafka_host, kafka_port) in kafka_host_port_list
+    ] + [
+        ("172.0.0.4", "uns_kafka", kafka_port, True) for (kafka_host, kafka_port) in kafka_host_port_list
+    ] + [
+        ("172.0.0.4", "uns_kafka", kafka_port, False)for (kafka_host, kafka_port) in kafka_host_port_list
+    ] + [
     ],
 )
 def test_check_existing_connection(host_ip: str, host: str | None, port: int, match_conn: bool):
@@ -65,11 +72,15 @@ def test_check_existing_connection(host_ip: str, host: str | None, port: int, ma
 @pytest.mark.parametrize(
     "process_info, remote_host_port_list,sys_err_ext_count",
     [
-        ({"cmdline": ["python", "uns_kafka_mapper"]}, [
-         (mqtt_host, mqtt_port), (kafka_host, kafka_port)], 0),
-        ({"cmdline": ["python", "something else"]}, [
-         (mqtt_host, mqtt_port), (kafka_host, kafka_port)], 1),
-        ({"cmdline": ["python", "uns_kafka_mapper"]}, [(kafka_host, kafka_port)], 1),
+        ({"cmdline": ["python", "uns_kafka_mapper"]}, [ (mqtt_host, mqtt_port), (kafka_host, kafka_port)], 0) for (kafka_host, kafka_port) in kafka_host_port_list
+    ] +
+    [
+         ({"cmdline": ["python", "something else"]}, [ (mqtt_host, mqtt_port), (kafka_host, kafka_port)], 1) for (kafka_host, kafka_port) in kafka_host_port_list
+    ] +
+    [
+        ({"cmdline": ["python", "uns_kafka_mapper"]}, [(kafka_host, kafka_port)], 1) for (kafka_host, kafka_port) in kafka_host_port_list
+    ] +
+    [
         ({"cmdline": ["python", "uns_kafka_mapper"]}, [(mqtt_host, mqtt_port)], 1),
         ({"cmdline": ["python", "uns_kafka_mapper"]}, [], 2),
         ({"cmdline": ["python", "anything"]}, [], 3),
