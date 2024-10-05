@@ -22,9 +22,6 @@
     "ghcr.io/devcontainers-contrib/features/poetry:2": {
       "version": "latest"
     },
-    "ghcr.io/itsmechlark/features/trivy:1": {
-      "version": "latest"
-    },
     "ghcr.io/trunk-io/devcontainer-feature/trunk": {
       "version": "latest"
     }

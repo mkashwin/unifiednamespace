@@ -12,55 +12,52 @@ MASTER_COUNT=0
 source ./config.conf
 # Obtain the current IP of this node
 # trunk-ignore(shellcheck/SC2312)
-LOCAL_IP=$(ip address show dev "${DEFAULT_NETWORK_LINK}" | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/[/][2][4]//g') 
-
+LOCAL_IP=$(ip address show dev "${DEFAULT_NETWORK_LINK}" | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/[/][2][4]//g')
 
 ## Loop through the configurations of nodes
-for ((i=0; i<${COUNT_NODES}; i++ ));
-do
-    declare NODE_IP="NODE_${i}_IP"
-    declare NODE_NAME="NODE_${i}_NAME"
-    declare NODE_ISMASTER="NODE_${i}_ISMASTER"
-    declare NODE_USER="NODE_${i}_USERNAME"
+for ((i = 0; i < COUNT_NODES; i++)); do
+	declare NODE_IP="NODE_${i}_IP"
+	declare NODE_NAME="NODE_${i}_NAME"
+	declare NODE_ISMASTER="NODE_${i}_ISMASTER"
+	declare NODE_USER="NODE_${i}_USERNAME"
 
-    ## Need to update /etc/hosts with internal IP of the other nodes
-    if [[ "${LOCAL_IP}" = "${!NODE_IP}" ]]
-    then
-        # Skip putting this entry in /etc/hosts 
-        # check is this node is to be a master
-        IS_THIS_MASTER=${!NODE_ISMASTER}
-    else
-        echo "${!NODE_IP}" "${!NODE_NAME}" | sudo tee -a /etc/hosts
-    fi
-## Count the number of master nodes
-    if [[ "${!NODE_ISMASTER}" = true ]] ; then 
-        let MASTER_COUNT++ 
-    fi
+	## Need to update /etc/hosts with internal IP of the other nodes
+	if [[ ${LOCAL_IP} == "${!NODE_IP}" ]]; then
+		# Skip putting this entry in /etc/hosts
+		# check is this node is to be a master
+		IS_THIS_MASTER=${!NODE_ISMASTER}
+	else
+		echo "${!NODE_IP}" "${!NODE_NAME}" | sudo tee -a /etc/hosts
+	fi
+	## Count the number of master nodes
+	if [[ ${!NODE_ISMASTER} == true ]]; then
+		let MASTER_COUNT++
+	fi
 done
 ## grant the user sudo privileges
 if [[ ! -f /etc/sudoers.d/"${USER}" ]]; then
-    echo "${USER} does not have adequate sudo rights. Adding him to sudo list to prevent always asking for passwords"
-    # trunk-ignore(shellcheck/SC2312)
-    sudo echo "${USER} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/"${USER}"
-    sudo chown root:root /etc/sudoers.d/"${USER}"
-    sudo chmod o-r,a-w /etc/sudoers.d/"${USER}"
-    # su - $USER
-    echo "User did not have adequate right to continue. Rights have been granted."
-    echo "Please re-execute the script after logging off and login again. alternatively execute 'su - ${USER}'"
-    # trunk-ignore(shellcheck/SC2242)
-    exit  -1 
+	echo "${USER} does not have adequate sudo rights. Adding him to sudo list to prevent always asking for passwords"
+	# trunk-ignore(shellcheck/SC2312)
+	sudo echo "${USER} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/"${USER}"
+	sudo chown root:root /etc/sudoers.d/"${USER}"
+	sudo chmod o-r,a-w /etc/sudoers.d/"${USER}"
+	# su - $USER
+	echo "User did not have adequate right to continue. Rights have been granted."
+	echo "Please re-execute the script after logging off and login again. alternatively execute 'su - ${USER}'"
+	# trunk-ignore(shellcheck/SC2242)
+	exit -1
 fi
 
 ## Basic installations and upgrade of the system
 # spell-checker:disable
-sudo apt-get update -y 
+sudo apt-get update -y
 sudo apt-get upgrade -y
 sudo apt-get full-upgrade -y
-sudo apt install net-tools libnss-mdns openssh-server open-iscsi -y 
-sudo apt-get auto-remove -y 
+sudo apt install net-tools libnss-mdns openssh-server open-iscsi -y
+sudo apt-get auto-remove -y
 
 sudo systemctl enable iscsid
-systemctl status iscsid 
+systemctl status iscsid
 sudo systemctl enable --now iscsid
 sudo snap refresh
 
@@ -77,7 +74,7 @@ sudo snap install microk8s --classic --channel=latest/stable
 sudo usermod -a -G microk8s "${USER}"
 
 mkdir ~/.kube
-sudo microk8s.config > ~/.kube/config
+sudo microk8s.config >~/.kube/config
 sudo chown -f -R "${USER}" ~/.kube
 
 sudo chown root:"${USER}" /var/snap/microk8s/current/credentials/
@@ -86,15 +83,15 @@ sudo chown root:"${USER}" /var/snap/microk8s/current/credentials/client.config
 sudo chown root:"${USER}" /var/snap/microk8s/current/args/
 sudo chown root:"${USER}" /var/snap/microk8s/current/args/kubectl
 
-if [[ "${IS_THIS_MASTER}" = true ]] ; then
-## Configurations specific to the masters
-    echo "configuring the master node " $(hostname)
+if [[ ${IS_THIS_MASTER} == true ]]; then
+	## Configurations specific to the masters
+	echo "configuring the master node " $(hostname)
 fi
 touch ~/.bash_aliases
-# drop the microk8s prefix and just use *kubectl to issue commands to Kubernetes, create an alias by running the command: 
-echo "alias kubectl='microk8s kubectl'" >> ~/.bash_aliases
-# drop the microk8s prefix and just use *helm to issue commands to Kubernetes, create an alias by running the command: 
-echo "alias helm='microk8s helm3'" >> ~/.bash_aliases
+# drop the microk8s prefix and just use *kubectl to issue commands to Kubernetes, create an alias by running the command:
+echo "alias kubectl='microk8s kubectl'" >>~/.bash_aliases
+# drop the microk8s prefix and just use *helm to issue commands to Kubernetes, create an alias by running the command:
+echo "alias helm='microk8s helm3'" >>~/.bash_aliases
 
 sudo microk8s.stop
 sudo microk8s.start
