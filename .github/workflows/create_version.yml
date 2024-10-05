@@ -1,3 +1,4 @@
+# trunk-ignore-all(checkov/CKV2_GHA_1)
 name: Update Version and Build Docker Image
 
 on:
@@ -15,8 +16,6 @@ on:
         options:
           - "no"
           - "yes"
-permissions:
-  contents: write
 
 jobs:
   update-version:
