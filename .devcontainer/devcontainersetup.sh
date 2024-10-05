@@ -157,7 +157,7 @@ INPUT_FILES=$(find "${WORKSPACE}" -type f -not -path "${WORKSPACE}/07_uns_graphq
 # Define the output file
 OUTPUT_FILE=${WORKSPACE}/07_uns_graphql/conf/.secrets.yaml
 
-merge_command="docker run --rm -v /:/workdir mikefarah/yq eval-all '. as \$item ireduce ({}; . * \$item )'"
+merge_command="docker run --rm -v \"/\":/workdir mikefarah/yq eval-all '. as \$item ireduce ({}; . * \$item )'"
 
 # Iterate over the YAML files in the input directory
 for yaml_file in ${INPUT_FILES}; do
