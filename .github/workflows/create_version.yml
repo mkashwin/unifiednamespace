@@ -52,7 +52,7 @@ jobs:
           for folder in */; do
             if [ -f "${folder}poetry.lock" ]; then
                 echo "Found pyproject.toml in folder: ${folder}"
-                (cd "${folder}" && poetry install)
+                (cd "${folder}" && poetry lock && poetry install)
             fi
           done
           poetry install
