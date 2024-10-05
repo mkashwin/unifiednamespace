@@ -46,6 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       neo4j_pwd: ${{ steps.random_strings.outputs.neo4j_pwd}}
+      # trunk-ignore(actionlint/expression)
       postgres_pwd: ${{ steps.random_strings.outputs.postgres_pwd }}
       uns_historian_pwd: ${{ steps.random_strings.outputs.uns_historian_pwd}}
     steps:

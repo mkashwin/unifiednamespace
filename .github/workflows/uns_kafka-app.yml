@@ -79,6 +79,7 @@ jobs:
 
       - name: Run all type of tests
         uses: ./.github/include/execute_tests/
+        timeout-minutes: 3
         with:
           module: 06_uns_kafka
           integration_tests: true
