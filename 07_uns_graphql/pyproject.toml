@@ -29,11 +29,11 @@ dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.243", extras = ["fastapi", "cli"] }
 aiohttp = "^3.10"
 uvicorn = { version = "^0.31", extras = ["standard"] }
-
 aiomqtt = "^2.2.0"
 confluent-kafka = "^2.5.3"
 neo4j = "^5.25"
 asyncpg = "^0.29"
+psutil = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
@@ -51,6 +51,7 @@ pytest-retry = "^1.6.3"
 
 [tool.poetry.scripts]
 uns_graphql_app = "uns_graphql.uns_graphql_app:main"
+uns_graphql_healthcheck = "uns_graphql.health_check:main"
 
 [build-system]
 requires = ["poetry-core"]

@@ -29,6 +29,7 @@
 FROM python:3.12-alpine3.20
 
 # Set the environment variable for the entrypoint command
+# spell-checker:disable
 ENV UNS_MODULE="06_uns_kafka"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
@@ -36,7 +37,7 @@ ENV UNS_MODULE="06_uns_kafka"\
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1  \
     LIBRDKAFKA_VER="2.5.3"
-
+# spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka
 LABEL org.opencontainers.image.description="Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
 LABEL org.opencontainers.image.licenses=MIT
@@ -69,7 +70,7 @@ RUN apk update && \
     rm -rf librdkafka-${LIBRDKAFKA_VER} 
 
 # Install pip & poetry
-RUN  pip install --upgrade pip poetry && \
+RUN  pip install  --no-cache-dir --upgrade pip poetry && \
     # create application user
     adduser --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
@@ -87,3 +88,4 @@ ENV GIT_HASH=${GIT_HASH:-dev}
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_kafka module
 ENTRYPOINT ["poetry", "run", "uns_kafka_mapper"]
+HEALTHCHECK --interval=60s --timeout=10s CMD ["poetry", "run",  "uns_kafka_healthcheck"]

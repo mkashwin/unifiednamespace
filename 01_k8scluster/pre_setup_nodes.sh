@@ -11,6 +11,7 @@ MASTER_COUNT=0
 
 source ./config.conf
 # Obtain the current IP of this node
+# trunk-ignore(shellcheck/SC2312)
 LOCAL_IP=$(ip address show dev "${DEFAULT_NETWORK_LINK}" | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/[/][2][4]//g') 
 
 
@@ -36,19 +37,22 @@ do
         let MASTER_COUNT++ 
     fi
 done
-## grant the user sudo priviledges
+## grant the user sudo privileges
 if [[ ! -f /etc/sudoers.d/"${USER}" ]]; then
     echo "${USER} does not have adequate sudo rights. Adding him to sudo list to prevent always asking for passwords"
+    # trunk-ignore(shellcheck/SC2312)
     sudo echo "${USER} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/"${USER}"
     sudo chown root:root /etc/sudoers.d/"${USER}"
     sudo chmod o-r,a-w /etc/sudoers.d/"${USER}"
     # su - $USER
     echo "User did not have adequate right to continue. Rights have been granted."
-    echo "Please re-execute the script after logging off and loggin again. alternatively execute 'su - ${USER}'"
+    echo "Please re-execute the script after logging off and login again. alternatively execute 'su - ${USER}'"
+    # trunk-ignore(shellcheck/SC2242)
     exit  -1 
 fi
 
 ## Basic installations and upgrade of the system
+# spell-checker:disable
 sudo apt-get update -y 
 sudo apt-get upgrade -y
 sudo apt-get full-upgrade -y
@@ -100,7 +104,7 @@ sudo microk8s status --wait-ready
 #su - $USER
 # Reload the mircok8s group users
 newgrp microk8s
-
+# spell-checker:enable
 echo "Session needs to be reloaded for changes to take effect"
 echo "Please Log off and Login again. Alternatively execute 'su - ${USER}'"
 echo "Check status of microK8s with the command 'microk8s status' and if it is running you may proceed with executing  setup_k8s_cluster.sh on any one master node"

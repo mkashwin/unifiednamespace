@@ -2,16 +2,18 @@
 # To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
 version: 0.1
 cli:
-  version: 1.22.5
+  version: 1.22.6
 # Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
 plugins:
   sources:
     - id: trunk
-      ref: v1.6.2
-      uri: https://github.com/trunk-io/plugins
+      ref: v1.6.3
+      uri: "https://github.com/trunk-io/plugins"
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
   enabled:
+    - go@1.21.0
+    - node@18.12.1
     - python@>3.10.8
   definitions:
     - type: python
@@ -19,12 +21,13 @@ runtimes:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
+    - markdownlint@0.42.0
     - hadolint@2.12.0
     - cspell@8.14.4
-    - gitleaks@8.19.3
+    - gitleaks@8.20.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.255
+    - checkov@3.2.256
     - trivy@0.55.2
     - git-diff-check
     - prettier@3.3.3
@@ -36,7 +39,7 @@ lint:
       paths:
         # Ignore generated files
         - "**/generated/**"
-        - images/*
+        - "*/images/*"
 actions:
   enabled:
     - trunk-announce

@@ -27,7 +27,7 @@ python = "^3.12"
 logger = "^1.4"
 asyncpg = "^0.29"
 dynaconf = "^3.2.4"
-
+psutil = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
@@ -44,6 +44,7 @@ ruff = "^0.6.8"
 
 [tool.poetry.scripts]
 uns_historian = "uns_historian.uns_mqtt_historian:main"
+uns_historian_healthcheck = "uns_historian.health_check:main"
 
 [build-system]
 requires = ["poetry-core"]

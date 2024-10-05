@@ -1,12 +1,10 @@
+#!/bin/bash
 # Need to have helm 3 
 microk8s helm3 repo add emqx https://repos.emqx.io/charts
 microk8s helm3 repo update
 microk8s helm3 search repo emqx
 
-# create a persitent volume claim
-# kubectl apply -f ./01_emx-jivavolumepolicy.yaml
-# kubectl apply -f ./02_emqx-storageclass.yaml
-# kubectl apply -f ./03_emqx-emx-pvc.yaml
+# create a persistent volume claim
 
 microk8s kubectl apply -f - <<EOF
 kind: StorageClass

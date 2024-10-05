@@ -25,13 +25,12 @@
 #   - PGPASSWORD
 
 # Example for running this would be
-#   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose up -d
+#   UNS_graphdb__password=password1 UNS_historian__password=password2 PGPASSWORD=password3 docker-compose up -d
 # Example for destroying  all the containers and volumes created
 #   UNS_graphdb__password=<password1> UNS_historian__password=<password1> PGPASSWORD=<password3> docker-compose down --volumes
-version: "3"
 services:
   uns_mqtt_broker:
-    image: emqx/emqx:latest
+    image: "emqx/emqx:latest"
     ports:
       - "1883:1883"
       - "8083:8083"
@@ -42,7 +41,7 @@ services:
       retries: 5
 
   uns_timescale_db:
-    image: timescale/timescaledb:latest-pg16
+    image: "timescale/timescaledb:latest-pg16"
     ports:
       - "5432:5432"
     environment:
@@ -53,7 +52,7 @@ services:
       retries: 20
 
   uns_neo4j_db:
-    image: neo4j:latest
+    image: "neo4j:latest"
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -64,14 +63,14 @@ services:
       apoc.import.file.use_neo4j_config: "true"
       NEO4J_PLUGINS: '["apoc"]'
     healthcheck:
-      test: wget http://localhost:7474 || exit 1
+      test: "wget http://localhost:7474 || exit 1"
       interval: 1s
       timeout: 10s
       retries: 20
       start_period: 3s
 
   uns_kafka_broker:
-    image: bitnami/kafka:latest
+    image: "bitnami/kafka:latest"
     ports:
       - "9092:9092"
     environment:
@@ -79,19 +78,19 @@ services:
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
       KAFKA_CFG_NODE_ID: 0
       KAFKA_CFG_PROCESS_ROLES: controller,broker
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@uns_kafka_broker:9093
+      KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "0@uns_kafka_broker:9093"
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
     healthcheck:
-      test: kafka-topics.sh --bootstrap-server uns_kafka_broker:9092 --topic hc --create --if-not-exists && kafka-topics.sh --bootstrap-server uns_kafka_broker:9092 --topic hc --describe
+      test: "kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1"
       start_period: 10s
       interval: 5s
       timeout: 10s
       retries: 5
 
   tsdb_setup_script:
-    image: postgres:12
+    image: "postgres:12"
     environment:
       PGPASSWORD: ${PGPASSWORD}
       UNS_historian__hostname: uns_timescale_db
@@ -123,7 +122,7 @@ services:
     environment:
       UNS_MODULE: 03_uns_graphdb
       UNS_mqtt__host: uns_mqtt_broker
-      UNS_graphdb__url: bolt://uns_neo4j_db:7687
+      UNS_graphdb__url: "bolt://uns_neo4j_db:7687"
       UNS_graphdb__username: neo4j
       UNS_graphdb__password: ${UNS_graphdb__password}
     depends_on:
@@ -189,11 +188,13 @@ services:
       dockerfile: ./07_uns_graphql/Dockerfile
     # volumes:
     #   - ./conf:/app/conf
+    ports:
+      - "8000:8000"
     environment:
       UNS_MODULE: 07_uns_graphql
       UNS_mqtt__host: uns_mqtt_broker
 
-      UNS_graphdb__url: bolt://uns_neo4j_db:7687
+      UNS_graphdb__url: "bolt://uns_neo4j_db:7687"
       UNS_graphdb__username: neo4j
       UNS_graphdb__password: ${UNS_graphdb__password}
 

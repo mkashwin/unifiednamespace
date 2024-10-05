@@ -76,5 +76,6 @@ class UNSGraphql:
     schema = strawberry.Schema(query=Query, subscription=Subscription, scalar_overrides={int: Int64})
     graphql_app = GraphQLRouter(schema)
     LOGGER.info("GraphQL app created")
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI()
     app.include_router(graphql_app, prefix="/graphql")
+    app.lifespan = lifespan

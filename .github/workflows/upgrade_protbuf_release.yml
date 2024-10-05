@@ -7,6 +7,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "30 0 1 * *"
+
+permissions:
+  contents: write # Allow write access for checking in
+
 jobs:
   import_release:
     runs-on: ubuntu-latest

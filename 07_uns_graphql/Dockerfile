@@ -29,6 +29,7 @@
 FROM python:3.12-alpine3.20
 
 # Set the environment variable for the entrypoint command
+# spell-checker:disable
 ENV UNS_MODULE="07_uns_graphql"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
@@ -36,7 +37,7 @@ ENV UNS_MODULE="07_uns_graphql"\
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
     LIBRDKAFKA_VER="2.5.3"
-
+# spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql
 LABEL org.opencontainers.image.description="Provide GraphQL capabilities for the UNS across all data sources"
 LABEL org.opencontainers.image.licenses=MIT
@@ -69,7 +70,7 @@ RUN apk update && \
     rm -rf librdkafka-${LIBRDKAFKA_VER}
 
 # Install pip & poetry
-RUN  pip install --upgrade pip poetry && \
+RUN  pip install  --no-cache-dir --upgrade pip poetry && \
     # create application user
     adduser --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
@@ -89,3 +90,4 @@ EXPOSE 8000
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_graphql module using uvicorn
 ENTRYPOINT ["poetry", "run", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=60s --timeout=10s CMD ["poetry", "run",  "uns_graphql_healthcheck", "--port", "8000"]

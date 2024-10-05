@@ -61,6 +61,7 @@ def test_uns_mqtt_graph_db():
             uns_mqtt_graphdb.graph_db_handler.close()
 
 
+# spell-checker:disable
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistence
@@ -124,6 +125,7 @@ def test_uns_mqtt_graph_db():
         ),
     ],
 )
+# spell-checker:enable
 def test_mqtt_graphdb_persistence(topic: str, message: dict):
     """
     Test the persistence of message (UNS & SpB) to the database

@@ -29,13 +29,14 @@
 FROM python:3.12-alpine3.20
 
 # Set the environment variable for the entrypoint command
+# spell-checker:disable
 ENV UNS_MODULE="05_sparkplugb"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1
-
+# spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/05_sparkplugb
 LABEL org.opencontainers.image.description="Listens to the SparkplugB name space and translates them to UNS messages, then publishes to the UNS Namespace"
 LABEL org.opencontainers.image.licenses=MIT
@@ -57,7 +58,7 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 
 # Install pip & poetry
-RUN  pip install --upgrade pip poetry && \
+RUN  pip install  --no-cache-dir --upgrade pip poetry && \
     # create application user
     adduser --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
@@ -75,3 +76,4 @@ ENV GIT_HASH=${GIT_HASH:-dev}
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_sparkplugb module
 ENTRYPOINT ["poetry", "run", "uns_spb_mapper"]
+HEALTHCHECK --interval=60s --timeout=10s CMD ["poetry", "run",  "uns_spb_mapper_healthcheck"]

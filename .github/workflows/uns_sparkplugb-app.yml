@@ -34,7 +34,7 @@ on:
 
   workflow_dispatch:
     inputs:
-      pytest_add_opts:
+      pytest_add_opts: # trunk-ignore(checkov/CKV_GHA_7) # trunk-ignore(checkov/CKV_GHA_7)
         description: "additional pytest options"
         type: string
 
@@ -51,7 +51,7 @@ jobs:
 
     services:
       uns_mqtt:
-        image: emqx/emqx:latest
+        image: "emqx/emqx:latest"
         ports:
           - "1883:1883"
           - "8083:8083"

@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script is not automated , it is a collection of commands and edits to be done. 
 # working to fully automate this. 
 # Create 3 VM 
@@ -5,6 +6,7 @@
 # https://prahladyeri.wordpress.com/2012/08/02/how-to-setup-a-virtual-lan-on-your-machine-using-oracle-virtualbox/
 # https://beamtic.com/virtualbox-host-only-and-nat
 # On each machine login via ssh and run these commands 
+# spell-checker:disable
 sudo apt-get update -y 
 sudo apt-get upgrade -y
 sudo apt-get full-upgrade -y
@@ -15,6 +17,7 @@ sudo systemctl enable iscsid
 systemctl status iscsid 
 sudo systemctl enable --now iscsid
 sudo snap refresh
+# spell-checker:enable
 
 # Need to update /etc/hosts with internal IP of the other nodes
 
@@ -48,8 +51,10 @@ sudo chown root:"${USER}" /var/snap/microk8s/current/args/
 sudo chown root:"${USER}" /var/snap/microk8s/current/args/kubectl
 # Re-entering user session for group update to take effect
 su - "${USER}"
+# spell-checker:disable
 # Reload the mircok8s group users
 newgrp microk8s
+# spell-checker:enable
 # change domain number per node 40, 42, 44 <= dont
 # echo "failure-domain=42" > /var/snap/microk8s/current/args/ha-conf
 microk8s.stop
@@ -60,12 +65,14 @@ microk8s status --wait-ready
 # call this on master for every worker node
 microk8s add-node  
 #<= result of this command to be run on the other machines  with suffix --worker
-# dont attempt HA setup for control node. on smaller machines this is significatly imparing the k8s cluster
+# dont attempt HA setup for control node. on smaller machines this is significantly impacts the k8s cluster
 # on each of the worker nodes update the provider file to delete the NAT entry is deleted
+# spell-checker:disable
 # nano /var/snap/microk8s/current/args/traefik/provider.yaml
 
 
 # microk8s.kubectl --kubeconfig ~/.kube/config
+# spell-checker:enable
 sudo microk8s.config > ~/.kube/config
 sudo chown -f -R "${USER}" ~/.kube
 
@@ -76,8 +83,10 @@ microk8s stop
 #  Get the internal IP of the node, e.g. 198.168.200.z. Command ip a show dev enp0s3 will show info for interface enp0s3.
 #  Add this to the bottom of /var/snap/microk8s/current/args/kubelet:
 # --node-ip=10.x.y.z
+# spell-checker:disable
 #  Add this to the bottom of /var/snap/microk8s/current/args/kube-apiserver:
 # --advertise-address=10.x.y.z
+# spell-checker:enable
 echo --node-ip=$(ip address show dev enp0s3 | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/["/24"]//g')  >> /var/snap/microk8s/current/args/kubelet
 #     Get the cluster dns ip kubectl get svc kube-dns --namespace=kube-system
 #     Add this to the bottom of /var/snap/microk8s/current/args/kubelet for each worker node 

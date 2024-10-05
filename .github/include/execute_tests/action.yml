@@ -43,8 +43,8 @@ runs:
           
         if ${{ inputs.integration_tests }} ; then
          $PYTEST_CMD ${{inputs.pytest_flags}}
-        else 
-          $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest" 
+        else
+          $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest"
         fi
 
     - name: Run Safety CLI to check for vulnerabilities

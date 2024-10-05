@@ -26,7 +26,7 @@ packages = [{ include = "uns_spb_mapper", from = "src" }]
 python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
-
+psutil = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
@@ -41,6 +41,7 @@ ruff = "^0.6.8"
 
 [tool.poetry.scripts]
 uns_spb_mapper = "uns_spb_mapper.uns_sparkplugb_listener:main"
+uns_spb_mapper_healthcheck = "uns_spb_mapper.health_check:main"
 
 [build-system]
 requires = ["poetry-core"]

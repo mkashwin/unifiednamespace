@@ -24,6 +24,9 @@
     },
     "ghcr.io/itsmechlark/features/trivy:1": {
       "version": "latest"
+    },
+    "ghcr.io/trunk-io/devcontainer-feature/trunk": {
+      "version": "latest"
     }
   },
   // Features to add to the dev container. More info: https://containers.dev/features.
@@ -36,14 +39,10 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-python.autopep8",
         "streetsidesoftware.code-spell-checker",
-        "tamasfe.even-better-toml",
         "VisualStudioExptTeam.vscodeintellicode",
-        "ms-python.isort",
         "DavidAnson.vscode-markdownlint",
         "redhat.vscode-yaml",
-        "charliermarsh.ruff",
         "trunk.io"
       ]
     }
@@ -69,4 +68,5 @@
   // "customizations": {},
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
+  //"updateContentCommand": "trunk install"
 }

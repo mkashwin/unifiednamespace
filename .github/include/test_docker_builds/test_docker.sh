@@ -1,3 +1,4 @@
+#!/bin/bash
 SHA_TAG=839890c2748df3d11c63c1469d189f1a2289e1a7
 image_name=uns/test_image
 echo "Check for [tool.poetry.scripts]"
@@ -7,6 +8,8 @@ if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
 fi
 echo "Validating Docker Entrypoint prior to build"
 # Extract the entrypoint from Dockerfile
+# trunk-ignore(shellcheck/SC2312)
+# trunk-ignore(shellcheck/SC2002)
 entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
 if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
     echo "Error: Entrypoint should be in the format [\"poetry\", \"run\", \"<command>\"]"
@@ -14,6 +17,7 @@ if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; 
 fi
 echo "Entrypoint for Docker is: ${entry_point}"
 # Extract the command/script name to be run
+# trunk-ignore(shellcheck/SC2312)
 command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
 # check in pyproject if it is a script.
 script_name=$( grep "^${command} =" ./pyproject.toml)
