@@ -120,6 +120,7 @@ dynaconf_merge: true
 fi
 
 # 2.3 MQTT used by all modules
+# trunk-ignore(shellcheck/SC2312)
 if [[ -n $(docker ps -aq -f name=uns_emqx_mqtt) ]]; then
 	docker start uns_emqx_mqtt
 else
@@ -132,6 +133,7 @@ else
 fi
 
 # 2.4 Kafka used by 06_uns_kafka
+# trunk-ignore(shellcheck/SC2312)
 if [[ -n $(docker ps -aq -f name=uns_kafka) ]]; then
 	docker start uns_kafka
 else

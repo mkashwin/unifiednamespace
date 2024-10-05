@@ -29,12 +29,14 @@ if [[ ${script_name} != *':main"' ]]; then
 		echo "Error: Command ${command} not found in the project. Should have had a dependency  entry in pyproject.toml"
 		exit 1
 	fi
+	# trunk-ignore(shellcheck/SC2312)
 	main_entry=$(echo "${entry_point}" | awk '{print $5}' | tr -d '",]')
 	python_module=${main_entry%:*}
 	function=${main_entry##*:}
 	class=${function%.*}
 else
 	# command was found in pyproject.toml
+	# trunk-ignore(shellcheck/SC2312)
 	main_entry=$(grep "^${command} =" ./pyproject.toml | awk '{print $3}' | tr -d '"')
 	echo "Validate if ${main_entry} points to a valid python function"
 	python_module=${main_entry%:*}
