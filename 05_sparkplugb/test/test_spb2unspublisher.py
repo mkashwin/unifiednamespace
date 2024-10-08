@@ -54,11 +54,13 @@ def test_spb_2_uns_publisher_init(clean_session, protocol, reconnect_on_failure)
     spb_to_uns_publisher = Spb2UNSPublisher(uns_client)
     if protocol == MQTTVersion.MQTTv5:
         assert spb_to_uns_publisher.is_mqtt_v5 is True, (
-            "Spb2UNSPublisher#isMQTTv5 should have been True" f"but was {spb_to_uns_publisher.is_mqtt_v5}"
+            "Spb2UNSPublisher#isMQTTv5 should have been True" f"but was {
+                spb_to_uns_publisher.is_mqtt_v5}"
         )
     else:
         assert spb_to_uns_publisher.is_mqtt_v5 is False, (
-            "Spb2UNSPublisher#isMQTTv5 should have been False " f" but was {spb_to_uns_publisher.is_mqtt_v5}"
+            "Spb2UNSPublisher#isMQTTv5 should have been False " f" but was {
+                spb_to_uns_publisher.is_mqtt_v5}"
         )
 
     assert spb_to_uns_publisher.mqtt_client == uns_client, "Spb2UNSPublisher#mqtt_client should " "have correctly initialized"
@@ -111,7 +113,8 @@ def test_clear_metric_alias(cache_key, clean_session, protocol, reconnect_on_fai
 @pytest.mark.parametrize(
     "metric,name",
     [
-        (SimpleNamespace(**{Spb2UNSPublisher.SPB_NAME: "metric_name"}), "metric_name"),
+        (SimpleNamespace(
+            **{Spb2UNSPublisher.SPB_NAME: "metric_name"}), "metric_name"),
         (
             SimpleNamespace(
                 **{
@@ -163,7 +166,8 @@ def test_negative_get_metric_name(cache_key, metric):
     )
     # Connection not made to broker
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
-    assert spb_to_uns_pub.get_metric_name(cache_key, metric) is None, f"Metric name should be none for metric:{metric}"
+    assert spb_to_uns_pub.get_metric_name(
+        cache_key, metric) is None, f"Metric name should be none for metric:{metric}"
 
 
 @pytest.mark.parametrize(
@@ -219,7 +223,8 @@ def test_get_metric_name_from_alias(cache_key, metric, name: str, alias: int):
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
 
     assert spb_2_uns_pub.node_device_metric_alias_map[cache_key][alias] == name, (
-        f"Metric AliasMap was not filled {spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
+        f"Metric AliasMap was not filled {
+            spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
         f"with alias: {alias} and name: {name}."
     )
     # remove the name from the metric and check again.
@@ -234,7 +239,8 @@ def test_get_metric_name_from_alias(cache_key, metric, name: str, alias: int):
         == name
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
     assert spb_2_uns_pub.node_device_metric_alias_map[cache_key][alias] == name, (
-        f"Metric AliasMap was not filled {spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
+        f"Metric AliasMap was not filled {
+            spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
         f"with alias: {alias} and name: {name}."
     )
 
@@ -274,7 +280,8 @@ def test_get_spb_context(group_id: str, message_type: str, edge_node_id: str, de
     received_ctx = Spb2UNSPublisher.get_spb_context(
         group_id=group_id, message_type=message_type, edge_node_id=edge_node_id, device_id=device_id
     )
-    assert received_ctx == expected_ctx, f"The context received: {received_ctx}" f"was not as expected: {expected_ctx}"
+    assert received_ctx == expected_ctx, f"The context received: {
+        received_ctx}" f"was not as expected: {expected_ctx}"
 
 
 @pytest.mark.parametrize(
@@ -330,21 +337,25 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
             datatype=metric_data[2],
             value=metric_data[3],
         )
-    parsed_payload: dict = Spb2UNSPublisher.get_payload(spb_data_payload.SerializeToString())
+    parsed_payload: dict = Spb2UNSPublisher.get_payload(
+        spb_data_payload.SerializeToString())
     assert parsed_payload is not None, "parsed payload should not be none"
 
     assert parsed_payload == spb_data_payload, (
-        f"parsed payload: {parsed_payload} is not matching" f" original payload: {spb_data_payload}"
+        f"parsed payload: {parsed_payload} is not matching" f" original payload: {
+            spb_data_payload}"
     )
 
-    parsed_metrics_list: list = Spb2UNSPublisher.get_metrics_from_payload(spb_data_payload.SerializeToString())
+    parsed_metrics_list: list = Spb2UNSPublisher.get_metrics_from_payload(
+        spb_data_payload.SerializeToString())
     assert len(parsed_metrics_list) == len(metrics_list)
     for parsed_metric, org_metric in zip(parsed_metrics_list, metrics_list):
         name = parsed_metric.name
         alias = parsed_metric.alias
         datatype = parsed_metric.datatype
 
-        value = getattr(parsed_metric, SPBMetricDataTypes(datatype).get_field_name())
+        value = getattr(parsed_metric, SPBMetricDataTypes(
+            datatype).get_field_name())
 
         if alias is not None:
             assert alias == org_metric[1]
@@ -353,7 +364,8 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
 
         assert datatype == org_metric[2]
         if datatype == sparkplug_b_pb2.Float or datatype == sparkplug_b_pb2.Double:
-            assert math.isclose(value, org_metric[3], rel_tol=1 / 10**uns_spb_helper.FLOAT_PRECISION)
+            assert math.isclose(
+                value, org_metric[3], rel_tol=1 / 10**uns_spb_helper.FLOAT_PRECISION)
         else:
             assert value == org_metric[3]
 
@@ -405,7 +417,8 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
         ),
         (
             {
-                "Grade": ("A", 1671008100, True),  # Test Set 3 -String, with historical data
+                # Test Set 3 -String, with historical data
+                "Grade": ("A", 1671008100, True),
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
@@ -541,11 +554,13 @@ def test_publish_to_uns_connected(
     uns_client.on_connect = on_connect
     uns_client.on_publish = on_publish
     try:
-        uns_client.run(host=host, port=port, tls=tls, topics="spBv1.0", qos=qos)
-        uns_client.loop_forever()
+        uns_client.run(host=host, port=port, tls=tls,
+                       topics="spBv1.0", qos=qos)
+        uns_client.loop_forever(retry_first_connection=True)
         assert True, "Successfully executed the test with no exceptions"
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()
 
-    assert len(msg_published) == len(all_uns_messages), "Not all messages were published"
+    assert len(msg_published) == len(
+        all_uns_messages), "Not all messages were published"

@@ -129,7 +129,7 @@ def main():
     try:
         uns_spb_mapper = None
         uns_spb_mapper = UNSSparkPlugBMapper()
-        uns_spb_mapper.uns_client.loop_forever()
+        uns_spb_mapper.uns_client.loop_forever(retry_first_connection=True)
     finally:
         if uns_spb_mapper is not None:
             uns_spb_mapper.uns_client.disconnect()

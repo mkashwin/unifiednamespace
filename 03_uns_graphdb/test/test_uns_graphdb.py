@@ -183,7 +183,7 @@ def test_mqtt_graphdb_persistence(topic: str, message: dict):
             topic=topic, payload=payload, qos=uns_mqtt_graphdb.uns_client.qos, retain=False, properties=publish_properties
         )
 
-        uns_mqtt_graphdb.uns_client.loop_forever()
+        uns_mqtt_graphdb.uns_client.loop_forever(retry_first_connection=True)
     except Exception as ex:
         pytest.fail(
             f"Connection to either the MQTT Broker or the Graph DB did not happen: Exception {ex}",

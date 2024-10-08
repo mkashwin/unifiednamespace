@@ -67,7 +67,8 @@ class UnsMqttHistorian:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(
+            client), str(userdata), str(msg))
 
         try:
             # get the payload as a dict object
@@ -81,7 +82,8 @@ class UnsMqttHistorian:
                     await uns_historian_handler.persist_mqtt_msg(
                         client_id=client._client_id.decode(),
                         topic=msg.topic,
-                        timestamp=float(filtered_message.get(MQTTConfig.timestamp_key, time.time())),
+                        timestamp=float(filtered_message.get(
+                            MQTTConfig.timestamp_key, time.time())),
                         message=filtered_message,
                     )
 
@@ -119,7 +121,8 @@ class UnsMqttHistorian:
         Callback function executed every time the client is disconnected from the MQTT broker
         """
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True, exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(
+                reason_codes), stack_info=True, exc_info=True)
         # dont close the DB Pool as the client may disconnect multiple times and reconnect
 
 
@@ -130,7 +133,7 @@ def main():
     try:
         uns_mqtt_historian = None
         uns_mqtt_historian = UnsMqttHistorian()
-        uns_mqtt_historian.uns_client.loop_forever()
+        uns_mqtt_historian.uns_client.loop_forever(retry_first_connection=True)
     finally:
         if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()

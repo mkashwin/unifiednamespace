@@ -55,7 +55,8 @@ class UNSKafkaMapper:
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.kafka_handler: KafkaHandler = KafkaHandler(KAFKAConfig.kafka_config_map)
+        self.kafka_handler: KafkaHandler = KafkaHandler(
+            KAFKAConfig.kafka_config_map)
 
         self.uns_client.run(
             host=MQTTConfig.host,
@@ -72,7 +73,8 @@ class UNSKafkaMapper:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(
+            client), str(userdata), str(msg))
 
         # Connect to Kafka, convert the MQTT topic to Kafka topic and send the message
         self.kafka_handler.publish(
@@ -96,7 +98,8 @@ class UNSKafkaMapper:
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("MQTT to Kafka connector got disconnected")
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True, exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(
+                reason_codes), stack_info=True, exc_info=True)
         # force flushing the kafka connection
         self.kafka_handler.flush()
 
@@ -108,7 +111,7 @@ def main():
     try:
         uns_kafka_mapper = None
         uns_kafka_mapper = UNSKafkaMapper()
-        uns_kafka_mapper.uns_client.loop_forever()
+        uns_kafka_mapper.uns_client.loop_forever(retry_first_connection=True)
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()

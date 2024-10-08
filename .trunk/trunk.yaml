@@ -20,6 +20,12 @@ runtimes:
       system_version: allowed
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
+  disabled:
+    - isort
+    - oxipng
+    - taplo
+    - bandit
+    - black
   enabled:
     - shfmt@3.6.0
     - actionlint@1.7.3

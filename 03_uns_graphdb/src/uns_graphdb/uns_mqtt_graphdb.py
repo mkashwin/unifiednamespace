@@ -74,7 +74,8 @@ class UnsMqttGraphDb:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(
+            client), str(userdata), str(msg))
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
                 node_types = GraphDBConfig.spb_node_types
@@ -89,7 +90,8 @@ class UnsMqttGraphDb:
             self.graph_db_handler.persist_mqtt_msg(
                 topic=msg.topic,
                 message=filtered_message,
-                timestamp=filtered_message.get(MQTTConfig.timestamp_key, time.time()),
+                timestamp=filtered_message.get(
+                    MQTTConfig.timestamp_key, time.time()),
                 node_types=node_types,
                 attr_node_type=GraphDBConfig.nested_attributes_node_type,
             )
@@ -128,7 +130,8 @@ class UnsMqttGraphDb:
         Callback function executed every time the client is disconnected from the MQTT broker
         """
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True, exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(
+                reason_codes), stack_info=True, exc_info=True)
 
     # end of on_disconnect-------------------------------------------------------------------------
 
@@ -141,7 +144,7 @@ def main():
     uns_mqtt_graphdb = None
     try:
         uns_mqtt_graphdb = UnsMqttGraphDb()
-        uns_mqtt_graphdb.uns_client.loop_forever()
+        uns_mqtt_graphdb.uns_client.loop_forever(retry_first_connection=True)
     finally:
         if uns_mqtt_graphdb is not None:
             uns_mqtt_graphdb.uns_client.disconnect()
