@@ -36,7 +36,7 @@ ENV UNS_MODULE="07_uns_graphql"\
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
-    LIBRDKAFKA_VER="2.5.3"
+    LIBRDKAFKA_VER="2.6.0"
 # spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql
 LABEL org.opencontainers.image.description="Provide GraphQL capabilities for the UNS across all data sources"
