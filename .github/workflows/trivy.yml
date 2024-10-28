@@ -31,7 +31,7 @@ jobs:
     name: Build
     runs-on: "ubuntu-20.04"
     strategy:
-      fail-fast: false 
+      fail-fast: false
       matrix:
         include:
           - { module: 03_uns_graphdb, image: uns/graphdb }
