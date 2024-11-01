@@ -1,3 +1,4 @@
+# trunk-ignore-all(checkov/CKV2_GHA_1)
 #
 # pipeline to check for new release of Protocol Buffers and update this repository accordingly
 #
@@ -7,9 +8,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "30 0 1 * *"
-
-permissions:
-  contents: write # Allow write access for checking in
 
 jobs:
   import_release:
