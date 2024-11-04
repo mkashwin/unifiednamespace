@@ -38,7 +38,7 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
 safety = "^3.2.10"
-ruff = "^0.7.1"
+ruff = "^0.7.2"
 
 [tool.poetry.scripts] 
 uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
