@@ -29,21 +29,21 @@ lint:
   enabled:
     - shfmt@3.6.0
     - actionlint@1.7.3
-    - trufflehog@3.82.13
-    - osv-scanner@1.9.0
+    - trufflehog@3.83.2
+    - osv-scanner@1.9.1
     - markdownlint@0.42.0
     - hadolint@2.12.0
-    - cspell@8.15.4
+    - cspell@8.15.7
     - gitleaks@8.21.1
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.270
+    - checkov@3.2.277
     - trivy@0.56.2
     - git-diff-check
     - prettier@3.3.3
     - shellcheck@0.10.0
     - yamllint@1.35.1
-    - ruff@0.7.1
+    - ruff@0.7.2
   ignore:
     - linters: [ALL]
       paths:
