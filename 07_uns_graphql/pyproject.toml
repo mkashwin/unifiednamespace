@@ -46,7 +46,7 @@ pytest-asyncio = "^0.24.0"
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
 safety = "^3.2.10"
-ruff = "^0.7.0"
+ruff = "^0.7.2"
 pytest-retry = "^1.6.3"
 
 [tool.poetry.scripts]
