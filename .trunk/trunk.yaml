@@ -2,7 +2,7 @@
 # To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
 version: 0.1
 cli:
-  version: 1.22.7
+  version: 1.22.8
 # Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
 plugins:
   sources:
@@ -28,16 +28,16 @@ lint:
     - black
   enabled:
     - shfmt@3.6.0
-    - actionlint@1.7.3
-    - trufflehog@3.83.2
+    - actionlint@1.7.4
+    - trufflehog@3.83.5
     - osv-scanner@1.9.1
     - markdownlint@0.42.0
     - hadolint@2.12.0
-    - cspell@8.15.7
+    - cspell@8.16.0
     - gitleaks@8.21.1
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.277
+    - checkov@3.2.282
     - trivy@0.56.2
     - git-diff-check
     - prettier@3.3.3
