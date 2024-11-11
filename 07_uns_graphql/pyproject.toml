@@ -28,7 +28,7 @@ logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.247", extras = ["fastapi", "cli"] }
 aiohttp = "^3.10"
-uvicorn = { version = "^0.31", extras = ["standard"] }
+uvicorn = { version = "^0.32", extras = ["standard"] }
 aiomqtt = "^2.2.0"
 confluent-kafka = "^2.6.0"
 neo4j = "^5.26"
