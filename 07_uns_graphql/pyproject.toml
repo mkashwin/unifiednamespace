@@ -27,7 +27,7 @@ python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.248", extras = ["fastapi", "cli"] }
-aiohttp = "^3.10"
+aiohttp = "^3.11"
 uvicorn = { version = "^0.32", extras = ["standard"] }
 aiomqtt = "^2.2.0"
 confluent-kafka = "^2.6.0"
@@ -45,8 +45,8 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-asyncio = "^0.24.0"
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
-safety = "^3.2.10"
-ruff = "^0.7.3"
+safety = "^3.2.11"
+ruff = "^0.7.4"
 pytest-retry = "^1.6.3"
 
 [tool.poetry.scripts]
