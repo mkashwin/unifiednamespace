@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "uns_kafka_mapper"
-version = "0.9.1"
+version = "0.9.2"
 description = "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
 license = "MIT"
 authors = ["Ashwin Krishnan <mkashwin@gmail.com>"]
