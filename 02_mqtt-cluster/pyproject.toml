@@ -36,7 +36,7 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
 safety = "^3.2.10"
-ruff = "^0.7.3"
+ruff = "^0.7.4"
 
 
 [build-system]
