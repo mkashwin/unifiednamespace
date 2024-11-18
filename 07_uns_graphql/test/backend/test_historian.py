@@ -32,18 +32,26 @@ from uns_graphql.graphql_config import HistorianConfig
 DatabaseRow = tuple[datetime, str, str, dict]
 
 test_data_set: list[DatabaseRow] = [
-    (datetime.fromtimestamp(1701232000, UTC), "a/b/c", "client4", json.dumps({"key1": "value1"})),
-    (datetime.fromtimestamp(1701233000, UTC), "a/b/c", "client5", json.dumps({"key2": "value2"})),
-    (datetime.fromtimestamp(1701233500, UTC), "a/b/c", "client6", json.dumps({"key3": "value3"})),
-    (datetime.fromtimestamp(1701234000, UTC), "topic1", "client1", json.dumps({"key4": "value4"})),
-    (datetime.fromtimestamp(1701245000, UTC), "topic1/subtopic1", "client1", json.dumps({"key5": "value5.1"})),
-    (datetime.fromtimestamp(1701245000, UTC), "topic1/subtopic2", "client2", json.dumps({"key5": "value5.2"})),
-    (datetime.fromtimestamp(1701257000, UTC), "topic3", "client1", json.dumps({"key6": "value6"})),
+    (datetime.fromtimestamp(1701232000, UTC), "a/b/c",
+     "client4", json.dumps({"key1": "value1"})),
+    (datetime.fromtimestamp(1701233000, UTC), "a/b/c",
+     "client5", json.dumps({"key2": "value2"})),
+    (datetime.fromtimestamp(1701233500, UTC), "a/b/c",
+     "client6", json.dumps({"key3": "value3"})),
+    (datetime.fromtimestamp(1701234000, UTC), "topic1",
+     "client1", json.dumps({"key4": "value4"})),
+    (datetime.fromtimestamp(1701245000, UTC), "topic1/subtopic1",
+     "client1", json.dumps({"key5": "value5.1"})),
+    (datetime.fromtimestamp(1701245000, UTC), "topic1/subtopic2",
+     "client2", json.dumps({"key5": "value5.2"})),
+    (datetime.fromtimestamp(1701257000, UTC), "topic3",
+     "client1", json.dumps({"key6": "value6"})),
     (
         datetime.fromtimestamp(170129000, UTC),
         "test/nested/json",
         "nested",
-        json.dumps({"a": "value1", "b": [10, 23, 23, 34], "c": {"k1": "v1", "k2": 100}, "k3": "outer_v1"}),
+        json.dumps({"a": "value1", "b": [10, 23, 23, 34], "c": {
+                   "k1": "v1", "k2": 100}, "k3": "outer_v1"}),
     ),
 ]
 
@@ -93,9 +101,12 @@ async def prepare_database(historian_pool):  # noqa: ARG001
 @pytest.mark.parametrize(
     "topic_list,publisher_list,from_date, to_date, count_of_return",
     [
-        (["topic1/#"], None, datetime.fromtimestamp(1701233000, UTC), datetime.fromtimestamp(1701259000, UTC), 3),
-        (["topic1/+"], None, datetime.fromtimestamp(1701233000, UTC), datetime.fromtimestamp(1701259000, UTC), 2),
-        (["topic3"], None, datetime.fromtimestamp(1701257000, UTC), datetime.fromtimestamp(1701257000, UTC), 1),
+        (["topic1/#"], None, datetime.fromtimestamp(1701233000, UTC),
+         datetime.fromtimestamp(1701259000, UTC), 3),
+        (["topic1/+"], None, datetime.fromtimestamp(1701233000, UTC),
+         datetime.fromtimestamp(1701259000, UTC), 2),
+        (["topic3"], None, datetime.fromtimestamp(1701257000, UTC),
+         datetime.fromtimestamp(1701257000, UTC), 1),
         (["#"], None, None, datetime.fromtimestamp(1701257000, UTC), 8),
         (["#"], None, datetime.fromtimestamp(1701257000, UTC), None, 1),
         (["a/#"], None, None, None, 3),
@@ -106,7 +117,8 @@ async def prepare_database(historian_pool):  # noqa: ARG001
         (["#"], ["client1", "client2"], None, None, 4),
         (["topic3"], ["do_not_exist"], None, None, 0),
         (["topic1/#", "topic3"], None, None, None, 4),
-        (["topic1/#", "topic3"], None, datetime.fromtimestamp(1701233000, UTC), datetime.fromtimestamp(1701259000, UTC), 4),
+        (["topic1/#", "topic3"], None, datetime.fromtimestamp(1701233000,
+         UTC), datetime.fromtimestamp(1701259000, UTC), 4),
     ],
 )
 async def test_get_historic_events(
@@ -150,8 +162,10 @@ async def test_get_historic_events(
         (["key1", "key2"], "AND", ["topic1/#", "topic3"], None, None, 0),
         (["k1", "key1"], "AND", None, None, None, 0),
         (["key1", "key2"], "NOT", None, None, None, 6),  # NOT
-        (["key1"], None, [f"; SELECT * FROM {HistorianConfig.table}"], None, None, 0),  # noqa: S608 Test for SQL Injection on topics
-        ([f"; SELECT * FROM {HistorianConfig.table}"], None, None, None, None, 0),  # noqa: S608  Test for SQL Injection on properties
+        (["key1"], None, [
+         f"; SELECT * FROM {HistorianConfig.table}"], None, None, 0),  # noqa: S608 for SQL Injection on topics
+        ([f"; SELECT * FROM {HistorianConfig.table}"],  # noqa: S608 for SQL Injection on topics
+         None, None, None, None, 0),
     ],
 )
 async def test_get_historic_events_for_property_keys(

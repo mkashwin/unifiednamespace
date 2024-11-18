@@ -2200,7 +2200,7 @@ files = []
 develop = true
 
 [package.dependencies]
-aiohttp = "^3.10"
+aiohttp = "^3.11"
 aiomqtt = "^2.2.0"
 asyncpg = "^0.30"
 confluent-kafka = "^2.6.0"
@@ -2654,4 +2654,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "7e66844321daba1d375f37b1a29ac1586b712a35c05a1075cb7be29f5ed5f7e8"
+content-hash = "ecb157d537a74731647937487081a261e3f7d620ce9fefb4bf7b59b0b22824a1"
