@@ -36,7 +36,7 @@ ENV UNS_MODULE="06_uns_kafka"\
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1  \
-    LIBRDKAFKA_VER="2.6.0"
+    LIBRDKAFKA_VER="2.6.1"
 # spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka
 LABEL org.opencontainers.image.description="Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
