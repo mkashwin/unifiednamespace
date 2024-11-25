@@ -38,7 +38,7 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-cov = "^6.0.0"
 pytest-timeout = "^2.3.1" 
 safety = "^3.2.11"
-ruff = "^0.7.4"
+ruff = "^0.8.0"
 
 [tool.poetry.scripts]
 uns_graphdb = "uns_graphdb.uns_mqtt_graphdb:main"
