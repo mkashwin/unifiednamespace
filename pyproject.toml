@@ -42,13 +42,13 @@ uns_kafka_mapper = { path = "./06_uns_kafka", develop = true }
 uns_graphql = { path = "./07_uns_graphql", develop = true }
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.3.3"
+pytest = "^8.3.4"
 pytest-asyncio = "^0.24"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
 safety = "^3.2.11"
-ruff = "^0.8.0"
+ruff = "^0.8.1"
 pytest-retry = "^1.6.3"
 
 [tool.pytest.ini_options]

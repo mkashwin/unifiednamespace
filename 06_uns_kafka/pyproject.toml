@@ -33,12 +33,12 @@ psutil = "^6.0.0"
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.3.3"
+pytest = "^8.3.4"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
 safety = "^3.2.11"
-ruff = "^0.8.0"
+ruff = "^0.8.1"
 
 [tool.poetry.scripts] 
 uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
