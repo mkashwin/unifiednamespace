@@ -37,7 +37,7 @@ lint:
     - gitleaks@8.21.2
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.322
+    - checkov@3.2.324
     - trivy@0.56.2
     - git-diff-check
     - prettier@3.4.1
