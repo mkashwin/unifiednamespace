@@ -28,7 +28,7 @@ logger = "^1.4"
 dynaconf = "^3.2.4"
 strawberry-graphql = { version = "^0.253", extras = ["fastapi", "cli"] }
 aiohttp = "^3.11"
-uvicorn = { version = "^0.32", extras = ["standard"] }
+uvicorn = { version = "^0.34", extras = ["standard"] }
 aiomqtt = "^2.2.0"
 confluent-kafka = "^2.6.0"
 neo4j = "^5.27"
@@ -46,7 +46,7 @@ pytest-asyncio = "^0.25"
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
 safety = "^3.2.11"
-ruff = "^0.8.2"
+ruff = "^0.8.3"
 pytest-retry = "^1.6.3"
 
 [tool.poetry.scripts]
