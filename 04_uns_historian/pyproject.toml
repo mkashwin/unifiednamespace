@@ -36,7 +36,7 @@ uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
 pytest = "^8.3.4"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
-pytest-asyncio = "^0.24"
+pytest-asyncio = "^0.25"
 pytest-cov = "^6.0.0"
 safety = "^3.2.11"
 ruff = "^0.8.2"
