@@ -26,8 +26,8 @@ packages = [{ include = "uns_kafka", from = "src" }]
 python = "^3.12"
 logger = "^1.4"
 dynaconf = "^3.2.4"
-confluent-kafka = "^2.6.0"
-psutil = "^6.0.0"
+confluent-kafka = "^2.7.0"
+psutil = "^6.1.1"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
@@ -37,8 +37,8 @@ pytest = "^8.3.4"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
-safety = "^3.2.13"
-ruff = "^0.8.3"
+safety = "^3.2.14"
+ruff = "^0.8"
 
 [tool.poetry.scripts] 
 uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"

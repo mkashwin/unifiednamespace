@@ -27,7 +27,7 @@ python = "^3.12"
 logger = "^1.4"
 neo4j = "^5.27"
 dynaconf = "^3.2.4"
-psutil = "^6.0.0"
+psutil = "^6.1.1"
 
 [tool.poetry.group.dev.dependencies]
 uns_mqtt = { path = "../02_mqtt-cluster", develop = true }
@@ -37,8 +37,8 @@ pytest = "^8.3.4"
 pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-cov = "^6.0.0"
 pytest-timeout = "^2.3.1" 
-safety = "^3.2.11"
-ruff = "^0.8.3"
+safety = "^3.2.14"
+ruff = "^0.8"
 
 [tool.poetry.scripts]
 uns_graphdb = "uns_graphdb.uns_mqtt_graphdb:main"

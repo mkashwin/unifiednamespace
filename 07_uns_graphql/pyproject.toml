@@ -30,10 +30,10 @@ strawberry-graphql = { version = "^0.254", extras = ["fastapi", "cli"] }
 aiohttp = "^3.11"
 uvicorn = { version = "^0.34", extras = ["standard"] }
 aiomqtt = "^2.2.0"
-confluent-kafka = "^2.6.0"
+confluent-kafka = "^2.7.0"
 neo4j = "^5.27"
 asyncpg = "^0.30"
-psutil = "^6.0.0"
+psutil = "^6.1.1"
 
 [tool.poetry.group.dev.dependencies]
 uns-mqtt = { path = "../02_mqtt-cluster", develop = true }
@@ -45,8 +45,8 @@ pytest-xdist = { version="^3.6.1",extras =["psutil2"]}
 pytest-asyncio = "^0.25"
 pytest-timeout = "^2.3.1" 
 pytest-cov = "^6.0.0"
-safety = "^3.2.11"
-ruff = "^0.8.3"
+safety = "^3.2.14"
+ruff = "^0.8"
 pytest-retry = "^1.6.3"
 
 [tool.poetry.scripts]
