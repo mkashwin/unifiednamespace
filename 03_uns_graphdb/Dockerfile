@@ -63,7 +63,7 @@ RUN  pip install  --no-cache-dir --upgrade pip poetry && \
     adduser --no-create-home --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
     # Install the required dependencies for the project using poetry as that user
-    su uns_user -c "poetry lock --no-update \
+    su uns_user -c "poetry lock --regenerate \
     && poetry add /02_mqtt-cluster -n  --lock  \
     && poetry install --only main -n"
 
