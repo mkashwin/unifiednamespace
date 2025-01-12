@@ -28,8 +28,8 @@ lint:
     - black
   enabled:
     - shfmt@3.6.0
-    - actionlint@1.7.5
-    - trufflehog@3.88.0
+    - actionlint@1.7.6
+    - trufflehog@3.88.2
     - osv-scanner@1.9.2
     - markdownlint@0.43.0
     - hadolint@2.12.1-beta
@@ -37,13 +37,13 @@ lint:
     - gitleaks@8.22.1
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.346
+    - checkov@3.2.352
     - trivy@0.58.1
     - git-diff-check
     - prettier@3.4.2
     - shellcheck@0.10.0
     - yamllint@1.35.1
-    - ruff@0.8.5
+    - ruff@0.9.0
   ignore:
     - linters: [ALL]
       paths:
