@@ -45,7 +45,7 @@ jobs:
   generate_random_password:
     runs-on: ubuntu-latest
     outputs:
-      postgres_pwd: ${{ steps.random_strings.outputs.postgres_pwd }}
+      postgres_pwd: ${{ steps.random_strings.outputs.postgres_pwd }}
       uns_historian_pwd: ${{ steps.random_strings.outputs.uns_historian_pwd}}
     steps:
       - id: random_strings

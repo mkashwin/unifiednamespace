@@ -304,7 +304,7 @@ class SpBMessageGenerator:
             payload = Payload()
         if timestamp is None:
             # timestamp in seconds being converted to milliseconds
-            payload.timestamp = int(round(time.time() * 1000))
+            payload.timestamp = round(time.time() * 1000)
         else:
             payload.timestamp = timestamp
         payload.seq = self.get_seq_num()
@@ -338,7 +338,7 @@ class SpBMessageGenerator:
             payload = Payload()
         if timestamp is None:
             # timestamp in seconds being converted to milliseconds
-            payload.timestamp = int(round(time.time() * 1000))
+            payload.timestamp = round(time.time() * 1000)
         else:
             payload.timestamp = timestamp
         payload.seq = self.get_seq_num()
@@ -361,7 +361,7 @@ class SpBMessageGenerator:
         payload_or_template: Payload | Payload.Template,
         name: str,
         alias: Optional[int] = None,
-        timestamp: Optional[float] = int(round(time.time() * 1000)),
+        timestamp: Optional[float] = round(time.time() * 1000),
     ) -> Payload.Metric:
         """
         Private method. Common code of obtaining metrics and initializing common attributes
@@ -401,7 +401,7 @@ class SpBMessageGenerator:
         else:
             metric.name = name
         if timestamp is None:
-            timestamp = int(round(time.time() * 1000))
+            timestamp = round(time.time() * 1000)
         metric.timestamp = timestamp
         return metric
 
@@ -435,7 +435,7 @@ class SpBMessageGenerator:
         """
         if timestamp is None:
             # SparkplugB works with milliseconds
-            timestamp = int(round(time.time() * 1000))
+            timestamp = round(time.time() * 1000)
         metric: Payload.Metric = self._get_metric_wrapper(
             payload_or_template=payload_or_template, name=name, alias=alias, timestamp=timestamp
         )
@@ -522,7 +522,7 @@ class SpBMessageGenerator:
             list[list[int | float | bool | str]]
         ],  # list of row values . row value can be of type int, float, bool or str
         alias: Optional[int] = None,
-        timestamp: Optional[float] = int(round(time.time() * 1000)),
+        timestamp: Optional[float] = round(time.time() * 1000),
     ) -> Payload.DataSet:
         """
         Helper method for initializing a dataset metric to a payload
