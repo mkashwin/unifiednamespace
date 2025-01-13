@@ -39,7 +39,7 @@ pytest-timeout = "^2.3.1"
 pytest-asyncio = "^0.25"
 pytest-cov = "^6.0.0"
 safety = "^3.2.14"
-ruff = "^0.8"
+ruff = "^0.9"
 
 [tool.poetry.scripts]
 uns_historian = "uns_historian.uns_mqtt_historian:main"
