@@ -28,14 +28,13 @@ jobs:
         id: poetry_upgrade
         run: |
           python -m pip install --upgrade pip poetry
-          for i in "./02_mqtt-cluster" "./03_uns_graphdb" "./04_uns_historian" "./05_sparkplugb" "./06_uns_kafka" "./07_uns_graphql" "."
-          do
-            cd $i
-            poetry update
-            if [ "$i" != "." ]; then
-              cd ..
+          for folder in */; do
+            if [ -f "${folder}poetry.lock" ]; then
+                echo "Found pyproject.toml in folder: ${folder}"
+                (cd "${folder}" && poetry update)
             fi
           done
+          poetry poetry update
           if [[ -n $(git status --porcelain) ]]; then          
             echo "check_in_msg='${check_in_msg} , Ran poetry update'"  >> $GITHUB_OUTPUT
           fi
