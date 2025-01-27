@@ -20,8 +20,6 @@ jobs:
 
       - name: "Run Trunk upgrade"
         uses: trunk-io/trunk-action/upgrade@v1
-        with:
-          cache: false
 
       - name: "Check for Trunk upgrade"
         id: trunk_upgrade
