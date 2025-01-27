@@ -14,14 +14,18 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: Trunk Code Quality
-        uses: trunk-io/trunk-action@v1
+
+      - name: Trunk install
+        uses: trunk-io/trunk-action/setup@v1
+
+      - name: "Run Trunk upgrade"
+        uses: trunk-io/trunk-action/upgrade@v1
         with:
           cache: false
-      - name: "Run Trunk upgrade"
+
+      - name: "Check for Trunk upgrade"
         id: trunk_upgrade
         run: |
-          trunk upgrade
           if [[ -n $(git status --porcelain) ]]; then          
             echo "check_in_msg='Ran trunk upgrade'"  >> $GITHUB_OUTPUT
           fi
