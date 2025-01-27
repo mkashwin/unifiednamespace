@@ -1,0 +1,100 @@
+# trunk-ignore-all(checkov/CKV2_GHA_1)
+#
+# pipeline to check for new release  of librdkafka , trunk updates, and poetry dependencies update
+#
+name: Update Trunk, Poetry, librdkafka
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+
+jobs:
+  run_upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: "Run Trunk upgrade"
+        id: trunk_upgrade
+        run: |
+          trunk upgrade
+          if [[ -n $(git status --porcelain) ]]; then          
+            echo "check_in_msg='Ran trunk upgrade'"  >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Run Poetry upgrade"
+        id: poetry_upgrade
+        env:
+          check_in_msg: ${{ steps.trunk_upgrade.outputs.check_in_msg }}
+        run: |
+          for i in 0*;do cd $i; poetry update; cd ..; done
+          if [[ -n $(git status --porcelain) ]]; then          
+            echo "check_in_msg='${check-in_msg} , Ran poetry update'"  >> $GITHUB_OUTPUT
+          else
+            echo "check_in_msg=${check-in_msg}"  >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Check for latest release of librdkafka"
+        id: librdkafka_upgrade
+        env:
+          check_in_msg: ${{ steps.poetry_upgrade.outputs.check_in_msg }}
+        run: |
+          # Define the path to the Dockerfile.Current using only 06_uns_kafka but will update 07_uns_graphql also
+          KAKFA_DOCKER="./06_uns_kafka/Dockerfile"
+          GRAPHQL_DOCKER="./07_uns_graphql/Dockerfile"
+
+          current_version=$(grep -oP '(?<=LIBRDKAFKA_VER=")[^"]*' "$KAKFA_DOCKER")
+
+          latest_release=$(curl -s https://api.github.com/repos/confluentinc/librdkafka/releases/latest | jq -r '.tag_name')
+          # drop the leading v character in the version 
+          latest_release=${latest_release:1}
+          if [[ "$current_version" != "$latest_release" ]]; then
+            OLD_TEXT=LIBRDKAFKA_VER=\"${current_version}\"
+            NEW_TEXT=LIBRDKAFKA_VER=\"${$latest_release}\"
+            # Use sed to replace all instances of OLD_TEXT with NEW_TEXT in the file
+            sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
+            sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
+            echo "check_in_msg=${check-in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
+          else
+            echo "check_in_msg=${check-in_msg}"  >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Check for changed files and then create branch to commit changes as well are PR"
+        id: create_branch
+        env:
+          check_in_msg: ${{ steps.librdkafka_upgrade.outputs.check_in_msg }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Actions"
+
+          if [[ -n $(git status --porcelain) ]]; then
+            raise_pr=true
+            # create branch 
+            BRANCH_NAME="features/trunk_poetry_librdkafka_upgrade"
+            git checkout -b $BRANCH_NAME
+            git push origin $BRANCH_NAME
+
+            # commit changes 
+            git add .
+            git commit -m $check_in_msg"
+            git push origin $BRANCH_NAME            
+            echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          else
+            raise_pr=false
+          fi
+           echo "raise_pr=${raise_pr}" >> $GITHUB_OUTPUT
+
+      - name: Raise Pull Request
+        if: steps.create_branch.outputs.raise_pr == 'true'
+        env:
+          check_in_msg: ${{ steps.create_branch.outputs.check_in_msg }}
+          BRANCH_NAME: ${{ steps.create_branch.outputs.BRANCH_NAME }}
+        uses: devops-infra/action-pull-request@v0.5.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          title: "${{env.check_in_msg}}"
+          label: "trunk,poetry,librdkafka,upgrade"
+          source_branch: "${env.BRANCH_NAME}"
+          target_branch: "main"
+          get_diff: true
