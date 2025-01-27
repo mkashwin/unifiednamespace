@@ -25,7 +25,7 @@ packages = [{ include = "uns_graphql", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.12"
 logger = "^1.4"
-dynaconf = "^3.2.4"
+dynaconf = "^3.2.7"
 strawberry-graphql = { version = "^0.258", extras = ["fastapi", "cli"] }
 aiohttp = "^3.11"
 uvicorn = { version = "^0.34", extras = ["standard"] }
