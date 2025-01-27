@@ -9,7 +9,7 @@ on:
     - cron: "0 0 * * 0"
 
 jobs:
-  run_upgrade:
+  run_trunk_upgrade:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -30,16 +30,16 @@ jobs:
             echo "check_in_msg='Ran trunk upgrade'"  >> $GITHUB_OUTPUT
           fi
 
+  run_poetry_upgrade:
+    runs-on: ubuntu-latest
+    steps:
       - name: "Run Poetry upgrade"
         id: poetry_upgrade
-        env:
-          check_in_msg: ${{ steps.trunk_upgrade.outputs.check_in_msg }}
         run: |
+          python -m pip install --upgrade pip poetry
           for i in 0*;do cd $i; poetry update; cd ..; done
           if [[ -n $(git status --porcelain) ]]; then          
             echo "check_in_msg='${check-in_msg} , Ran poetry update'"  >> $GITHUB_OUTPUT
-          else
-            echo "check_in_msg=${check-in_msg}"  >> $GITHUB_OUTPUT
           fi
 
       - name: "Check for latest release of librdkafka"
