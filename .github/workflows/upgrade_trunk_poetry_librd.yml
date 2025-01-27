@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Trunk Code Quality
-        uses: trunk-io/trunk-action@v3
+        uses: trunk-io/trunk-action@v1
         with:
           cache: false
       - name: "Run Trunk upgrade"
