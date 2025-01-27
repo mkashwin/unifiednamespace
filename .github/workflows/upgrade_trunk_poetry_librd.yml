@@ -14,7 +14,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
+      - name: Trunk Code Quality
+        uses: trunk-io/trunk-action@v3
+        with:
+          cache: false
       - name: "Run Trunk upgrade"
         id: trunk_upgrade
         run: |
