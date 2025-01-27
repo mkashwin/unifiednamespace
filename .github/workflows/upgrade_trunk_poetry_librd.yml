@@ -39,7 +39,7 @@ jobs:
           done
           poetry update
           if [[ -n $(git status --porcelain) ]]; then          
-            echo "check_in_msg='${check_in_msg} , Ran poetry update'"  >> $GITHUB_OUTPUT
+            echo "check_in_msg='Ran poetry update'"  >> $GITHUB_OUTPUT
           fi
 
       - name: "Check for latest release of librdkafka"
@@ -62,9 +62,9 @@ jobs:
             # Use sed to replace all instances of OLD_TEXT with NEW_TEXT in the file
             sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
             sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
-            echo "check_in_msg=${check-in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
+            echo "check_in_msg=${check_in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
           else
-            echo "check_in_msg=${check-in_msg}"  >> $GITHUB_OUTPUT
+            echo "check_in_msg=${check_in_msg}"  >> $GITHUB_OUTPUT
           fi
 
       - name: "Check for changed files and then create branch to commit changes as well are PR"
@@ -84,7 +84,7 @@ jobs:
 
             # commit changes 
             git add .
-            git commit -m $check_in_msg"
+            git commit -m "$check_in_msg"
             git push origin $BRANCH_NAME            
             echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
           else
@@ -101,7 +101,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{env.check_in_msg}}"
-          label: "trunk,poetry,librdkafka,upgrade"
+          label: "poetry,librdkafka,upgrade"
           source_branch: "${env.BRANCH_NAME}"
           target_branch: "main"
           get_diff: true
