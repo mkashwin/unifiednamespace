@@ -34,7 +34,7 @@ jobs:
                 (cd "${folder}" && poetry update)
             fi
           done
-          poetry poetry update
+          poetry update
           if [[ -n $(git status --porcelain) ]]; then          
             echo "check_in_msg='${check_in_msg} , Ran poetry update'"  >> $GITHUB_OUTPUT
           fi
