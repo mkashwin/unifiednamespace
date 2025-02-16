@@ -2389,14 +2389,14 @@ full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart 
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.259.1"
+version = "0.260.2"
 description = "A library for creating GraphQL APIs"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "strawberry_graphql-0.259.1-py3-none-any.whl", hash = "sha256:a922b2212a2a195b37c59b2f01e9055d4a4a9cd4a0f2c63edd5f930d1bd1dc21"},
-    {file = "strawberry_graphql-0.259.1.tar.gz", hash = "sha256:b459e752d6cf2848134f3d040141c0285bd122863b103f496fdab0df4068ec59"},
+    {file = "strawberry_graphql-0.260.2-py3-none-any.whl", hash = "sha256:b3eb30bb1318b3a2d4405c100618b36e082899309fea8550029ef530d56c1276"},
+    {file = "strawberry_graphql-0.260.2.tar.gz", hash = "sha256:c630a570c941a0c6b34398c7f9c87bcb5af18383557f1a1f45ed957a4ec7f4b7"},
 ]
 
 [package.dependencies]
@@ -2497,7 +2497,7 @@ dynaconf = "^3.2.7"
 logger = "^1.4"
 neo4j = "^5.27"
 psutil = "^6.1.1"
-strawberry-graphql = {version = "^0.259", extras = ["cli", "fastapi"]}
+strawberry-graphql = {version = "^0.260", extras = ["cli", "fastapi"]}
 uvicorn = {version = "^0.34", extras = ["standard"]}
 
 [package.source]
