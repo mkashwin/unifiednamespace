@@ -252,7 +252,7 @@ def read_topic_nodes(session: Session, topic_node_types: tuple, attr_node_type: 
     records: list = []
     index = 0
     last_node_id = None
-    for node, node_label in zip(topic_list, topic_node_types, strict=True):
+    for node, node_label in zip(topic_list, topic_node_types, strict=False):
         if index == 0:
             query = f"MATCH (node:{node_label}{{ node_name: $node_name }})\n"
             query = query + " RETURN node"
