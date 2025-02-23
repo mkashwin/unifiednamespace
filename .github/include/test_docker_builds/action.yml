@@ -37,6 +37,7 @@ runs:
 
         # Extract the command/script name to be run
         command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
+        echo "command is: ${command}"
 
         # check in pyproject if it is a script.
         script_name=$(grep "^${command} =" ./pyproject.toml)
