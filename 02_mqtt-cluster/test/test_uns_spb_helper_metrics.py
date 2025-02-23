@@ -19,7 +19,7 @@ Test class for uns_sparkplugb.uns_spb_helper
 """
 
 import math
-from typing import Literal, Optional
+from typing import Literal
 
 import pytest
 
@@ -30,12 +30,15 @@ from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION, SpBMessageGenerator
 DUMMY_PROPERTY_SET = Payload.PropertySet(
     keys=["key1_1", "key1_2"],
     values=[
-        Payload.PropertyValue(type=SPBPropertyValueTypes.String, string_value="nested"),
-        Payload.PropertyValue(type=SPBPropertyValueTypes.UInt32, int_value=12345),
+        Payload.PropertyValue(
+            type=SPBPropertyValueTypes.String, string_value="nested"),
+        Payload.PropertyValue(
+            type=SPBPropertyValueTypes.UInt32, int_value=12345),
     ],
 )
 
-DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
+DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(
+    propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
 
 
 def create_dummy_dataset() -> Payload.DataSet:
@@ -297,7 +300,8 @@ def _convert_to_unsigned_int(value: int, factor: Literal[0, 8, 16, 32, 64]) -> i
                     "timestamp": 1486144502122,
                     "datatype": SPBMetricDataTypes.File,
                     "value": bytes(
-                        [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00, 0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
+                        [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00,
+                            0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
                     ),
                 },
                 {
@@ -336,7 +340,7 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
     payload_metrics: list[Payload.Metric] = payload.metrics
     assert len(payload_metrics) == len(metrics)
 
-    for payload_metric, metric in zip(payload_metrics, metrics):
+    for payload_metric, metric in zip(payload_metrics, metrics, strict=True):
         assert payload_metric.name == metric["name"]
         metric_timestamp = metric.get("timestamp", None)
         if metric_timestamp is None:
@@ -344,22 +348,27 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
 
         assert payload_metric.timestamp == metric_timestamp
         assert payload_metric.datatype == metric["datatype"]
-        parsed_value = SPBMetricDataTypes(payload_metric.datatype).get_value_function(payload_metric)
+        parsed_value = SPBMetricDataTypes(
+            payload_metric.datatype).get_value_function(payload_metric)
         expected_value = metric["value"]
 
         match metric["datatype"]:
             # special considerations for signed ints
             case SPBMetricDataTypes.Int8:
-                assert payload_metric.int_value == _convert_to_unsigned_int(expected_value, 8)
+                assert payload_metric.int_value == _convert_to_unsigned_int(
+                    expected_value, 8)
 
             case SPBMetricDataTypes.Int16:
-                assert payload_metric.int_value == _convert_to_unsigned_int(expected_value, 16)
+                assert payload_metric.int_value == _convert_to_unsigned_int(
+                    expected_value, 16)
 
             case SPBMetricDataTypes.Int32:
-                assert payload_metric.int_value == _convert_to_unsigned_int(expected_value, 32)
+                assert payload_metric.int_value == _convert_to_unsigned_int(
+                    expected_value, 32)
 
             case SPBMetricDataTypes.Int64 | SPBMetricDataTypes.DateTime:
-                assert payload_metric.long_value == _convert_to_unsigned_int(expected_value, 64)
+                assert payload_metric.long_value == _convert_to_unsigned_int(
+                    expected_value, 64)
 
             case SPBMetricDataTypes.Float:
                 # Manage decimal precision issues
@@ -368,8 +377,10 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
 
             case SPBMetricDataTypes.FloatArray:
                 # Manage decimal precision issues
-                expected_value = [round(val, FLOAT_PRECISION) for val in expected_value]
-                parsed_value = [round(val, FLOAT_PRECISION) for val in parsed_value]
+                expected_value = [round(val, FLOAT_PRECISION)
+                                  for val in expected_value]
+                parsed_value = [round(val, FLOAT_PRECISION)
+                                for val in parsed_value]
 
             case _:  # All other cases
                 pass
@@ -567,7 +578,8 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
                 "timestamp": 1486144502122,
                 "datatype": SPBMetricDataTypes.File,
                 "value": bytes(
-                    [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00, 0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
+                    [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00,
+                        0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
                 ),
             },
             {
@@ -602,7 +614,7 @@ def test_add_historical_metric_and_ddata_msg(metrics: list[dict]):
     payload_metrics: list[Payload.Metric] = payload.metrics
     assert len(payload_metrics) == len(metrics)
 
-    for payload_metric, metric in zip(payload_metrics, metrics):
+    for payload_metric, metric in zip(payload_metrics, metrics, strict=True):
         assert payload_metric.name == metric["name"]
         assert payload_metric.is_historical is True
         metric_timestamp = metric.get("timestamp", None)
@@ -611,21 +623,26 @@ def test_add_historical_metric_and_ddata_msg(metrics: list[dict]):
 
         assert payload_metric.timestamp == metric_timestamp
         assert payload_metric.datatype == metric["datatype"]
-        parsed_value = SPBMetricDataTypes(payload_metric.datatype).get_value_function(payload_metric)
+        parsed_value = SPBMetricDataTypes(
+            payload_metric.datatype).get_value_function(payload_metric)
         expected_value = metric["value"]
         match metric["datatype"]:
             # special considerations for signed ints
             case SPBMetricDataTypes.Int8:
-                assert payload_metric.int_value == _convert_to_unsigned_int(expected_value, 8)
+                assert payload_metric.int_value == _convert_to_unsigned_int(
+                    expected_value, 8)
 
             case SPBMetricDataTypes.Int16:
-                assert payload_metric.int_value == _convert_to_unsigned_int(expected_value, 16)
+                assert payload_metric.int_value == _convert_to_unsigned_int(
+                    expected_value, 16)
 
             case SPBMetricDataTypes.Int32:
-                assert payload_metric.int_value == _convert_to_unsigned_int(expected_value, 32)
+                assert payload_metric.int_value == _convert_to_unsigned_int(
+                    expected_value, 32)
 
             case SPBMetricDataTypes.Int64 | SPBMetricDataTypes.DateTime:
-                assert payload_metric.long_value == _convert_to_unsigned_int(expected_value, 64)
+                assert payload_metric.long_value == _convert_to_unsigned_int(
+                    expected_value, 64)
 
             case SPBMetricDataTypes.Float:
                 # Manage decimal precision issues
@@ -634,8 +651,10 @@ def test_add_historical_metric_and_ddata_msg(metrics: list[dict]):
 
             case SPBMetricDataTypes.FloatArray:
                 # Manage decimal precision issues
-                expected_value = [round(val, FLOAT_PRECISION) for val in expected_value]
-                parsed_value = [round(val, FLOAT_PRECISION) for val in parsed_value]
+                expected_value = [round(val, FLOAT_PRECISION)
+                                  for val in expected_value]
+                parsed_value = [round(val, FLOAT_PRECISION)
+                                for val in parsed_value]
 
             case _:  # All other cases
                 pass
@@ -699,7 +718,7 @@ def test_get_dataset_metric(
     name: str,
     columns: list[str],
     types: list[SPBDataSetDataTypes],  # type: ignore
-    rows: Optional[list[list[int | float | bool | str]]],
+    rows: list[list[int | float | bool | str]] | None,
 ):
     """
     Test case for  SpBMessageGenerator#get_dataset_metric
@@ -707,45 +726,52 @@ def test_get_dataset_metric(
     spb_mgs_generator = SpBMessageGenerator()
     payload = Payload()
 
-    data_set = spb_mgs_generator.get_dataset_metric(payload=payload, name=name, columns=columns, types=types, rows=rows)
+    data_set = spb_mgs_generator.get_dataset_metric(
+        payload=payload, name=name, columns=columns, types=types, rows=rows)
 
-    assert len(payload.metrics) == 1  # only the newly added dataset is in the metric
+    # only the newly added dataset is in the metric
+    assert len(payload.metrics) == 1
     assert payload.metrics[0].datatype == SPBMetricDataTypes.DataSet
     assert payload.metrics[0].dataset_value == data_set
 
-    assert data_set.num_of_columns == len(columns)  # check num_of_columns was correctly set
+    # check num_of_columns was correctly set
+    assert data_set.num_of_columns == len(columns)
     assert data_set.columns == columns
     assert data_set.types == types
-    assert len(data_set.types) == len(data_set.columns) == data_set.num_of_columns
+    assert len(data_set.types) == len(
+        data_set.columns) == data_set.num_of_columns
 
-    for input_data_row, data_set_row in zip(rows, data_set.rows):
-        for datatype, input_cell, element in zip(types, input_data_row, data_set_row.elements):
+    for input_data_row, data_set_row in zip(rows, data_set.rows, strict=True):
+        for datatype, input_cell, element in zip(types, input_data_row, data_set_row.elements, strict=True):
             if datatype == SPBDataSetDataTypes.Float:
                 assert math.isclose(
                     input_cell,
-                    SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element),
+                    SPBDataSetDataTypes(
+                        datatype).get_value_from_sparkplug(element),
                     rel_tol=1 / 10**FLOAT_PRECISION,
                 )
             else:
-                assert input_cell == SPBDataSetDataTypes(datatype).get_value_from_sparkplug(element)
+                assert input_cell == SPBDataSetDataTypes(
+                    datatype).get_value_from_sparkplug(element)
 
 
 @pytest.mark.parametrize(
     "is_multi_part, content_type, size, seq, file_name, file_type, md5, description",
     [
         (None, None, None, None, None, None, None, None),
-        (False, "utf-8", 57, 1, "test.txt", "txt", "a8a42d159d5c815a80629c7ce443d404", "description"),
+        (False, "utf-8", 57, 1, "test.txt", "txt",
+         "a8a42d159d5c815a80629c7ce443d404", "description"),
     ],
 )
 def test_add_metadata_to_metric(
-    is_multi_part: Optional[bool],
-    content_type: Optional[str],
-    size: Optional[int],
-    seq: Optional[int],
-    file_name: Optional[str],
-    file_type: Optional[str],
-    md5: Optional[str],
-    description: Optional[str],
+    is_multi_part: bool | None,
+    content_type: str | None,
+    size: int | None,
+    seq: int | None,
+    file_name: str | None,
+    file_type: str | None,
+    md5: str | None,
+    description: str | None,
 ):
     spb_mgs_generator = SpBMessageGenerator()
     payload = Payload()
@@ -808,7 +834,8 @@ def test_add_metadata_to_metric(
             [10, 10000, 10.1234, 100000.12345678, "String 1"],
         ),
         (  # Test Null Values Values
-            ["null_key1", "null_key2", "null_key3", "null_key4", "null_key5", "null_key6", "null_key7"],
+            ["null_key1", "null_key2", "null_key3", "null_key4",
+                "null_key5", "null_key6", "null_key7"],
             [
                 SPBPropertyValueTypes.UInt32,
                 SPBPropertyValueTypes.UInt64,
@@ -827,7 +854,8 @@ def test_add_metadata_to_metric(
         ),
         (  # Test PropertySetList with PropertySet
             ["property set", "property set list"],
-            [SPBPropertyValueTypes.PropertySet, SPBPropertyValueTypes.PropertySetList],
+            [SPBPropertyValueTypes.PropertySet,
+                SPBPropertyValueTypes.PropertySetList],
             [DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
         ),
     ],
@@ -850,16 +878,18 @@ def test_add_properties_to_metric(
         value="Test various property settings",
     )
 
-    spb_mgs_generator.add_properties_to_metric(metric, keys=keys, datatypes=datatypes, values=values)
+    spb_mgs_generator.add_properties_to_metric(
+        metric, keys=keys, datatypes=datatypes, values=values)
 
     assert metric.properties is not None
     # length of arrays should match
-    assert len(metric.properties.keys) == len(metric.properties.values) == len(keys) == len(values) == len(datatypes)
+    assert len(metric.properties.keys) == len(
+        metric.properties.values) == len(keys) == len(values) == len(datatypes)
 
-    for k1, k2 in zip(metric.properties.keys, keys):
+    for k1, k2 in zip(metric.properties.keys, keys, strict=True):
         assert k1 == k2  # keys should match
 
-    for prop_set, datatype, value in zip(metric.properties.values, datatypes, values):
+    for prop_set, datatype, value in zip(metric.properties.values, datatypes, values, strict=True):
         assert prop_set.type == datatype
         if value is None:
             assert prop_set.is_null
@@ -867,11 +897,13 @@ def test_add_properties_to_metric(
             if prop_set.type == SPBPropertyValueTypes.Float:
                 assert math.isclose(
                     value,
-                    SPBPropertyValueTypes(prop_set.type).get_value_from_sparkplug(spb_object=prop_set),
+                    SPBPropertyValueTypes(prop_set.type).get_value_from_sparkplug(
+                        spb_object=prop_set),
                     rel_tol=1 / 10**FLOAT_PRECISION,
                 )
             else:
-                assert value == SPBPropertyValueTypes(prop_set.type).get_value_from_sparkplug(spb_object=prop_set)
+                assert value == SPBPropertyValueTypes(
+                    prop_set.type).get_value_from_sparkplug(spb_object=prop_set)
 
 
 @pytest.mark.parametrize(
@@ -888,7 +920,8 @@ def test_add_properties_to_metric(
                 SPBPropertyValueTypes.PropertySet,
                 SPBPropertyValueTypes.PropertySetList,
             ],
-            [10, 10000, 10.1234, 100000.12345678, "String 1", DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
+            [10, 10000, 10.1234, 100000.12345678, "String 1",
+                DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
         ),
     ],
 )
@@ -902,7 +935,8 @@ def test_create_propertyset(
     """
     spb_mgs_generator = SpBMessageGenerator()
 
-    propertyset = spb_mgs_generator.create_propertyset(ps_keys=keys, ps_datatypes=datatypes, ps_values=values)
+    propertyset = spb_mgs_generator.create_propertyset(
+        ps_keys=keys, ps_datatypes=datatypes, ps_values=values)
     assert propertyset is not None
 
     payload = Payload()
@@ -938,7 +972,8 @@ def test_create_propertyset(
                 SPBPropertyValueTypes.PropertySet,
                 SPBPropertyValueTypes.PropertySetList,
             ],
-            [10, 10000, 10.1234, 100000.12345678, "String 1", DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
+            [10, 10000, 10.1234, 100000.12345678, "String 1",
+                DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
         ),
     ],
 )
@@ -956,7 +991,8 @@ def test_create_propertyset_list(
         ps_keys=keys, ps_datatypes=datatypes, ps_values=values
     )
     # create a list of propertysets and convert them into PropertySetList
-    propertyset_list: Payload.PropertySetList = spb_mgs_generator.create_propertyset_list([propertyset_1, DUMMY_PROPERTY_SET])
+    propertyset_list: Payload.PropertySetList = spb_mgs_generator.create_propertyset_list(
+        [propertyset_1, DUMMY_PROPERTY_SET])
     # check propertyset_list was correctly created
     assert propertyset_list is not None
     assert len(propertyset_list.propertyset) == 2

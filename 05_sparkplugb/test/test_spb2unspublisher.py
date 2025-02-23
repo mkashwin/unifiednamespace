@@ -349,7 +349,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
     parsed_metrics_list: list = Spb2UNSPublisher.get_metrics_from_payload(
         spb_data_payload.SerializeToString())
     assert len(parsed_metrics_list) == len(metrics_list)
-    for parsed_metric, org_metric in zip(parsed_metrics_list, metrics_list):
+    for parsed_metric, org_metric in zip(parsed_metrics_list, metrics_list, strict=True):
         name = parsed_metric.name
         alias = parsed_metric.alias
         datatype = parsed_metric.datatype

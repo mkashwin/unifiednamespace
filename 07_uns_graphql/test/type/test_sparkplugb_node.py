@@ -512,7 +512,7 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
 
             for val1, val2 in zip(
                 literal_eval(graphql_metric.value.data), SPBMetricDataTypes.FloatArray.get_value_from_sparkplug(
-                    payload_metric, strict=True), strict=True
+                    payload_metric), strict=True
             ):
                 assert math.isclose(
                     val1, val2, rel_tol=1 / 10**FLOAT_PRECISION)
