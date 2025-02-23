@@ -24,7 +24,7 @@ import base64
 import logging
 import time
 from types import SimpleNamespace
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from google.protobuf.json_format import MessageToDict
 
@@ -53,7 +53,8 @@ def convert_spb_bytes_payload_to_dict(raw_payload: bytes) -> dict:
     """
     spb_payload = Payload()
     spb_payload.ParseFromString(raw_payload)
-    spb_to_dict: dict = MessageToDict(spb_payload, preserving_proto_field_name=True, float_precision=FLOAT_PRECISION)
+    spb_to_dict: dict = MessageToDict(
+        spb_payload, preserving_proto_field_name=True, float_precision=FLOAT_PRECISION)
 
     return _fix_keys_and_value_types(spb_to_dict)
 
@@ -86,7 +87,8 @@ def _fix_keys_and_value_types(spb_dict: dict) -> dict:
                 if spb_dict["datatype"] in SPBArrayDataTypes:
                     # Hack to mock a SPB object by converting the dict to a name space
                     spb_dict[key] = value
-                    value = SPBArrayDataTypes(spb_dict["datatype"]).get_value_from_sparkplug(SimpleNamespace(**spb_dict))
+                    value = SPBArrayDataTypes(spb_dict["datatype"]).get_value_from_sparkplug(
+                        SimpleNamespace(**spb_dict))
 
             # then rename the key
             key = "value"
@@ -113,7 +115,8 @@ def convert_dict_to_payload(spb_dict: dict) -> Payload:
         if value is not None:
             if key == "metrics":
                 for metric_dict in value:
-                    spb_payload.metrics.append(convert_dict_to_metric(metric_dict))
+                    spb_payload.metrics.append(
+                        convert_dict_to_metric(metric_dict))
             else:
                 setattr(spb_payload, key, value)
     return spb_payload
@@ -125,18 +128,22 @@ def convert_dict_to_metric(metric_dict: dict) -> Payload.Metric:
         match key:
             # Handle the various attributes of Metric
             case "value":
-                datatype: SPBMetricDataTypes = SPBMetricDataTypes(metric_dict["datatype"])  # type: ignore
+                datatype: SPBMetricDataTypes = SPBMetricDataTypes(
+                    metric_dict["datatype"])  # type: ignore
                 match datatype:
                     # Set value based on datatype and special handling to get template and dataset
                     case SPBMetricDataTypes.DataSet:
-                        SPBMetricDataTypes.DataSet.set_value_in_sparkplug(convert_dict_to_dataset(value), metric)
+                        SPBMetricDataTypes.DataSet.set_value_in_sparkplug(
+                            convert_dict_to_dataset(value), metric)
 
                     case SPBMetricDataTypes.Template:
-                        SPBMetricDataTypes.Template.set_value_in_sparkplug(convert_dict_to_template(value), metric)
+                        SPBMetricDataTypes.Template.set_value_in_sparkplug(
+                            convert_dict_to_template(value), metric)
 
                     case _:
                         # All other value types
-                        SPBMetricDataTypes(datatype).set_value_in_sparkplug(value, metric)
+                        SPBMetricDataTypes(
+                            datatype).set_value_in_sparkplug(value, metric)
                 # end of match for value
             case "properties":
                 metric.properties.CopyFrom(convert_dict_to_propertyset(value))
@@ -157,9 +164,10 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
             case "rows":
                 for row_dict in value:
                     row = Payload.DataSet.Row()
-                    for ds_val_dict, datatype in zip(row_dict["elements"], dataset_dict["types"]):
+                    for ds_val_dict, datatype in zip(row_dict["elements"], dataset_dict["types"], strict=True):
                         ds_val = row.elements.add()
-                        SPBDataSetDataTypes(datatype).set_value_in_sparkplug(ds_val_dict["value"], ds_val)
+                        SPBDataSetDataTypes(datatype).set_value_in_sparkplug(
+                            ds_val_dict["value"], ds_val)
 
                     dataset.rows.append(row)
             case "columns":
@@ -182,13 +190,15 @@ def convert_dict_to_template(template_dict: dict) -> Payload.Template:
         match key:
             case "metrics":
                 for metric_dict in value:
-                    template.metrics.append(convert_dict_to_metric(metric_dict))
+                    template.metrics.append(
+                        convert_dict_to_metric(metric_dict))
             case "parameters":
                 for param_dict in value:
                     param_template = Payload.Template.Parameter()
                     param_template.name = param_dict["name"]
                     param_template.type = param_dict["type"]
-                    SPBParameterTypes(param_template.type).set_value_in_sparkplug(param_dict["value"], param_template)
+                    SPBParameterTypes(param_template.type).set_value_in_sparkplug(
+                        param_dict["value"], param_template)
                     template.parameters.append(param_template)
             case _:
                 setattr(template, key, value)
@@ -209,7 +219,8 @@ def convert_dict_to_propertyset(property_dict: dict) -> Payload.PropertySet:
             match property_value.type:
                 case SPBPropertyValueTypes.PropertySet:
                     SPBPropertyValueTypes.PropertySet.set_value_in_sparkplug(
-                        convert_dict_to_propertyset(prop_val_dict["value"]), property_value
+                        convert_dict_to_propertyset(
+                            prop_val_dict["value"]), property_value
                     )
 
                 case SPBPropertyValueTypes.PropertySetList:
@@ -223,11 +234,13 @@ def convert_dict_to_propertyset(property_dict: dict) -> Payload.PropertySet:
                         property_value,
                     )
                 case _:
-                    SPBPropertyValueTypes(property_value.type).set_value_in_sparkplug(prop_val_dict["value"], property_value)
+                    SPBPropertyValueTypes(property_value.type).set_value_in_sparkplug(
+                        prop_val_dict["value"], property_value)
 
         property_values.append(property_value)
 
-    propertyset: Payload.PropertySet = Payload.PropertySet(keys=property_dict["keys"], values=property_values)
+    propertyset: Payload.PropertySet = Payload.PropertySet(
+        keys=property_dict["keys"], values=property_values)
     return propertyset
 
 
@@ -283,10 +296,11 @@ class SpBMessageGenerator:
         """
         if payload is None:
             payload = Payload()
-        self.add_metric(payload, "bdSeq", SPBMetricDataTypes.Int64, self.get_birth_seq_num(), None)
+        self.add_metric(payload, "bdSeq", SPBMetricDataTypes.Int64,
+                        self.get_birth_seq_num(), None)
         return payload
 
-    def get_node_birth_payload(self, payload: Payload = None, timestamp: Optional[float] = None) -> Payload:
+    def get_node_birth_payload(self, payload: Payload = None, timestamp: float | None = None) -> Payload:
         """
         Helper to get the Node Birth Payload
         Always request this after requesting the Node Death Payload
@@ -309,7 +323,8 @@ class SpBMessageGenerator:
             payload.timestamp = timestamp
         payload.seq = self.get_seq_num()
 
-        self.add_metric(payload, "bdSeq", SPBBasicDataTypes.Int64, self.get_birth_seq_num(), None, payload.timestamp)
+        self.add_metric(payload, "bdSeq", SPBBasicDataTypes.Int64,
+                        self.get_birth_seq_num(), None, payload.timestamp)
         return payload
 
     def get_node_data_payload(self, payload: Payload = None) -> Payload:
@@ -324,7 +339,7 @@ class SpBMessageGenerator:
         """
         return self.get_node_birth_payload(payload)
 
-    def get_device_birth_payload(self, payload: Payload = None, timestamp: Optional[float] = None) -> Payload:
+    def get_device_birth_payload(self, payload: Payload = None, timestamp: float | None = None) -> Payload:
         """
         Get the DBIRTH payload
         You can add additional metrics after calling this function
@@ -344,7 +359,7 @@ class SpBMessageGenerator:
         payload.seq = self.get_seq_num()
         return payload
 
-    def get_device_data_payload(self, payload: Payload = None, timestamp: Optional[float] = None) -> Payload:
+    def get_device_data_payload(self, payload: Payload = None, timestamp: float | None = None) -> Payload:
         """
         Get a DDATA payload
         You can add additional metrics after calling this function
@@ -360,8 +375,8 @@ class SpBMessageGenerator:
         self,
         payload_or_template: Payload | Payload.Template,
         name: str,
-        alias: Optional[int] = None,
-        timestamp: Optional[float] = round(time.time() * 1000),
+        alias: int | None = None,
+        timestamp: float | None = round(time.time() * 1000),
     ) -> Payload.Metric:
         """
         Private method. Common code of obtaining metrics and initializing common attributes
@@ -380,7 +395,8 @@ class SpBMessageGenerator:
         metric: Payload.Metric = payload_or_template.metrics.add()
 
         if name is None and alias is None:
-            raise ValueError(f"Need either name:{name} or alias:{alias} to be provided.")
+            raise ValueError(
+                f"Need either name:{name} or alias:{alias} to be provided.")
 
         if name is not None and alias is not None:
             # check if alias exists for the provided name, else set the alias mapping
@@ -396,7 +412,8 @@ class SpBMessageGenerator:
 
         elif name is None:
             if self.alias_name_map.get(alias) is None:
-                raise ValueError(f" No name found  for Alias:{alias}. Alias has not yet been set")
+                raise ValueError(
+                    f" No name found  for Alias:{alias}. Alias has not yet been set")
             metric.alias = alias
         else:
             metric.name = name
@@ -411,8 +428,8 @@ class SpBMessageGenerator:
         name: str,
         datatype: SPBMetricDataTypes,  # type: ignore
         value=None,
-        alias: Optional[int] = None,
-        timestamp: Optional[int] = None,
+        alias: int | None = None,
+        timestamp: int | None = None,
     ) -> Payload.Metric:
         """
         Helper method for adding metrics to a payload_or_template which can be a payload or a template.
@@ -443,7 +460,8 @@ class SpBMessageGenerator:
         if value is None:
             metric.is_null = True
         else:
-            SPBMetricDataTypes(datatype).set_value_in_sparkplug(value=value, spb_object=metric)
+            SPBMetricDataTypes(datatype).set_value_in_sparkplug(
+                value=value, spb_object=metric)
 
         # Return the metric
         return metric
@@ -455,7 +473,7 @@ class SpBMessageGenerator:
         datatype: SPBMetricDataTypes,  # type: ignore
         value,
         timestamp,
-        alias: Optional[int] = None,
+        alias: int | None = None,
     ) -> Payload.Metric:
         """
         Helper method for adding metrics to a container which can be a
@@ -489,7 +507,7 @@ class SpBMessageGenerator:
         payload_or_template: Payload | Payload.Template,
         name: str,
         datatype: SPBMetricDataTypes,  # type: ignore
-        alias: Optional[int] = None,
+        alias: int | None = None,
     ):
         """
         Helper method for adding null metrics  to a container which can be a payload or a template
@@ -517,12 +535,12 @@ class SpBMessageGenerator:
         payload: Payload,
         name: str,
         columns: list[str],  # column headers
-        types: list[SPBDataSetDataTypes],  # type: ignore , type of the value in the inner list of rows
-        rows: Optional[
-            list[list[int | float | bool | str]]
-        ],  # list of row values . row value can be of type int, float, bool or str
-        alias: Optional[int] = None,
-        timestamp: Optional[float] = round(time.time() * 1000),
+        # type: ignore , type of the value in the inner list of rows
+        types: list[SPBDataSetDataTypes],
+        # list of row values . row value can be of type int, float, bool or str
+        rows: list[list[int | float | bool | str]] | None,
+        alias: int | None = None,
+        timestamp: float | None = round(time.time() * 1000),
     ) -> Payload.DataSet:
         """
         Helper method for initializing a dataset metric to a payload
@@ -561,7 +579,8 @@ class SpBMessageGenerator:
         metric.dataset_value.columns.extend(columns)
         metric.dataset_value.types.extend(types)
         for row in rows:
-            self._add_row_to_dataset(dataset_value=metric.dataset_value, values=row)
+            self._add_row_to_dataset(
+                dataset_value=metric.dataset_value, values=row)
 
         return metric.dataset_value
 
@@ -571,19 +590,21 @@ class SpBMessageGenerator:
         """
         ds_row = dataset_value.rows.add()
         types = dataset_value.types
-        for cell_value, cell_type in zip(values, types):
+        for cell_value, cell_type in zip(values, types, strict=True):
             ds_element = ds_row.elements.add()
-            SPBDataSetDataTypes(cell_type).set_value_in_sparkplug(value=cell_value, spb_object=ds_element)
+            SPBDataSetDataTypes(cell_type).set_value_in_sparkplug(
+                value=cell_value, spb_object=ds_element)
 
     def init_template_metric(
         self,
         payload: Payload | Payload.Template,
         name: str,
-        metrics: Optional[list[Payload.Metric]],
-        version: Optional[str] = None,
-        template_ref: Optional[str] = None,
-        parameters: Optional[list[tuple[str, SPBParameterTypes, int | float | bool | str]]] = None,  # type: ignore
-        alias: Optional[int] = None,
+        metrics: list[Payload.Metric] | None,
+        version: str | None = None,
+        template_ref: str | None = None,
+        parameters: list[tuple[str, SPBParameterTypes, int |
+                               float | bool | str]] | None = None,  # type: ignore
+        alias: int | None = None,
     ) -> Payload.Template:
         """
         Helper method for adding template metrics to a payload
@@ -611,7 +632,8 @@ class SpBMessageGenerator:
             Optional array of tuples representing parameters associated with the Template
             parameter.name; str, parameter.type = SPBParameterTypes, parameter.value = int| float| bool | str
         """
-        metric: Payload.Metric = self._get_metric_wrapper(payload_or_template=payload, name=name, alias=alias)
+        metric: Payload.Metric = self._get_metric_wrapper(
+            payload_or_template=payload, name=name, alias=alias)
         metric.datatype = SPBMetricDataTypes.Template
 
         # Set up the template
@@ -626,7 +648,8 @@ class SpBMessageGenerator:
                 parameter: Payload.Template.Parameter = metric.template_value.parameters.add()
                 parameter.name = param[0]
                 parameter.type = param[1]
-                SPBParameterTypes(parameter.type).set_value_in_sparkplug(value=param[2], spb_object=parameter)
+                SPBParameterTypes(parameter.type).set_value_in_sparkplug(
+                    value=param[2], spb_object=parameter)
 
         metric.template_value.version = version
         if metrics is not None and len(metrics) > 0:
@@ -638,14 +661,14 @@ class SpBMessageGenerator:
     def add_metadata_to_metric(
         self,
         metric: Payload.Metric,
-        is_multi_part: Optional[bool],
-        content_type: Optional[str],
-        size: Optional[int],
-        seq: Optional[int],
-        file_name: Optional[str],
-        file_type: Optional[str],
-        md5: Optional[str],
-        description: Optional[str],
+        is_multi_part: bool | None,
+        content_type: str | None,
+        size: int | None,
+        seq: int | None,
+        file_name: str | None,
+        file_type: str | None,
+        md5: str | None,
+        description: str | None,
     ) -> Payload.MetaData:
         """
         Sets the MetaData object in a Metric and is used to describe different types of binary data in the metric
@@ -702,7 +725,8 @@ class SpBMessageGenerator:
         Helper method to add properties to a Metric
         """
         if len(keys) == len(datatypes) == len(values):
-            metric.properties.CopyFrom(self.create_propertyset(keys, datatypes, values))
+            metric.properties.CopyFrom(
+                self.create_propertyset(keys, datatypes, values))
             return metric.properties
         else:
             raise LookupError(
@@ -725,17 +749,19 @@ class SpBMessageGenerator:
         """
         if len(ps_keys) == len(ps_datatypes) == len(ps_values):
             property_value_array: list[Payload.PropertyValue] = []
-            for datatype, value in zip(ps_datatypes, ps_values):
+            for datatype, value in zip(ps_datatypes, ps_values, strict=True):
                 property_value: Payload.PropertyValue = Payload.PropertyValue()
                 property_value.type = datatype
                 if value is None:
                     property_value.is_null = True
                 else:
-                    SPBPropertyValueTypes(datatype).set_value_in_sparkplug(value=value, spb_object=property_value)
+                    SPBPropertyValueTypes(datatype).set_value_in_sparkplug(
+                        value=value, spb_object=property_value)
 
                 property_value_array.append(property_value)
 
-            propertyset: Payload.PropertySet = Payload.PropertySet(keys=ps_keys, values=property_value_array)
+            propertyset: Payload.PropertySet = Payload.PropertySet(
+                keys=ps_keys, values=property_value_array)
             return propertyset
         else:
             raise LookupError(

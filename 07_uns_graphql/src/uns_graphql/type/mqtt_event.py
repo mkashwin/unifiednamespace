@@ -21,7 +21,6 @@ Maps to MQTT messages to the UNS
 
 import json
 import logging
-import typing
 
 import strawberry
 from strawberry.types import Info
@@ -55,7 +54,7 @@ class MQTTMessage:
     def resolve_payload(
         self,
         info: Info,  # noqa: ARG002
-    ) -> typing.Optional[typing.Union[JSONPayload, BytesPayload]]:
+    ) -> JSONPayload | BytesPayload | None:
         if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, self.topic):
             # Message to sparkplug STATE message
             return JSONPayload(data=self._raw_payload.decode("utf-8"))

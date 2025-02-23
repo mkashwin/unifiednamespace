@@ -20,7 +20,7 @@ GraphQL queries to the graph database
 
 import logging
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 import strawberry
 from neo4j import Record
@@ -307,8 +307,8 @@ class Query:
     async def get_uns_nodes_by_property(
         self,
         property_keys: list[str],
-        topics: Optional[list[MQTTTopicInput]] = strawberry.UNSET,
-        exclude_topics: Optional[bool] = False,
+        topics: list[MQTTTopicInput] | None = strawberry.UNSET,
+        exclude_topics: bool | None = False,
     ) -> list[UNSNode]:
         LOGGER.debug(
             "Query for historic events by properties, with params :\n"

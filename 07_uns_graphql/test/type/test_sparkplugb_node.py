@@ -125,10 +125,12 @@ def create_dummy_template() -> Payload.Template:
     template: Payload.Template = spb_mgs_gen.init_template_metric(
         payload=payload,
         name="Dummy Template",
-        metrics=[Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+        metrics=[Payload.Metric(
+            name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
         version="v_0.1.1",
         template_ref=None,
-        parameters=[("prop1", SPBParameterTypes.UInt32, 100), ("prop2", SPBParameterTypes.String, "property string")],
+        parameters=[("prop1", SPBParameterTypes.UInt32, 100),
+                    ("prop2", SPBParameterTypes.String, "property string")],
     )
 
     return template
@@ -332,12 +334,15 @@ list_of_metrics_dict: list[dict] = [
 DUMMY_PROPERTY_SET = Payload.PropertySet(
     keys=["key1_1", "key1_2"],
     values=[
-        Payload.PropertyValue(type=SPBPropertyValueTypes.String, string_value="nested"),
-        Payload.PropertyValue(type=SPBPropertyValueTypes.UInt32, int_value=12345),
+        Payload.PropertyValue(
+            type=SPBPropertyValueTypes.String, string_value="nested"),
+        Payload.PropertyValue(
+            type=SPBPropertyValueTypes.UInt32, int_value=12345),
     ],
 )
 
-DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
+DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(
+    propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
 
 
 def _create_sample_spb_payload() -> Payload:
@@ -364,7 +369,8 @@ def _create_sample_spb_payload() -> Payload:
                 SPBPropertyValueTypes.PropertySet,
                 SPBPropertyValueTypes.PropertySetList,
             ],
-            values=[10, 10000, 10.1234, 100000.12345678, "String 1", DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
+            values=[10, 10000, 10.1234, 100000.12345678, "String 1",
+                    DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET_LIST],
         )
     return payload
 
@@ -396,7 +402,8 @@ def setup_alias_map():
     [
         ("spBv1.0/uns_group/DDATA/eon1", _create_sample_spb_payload()),
         ("spBv1.0/uns_group/DDATA/eon2", sample_binary_spb_payload),
-        ("spBv1.0/uns_group/DDATA/eon2", uns_spb_helper.convert_spb_bytes_payload_to_dict(sample_binary_spb_payload)),
+        ("spBv1.0/uns_group/DDATA/eon2",
+         uns_spb_helper.convert_spb_bytes_payload_to_dict(sample_binary_spb_payload)),
     ],
 )
 def test_strawberry_types(query, topic, payload):
@@ -452,7 +459,8 @@ def test_spb_node(topic: str, payload: Payload | bytes):
         payload = parsed_payload
     assert spb_node is not None
     assert spb_node.topic == topic
-    assert spb_node.timestamp == datetime.fromtimestamp(payload.timestamp / 1000, UTC)
+    assert spb_node.timestamp == datetime.fromtimestamp(
+        payload.timestamp / 1000, UTC)
     assert spb_node.seq == payload.seq
     if payload.HasField("uuid"):
         assert spb_node.uuid == strawberry.ID(payload.uuid)
@@ -460,7 +468,7 @@ def test_spb_node(topic: str, payload: Payload | bytes):
         assert spb_node.body == strawberry.scalars.Base64(payload.body)
     # this doesn't work because of float values
     # assert spb_node.metrics == [SPBMetric(metric) for metric in payload.metrics]
-    for spb_node_metric, payload_metric in zip(spb_node.metrics, payload.metrics):
+    for spb_node_metric, payload_metric in zip(spb_node.metrics, payload.metrics, strict=True):
         compare_metrics(spb_node_metric, payload_metric)
 
 
@@ -485,9 +493,11 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
 
     assert graphql_metric.properties == spb_metric.properties
     if payload_metric.HasField("properties"):
-        compare_propertyset(graphql_metric.properties, payload_metric.properties)
+        compare_propertyset(graphql_metric.properties,
+                            payload_metric.properties)
 
-    assert graphql_metric.datatype == spb_metric.datatype == SPBMetricDataTypes(payload_metric.datatype).name
+    assert graphql_metric.datatype == spb_metric.datatype == SPBMetricDataTypes(
+        payload_metric.datatype).name
 
     # compare values and handle floating point precision issue
     match payload_metric.datatype:
@@ -501,15 +511,19 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
             assert graphql_metric.value == spb_metric.value
 
             for val1, val2 in zip(
-                literal_eval(graphql_metric.value.data), SPBMetricDataTypes.FloatArray.get_value_from_sparkplug(payload_metric)
+                literal_eval(graphql_metric.value.data), SPBMetricDataTypes.FloatArray.get_value_from_sparkplug(
+                    payload_metric, strict=True), strict=True
             ):
-                assert math.isclose(val1, val2, rel_tol=1 / 10**FLOAT_PRECISION)
+                assert math.isclose(
+                    val1, val2, rel_tol=1 / 10**FLOAT_PRECISION)
 
         case SPBMetricDataTypes.Template:
-            compare_templates(graphql_metric.value, payload_metric.template_value)
+            compare_templates(graphql_metric.value,
+                              payload_metric.template_value)
 
         case SPBMetricDataTypes.DataSet:
-            compare_datasets(graphql_metric.value, payload_metric.dataset_value)
+            compare_datasets(graphql_metric.value,
+                             payload_metric.dataset_value)
 
         case SPBMetricDataTypes.String | SPBMetricDataTypes.Text | SPBMetricDataTypes.UUID:
             assert graphql_metric.value == spb_metric.value
@@ -567,13 +581,14 @@ def compare_templates(graphql_template: SPBTemplate, template: Payload.Template)
     if template.HasField("version"):
         assert graphql_template.version == template.version
 
-    for graphql_metric, template_metric in zip(graphql_template.metrics, template.metrics):
+    for graphql_metric, template_metric in zip(graphql_template.metrics, template.metrics, strict=True):
         compare_metrics(graphql_metric, template_metric)
 
     if len(template.parameters) > 0:
-        for graphql_template_param, template_param in zip(graphql_template.parameters, template.parameters):
+        for graphql_template_param, template_param in zip(graphql_template.parameters, template.parameters, strict=True):
             assert graphql_template_param.name == template_param.name
-            assert graphql_template_param.datatype == SPBParameterTypes(template_param.type).name
+            assert graphql_template_param.datatype == SPBParameterTypes(
+                template_param.type).name
             match template_param.type:
                 case SPBParameterTypes.Float:
                     assert math.isclose(
@@ -589,16 +604,18 @@ def compare_templates(graphql_template: SPBTemplate, template: Payload.Template)
                         template_param.type
                     ).get_value_from_sparkplug(template_param)
     else:
-        assert len(graphql_template.parameters) == len(spb_template.parameters) == 0
+        assert len(graphql_template.parameters) == len(
+            spb_template.parameters) == 0
 
 
 def compare_datasets(graphql_dataset: SPBDataSet, dataset: Payload.DataSet):
     spb_dataset = SPBDataSet(dataset)
     assert graphql_dataset.columns == spb_dataset.columns == dataset.columns
     assert graphql_dataset.num_of_columns == spb_dataset.num_of_columns == dataset.num_of_columns
-    assert graphql_dataset.types == spb_dataset.types == [SPBDataSetDataTypes(datatype).name for datatype in dataset.types]
-    for graphql_row, dataset_row in zip(graphql_dataset.rows, dataset.rows):
-        for graphql_dt_val, dt_val, datatype in zip(graphql_row.elements, dataset_row.elements, dataset.types):
+    assert graphql_dataset.types == spb_dataset.types == [
+        SPBDataSetDataTypes(datatype).name for datatype in dataset.types]
+    for graphql_row, dataset_row in zip(graphql_dataset.rows, dataset.rows, strict=True):
+        for graphql_dt_val, dt_val, datatype in zip(graphql_row.elements, dataset_row.elements, dataset.types, strict=True):
             match datatype:
                 case SPBDataSetDataTypes.Float:
                     assert math.isclose(
@@ -618,7 +635,8 @@ def compare_propertyset(graphql_propertyset: SPBPropertySet, propertyset: Payloa
     spb_propertyset = SPBPropertySet(propertyset)
 
     assert graphql_propertyset.keys == spb_propertyset.keys == propertyset.keys
-    for gql_prop_val, spb_prop_val, prop_val in zip(graphql_propertyset.values, spb_propertyset.values, propertyset.values):
+    for gql_prop_val, spb_prop_val, prop_val in zip(graphql_propertyset.values, spb_propertyset.values,
+                                                    propertyset.values, strict=True):
         match prop_val.type:
             case SPBPropertyValueTypes.Float:
                 assert gql_prop_val.value == spb_prop_val.value
@@ -628,14 +646,17 @@ def compare_propertyset(graphql_propertyset: SPBPropertySet, propertyset: Payloa
 
             case SPBPropertyValueTypes.String:
                 assert gql_prop_val.value == spb_prop_val.value
-                assert gql_prop_val.value.data == SPBPropertyValueTypes(prop_val.type).get_value_from_sparkplug(prop_val)
+                assert gql_prop_val.value.data == SPBPropertyValueTypes(
+                    prop_val.type).get_value_from_sparkplug(prop_val)
 
             case SPBPropertyValueTypes.PropertySet:
-                compare_propertyset(gql_prop_val.value, prop_val.propertyset_value)
+                compare_propertyset(gql_prop_val.value,
+                                    prop_val.propertyset_value)
 
             case SPBPropertyValueTypes.PropertySetList:
                 for gql_sub_prop_set, sub_prop_set in zip(
-                    gql_prop_val.value.propertysets, prop_val.propertysets_value.propertyset
+                    gql_prop_val.value.propertysets, prop_val.propertysets_value.propertyset,
+                    strict=True
                 ):
                     compare_propertyset(gql_sub_prop_set, sub_prop_set)
             case _:
