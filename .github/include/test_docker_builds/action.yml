@@ -43,6 +43,7 @@ runs:
         if [[ -z ${script_name} ]]; then
           script_name=$(grep -E "^\s*\"${command}.*=" ./pyproject.toml)
         fi
+        echo "Script name is: ${script_name}"
 
         if [[  ! $script_name == *':main"' ]]; then
           # the script is not referencing a main function, must be a module
@@ -62,10 +63,10 @@ runs:
           echo "Validate if ${main_entry} points to a valid python function"
           python_module=${main_entry%:*}
           function=${main_entry##*:}
-          if [[ -z $main_entry ]]; then
+          if [[ -z ${main_entry} ]]; then
             echo "Error: Script entry for ${command} not found in [project.scripts] section of pyproject.toml "
             exit 1
-          fi          
+          fi
         fi
         echo "Static Validation successful!"
 
