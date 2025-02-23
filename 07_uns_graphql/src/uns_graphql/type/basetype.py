@@ -20,6 +20,7 @@ Common basetype needed across all graphQL queries and subscriptions to the UNS
 
 import json
 from enum import Enum
+from typing import Union
 
 import strawberry
 from strawberry.scalars import JSON
@@ -54,7 +55,8 @@ class BytesPayload:
 
 # This is needed because GraphQL does not support int64
 Int64 = strawberry.scalar(
-    cls=int | str,
+    # trunk-ignore(ruff/UP007)
+    cls=Union[int, str],
     description="Int 64 field since GraphQL doesn't support int64, only int 32",
     serialize=lambda v: int(v),
     parse_value=lambda v: str(v),
