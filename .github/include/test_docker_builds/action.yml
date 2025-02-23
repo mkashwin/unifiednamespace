@@ -28,9 +28,9 @@ runs:
 
         # Extract the entrypoint from Dockerfile
         entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
-        if [[ ! "${entry_point}" =~ ^ENTRYPOINT\ \[\"uv\",\ \"run\",\ \".+\"\]$ ]]; then
-            echo "Error: Entrypoint should be in the format [\"uv\", \"run\", \"<command>\"]"
-            exit 1
+        if [[ ! ${entry_point} =~ ^ENTRYPOINT\ \[\"uv\",\ \"run\",\ \".+\"\]$ ]]; then
+          echo 'Error: Entrypoint should be in the format ["uv", "run", "<command>"]'
+          exit 1
         fi
 
         echo "Entrypoint for Docker is: ${entry_point}"
