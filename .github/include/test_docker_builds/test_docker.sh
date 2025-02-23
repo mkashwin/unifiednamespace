@@ -20,9 +20,13 @@ echo "Entrypoint for Docker is: ${entry_point}"
 # trunk-ignore(shellcheck/SC2312)
 command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
 # check in pyproject if it is a script.
-script_name=$(grep -E "^\s*\"${command}.*=" ./pyproject.toml)
+script_name=$(grep "^${command} =" ./pyproject.toml)
+if [[ -z ${script_name} ]]; then
+	script_name=$(grep -E "^\s*\"${command}.*=" ./pyproject.toml)
+fi
+
 if [[ ${script_name} != *':main"' ]]; then
-	# the script is not referencing a main function, must be a module
+	# the script is not referencing a main function, must be a moduli
 	echo "Validating if ${command} is a valid module command"
 	# Check if command exists in the project
 	if [[ -z ${script_name} ]]; then
