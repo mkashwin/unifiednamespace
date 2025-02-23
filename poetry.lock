@@ -2485,7 +2485,7 @@ files = []
 develop = true
 
 [package.dependencies]
-dynaconf = "^3.2.9"
+dynaconf = "^3.2"
 logger = "^1.4"
 neo4j = "^5.27"
 psutil = "^6.1.1"
@@ -2509,7 +2509,7 @@ aiohttp = "^3.11"
 aiomqtt = "^2.2.0"
 asyncpg = "^0.30"
 confluent-kafka = "^2.7.0"
-dynaconf = "^3.2.7"
+dynaconf = "^3.2"
 logger = "^1.4"
 neo4j = "^5.27"
 psutil = "^6.1.1"
@@ -2532,7 +2532,7 @@ develop = true
 
 [package.dependencies]
 asyncpg = "^0.30"
-dynaconf = "^3.2.9"
+dynaconf = "^3.2"
 logger = "^1.4"
 psutil = "^6.1.1"
 
@@ -2552,7 +2552,7 @@ develop = true
 
 [package.dependencies]
 confluent-kafka = "^2.7.0"
-dynaconf = "^3.2.9"
+dynaconf = "^3.2"
 logger = "^1.4"
 psutil = "^6.1.1"
 
@@ -2590,7 +2590,7 @@ files = []
 develop = true
 
 [package.dependencies]
-dynaconf = "^3.2.9"
+dynaconf = "^3.2"
 logger = "^1.4"
 psutil = "^6.1.1"
 

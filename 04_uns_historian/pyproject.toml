@@ -26,7 +26,7 @@ packages = [{ include = "uns_historian", from = "src" }]
 python = "^3.12"
 logger = "^1.4"
 asyncpg = "^0.30"
-dynaconf = "^3.2.9"
+dynaconf = "^3.2"
 psutil = "^6.1.1"
 
 [tool.poetry.group.dev.dependencies]
