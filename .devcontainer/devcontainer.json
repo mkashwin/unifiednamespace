@@ -19,7 +19,7 @@
       "injections": "pytest",
       "interpreter": "python3"
     },
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {
+    "ghcr.io/jsburckhardt/devcontainer-features/uv": {
       "version": "latest"
     },
     "ghcr.io/trunk-io/devcontainer-feature/trunk": {

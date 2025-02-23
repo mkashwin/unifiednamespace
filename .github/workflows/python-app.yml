@@ -10,7 +10,7 @@ on:
     paths:
       - "**/*.py"
       - "**/pyproject.toml"
-      - "**/poetry.lock"
+      - "**/uv.lock"
       - ".github/workflows/*.yml"
       - ".github/include/**"
 
@@ -20,7 +20,7 @@ on:
     paths:
       - "**/*.py"
       - "**/pyproject.toml"
-      - "**/poetry.lock"
+      - "**/uv.lock"
       - ".github/workflows/*.yml"
       - ".github/include/**"
   workflow_dispatch:

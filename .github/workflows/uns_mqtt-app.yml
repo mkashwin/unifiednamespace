@@ -10,7 +10,7 @@ on:
     paths:
       - "02_mqtt-cluster/**/*.py*"
       - "02_mqtt-cluster/pyproject.toml"
-      - "02_mqtt-cluster/poetry.lock"
+      - "02_mqtt-cluster/uv.lock"
       - ".github/workflows/uns_mqtt-app.yml"
       - ".github/include/**"
 
@@ -20,7 +20,7 @@ on:
     paths:
       - "02_mqtt-cluster/**/*.py*"
       - "02_mqtt-cluster/pyproject.toml"
-      - "02_mqtt-cluster/poetry.lock"
+      - "02_mqtt-cluster/uv.lock"
       - ".github/workflows/uns_mqtt-app.yml"
       - ".github/include/**"
 

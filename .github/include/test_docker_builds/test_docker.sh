@@ -1,9 +1,9 @@
 #!/bin/bash
 SHA_TAG=839890c2748df3d11c63c1469d189f1a2289e1a7
 image_name=uns/test_image
-echo "Check for [tool.poetry.scripts]"
-if ! grep -q "^\[tool.poetry.scripts\]" ./pyproject.toml; then
-	echo "Error: [tool.poetry.scripts] section not found in pyproject.toml"
+echo "Check for [project.scripts]"
+if ! grep -q "^\[project.scripts\]" ./pyproject.toml; then
+	echo "Error: [project.scripts] section not found in pyproject.toml"
 	exit 1
 fi
 echo "Validating Docker Entrypoint prior to build"
@@ -11,8 +11,8 @@ echo "Validating Docker Entrypoint prior to build"
 # trunk-ignore(shellcheck/SC2312)
 # trunk-ignore(shellcheck/SC2002)
 entry_point=$(cat ./Dockerfile | grep "^ENTRYPOINT")
-if [[ ! ${entry_point} =~ ^ENTRYPOINT\ \[\"poetry\",\ \"run\",\ \".+\"\]$ ]]; then
-	echo 'Error: Entrypoint should be in the format ["poetry", "run", "<command>"]'
+if [[ ! ${entry_point} =~ ^ENTRYPOINT\ \[\"uv\",\ \"run\",\ \".+\"\]$ ]]; then
+	echo 'Error: Entrypoint should be in the format ["uv", "run", "<command>"]'
 	exit 1
 fi
 echo "Entrypoint for Docker is: ${entry_point}"
@@ -20,7 +20,7 @@ echo "Entrypoint for Docker is: ${entry_point}"
 # trunk-ignore(shellcheck/SC2312)
 command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
 # check in pyproject if it is a script.
-script_name=$(grep "^${command} =" ./pyproject.toml)
+script_name=$(grep -E "^\s*\"${command}.*=" ./pyproject.toml)
 if [[ ${script_name} != *':main"' ]]; then
 	# the script is not referencing a main function, must be a module
 	echo "Validating if ${command} is a valid module command"
@@ -42,7 +42,7 @@ else
 	python_module=${main_entry%:*}
 	function=${main_entry##*:}
 	if [[ -z ${main_entry} ]]; then
-		echo "Error: Script entry for ${command} not found in [tool.poetry.scripts] section of pyproject.toml "
+		echo "Error: Script entry for ${command} not found in [project.scripts] section of pyproject.toml "
 		exit 1
 	fi
 fi
@@ -77,11 +77,11 @@ docker run --entrypoint "sh" -e python_module="${python_module}" -e function="${
     echo "Success:  test folder was not copied to the Docker"
   fi
   
-  poetry run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
+  uv run python -m compileall -q /app || (echo "Error: compileall failed" && exit 1)
   if [[ -z $class  ]];then  
     # function is not null, check if the entry in pyproject.toml scripts is valid
-    entry_valid=$(poetry run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
-  elif poetry run python -c "from ${python_module} import ${class};  x=${function};" &> /dev/null; then
+    entry_valid=$(uv run python -c "import ${python_module} as module;print( '\''${function}'\''  in dir(module))")
+  elif uv run python -c "from ${python_module} import ${class};  x=${function};" &> /dev/null; then
     entry_valid=True
   fi
   if [ ! "$entry_valid" == "True" ];then

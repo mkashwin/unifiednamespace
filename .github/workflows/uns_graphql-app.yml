@@ -10,10 +10,10 @@ on:
     paths:
       - "02_mqtt-cluster/**/*.py*"
       - "02_mqtt-cluster/pyproject.toml"
-      - "02_mqtt-cluster/poetry.lock"
+      - "02_mqtt-cluster/uv.lock"
       - "07_uns_graphql/**/*.py"
       - "07_uns_graphql/pyproject.toml"
-      - "07_uns_graphql/poetry.lock"
+      - "07_uns_graphql/uv.lock"
       - "07_uns_graphql/Dockerfile"
       - ".github/workflows/uns_graphql-app.yml"
       - ".github/include/**"
@@ -24,10 +24,10 @@ on:
     paths:
       - "02_mqtt-cluster/**/*.py*"
       - "02_mqtt-cluster/pyproject.toml"
-      - "02_mqtt-cluster/poetry.lock"
+      - "02_mqtt-cluster/uv.lock"
       - "07_uns_graphql/**/*.py"
       - "07_uns_graphql/pyproject.toml"
-      - "07_uns_graphql/poetry.lock"
+      - "07_uns_graphql/uv.lock"
       - "07_uns_graphql/Dockerfile"
       - ".github/workflows/uns_graphql-app.yml"
       - ".github/include/**"
@@ -162,7 +162,7 @@ jobs:
         run: |
           cd 07_uns_graphql
           # create the schema
-          poetry run strawberry export-schema \
+          uv run strawberry export-schema \
             uns_graphql.uns_graphql_app:UNSGraphql.schema  \
             --output $schema_file
 

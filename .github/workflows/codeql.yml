@@ -16,12 +16,12 @@ on:
     branches: ["main"]
     paths:
       - "*/src/**/*.py*"
-      - "**/poetry.lock"
+      - "**/uv.lock"
   pull_request:
     branches: ["main"]
     paths:
       - "*/src/**/*.py*"
-      - "**/poetry.lock"
+      - "**/uv.lock"
   schedule:
     - cron: "45 11 * * 4"
 

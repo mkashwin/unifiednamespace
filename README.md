@@ -229,56 +229,54 @@ However to import all microservices into the same workspace, the following comma
 This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 
 ```bash
-pip install poetry
-# Ensure that the poetry shell is activated
-poetry shell
-python -m pip install --upgrade pip poetry
-poetry install
+python -m pip install --upgrade pip uv
+uv venv
+uv sync
 ```
 
 While importing the folder into VSCode remember to do the following steps the first time
 
 > 1. Open a terminal in VSCode
-> 1. Activate the poetry shell
+> 1. Activate the virtual env
 >
 >    ```bash
->    poetry shell
->    python -m pip install --upgrade pip poetry
->    poetry install
+>    python -m pip install --upgrade pip uv
+>    uv venv
+>    uv sync
 >    ```
 >
-> 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+> 1. Select the correct python interpreter in VSCode (should automatically detect the .venv virtual environment)
 
 ### Running tests
 
 ```python
 # run all tests
-poetry run pytest
+uv run pytest
 ```
 
 ```python
 # run all tests excluding integration tests
-poetry run pytest -m "not integrationtest"
+uv run pytest -m "not integrationtest"
 ```
 
 ```python
 # run all tests for a specific module
-poetry run pytest  ./02_mqtt-cluster
-poetry run pytest  ./03_uns_graphdb
-poetry run pytest  ./04_uns_historian
-poetry run pytest  ./05_sparkplugb
-poetry run pytest  ./06_uns_kafka
-poetry run pytest  ./07_uns_graphql
+uv run pytest  ./02_mqtt-cluster
+uv run pytest  ./03_uns_graphdb
+uv run pytest  ./04_uns_historian
+uv run pytest  ./05_sparkplugb
+uv run pytest  ./06_uns_kafka
+uv run pytest  ./07_uns_graphql
 ```
 
 ```python
 # run all tests for a specific module excluding integration test
-poetry run pytest -m "not integrationtest" ./02_mqtt-cluster
-poetry run pytest -m "not integrationtest" ./03_uns_graphdb
-poetry run pytest -m "not integrationtest" ./04_uns_historian
-poetry run pytest -m "not integrationtest" ./05_sparkplugb
-poetry run pytest -m "not integrationtest" ./06_uns_kafka
-poetry run pytest -m "not integrationtest" ./07_uns_graphql
+uv run pytest -m "not integrationtest" ./02_mqtt-cluster
+uv run pytest -m "not integrationtest" ./03_uns_graphdb
+uv run pytest -m "not integrationtest" ./04_uns_historian
+uv run pytest -m "not integrationtest" ./05_sparkplugb
+uv run pytest -m "not integrationtest" ./06_uns_kafka
+uv run pytest -m "not integrationtest" ./07_uns_graphql
 ```
 
 ## Known Limitations / workarounds

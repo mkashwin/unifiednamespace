@@ -26,9 +26,9 @@ runs:
         # change to current directory of module        
         cd ./${{ inputs.module }} 
         # stop the build if there are Python syntax errors or undefined names
-        poetry run ruff check --output-format=github  --select=E9,F63,F7,F82  .
+        uv tool run ruff check --output-format=github  --select=E9,F63,F7,F82  .
         # exit-zero treats all errors as warnings. report all other errors but don't fail the job
-        poetry run ruff check --output-format=github --exit-zero .
+        uv tool run ruff check --output-format=github --exit-zero .
 
     - name: Test with pytest
       shell: bash
@@ -36,9 +36,9 @@ runs:
         # change to current directory of module            
         cd ./${{ inputs.module }}
         if [[ ${RUNNER_DEBUG} == 1 ]] ; then
-          PYTEST_CMD="poetry run pytest --debug "
+          PYTEST_CMD="uv run pytest --debug "
         else
-          PYTEST_CMD="poetry run pytest"
+          PYTEST_CMD="uv run pytest"
         fi
           
         if ${{ inputs.integration_tests }} ; then

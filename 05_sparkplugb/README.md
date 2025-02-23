@@ -116,13 +116,10 @@ This sub module can be independently setup as a dev environment in the folder [`
 This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 
 ```bash
-python -m pip install --upgrade pip
-pip install poetry
-# Ensure that the poetry shell is activated
-poetry shell
-python -m pip install --upgrade pip poetry
-poetry install
-python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
+python -m pip install --upgrade pip uv
+# Ensure that the uv shell is activated
+uv venv
+uv sync
 ```
 
 > **Setting up VSCode**
@@ -130,15 +127,15 @@ python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
 > While importing the folder into VSCode remember to do the following steps the first time
 >
 > 1. Open a terminal in VSCode
-> 1. Activate the poetry shell
+> 1. Activate the virtual environment
 >
 >    ```bash
->    poetry shell
->    python -m pip install --upgrade pip poetry
->    poetry install
+>    python -m pip install --upgrade pip uv
+>    uv venv
+>    uv sync
 >    ```
 >
-> 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+> 1. Select the correct python interpreter in VSCode (should automatically detect the .venv virtual environment)
 
 ## Running the python script
 
@@ -146,10 +143,10 @@ This function is executed by the following command with the current folder as [`
 Ensure that the [configuration files](./conf/) are correctly updated to your MQTT broker and database instance
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell
-poetry install
-python ./src/uns_spb_mapper/uns_sparkplugb_listener.py
+# Ensure that the uv shell is activated
+uv venv
+uv sync
+uv run uns_spb_mapper
 ```
 
 ### Running tests
@@ -158,9 +155,9 @@ The set of test for this module is executed by
 
 ```bash
 #run all tests excluding integration tests
-poetry run pytest -m "not integrationtest" test/
+uv run pytest -m "not integrationtest" test/
 # runs all tests
-poetry run pytest test/
+uv run pytest test/
 ```
 
 ## Deploying the docker container image created for this module
