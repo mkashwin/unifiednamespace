@@ -184,34 +184,34 @@ This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 
 ```bash
 python -m pip install --upgrade pip
-pip install poetry
-# Ensure that the poetry shell is activated
-poetry shell
-python -m pip install --upgrade pip poetry
-poetry install
+pip install uv
+# Ensure that the uv shell is activated
+uv venv
+python -m pip install --upgrade pip uv
+uv sync
 ```
 
 > While importing the folder into VSCode remember to do the following steps the first time
 >
 > 1. Open a terminal in VSCode
-> 1. Activate the poetry shell.
+> 1. Activate the uv virtual environment.
 >
 >    ```bash
->    poetry shell
->    poetry install
+>    uv venv
+>    uv sync
 >    ```
 >
-> 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+> 1. Select the correct python interpreter in VSCode (should automatically detect the .venv virtual environment)
 
 ### Running tests
 
-The set of test for this module is executed after the poetry setup is done
+The set of test for this module is executed after the uv setup is done
 
 ```bash
 #run all tests excluding integration tests
-poetry run pytest  -m "not integrationtest" test/
+uv run pytest  -m "not integrationtest" test/
 # runs all tests
-poetry run pytest  test/
+uv run pytest  test/
 ```
 
 ## Reference

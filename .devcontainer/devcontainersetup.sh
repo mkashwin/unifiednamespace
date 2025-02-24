@@ -2,8 +2,8 @@
 # This script is to be executed on creation of the dev container in order to create a working development environment
 WORKSPACE=/workspaces/unifiednamespace
 # 1. setup the python environment
-pip3 install --upgrade poetry pip
-poetry install
+pip3 install --upgrade pip uv
+uv sync --upgrade
 
 # 2. create minimalistic secret files for all the modules.
 # 2.1 Neo4j

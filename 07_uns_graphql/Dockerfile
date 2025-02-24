@@ -16,10 +16,10 @@
 ###############################################################################
 
 # The command for building this image is 
-#       docker build -t uns/graphql:<version> -f ./Dockerfile ..
+#       docker build -t uns/graphql:<version> --build-arg GIT_HASH=<git hash or local> -f ./Dockerfile ..
 #       e.g. 
-#       docker build -t uns/graphql:v0.5.0 -f ./Dockerfile ..  
-#       docker build -t uns/graphql:latest -f ./Dockerfile .. 
+#       docker build -t uns/graphql:0.5.0 --build-arg GIT_HASH=local -f ./Dockerfile ..  
+#       docker build -t uns/graphql:local --build-arg GIT_HASH=local -f ./Dockerfile .. 
 # Run the build command in the folder 07_uns_graphql
 # To run the docker file remember to mount a conf folder with the configurations
 # Provide network if you are connecting to other services
@@ -34,8 +34,6 @@ ENV UNS_MODULE="07_uns_graphql"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1 \
     LIBRDKAFKA_VER="2.8.0"
 # spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql
@@ -46,13 +44,13 @@ LABEL org.opencontainers.image.licenses=MIT
 WORKDIR /app
 
 # Copy the contents of the project into the container
-COPY ./${UNS_MODULE}/pyproject.toml ./${UNS_MODULE}/poetry.lock ./${UNS_MODULE}/README.md ./LICENSE* ./
-COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/poetry.lock ./02_mqtt-cluster/README.md /02_mqtt-cluster/
+COPY ./${UNS_MODULE}/pyproject.toml ./${UNS_MODULE}/uv.lock ./${UNS_MODULE}/README.md ./LICENSE* ./
+COPY ./02_mqtt-cluster/pyproject.toml /02_mqtt-cluster/uv.lock ./02_mqtt-cluster/uv.lock ./02_mqtt-cluster/README.md /02_mqtt-cluster/
 
 COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
 COPY ./${UNS_MODULE}/src ./src/
 
-# install minimalistic missing packages
+# install minimalistic missing packages & security fixes
 RUN apk update && \ 
     apk add --no-cache  libffi-dev libc-dev gcc bash g++ make musl-dev rust cargo && \
     apk upgrade --no-cache libexpat libcrypto3 libssl3 busybox ssl_client krb5-libs && \
@@ -69,15 +67,15 @@ RUN apk update && \
     rm v${LIBRDKAFKA_VER}.zip && \
     rm -rf librdkafka-${LIBRDKAFKA_VER}
 
-# Install pip & poetry
-RUN  pip install  --no-cache-dir --upgrade pip poetry && \
+# Install pip & uv
+RUN  pip install  --no-cache-dir --upgrade pip uv && \
     # create application user
-    adduser --home /app --disabled-password uns_user && \
+    adduser --no-create-home --home /app --disabled-password uns_user && \
     chown -R uns_user /app && \
-    # Install the required dependencies for the project using poetry as that user
-    su uns_user -c "poetry lock --regenerate \
-    && poetry add /02_mqtt-cluster -n  --lock  \
-    && poetry install --only main -n"
+    # Install the required dependencies for the project using uv as that user
+    su uns_user -c "uv lock  \
+    && uv add /02_mqtt-cluster -n \
+    && uv sync --group main"
 
 USER uns_user
 
@@ -89,5 +87,5 @@ EXPOSE 8000
 # Mount the volume /conf
 VOLUME /app/conf
 # Set the Entrypoint script to run the uns_graphql module using uvicorn
-ENTRYPOINT ["poetry", "run", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app", "--host", "0.0.0.0", "--port", "8000"]
-HEALTHCHECK --interval=60s --timeout=10s CMD ["poetry", "run",  "uns_graphql_healthcheck", "--port", "8000"]
+ENTRYPOINT ["uv", "run", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=60s --timeout=10s CMD ["uv", "run",  "uns_graphql_healthcheck", "--port", "8000"]

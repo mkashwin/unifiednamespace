@@ -21,7 +21,7 @@ Configuration reader for mqtt server, kafka, historian and Neo4J DB server detai
 import logging
 import ssl
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 import neo4j
 from aiomqtt import ProtocolVersion, TLSParameters
@@ -55,15 +55,15 @@ class MQTTConfig:
     version: ProtocolVersion = ProtocolVersion(settings.get("mqtt.version", ProtocolVersion.V5))
     properties: Properties = Properties(PacketTypes.CONNECT) if version == ProtocolVersion.V5 else None
     qos: Literal[0, 1, 2] = settings.get("mqtt.qos", 1)
-    clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
+    clean_session: bool | None = settings.get("mqtt.clean_session", None)
 
     host: str = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
-    username: Optional[str] = settings.get("mqtt.username")
-    password: Optional[str] = settings.get("mqtt.password")
-    tls: Optional[dict] = settings.get("mqtt.tls", None)
+    username: str | None = settings.get("mqtt.username")
+    password: str | None = settings.get("mqtt.password")
+    tls: dict | None = settings.get("mqtt.tls", None)
 
-    tls_params: Optional[TLSParameters] = (
+    tls_params: TLSParameters | None = (
         TLSParameters(
             ca_certs=tls.get("ca_certs"),
             certfile=tls.get("certfile"),
@@ -76,7 +76,7 @@ class MQTTConfig:
         else None
     )
 
-    tls_insecure: Optional[bool] = tls.get("insecure_cert") if tls is not None else None
+    tls_insecure: bool | None = tls.get("insecure_cert") if tls is not None else None
 
     keep_alive: int = settings.get("mqtt.keep_alive", 60)
     retry_interval: int = settings.get("mqtt.retry_interval", 10)

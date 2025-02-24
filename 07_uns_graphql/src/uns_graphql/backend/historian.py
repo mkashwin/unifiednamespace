@@ -20,7 +20,7 @@ Encapsulates integration with the historian database
 
 import logging
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 import asyncpg
 from asyncpg import Pool
@@ -154,10 +154,10 @@ class HistorianDBPool:
 
     async def get_historic_events(
         self,
-        topics: Optional[list[str]],
-        publishers: Optional[list[str]],
-        from_datetime: Optional[datetime],
-        to_datetime: Optional[datetime],
+        topics: list[str] | None,
+        publishers: list[str] | None,
+        from_datetime: datetime | None,
+        to_datetime: datetime | None,
     ) -> list[HistoricalUNSEvent]:
         """
         Retrieves historical events based on specified criteria.
@@ -217,10 +217,10 @@ class HistorianDBPool:
     async def get_historic_events_for_property_keys(
         self,
         property_keys: list[str],
-        binary_operator: Optional[Literal["AND", "OR", "NOT"]],
-        topics: Optional[list[str]],
-        from_datetime: Optional[datetime],
-        to_datetime: Optional[datetime],
+        binary_operator: Literal["AND", "OR", "NOT"] | None,
+        topics: list[str] | None,
+        from_datetime: datetime | None,
+        to_datetime: datetime | None,
     ) -> list[HistoricalUNSEvent]:
         """
         Retrieves historical events based on specified criteria.

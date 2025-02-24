@@ -34,7 +34,7 @@ class JSONPayload:
 
     data: JSON
 
-    def __init__(self, data: Union[str, dict]):
+    def __init__(self, data: str | dict):
         if type(data) is str:
             json.loads(data)
             # if it is already a JSON string then assign
@@ -55,6 +55,7 @@ class BytesPayload:
 
 # This is needed because GraphQL does not support int64
 Int64 = strawberry.scalar(
+    # trunk-ignore(ruff/UP007)
     cls=Union[int, str],
     description="Int 64 field since GraphQL doesn't support int64, only int 32",
     serialize=lambda v: int(v),

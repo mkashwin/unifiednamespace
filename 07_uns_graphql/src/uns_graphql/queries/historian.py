@@ -20,7 +20,6 @@ GraphQL queries to the historian
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 import strawberry
 
@@ -42,8 +41,8 @@ class Query:
     async def get_historic_events_in_time_range(
         self,
         topics: list[MQTTTopicInput],
-        from_datetime: Optional[datetime] = strawberry.UNSET,
-        to_datetime: Optional[datetime] = strawberry.UNSET,
+        from_datetime: datetime | None = strawberry.UNSET,
+        to_datetime: datetime | None = strawberry.UNSET,
     ) -> list[HistoricalUNSEvent]:
         LOGGER.debug(
             "Query for historic events in UNS with Params :\n"
@@ -66,9 +65,9 @@ class Query:
     async def get_historic_events_by_publishers(
         self,
         publishers: list[str],
-        topics: Optional[list[MQTTTopicInput]] = strawberry.UNSET,
-        from_datetime: Optional[datetime] = strawberry.UNSET,
-        to_datetime: Optional[datetime] = strawberry.UNSET,
+        topics: list[MQTTTopicInput] | None = strawberry.UNSET,
+        from_datetime: datetime | None = strawberry.UNSET,
+        to_datetime: datetime | None = strawberry.UNSET,
     ) -> list[HistoricalUNSEvent]:
         LOGGER.debug(
             "Query for historic events by publishers in UNS with Params :\n"
@@ -94,10 +93,10 @@ class Query:
     async def get_historic_events_by_property(
         self,
         property_keys: list[str],
-        binary_operator: Optional[BinaryOperator] = strawberry.UNSET,
-        topics: Optional[list[MQTTTopicInput]] = strawberry.UNSET,
-        from_datetime: Optional[datetime] = strawberry.UNSET,
-        to_datetime: Optional[datetime] = strawberry.UNSET,
+        binary_operator: BinaryOperator | None = strawberry.UNSET,
+        topics: list[MQTTTopicInput] | None = strawberry.UNSET,
+        from_datetime: datetime | None = strawberry.UNSET,
+        to_datetime: datetime | None = strawberry.UNSET,
     ) -> list[HistoricalUNSEvent]:
         LOGGER.debug(
             "Query for historic events by properties, with params :\n"

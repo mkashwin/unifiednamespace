@@ -9,19 +9,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install poetry
-      shell: bash
-      run: pipx install poetry
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-        cache: "poetry"
+
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        cache-dependency-glob: |
+          **/pyproject.toml
+          **/uv.lock
 
     - name: Install dependencies
       shell: bash
       run: |
         # change to current directory of module        
         cd ./${{ inputs.module }} 
-        python -m pip install --upgrade pip poetry
-        poetry install
+        # python -m pip install --upgrade pip uv
+        uv sync

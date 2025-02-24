@@ -44,18 +44,18 @@ jobs:
         run: |
           echo "VERSION_TAG=$(cat version.txt)" >> $GITHUB_ENV
 
-      - name: Update version in pyproject.toml & poetry.lock
+      - name: Update version in pyproject.toml & uv.lock
         run: |
-          python -m pip install --upgrade pip poetry
+          python -m pip install --upgrade pip uv
           echo "Updating all pyproject.toml with version ${{ env.VERSION_TAG}}"
           find . -name 'pyproject.toml' -type f -exec sed -i "s/^version.*/version = \"${{ env.VERSION_TAG}}\"/g" {} +
           for folder in */; do
-            if [ -f "${folder}poetry.lock" ]; then
+            if [ -f "${folder}uv.lock" ]; then
                 echo "Found pyproject.toml in folder: ${folder}"
-                (cd "${folder}" && poetry lock && poetry install)
+                (cd "${folder}" && uv lock && uv sync)
             fi
           done
-          poetry install
+          uv sync
 
       - id: commit_new_version
         name: Commit and push modified files

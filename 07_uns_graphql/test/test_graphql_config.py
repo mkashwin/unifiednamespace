@@ -21,7 +21,6 @@ Test cases for uns_graphql_config.
 import re
 import socket
 from pathlib import Path
-from typing import Optional
 from urllib.parse import urlparse
 
 import pytest
@@ -254,7 +253,7 @@ def test_connectivity_to_graphdb():
 
     parsed = urlparse(GraphDBConfig.conn_url).netloc.split(":")
 
-    host: Optional[str] = parsed[0]
+    host: str | None = parsed[0]
     port: int = None
     if len(parsed) == 2:
         port: int = int(parsed[1])

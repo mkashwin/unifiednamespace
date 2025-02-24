@@ -193,12 +193,10 @@ Ensure that the [configuration files](./conf/) are correctly updated to your MQT
 This has been tested on **Unix(bash)**, **Windows(powershell)** and **Mac(zsh)**
 
 ```bash
-python -m pip install --upgrade pip
-pip install poetry
-# Ensure that the poetry shell is activated
-poetry shell
-python -m pip install --upgrade pip poetry
-poetry install
+python -m pip install --upgrade pip uv
+# Ensure that the uv shell is activated
+uv venv
+uv sync
 ```
 
 > **Setting up VSCode**
@@ -206,24 +204,23 @@ poetry install
 > While importing the folder into VSCode remember to do the following steps the first time
 >
 > 1. Open a terminal in VSCode
-> 1. Activate the poetry shell
+> 1. Activate the venv
 >
 >    ```bash
->    poetry shell
->    python -m pip install --upgrade pip poetry
->    poetry install
+>    python -m pip install --upgrade pip uv
+>    uv venv
 >    ```
 >
-> 1. Select the correct python interpreter in VSCode (should automatically detect the poetry virtual environment)
+> 1. Select the correct python interpreter in VSCode (should automatically detect the uv virtual environment)
 
 ### Running the python script
 
 This function is executed by the following command with the current folder as [`03_uns_graphdb`](.)
 
 ```bash
-# Ensure that the poetry shell is activated
-poetry shell
-python ./src/uns_graphdb/graphdb_handler.py
+# Ensure that the uv shell is activated
+uv venv
+uv run uns_graphdb
 ```
 
 ### Running tests
@@ -232,9 +229,9 @@ The set of test for this module is executed by
 
 ```bash
 #run all tests excluding integration tests
-poetry run pytest  -m "not integrationtest" test/
+uv run pytest  -m "not integrationtest" test/
 # runs all tests
-poetry run pytest test/
+uv run pytest test/
 ```
 
 ## Deploying the docker container image created for this module

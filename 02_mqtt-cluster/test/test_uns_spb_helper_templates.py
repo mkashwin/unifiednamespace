@@ -214,7 +214,8 @@ def setup_alias_map():
                 "timestamp": 1486144502122,
                 "datatype": SPBMetricDataTypes.File,
                 "value": bytes(
-                    [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00, 0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
+                    [0xC7, 0xD0, 0x90, 0x75, 0x24, 0x01, 0x00, 0x00,
+                        0xB8, 0xBA, 0xB8, 0x97, 0x81, 0x01, 0x00, 0x00]
                 ),
             },
         ],
@@ -226,32 +227,39 @@ def setup_alias_map():
         ("Template", None, "v_0.1.0", None, None),  # No metrics, no parameters
         (
             "Template",
-            [Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+            [Payload.Metric(
+                name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
             "v_0.1.0",
             None,
             None,
         ),  # No parameters
         (
             "Template",
-            [Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+            [Payload.Metric(
+                name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
             "v_0.1.0",
             None,
-            [("prop1", SPBParameterTypes.UInt32, 100), ("prop2", SPBParameterTypes.String, "property string")],
+            [("prop1", SPBParameterTypes.UInt32, 100),
+             ("prop2", SPBParameterTypes.String, "property string")],
         ),  # with Params
-        ("Template_Reference", None, "v_0.1.1", "Template Reference", None),  # No parameters
+        ("Template_Reference", None, "v_0.1.1",
+         "Template Reference", None),  # No parameters
         (
             "Template_Reference",
-            [Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+            [Payload.Metric(
+                name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
             "v_0.1.1",
             "Template Reference",
             None,
         ),  # No parameters
         (
             "Template_Reference",
-            [Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+            [Payload.Metric(
+                name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
             "v_0.1.1",
             "Template Reference",
-            [("prop4", SPBParameterTypes.Boolean, True), ("prop2", SPBParameterTypes.Double, 142.12343)],
+            [("prop4", SPBParameterTypes.Boolean, True),
+             ("prop2", SPBParameterTypes.Double, 142.12343)],
         ),  # No parameters
     ],
 )
@@ -282,16 +290,17 @@ def test_init_template_metric(name: str, metrics, template_metrics_dict, version
     assert template.version == version
 
     if metrics is not None:
-        for set_met, param_met in zip(template.metrics, metrics):
+        for set_met, param_met in zip(template.metrics, metrics, strict=True):
             assert set_met == param_met
     else:
         metrics = []
 
     if parameters is not None:
-        for param, template_params in zip(parameters, template.parameters):
+        for param, template_params in zip(parameters, template.parameters, strict=True):
             assert template_params.name == param[0]
             assert template_params.type == param[1]
-            assert SPBParameterTypes(param[1]).get_value_from_sparkplug(template_params) == param[2]
+            assert SPBParameterTypes(param[1]).get_value_from_sparkplug(
+                template_params) == param[2]
 
     # add the metrics to the template
     for metric in template_metrics_dict:
@@ -304,7 +313,8 @@ def test_init_template_metric(name: str, metrics, template_metrics_dict, version
         )
         assert child_metric.name == name
         assert child_metric.datatype == datatype
-        assert value == SPBMetricDataTypes(datatype).get_value_from_sparkplug(child_metric)
+        assert value == SPBMetricDataTypes(
+            datatype).get_value_from_sparkplug(child_metric)
         assert child_metric.timestamp is not None
 
     assert len(template.metrics) == len(template_metrics_dict) + len(metrics)
@@ -318,12 +328,14 @@ def test_init_template_metric(name: str, metrics, template_metrics_dict, version
                 is_definition=False,
                 version="v1.0",
                 template_ref="my_temp",
-                metrics=[Payload.Metric(name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
+                metrics=[Payload.Metric(
+                    name="met1", datatype=SPBMetricDataTypes.Boolean, boolean_value=True)],
             ),
             Payload.Template(
                 is_definition=True,
                 version="v1.0",
-                metrics=[Payload.Metric(name="ref", datatype=SPBMetricDataTypes.String, string_value="Template Definition")],
+                metrics=[Payload.Metric(
+                    name="ref", datatype=SPBMetricDataTypes.String, string_value="Template Definition")],
             ),
         ]
     ],
@@ -332,7 +344,8 @@ def test_init_template_metric(name: str, metrics, template_metrics_dict, version
     "name, version, template_ref, parameters",
     [
         ("Template", "v_0.1.0", None, None),  # no parameters
-        ("Template_Reference", "v_0.1.1", "Template Reference", None),  # No parameters
+        ("Template_Reference", "v_0.1.1",
+         "Template Reference", None),  # No parameters
     ],
 )
 def test_init_template_with_template(name: str, version, template_ref, parameters, child_templates):

@@ -1,8 +1,8 @@
 # trunk-ignore-all(checkov/CKV2_GHA_1)
 #
-# pipeline to check for new release  of librdkafka , trunk updates, and poetry dependencies update
+# pipeline to check for new release  of librdkafka , trunk updates, and uv dependencies update
 #
-name: Update Trunk, Poetry, librdkafka
+name: Update Trunk, uv, librdkafka
 on:
   workflow_dispatch:
   schedule:
@@ -21,31 +21,31 @@ jobs:
       - name: "Run Trunk upgrade"
         uses: trunk-io/trunk-action/upgrade@v1
 
-  run_poetry_upgrade:
+  run_librd_uv_sync_upgrade:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: "Run Poetry upgrade"
-        id: poetry_upgrade
+      - name: "Update packages"
+        id: uv_sync_upgrade
         run: |
-          python -m pip install --upgrade pip poetry
+          python -m pip install --upgrade pip uv
           for folder in */; do
-            if [ -f "${folder}poetry.lock" ]; then
+            if [ -f "${folder}uv.lock" ]; then
                 echo "Found pyproject.toml in folder: ${folder}"
-                (cd "${folder}" && poetry update)
+                (cd "${folder}" && uv sync --upgrade)
             fi
           done
-          poetry update
+          uv sync --upgrade
           if [[ -n $(git status --porcelain) ]]; then          
-            echo "check_in_msg='Ran poetry update'"  >> $GITHUB_OUTPUT
+            echo "check_in_msg='Ran uv sync --upgrade'"  >> $GITHUB_OUTPUT
           fi
 
       - name: "Check for latest release of librdkafka"
         id: librdkafka_upgrade
         env:
-          check_in_msg: ${{ steps.poetry_upgrade.outputs.check_in_msg }}
+          check_in_msg: ${{ steps.uv_sync_upgrade.outputs.check_in_msg }}
         run: |
           # Define the path to the Dockerfile.Current using only 06_uns_kafka but will update 07_uns_graphql also
           KAKFA_DOCKER="./06_uns_kafka/Dockerfile"
@@ -78,7 +78,7 @@ jobs:
           if [[ -n $(git status --porcelain) ]]; then
             raise_pr=true
             # create branch 
-            BRANCH_NAME="features/trunk_poetry_librdkafka_upgrade"
+            BRANCH_NAME="features/trunk_uv_librdkafka_upgrade"
             git checkout -b $BRANCH_NAME
             git push origin $BRANCH_NAME
 
@@ -101,7 +101,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{env.check_in_msg}}"
-          label: "poetry,librdkafka,upgrade"
+          label: "uv_sync,librdkafka,upgrade"
           source_branch: "${env.BRANCH_NAME}"
           target_branch: "main"
           get_diff: true
