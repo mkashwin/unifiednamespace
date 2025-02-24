@@ -828,7 +828,7 @@ requires-dist = [
     { name = "asyncpg", specifier = ">=0.30,<0.31" },
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
 ]
 
 [package.metadata.requires-dev]

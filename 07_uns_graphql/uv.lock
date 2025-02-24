@@ -1331,7 +1331,7 @@ requires-dist = [
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
     { name = "neo4j", specifier = "~=5.27" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
     { name = "strawberry-graphql", extras = ["fastapi", "cli"], specifier = ">=0.260,<0.261" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.34,<0.35" },
 ]

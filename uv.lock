@@ -1342,7 +1342,7 @@ requires-dist = [
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
     { name = "neo4j", specifier = "~=5.27" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
 ]
 
 [package.metadata.requires-dev]
@@ -1381,7 +1381,7 @@ requires-dist = [
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
     { name = "neo4j", specifier = "~=5.27" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
     { name = "strawberry-graphql", extras = ["fastapi", "cli"], specifier = ">=0.260,<0.261" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.34,<0.35" },
 ]
@@ -1415,7 +1415,7 @@ requires-dist = [
     { name = "asyncpg", specifier = ">=0.30,<0.31" },
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
 ]
 
 [package.metadata.requires-dev]
@@ -1445,7 +1445,7 @@ requires-dist = [
     { name = "confluent-kafka", specifier = ">=2.7.0,<3" },
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
 ]
 
 [package.metadata.requires-dev]
@@ -1498,7 +1498,7 @@ dependencies = [
 requires-dist = [
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },
-    { name = "psutil", specifier = ">=6.1.1,<7" },
+    { name = "psutil", specifier = ">=6.1.1,<8" },
 ]
 
 [package.metadata.requires-dev]
