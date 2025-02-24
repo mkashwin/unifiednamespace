@@ -128,8 +128,8 @@ def convert_dict_to_metric(metric_dict: dict) -> Payload.Metric:
         match key:
             # Handle the various attributes of Metric
             case "value":
-                datatype: SPBMetricDataTypes = SPBMetricDataTypes(
-                    metric_dict["datatype"])  # type: ignore
+                datatype: SPBMetricDataTypes = SPBMetricDataTypes(  # type: ignore
+                    metric_dict["datatype"])
                 match datatype:
                     # Set value based on datatype and special handling to get template and dataset
                     case SPBMetricDataTypes.DataSet:
@@ -535,8 +535,8 @@ class SpBMessageGenerator:
         payload: Payload,
         name: str,
         columns: list[str],  # column headers
-        # type: ignore , type of the value in the inner list of rows
-        types: list[SPBDataSetDataTypes],
+        # type of the value in the inner list of rows
+        types: list[SPBDataSetDataTypes],  # type: ignore
         # list of row values . row value can be of type int, float, bool or str
         rows: list[list[int | float | bool | str]] | None,
         alias: int | None = None,
@@ -602,8 +602,8 @@ class SpBMessageGenerator:
         metrics: list[Payload.Metric] | None,
         version: str | None = None,
         template_ref: str | None = None,
-        parameters: list[tuple[str, SPBParameterTypes, int |
-                               float | bool | str]] | None = None,  # type: ignore
+        parameters: list[tuple[str, SPBParameterTypes, int |  # type: ignore
+                               float | bool | str]] | None = None,
         alias: int | None = None,
     ) -> Payload.Template:
         """
