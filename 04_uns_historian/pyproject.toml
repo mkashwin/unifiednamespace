@@ -31,7 +31,7 @@ dependencies = [
     "logger~=1.4",
     "asyncpg>=0.30,<0.31",
     "dynaconf~=3.2",
-    "psutil>=6.1.1,<7",
+    "psutil>=6.1.1,<8",
 ]
 
 [project.urls]
