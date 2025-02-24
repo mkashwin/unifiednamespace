@@ -40,12 +40,14 @@ runs:
 
         # Extract the command/script name to be run
         command="$(echo "${entry_point}" | awk '{print $4}' | tr -d '",]')"
-        echo "command is: ${command}"
+
 
         # check in pyproject if it is a script.
         script_name=$(grep "^${command} =" ./pyproject.toml)
         if [[ -z ${script_name} ]]; then
+          echo "Inner if block for script_name: ${script_name}"
           script_name=$(grep -E "^\s*\"${command}.*=" ./pyproject.toml)
+          echo "Enf of Inner if block for script_name: ${script_name}"
         fi
         echo "Script name is: ${script_name}"
 
