@@ -33,14 +33,14 @@ lint:
     - osv-scanner@1.9.2
     - markdownlint@0.44.0
     - hadolint@2.12.1-beta
-    - cspell@8.17.4
+    - cspell@8.17.5
     - gitleaks@8.24.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.372
+    - checkov@3.2.373
     - trivy@0.59.1
     - git-diff-check
-    - prettier@3.5.1
+    - prettier@3.5.2
     - shellcheck@0.10.0
     - yamllint@1.35.1
     - ruff@0.9.7
