@@ -801,7 +801,7 @@ wheels = [
 
 [[package]]
 name = "uns-historian"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "." }
 dependencies = [
     { name = "asyncpg" },
@@ -844,7 +844,7 @@ test = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "../02_mqtt-cluster" }
 dependencies = [
     { name = "logger" },

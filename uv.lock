@@ -1283,7 +1283,7 @@ wheels = [
 
 [[package]]
 name = "unified-name-space"
-version = "0.9.2"
+version = "0.9.3"
 source = { virtual = "." }
 dependencies = [
     { name = "uns-graphdb" },
@@ -1328,7 +1328,7 @@ test = [
 
 [[package]]
 name = "uns-graphdb"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "03_uns_graphdb" }
 dependencies = [
     { name = "dynaconf" },
@@ -1357,7 +1357,7 @@ test = [
 
 [[package]]
 name = "uns-graphql"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "07_uns_graphql" }
 dependencies = [
     { name = "aiohttp" },
@@ -1401,7 +1401,7 @@ test = [
 
 [[package]]
 name = "uns-historian"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "04_uns_historian" }
 dependencies = [
     { name = "asyncpg" },
@@ -1431,7 +1431,7 @@ test = [
 
 [[package]]
 name = "uns-kafka-mapper"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "06_uns_kafka" }
 dependencies = [
     { name = "confluent-kafka" },
@@ -1460,7 +1460,7 @@ test = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "02_mqtt-cluster" }
 dependencies = [
     { name = "logger" },
@@ -1486,7 +1486,7 @@ test = [
 
 [[package]]
 name = "uns-spb-mapper"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "05_sparkplugb" }
 dependencies = [
     { name = "dynaconf" },
