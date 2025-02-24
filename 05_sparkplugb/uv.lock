@@ -765,7 +765,7 @@ wheels = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "../02_mqtt-cluster" }
 dependencies = [
     { name = "logger" },
@@ -791,7 +791,7 @@ test = [
 
 [[package]]
 name = "uns-spb-mapper"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "." }
 dependencies = [
     { name = "dynaconf" },

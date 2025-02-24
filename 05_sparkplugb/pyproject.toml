@@ -1,6 +1,6 @@
 [project]
 name = "uns_spb_mapper"
-version = "0.9.2"
+version = "0.9.3"
 description = "SparkplugB decoder to parse and unpack  SparkplugB messages to the UNS structure"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = "~=3.12"
