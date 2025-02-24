@@ -43,11 +43,9 @@ runs:
 
 
         # check in pyproject if it is a script.
-        script_name=$(grep "^${command} =" ./pyproject.toml)
+        script_name=$(grep "^${command} =" ./pyproject.toml || true)
         if [[ -z ${script_name} ]]; then
-          echo "Inner if block for script_name: ${script_name}"
           script_name=$(grep -E "^\s*\"${command}.*=" ./pyproject.toml)
-          echo "Enf of Inner if block for script_name: ${script_name}"
         fi
         echo "Script name is: ${script_name}"
 
