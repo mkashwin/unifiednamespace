@@ -29,7 +29,7 @@ dependencies = [
     "logger~=1.4",
     "dynaconf~=3.2",
     "confluent-kafka>=2.7.0,<3",
-    "psutil>=6.1.1,<7",
+    "psutil>=6.1.1,<8",
 ]
 
 [project.urls]
