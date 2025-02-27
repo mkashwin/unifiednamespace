@@ -41,14 +41,14 @@ wheels = [
 
 [[package]]
 name = "authlib"
-version = "1.4.1"
+version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/73/0aa3d68b1c3caeac01ae0bad7a3d2a23029c4a3b42c7ccb89d752ed67eb2/authlib-1.4.1.tar.gz", hash = "sha256:30ead9ea4993cdbab821dc6e01e818362f92da290c04c7f6a1940f86507a790d", size = 147376 }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/66/e8e55b338cb6c3bbab448821fefa52687b67aec0660277676b0b4e645497/authlib-1.5.0.tar.gz", hash = "sha256:8fd8bd8f806485a532ac39a17b579982cf54688f956174f995cc938a91725423", size = 152554 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/6a/e83a6c04f8c6014c33d97c135782a55370cf60513f8d9f99f1279c7f9c13/Authlib-1.4.1-py2.py3-none-any.whl", hash = "sha256:edc29c3f6a3e72cd9e9f45fff67fc663a2c364022eb0371c003f22d5405915c1", size = 225610 },
+    { url = "https://files.pythonhosted.org/packages/1c/93/8a53c74e6929cca295d9536480d7b46909760b904d9dfae6173a7c66e995/Authlib-1.5.0-py2.py3-none-any.whl", hash = "sha256:b3cc5ccfc19cf87678046b6e7cb19d402d8a631a33c40e36385232203227953a", size = 231365 },
 ]
 
 [[package]]
@@ -730,11 +730,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "75.8.0"
+version = "75.8.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/92/ec/089608b791d210aec4e7f97488e67ab0d33add3efccb83a056cbafe3a2a6/setuptools-75.8.0.tar.gz", hash = "sha256:c5afc8f407c626b8313a86e10311dd3f661c6cd9c09d4bf8c15c0e11f9f2b0e6", size = 1343222 }
+sdist = { url = "https://files.pythonhosted.org/packages/d1/53/43d99d7687e8cdef5ab5f9ec5eaf2c0423c2b35133a2b7e7bc276fc32b21/setuptools-75.8.2.tar.gz", hash = "sha256:4880473a969e5f23f2a2be3646b2dfd84af9028716d398e46192f84bc36900d2", size = 1344083 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/8a/b9dc7678803429e4a3bc9ba462fa3dd9066824d3c607490235c6a796be5a/setuptools-75.8.0-py3-none-any.whl", hash = "sha256:e3982f444617239225d675215d51f6ba05f845d4eec313da4418fdbb56fb27e3", size = 1228782 },
+    { url = "https://files.pythonhosted.org/packages/a9/38/7d7362e031bd6dc121e5081d8cb6aa6f6fedf2b67bf889962134c6da4705/setuptools-75.8.2-py3-none-any.whl", hash = "sha256:558e47c15f1811c1fa7adbd0096669bf76c1d3f433f58324df69f3f5ecac4e8f", size = 1229385 },
 ]
 
 [[package]]

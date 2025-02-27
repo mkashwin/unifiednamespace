@@ -3,7 +3,7 @@
 WORKSPACE=/workspaces/unifiednamespace
 # 1. setup the python environment
 pip3 install --upgrade pip uv
-uv sync --upgrade
+uv sync
 
 # 2. create minimalistic secret files for all the modules.
 # 2.1 Neo4j
@@ -171,3 +171,4 @@ eval "${merge_command}" >"${OUTPUT_FILE}"
 #install trunk
 # trunk-ignore(shellcheck/SC2312)
 curl https://get.trunk.io -fsSL | bash -s -- -y
+trunk install
