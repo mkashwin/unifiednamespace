@@ -8,11 +8,11 @@ resolution-markers = [
 
 [[package]]
 name = "aiohappyeyeballs"
-version = "2.4.6"
+version = "2.4.8"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/08/07/508f9ebba367fc3370162e53a3cfd12f5652ad79f0e0bfdf9f9847c6f159/aiohappyeyeballs-2.4.6.tar.gz", hash = "sha256:9b05052f9042985d32ecbe4b59a77ae19c006a78f1344d7fdad69d28ded3d0b0", size = 21726 }
+sdist = { url = "https://files.pythonhosted.org/packages/de/7c/79a15272e88d2563c9d63599fa59f05778975f35b255bf8f90c8b12b4ada/aiohappyeyeballs-2.4.8.tar.gz", hash = "sha256:19728772cb12263077982d2f55453babd8bec6a052a926cd5c0c42796da8bf62", size = 22337 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/4c/03fb05f56551828ec67ceb3665e5dc51638042d204983a03b0a1541475b6/aiohappyeyeballs-2.4.6-py3-none-any.whl", hash = "sha256:147ec992cf873d74f5062644332c539fcd42956dc69453fe5204195e560517e1", size = 14543 },
+    { url = "https://files.pythonhosted.org/packages/52/0e/b187e2bb3eeb2644515109657c4474d65a84e7123de249bf1e8467d04a65/aiohappyeyeballs-2.4.8-py3-none-any.whl", hash = "sha256:6cac4f5dd6e34a9644e69cf9021ef679e4394f54e58a183056d12009e42ea9e3", size = 15005 },
 ]
 
 [[package]]
@@ -868,7 +868,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -876,9 +876,9 @@ dependencies = [
     { name = "packaging" },
     { name = "pluggy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/35/30e0d83068951d90a01852cb1cef56e5d8a09d20c7f511634cc2f7e0372a/pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761", size = 1445919 }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/3c/c9d525a414d506893f0cd8a8d0de7706446213181570cdbd766691164e40/pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845", size = 1450891 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/11/92/76a1c94d3afee238333bc0a42b82935dd8f9cf8ce9e336ff87ee14d9e1cf/pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6", size = 343083 },
+    { url = "https://files.pythonhosted.org/packages/30/3d/64ad57c803f1fa1e963a7946b6e0fea4a70df53c1a7fed304586539c2bac/pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820", size = 343634 },
 ]
 
 [[package]]
@@ -1205,16 +1205,16 @@ wheels = [
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.260.4"
+version = "0.261.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "graphql-core" },
     { name = "python-dateutil" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/47/8fc047781ae257aea3982305d186972b5d0495db054e6bd648b47f19db56/strawberry_graphql-0.260.4.tar.gz", hash = "sha256:098ebe2283cace9347fa5caefeb269fa0bba088ebe2c38204b91733f611b5121", size = 202499 }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/b0/c3e4214eca509b509d9eaa7180706c913b9512ea78130036d2edb81f0b37/strawberry_graphql-0.261.1.tar.gz", hash = "sha256:1cc8a4aa868716d8a5a53ada2d67827aa6023adc569ac60d9dd3314a5b92c829", size = 202542 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a5/ce/df3466d7f21654b227d6bd70a57c711facea5538ac2ceb6deb993ba170f7/strawberry_graphql-0.260.4-py3-none-any.whl", hash = "sha256:d5d8da1ad622d028b6b76b57607bd445d4d792796dd503fcbf512b1508908773", size = 296069 },
+    { url = "https://files.pythonhosted.org/packages/3b/90/e438f0bade8d39955077f6a9a9205485b8284fcc40601639dee810c161fb/strawberry_graphql-0.261.1-py3-none-any.whl", hash = "sha256:b5e1d543b2d9df503e95b90646f7efe9085d62b13830f1cbb6170d085b25cc11", size = 296126 },
 ]
 
 [package.optional-dependencies]
@@ -1366,7 +1366,7 @@ requires-dist = [
     { name = "logger", specifier = "~=1.4" },
     { name = "neo4j", specifier = "~=5.27" },
     { name = "psutil", specifier = ">=6.1.1,<8" },
-    { name = "strawberry-graphql", extras = ["fastapi", "cli"], specifier = ">=0.260,<0.261" },
+    { name = "strawberry-graphql", extras = ["fastapi", "cli"], specifier = ">=0.260,<0.262" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.34,<0.35" },
 ]
 
