@@ -21,7 +21,6 @@ Encapsulate logic of persisting messages to the historian database
 import json
 import logging
 from datetime import UTC, datetime
-from typing import Optional
 
 import asyncpg
 from asyncpg import Pool, Record
@@ -146,7 +145,7 @@ class HistorianHandler:
             if self._conn and not self._conn.is_closed():
                 await self._pool.release(self._conn)
 
-    async def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: Optional[float], message: dict):
+    async def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: float | None, message: dict):
         """
         Persists all mqtt message in the historian
         ----------

@@ -26,7 +26,7 @@ import re
 import ssl
 from enum import IntEnum
 from os import path
-from typing import Final, Literal, Optional
+from typing import Final, Literal
 
 import paho.mqtt.client as mqtt_client
 import paho.mqtt.enums as paho_mqtt
@@ -60,10 +60,10 @@ class UnsMQTTClient(mqtt_client.Client):
     def __init__(
         self,
         client_id: str,
-        clean_session: Optional[bool] = None,
-        userdata: Optional[dict] = None,
-        protocol: Optional[Literal[MQTTVersion.MQTTv5, MQTTVersion.MQTTv311, MQTTVersion.MQTTv31]] = MQTTVersion.MQTTv5,
-        transport: Optional[Literal["tcp", "websockets"]] = "tcp",
+        clean_session: bool | None = None,
+        userdata: dict | None = None,
+        protocol: Literal[MQTTVersion.MQTTv5, MQTTVersion.MQTTv311, MQTTVersion.MQTTv31] | None = MQTTVersion.MQTTv5,
+        transport: Literal["tcp", "websockets"] | None = "tcp",
         reconnect_on_failure: bool = True,
     ):
         """
@@ -171,13 +171,13 @@ class UnsMQTTClient(mqtt_client.Client):
     def run(
         self,
         host: str,
-        port: Optional[int] = 1883,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        tls: Optional[dict] = None,
-        keepalive: Optional[int] = 60,
-        topics: Optional[list[str]] = None,
-        qos: Optional[Literal[0, 1, 2]] = 2,
+        port: int | None = 1883,
+        username: str | None = None,
+        password: str | None = None,
+        tls: dict | None = None,
+        keepalive: int | None = 60,
+        topics: list[str] | None = None,
+        qos: Literal[0, 1, 2] | None = 2,
     ):
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener

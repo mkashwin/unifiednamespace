@@ -94,7 +94,7 @@ def test_main_positive(args: list[str], port: int):
 
         # mock socket reachability
         def mock_connect_ex(addr):
-            host, port = addr  # noqa: F841
+            host, port = addr
             if port in (mqtt_conn_port, neo4j_conn_port, postgres_conn_port, *tuple(
                 kafka_port for kafka_host, kafka_port in kafka_host_port_list)):
                 return 0  # Simulate successful connection for matching ports
@@ -216,7 +216,7 @@ def test_main_multiple_scenarios(
         # mock socket reachability
 
         def mock_connect_ex(addr):
-            host, port = addr  # noqa: F841
+            host, port = addr
             if port in reachable_ports:
                 return 0  # Simulate successful connection for matching ports
             return 1  # Simulate failure for other ports
