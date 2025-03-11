@@ -21,7 +21,7 @@ after correctly decoding the protobuf payloads
 
 import json
 import logging
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
@@ -94,7 +94,7 @@ class Spb2UNSPublisher:
         group_id: str,
         message_type: str,
         edge_node_id: str,
-        device_id: Optional[str] = None,
+        device_id: str | None = None,
     ) -> dict:
         """
         Parses the SPB payload and depending on message type
@@ -160,7 +160,7 @@ class Spb2UNSPublisher:
         group_id: str,
         message_type: str,
         edge_node_id: str,
-        device_id: Optional[str] = None,
+        device_id: str | None = None,
     ) -> dict:
         """
         Parse the SPBPayload for message types
@@ -205,7 +205,7 @@ class Spb2UNSPublisher:
         Extract metric name from metric payload
         Encapsulate metric name alias handling
         """
-        metric_name: Optional[str] = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
+        metric_name: str | None = getattr(metric, Spb2UNSPublisher.SPB_NAME, None)
         try:
             metric_alias: int = int(getattr(metric, Spb2UNSPublisher.SPB_ALIAS))
         except (AttributeError, TypeError, ValueError):
@@ -259,7 +259,7 @@ class Spb2UNSPublisher:
         metric_value: Any,
         metric_timestamp: float,
         is_historical: bool = False,
-        spb_context: Optional[dict[str, str]] = None,
+        spb_context: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """
         Returns a dictionary where the key is the target topic name and value is the

@@ -1,9 +1,10 @@
 # Security Policy
+
 We take the security of our this platform seriously, even though this is provided as FOSS (Free Open Source Software) with no liabilities.
 We count on the communities collaboration and support for remediating any security bugs.
 
-
 ## Supported Versions
+
 Security bugs will be fixed only in the latest version of the release or on the main branch
 
 | Version | Supported          |

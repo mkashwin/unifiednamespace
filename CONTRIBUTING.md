@@ -40,4 +40,4 @@ A PR can only be merged into master by a maintainer if: CI is passing, approved 
 
 ## Shipping a release (maintainers only)
 
-Use the appropriate github action to create a release 
+Use the appropriate github action to create a release

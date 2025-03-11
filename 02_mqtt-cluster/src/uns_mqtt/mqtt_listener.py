@@ -26,7 +26,7 @@ import re
 import ssl
 from enum import IntEnum
 from os import path
-from typing import Final, Literal, Optional
+from typing import Final, Literal
 
 import paho.mqtt.client as mqtt_client
 import paho.mqtt.enums as paho_mqtt
@@ -60,10 +60,11 @@ class UnsMQTTClient(mqtt_client.Client):
     def __init__(
         self,
         client_id: str,
-        clean_session: Optional[bool] = None,
-        userdata: Optional[dict] = None,
-        protocol: Optional[Literal[MQTTVersion.MQTTv5, MQTTVersion.MQTTv311, MQTTVersion.MQTTv31]] = MQTTVersion.MQTTv5,
-        transport: Optional[Literal["tcp", "websockets"]] = "tcp",
+        clean_session: bool | None = None,
+        userdata: dict | None = None,
+        protocol: Literal[MQTTVersion.MQTTv5, MQTTVersion.MQTTv311,
+                          MQTTVersion.MQTTv31] | None = MQTTVersion.MQTTv5,
+        transport: Literal["tcp", "websockets"] | None = "tcp",
         reconnect_on_failure: bool = True,
     ):
         """
@@ -115,7 +116,8 @@ class UnsMQTTClient(mqtt_client.Client):
             clean_session = None
 
         if transport not in ["tcp", "websockets"]:
-            raise ValueError("Invalid transport. Must be 'tcp' or 'websockets'")
+            raise ValueError(
+                "Invalid transport. Must be 'tcp' or 'websockets'")
 
         super().__init__(
             callback_api_version=paho_mqtt.CallbackAPIVersion.VERSION2,
@@ -142,13 +144,17 @@ class UnsMQTTClient(mqtt_client.Client):
                 str(return_code),
             )
             if return_code == 0:
-                LOGGER.debug("Connection established. Returned code=%s", str(return_code))
+                LOGGER.debug(
+                    "Connection established. Returned code=%s", str(return_code))
                 for topic in self.topics:
-                    self.subscribe(topic, self.qos, options=None, properties=properties)
+                    self.subscribe(topic, self.qos, options=None,
+                                   properties=properties)
 
-                LOGGER.info("Successfully connected %s to MQTT Broker", str(self))
+                LOGGER.info(
+                    "Successfully connected %s to MQTT Broker", str(self))
             else:
-                LOGGER.error("Bad connection. Returned code=%s", str(return_code))
+                LOGGER.error("Bad connection. Returned code=%s",
+                             str(return_code))
                 client.bad_connection_flag = True
 
         def on_uns_subscribe(client: mqtt_client, userdata, mid, reason_codes, properties=None):
@@ -171,13 +177,13 @@ class UnsMQTTClient(mqtt_client.Client):
     def run(
         self,
         host: str,
-        port: Optional[int] = 1883,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        tls: Optional[dict] = None,
-        keepalive: Optional[int] = 60,
-        topics: Optional[list[str]] = None,
-        qos: Optional[Literal[0, 1, 2]] = 2,
+        port: int | None = 1883,
+        username: str | None = None,
+        password: str | None = None,
+        tls: dict | None = None,
+        keepalive: int | None = 60,
+        topics: list[str] | None = None,
+        qos: Literal[0, 1, 2] | None = 2,
     ):
         """
         Main method to invoke after creating and instance of UNS_MQTT_Listener
@@ -225,9 +231,11 @@ class UnsMQTTClient(mqtt_client.Client):
             # Set username & password only if it was specified
             if username is not None:
                 super().username_pw_set(username, password)
-            self.connect(host=host, port=port, keepalive=keepalive, properties=properties)
+            self.connect(host=host, port=port,
+                         keepalive=keepalive, properties=properties)
         except Exception as ex:
-            LOGGER.error("Unable to connect to MQTT broker: %s", str(ex), stack_info=True, exc_info=True)
+            LOGGER.error("Unable to connect to MQTT broker: %s",
+                         str(ex), stack_info=True, exc_info=True)
             raise SystemError(ex) from ex
 
     def setup_tls(self, tls):
@@ -302,7 +310,8 @@ class UnsMQTTClient(mqtt_client.Client):
             # Assuming all messages to UNS are json hence convertible to dict
             decoded_payload = json.loads(payload.decode("utf-8"))
 
-        filtered_message = UnsMQTTClient.filter_ignored_attributes(topic, decoded_payload, mqtt_ignored_attributes)
+        filtered_message = UnsMQTTClient.filter_ignored_attributes(
+            topic, decoded_payload, mqtt_ignored_attributes)
         return filtered_message
 
     @staticmethod
@@ -319,18 +328,21 @@ class UnsMQTTClient(mqtt_client.Client):
                 ignored_topic = topic_key
                 if UnsMQTTClient.is_topic_matched(ignored_topic, topic):
                     # This could be either a single string or a list of strings
-                    ignored_attr_list = mqtt_ignored_attributes.get(ignored_topic, [])
+                    ignored_attr_list = mqtt_ignored_attributes.get(
+                        ignored_topic, [])
 
                     ignored_attr = None
                     # if the attribute is a single key. But this could be a nested key
                     # e.g. parent_key.child_key
                     # so split that into a list
                     if isinstance(ignored_attr_list, str):
-                        UnsMQTTClient.del_key_from_dict(resulting_message, ignored_attr_list.split("."))
+                        UnsMQTTClient.del_key_from_dict(
+                            resulting_message, ignored_attr_list.split("."))
                     # if the attribute is a list of keys
-                    elif isinstance(ignored_attr_list, (list, tuple)):
+                    elif isinstance(ignored_attr_list, list | tuple):
                         for ignored_attr in ignored_attr_list:
-                            UnsMQTTClient.del_key_from_dict(resulting_message, ignored_attr.split("."))
+                            UnsMQTTClient.del_key_from_dict(
+                                resulting_message, ignored_attr.split("."))
         return resulting_message
 
     @staticmethod
@@ -341,7 +353,8 @@ class UnsMQTTClient(mqtt_client.Client):
              "a/b/c" matches wit "a/#" but not with "a/+"
         """
         if topic_with_wildcard is not None:
-            regex_exp = UnsMQTTClient.get_regex_for_topic_with_wildcard(topic_with_wildcard)
+            regex_exp = UnsMQTTClient.get_regex_for_topic_with_wildcard(
+                topic_with_wildcard)
             return bool(re.fullmatch(regex_exp, topic))
         return False
 
@@ -387,18 +400,21 @@ class UnsMQTTClient(mqtt_client.Client):
             if msg_cursor.get(key) is None:
                 # If a key is not found break the loop as we cant proceed further
                 # to search for child nodes
-                LOGGER.warning("Unable to find attribute %s in %s. Skipping !!!", key, str(message))
+                LOGGER.warning(
+                    "Unable to find attribute %s in %s. Skipping !!!", key, str(message))
                 break
 
                 # descent into the nested key
             if count == len(ignored_attr) - 1:
                 # we are at leaf node hence can delete the key & value
-                LOGGER.info("%s deleted and will not be persisted", str((key, msg_cursor[key])))
+                LOGGER.info("%s deleted and will not be persisted",
+                            str((key, msg_cursor[key])))
                 del msg_cursor[key]
             else:
                 msg_cursor = msg_cursor[key]
             if not isinstance(msg_cursor, dict):
-                LOGGER.warning("key: %s should return a dict but found:%s. Cant proceed hence skipping !!!", key, str(message))
+                LOGGER.warning(
+                    "key: %s should return a dict but found:%s. Cant proceed hence skipping !!!", key, str(message))
                 break
             count += 1
         return message

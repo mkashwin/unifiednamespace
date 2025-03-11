@@ -11,7 +11,8 @@ from uns_graphql.graphql_config import GraphDBConfig, HistorianConfig, KAFKAConf
 def test_check_process():
     with patch("psutil.process_iter") as mock_process_iter:
         mock_uvicorn_process = MagicMock(spec=psutil.Process, autospec=True)
-        mock_uvicorn_process.info = {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]}
+        mock_uvicorn_process.info = {"cmdline": [
+            "python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]}
         mock_process_iter.return_value = [
             MagicMock(),
             mock_uvicorn_process,
@@ -74,7 +75,8 @@ def test_main_positive(args: list[str], port: int):
     ) as mock_socket, patch("psutil.net_connections") as mock_net_connections:
         # mock the uvicorn process
         mock_uvicorn_process = MagicMock(spec=psutil.Process, autospec=True)
-        mock_uvicorn_process.info = {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]}
+        mock_uvicorn_process.info = {"cmdline": [
+            "python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]}
         mock_process_iter.return_value = [
             mock_uvicorn_process,
         ]
@@ -94,9 +96,9 @@ def test_main_positive(args: list[str], port: int):
 
         # mock socket reachability
         def mock_connect_ex(addr):
-            host, port = addr  # noqa: F841
+            _host, port = addr  # noqa: RUF100
             if port in (mqtt_conn_port, neo4j_conn_port, postgres_conn_port, *tuple(
-                kafka_port for kafka_host, kafka_port in kafka_host_port_list)):
+                    kafka_port for kafka_host, kafka_port in kafka_host_port_list)):
                 return 0  # Simulate successful connection for matching ports
             return 1  # Simulate failure for other ports
 
@@ -119,59 +121,71 @@ def test_main_positive(args: list[str], port: int):
     "process_info, uvicorn_running, reachable_ports, sys_err_ext_count",
     [
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
             (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
              *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             0,
         ),  # health green everything is working
         (
-            {"cmdline": ["python", "something", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "something",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
             (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
              *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # No service called uvicorn is running
         (
-            {"cmdline": ["python", "something", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "something",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             False,
             (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
              *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             2,
         ),  # No service called uvicorn is running, No service running on the port
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             False,
             (mqtt_conn_port, neo4j_conn_port, postgres_conn_port,
              *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # Uvicorn service isn't running on the port
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (neo4j_conn_port, postgres_conn_port, *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
+            (neo4j_conn_port, postgres_conn_port, *
+             tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # No connectivity to MQTT server
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
             (neo4j_conn_port, postgres_conn_port),
             2,
         ),  # No connectivity to MQTT server & Kafka server
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (mqtt_conn_port, postgres_conn_port, *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
+            (mqtt_conn_port, postgres_conn_port, *
+             tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
             1,
         ),  # No connectivity to Neo4j server
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
-            (mqtt_conn_port, *tuple(kafka_port for kafka_host, kafka_port in kafka_host_port_list)),
+            (mqtt_conn_port, *tuple(kafka_port for kafka_host,
+             kafka_port in kafka_host_port_list)),
             2,
         ),  # No connectivity to Neo4j servers and  timescaledb
         (
-            {"cmdline": ["python", "uvicorn", "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
+            {"cmdline": ["python", "uvicorn",
+                         "uns_graphql.uns_graphql_app:UNSGraphql.app"]},
             True,
             (),
             4,
@@ -216,7 +230,7 @@ def test_main_multiple_scenarios(
         # mock socket reachability
 
         def mock_connect_ex(addr):
-            host, port = addr  # noqa: F841
+            _host, port = addr  # noqa: RUF100
             if port in reachable_ports:
                 return 0  # Simulate successful connection for matching ports
             return 1  # Simulate failure for other ports

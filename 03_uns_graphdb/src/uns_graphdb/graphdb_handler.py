@@ -22,7 +22,6 @@ import logging
 import re
 import sys
 import time
-from typing import Optional
 
 import neo4j
 from neo4j import exceptions
@@ -53,7 +52,7 @@ class GraphDBHandler:
         uri: str,
         user: str,
         password: str,
-        database: Optional[str] = neo4j.DEFAULT_DATABASE,
+        database: str | None = neo4j.DEFAULT_DATABASE,
         max_retry: int = 5,
         sleep_btw_attempts: float = 10,
     ):
@@ -77,9 +76,9 @@ class GraphDBHandler:
                 Must be a positive float. Default value is 10 seconds.
                 Seconds to sleep between retries
         """
-        self.uri: Optional[str] = uri
+        self.uri: str | None = uri
         self.auth: tuple = (user, password)
-        self.database: Optional[str] = database
+        self.database: str | None = database
         if self.database is None or self.database == "":
             self.database = neo4j.DEFAULT_DATABASE
         self.max_retry: int = max_retry
@@ -160,7 +159,7 @@ class GraphDBHandler:
         message: dict,
         timestamp: float = time.time(),
         node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"),
-        attr_node_type: Optional[str] = "NESTED_ATTRIBUTE",
+        attr_node_type: str | None = "NESTED_ATTRIBUTE",
         retry: int = 0,
     ):
         """
@@ -272,7 +271,7 @@ class GraphDBHandler:
         node_type: str,
         attr_node_type: str,
         timestamp: float,
-        nodetype_props: Optional[dict] = None,
+        nodetype_props: dict | None = None,
     ):
         """
         This function saves attribute nodes in the graph database.
@@ -368,9 +367,9 @@ class GraphDBHandler:
         session: neo4j.Session,
         nodename: str,
         nodetype: str,
-        node_props: Optional[dict] = None,
-        nodetype_props: Optional[dict] = None,
-        parent_id: Optional[str] = None,
+        node_props: dict | None = None,
+        nodetype_props: dict | None = None,
+        parent_id: str | None = None,
         timestamp: float = time.time(),
     ):
         """

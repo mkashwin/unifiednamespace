@@ -20,7 +20,7 @@ Configuration reader for mqtt server where UNS and SparkplugB are published
 
 import logging
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import MQTTVersion
@@ -50,12 +50,12 @@ class MQTTConfig:
     )
     qos: Literal[0, 1, 2] = settings.get("mqtt.qos", 2)
     reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure", True)
-    clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
+    clean_session: bool | None = settings.get("mqtt.clean_session", None)
 
     host: str = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
-    username: Optional[str] = settings.get("mqtt.username")
-    password: Optional[str] = settings.get("mqtt.password")
+    username: str | None = settings.get("mqtt.username")
+    password: str | None = settings.get("mqtt.password")
     tls: dict = settings.get("mqtt.tls", None)
     topics: list[str] = settings.get("mqtt.topics", ["spBv1.0/#"])
     if isinstance(topics, str):

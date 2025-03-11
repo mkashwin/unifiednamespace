@@ -20,7 +20,7 @@ Configuration reader for mqtt server where UNS are read from and the Kafka broke
 
 import logging
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from dynaconf import Dynaconf
 from uns_mqtt.mqtt_listener import MQTTVersion
@@ -51,18 +51,18 @@ class MQTTConfig:
     )
     qos: Literal[0, 1, 2] = settings.get("mqtt.qos", 2)
     reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure", True)
-    clean_session: Optional[bool] = settings.get("mqtt.clean_session", None)
+    clean_session: bool | None = settings.get("mqtt.clean_session", None)
 
     host: str = settings.get("mqtt.host")
     port: int = settings.get("mqtt.port", 1883)
     username: str = settings.get("mqtt.username")
     password: str = settings.get("mqtt.password")
-    tls: Optional[dict] = settings.get("mqtt.tls", None)
+    tls: dict | None = settings.get("mqtt.tls", None)
     topics: list[str] = settings.get("mqtt.topics", ["#"])
     if isinstance(topics, str):
         topics = [topics]
     keep_alive: int = settings.get("mqtt.keep_alive", 60)
-    ignored_attributes: Optional[dict] = settings.get("mqtt.ignored_attributes", None)
+    ignored_attributes: dict | None = settings.get("mqtt.ignored_attributes", None)
     timestamp_key: str = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
         LOGGER.error(
