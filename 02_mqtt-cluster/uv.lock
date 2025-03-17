@@ -685,11 +685,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "75.9.0"
+version = "76.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f5/38/6cafe2b3d55661b5d72dc12c038d83f6347d889853697cb98b5e4a5d853d/setuptools-75.9.0.tar.gz", hash = "sha256:5cc49d9e66c286c5f5fd8051852cca8cc8ccc354647247fd1c6f97c832c1d903", size = 1345084 }
+sdist = { url = "https://files.pythonhosted.org/packages/32/d2/7b171caf085ba0d40d8391f54e1c75a1cda9255f542becf84575cfd8a732/setuptools-76.0.0.tar.gz", hash = "sha256:43b4ee60e10b0d0ee98ad11918e114c70701bc6051662a9a675a0496c1a158f4", size = 1349387 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e2/82/23e063d15ecb1484cd0bf713b36ef916bdc30aa153b71828e8b22a5b2d7b/setuptools-75.9.0-py3-none-any.whl", hash = "sha256:4be25497f46470c1e57c79073368e51d5506bdcb34f88935ead7556e17fff36d", size = 1231623 },
+    { url = "https://files.pythonhosted.org/packages/37/66/d2d7e6ad554f3a7c7297c3f8ef6e22643ad3d35ef5c63bf488bc89f32f31/setuptools-76.0.0-py3-none-any.whl", hash = "sha256:199466a166ff664970d0ee145839f5582cb9bca7a0a3a2e795b6a9cb2308e9c6", size = 1236106 },
 ]
 
 [[package]]
