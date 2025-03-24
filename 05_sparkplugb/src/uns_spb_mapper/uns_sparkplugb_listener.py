@@ -119,7 +119,7 @@ class UNSSparkPlugBMapper:
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("SparkplugB listener got disconnected")
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True, exc_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True)
 
 
 def main():

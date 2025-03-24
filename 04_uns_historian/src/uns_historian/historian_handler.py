@@ -95,8 +95,10 @@ class HistorianHandler:
             LOGGER.warning("Connection pool was already closed ")
 
     async def __aenter__(self):
-        self._pool: Pool = await self.get_shared_pool()  # Acquire the shared pool directly
-        self._conn: Connection = await self._pool.acquire()  # Acquire a connection from the pool
+        # Acquire the shared pool directly
+        self._pool: Pool = await self.get_shared_pool()
+        # Acquire a connection from the pool
+        self._conn: Connection = await self._pool.acquire()
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
@@ -164,9 +166,10 @@ class HistorianHandler:
             # Timestamp is normally in milliseconds and needs to be converted prior to insertion
             db_timestamp = datetime.fromtimestamp(timestamp / 1000, UTC)
         # sometimes when qos is not 2, the mqtt message may be delivered multiple times. in such case avoid duplicate inserts
+        # trunk-ignore(ruff/S608)
         sql_cmd = f"""INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg )
                         VALUES ($1,$2,$3,$4)
                         ON CONFLICT DO NOTHING
-                        RETURNING *;"""  # noqa: S608:
+                        RETURNING *;"""  # noqa: S608: This is a prepared statement and the values are sanitized
         params = [db_timestamp, topic, client_id, json.dumps(message)]
         return await self.execute_prepared(sql_cmd, *params)

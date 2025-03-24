@@ -152,7 +152,7 @@ class _GetAndSetValueInSparkPlugObject:
                 pass  # object doesn't have type attribute
 
         LOGGER.error(
-            "Invalid datatype.\n Value: %s not added to %s", str(value), str(spb_object), stack_info=True, exc_info=True
+            "Invalid datatype.\n Value: %s not added to %s", str(value), str(spb_object), stack_info=True
         )
 
     @staticmethod

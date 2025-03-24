@@ -131,7 +131,7 @@ class UnsMqttGraphDb:
         """
         if reason_codes != 0:
             LOGGER.error("Unexpected disconnection.:%s", str(
-                reason_codes), stack_info=True, exc_info=True)
+                reason_codes), stack_info=True)
 
     # end of on_disconnect-------------------------------------------------------------------------
 

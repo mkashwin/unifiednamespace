@@ -122,7 +122,7 @@ class UnsMqttHistorian:
         """
         if reason_codes != 0:
             LOGGER.error("Unexpected disconnection.:%s", str(
-                reason_codes), stack_info=True, exc_info=True)
+                reason_codes), stack_info=True)
         # dont close the DB Pool as the client may disconnect multiple times and reconnect
 
 
