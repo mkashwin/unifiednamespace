@@ -27,7 +27,8 @@ classifiers = [
 dependencies = [
     "logger~=1.4",
     "paho-mqtt>=2.1.0,<3",
-    "protobuf~=6.30",
+#      "protobuf~=6.30", # FIXME - 6.31 is causing a floating point error in test_convert_dict_payload_bytes
+    "protobuf~=6.30,<6.31",
 ]
 
 [project.urls]
@@ -39,7 +40,7 @@ test = [
     "pytest-xdist>=3.6.1,<4",
     "pytest-timeout>=2.3.1,<3",
     "pytest-cov>=6.0.0,<7",
-    "safety>=3.2.14,<4",
+    "safety>=3.4.0,<4",
 ]
 
 [tool.uv]
