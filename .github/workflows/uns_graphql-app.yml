@@ -158,9 +158,10 @@ jobs:
 
       - name: Create graphQL schema
         env:
-          schema_file: "./schema/uns_schema.graphql"
+          # schema_file: "./schema/uns_schema.graphql"
+          schema_file: "07_uns_graphql/schema/uns_schema.graphql"
         run: |
-          cd 07_uns_graphql
+          #cd 07_uns_graphql
           # create the schema
           uv run strawberry export-schema \
             uns_graphql.uns_graphql_app:UNSGraphql.schema  \
