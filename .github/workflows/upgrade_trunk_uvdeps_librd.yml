@@ -31,20 +31,15 @@ jobs:
         id: uv_sync_upgrade
         run: |
           python -m pip install --upgrade pip uv
-          upgraded_packages=""
-          for folder in */; do
-            if [ -f "${folder}uv.lock" ]; then
-                echo "Found pyproject.toml in folder: ${folder}"
-                (cd "${folder}" && uv sync --upgrade)
-            fi
-          done
-          changes=$(git diff "uv.lock" | grep '^+' | grep -v '+++' | sed 's/^+//')
-          if [[ -n "$changes" ]]; then
-              upgraded_packages="${folder}:\n${changes}\n\n"
-          fi
-          uv sync --upgrade
+
+          upgraded_packages="$(uv sync --upgrade --dry-run 2>&1)"
+          find . -name pyproject.toml -execdir uv sync --upgrade \;
+
           if [[ -n $(git status --porcelain) ]]; then
+            changes=$(git diff "uv.lock" | grep '^+' | grep -v '+++' | sed 's/^+//')
             echo "check_in_msg='Ran uv sync --upgrade. Updated packages: ${upgraded_packages%, }'" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected in uv dependencies."
           fi
 
       - name: "Check for latest release of librdkafka"
