@@ -27,8 +27,9 @@ classifiers = [
 dependencies = [
     "logger~=1.4",
     "paho-mqtt>=2.1.0,<3",
-#      "protobuf~=6.30", # FIXME - 6.31 is causing a floating point error in test_convert_dict_payload_bytes
-    "protobuf~=6.30,<6.31",
+    "protobuf~=6.31",
+    # FIXME - 6.31 is causing a floating point error in test_convert_dict_payload_bytes
+#   "protobuf~=6.30,<6.31",
 ]
 
 [project.urls]
