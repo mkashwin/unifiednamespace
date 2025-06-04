@@ -40,7 +40,8 @@
         "VisualStudioExptTeam.vscodeintellicode",
         "DavidAnson.vscode-markdownlint",
         "redhat.vscode-yaml",
-        "trunk.io"
+        "trunk.io",
+        "ms-azuretools.vscode-containers"
       ]
     }
   },
