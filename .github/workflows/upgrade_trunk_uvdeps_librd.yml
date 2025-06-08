@@ -33,11 +33,13 @@ jobs:
           python -m pip install --upgrade pip uv
 
           upgraded_packages="$(uv sync --upgrade --dry-run 2>&1)"
+          # Remove the first 6 lines from upgraded_packages
+          upgraded_packages="$(echo "$upgraded_packages" | tail -n +7)"
           find . -name pyproject.toml -execdir uv sync --upgrade \;
 
           if [[ -n $(git status --porcelain) ]]; then
             changes=$(git diff "uv.lock" | grep '^+' | grep -v '+++' | sed 's/^+//')
-            echo "check_in_msg='Ran uv sync --upgrade. Updated packages: ${upgraded_packages%, }'" >> $GITHUB_OUTPUT
+            echo "check_in_msg='Ran uv sync --upgrade. Updated packages: ${upgraded_packages}'" >> $GITHUB_OUTPUT
           else
             echo "No changes detected in uv dependencies."
           fi
