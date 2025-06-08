@@ -34,16 +34,16 @@ lint:
     - markdownlint@0.45.0
     - hadolint@2.12.1-beta
     - cspell@9.0.2
-    - gitleaks@8.26.0
+    - gitleaks@8.27.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.435
+    - checkov@3.2.437
     - trivy@0.63.0
     - git-diff-check
     - prettier@3.5.3
     - shellcheck@0.10.0
     - yamllint@1.37.1
-    - ruff@0.11.12
+    - ruff@0.11.13
   ignore:
     - linters: [ALL]
       paths:
