@@ -36,7 +36,8 @@ jobs:
 
           if [[ -n $(git status --porcelain) ]]; then
             # Extract lines starting with 'version' and the line before each
-            changes=$(git diff "uv.lock" | grep   "+version = " -B 2)
+            changes=$(git diff "uv.lock" | grep   "+version = " -B 2 | tr '\n' ';' | sed 's/--/==/g')
+            echo $changes
             echo "check_in_msg='Ran uv sync --upgrade. Updated packages: ${changes}'" >> $GITHUB_OUTPUT
           else
             echo "No changes detected in uv dependencies."
