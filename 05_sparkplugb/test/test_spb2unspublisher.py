@@ -33,6 +33,7 @@ from uns_spb_mapper.spb2unspublisher import Spb2UNSPublisher
 
 MQTT_HOST: str = MQTTConfig.host
 MQTT_PORT: int = MQTTConfig.port
+FLOAT_PRECISION = 4  # Decimal precision for float comparisons
 
 
 @pytest.mark.parametrize("clean_session", [(True), (False)])
@@ -365,7 +366,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
         assert datatype == org_metric[2]
         if datatype == sparkplug_b_pb2.Float or datatype == sparkplug_b_pb2.Double:
             assert math.isclose(
-                value, org_metric[3], rel_tol=1 / 10**uns_spb_helper.FLOAT_PRECISION)
+                value, org_metric[3], rel_tol=1 / 10**FLOAT_PRECISION, )
         else:
             assert value == org_metric[3]
 

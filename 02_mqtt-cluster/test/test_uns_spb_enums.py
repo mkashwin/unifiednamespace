@@ -32,7 +32,8 @@ from uns_sparkplugb.uns_spb_enums import (
     SPBParameterTypes,
     SPBPropertyValueTypes,
 )
-from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION
+
+FLOAT_PRECISION = 4  # Decimal precision for float comparisons
 
 
 def check_other_slots(value, spb_obj, enum_list, enum):

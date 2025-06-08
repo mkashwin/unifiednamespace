@@ -41,9 +41,6 @@ from uns_sparkplugb.uns_spb_enums import (
 
 LOGGER = logging.getLogger(__name__)
 
-# FIXME What float precision should we use?
-FLOAT_PRECISION = 5
-
 
 @staticmethod
 def convert_spb_bytes_payload_to_dict(raw_payload: bytes) -> dict:

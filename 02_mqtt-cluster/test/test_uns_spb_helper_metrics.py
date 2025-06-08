@@ -25,7 +25,7 @@ import pytest
 
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
-from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION, SpBMessageGenerator
+from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
 
 DUMMY_PROPERTY_SET = Payload.PropertySet(
     keys=["key1_1", "key1_2"],
@@ -39,6 +39,9 @@ DUMMY_PROPERTY_SET = Payload.PropertySet(
 
 DUMMY_PROPERTY_SET_LIST = Payload.PropertySetList(
     propertyset=[DUMMY_PROPERTY_SET, DUMMY_PROPERTY_SET])
+
+
+FLOAT_PRECISION = 4  # Decimal precision for float comparisons
 
 
 def create_dummy_dataset() -> Payload.DataSet:
@@ -372,20 +375,17 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
 
             case SPBMetricDataTypes.Float:
                 # Manage decimal precision issues
-                expected_value = round(expected_value, FLOAT_PRECISION)
-                parsed_value = round(parsed_value, FLOAT_PRECISION)
+                math.isclose(expected_value, parsed_value,
+                             rel_tol=1 / 10**FLOAT_PRECISION,)
 
             case SPBMetricDataTypes.FloatArray:
                 # Manage decimal precision issues
-                expected_value = [round(val, FLOAT_PRECISION)
-                                  for val in expected_value]
-                parsed_value = [round(val, FLOAT_PRECISION)
-                                for val in parsed_value]
+
+                assert all(math.isclose(x, y, rel_tol=1 / 10**FLOAT_PRECISION)
+                           for x, y in zip(expected_value, parsed_value, strict=True))
 
             case _:  # All other cases
-                pass
-
-        assert parsed_value == expected_value
+                assert parsed_value == expected_value
 
 
 @pytest.mark.parametrize(
@@ -646,20 +646,15 @@ def test_add_historical_metric_and_ddata_msg(metrics: list[dict]):
 
             case SPBMetricDataTypes.Float:
                 # Manage decimal precision issues
-                expected_value = round(expected_value, FLOAT_PRECISION)
-                parsed_value = round(parsed_value, FLOAT_PRECISION)
+                math.isclose(expected_value, parsed_value)
 
             case SPBMetricDataTypes.FloatArray:
                 # Manage decimal precision issues
-                expected_value = [round(val, FLOAT_PRECISION)
-                                  for val in expected_value]
-                parsed_value = [round(val, FLOAT_PRECISION)
-                                for val in parsed_value]
+                assert all(math.isclose(x, y, rel_tol=1 / 10**FLOAT_PRECISION)
+                           for x, y in zip(expected_value, parsed_value, strict=True))
 
             case _:  # All other cases
-                pass
-
-        assert parsed_value == expected_value
+                assert parsed_value == expected_value
 
 
 def test_add_null_metric():

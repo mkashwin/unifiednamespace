@@ -26,7 +26,7 @@ import strawberry
 from uns_sparkplugb import uns_spb_helper
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
 from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBParameterTypes, SPBPropertyValueTypes
-from uns_sparkplugb.uns_spb_helper import FLOAT_PRECISION, SpBMessageGenerator
+from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
 
 from uns_graphql.type.basetype import BytesPayload
 from uns_graphql.type.sparkplugb_node import (
@@ -42,6 +42,8 @@ from uns_graphql.type.sparkplugb_node import (
     SPBTemplate,
     SPBTemplateParameter,
 )
+
+FLOAT_PRECISION = 4  # Decimal precision for float comparisons
 
 
 @pytest.mark.parametrize(
@@ -504,7 +506,8 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
         case SPBMetricDataTypes.Float:
             assert graphql_metric.value == spb_metric.value
             assert math.isclose(
-                literal_eval(graphql_metric.value.data), payload_metric.float_value, rel_tol=1 / 10**FLOAT_PRECISION
+                literal_eval(
+                    graphql_metric.value.data), payload_metric.float_value, rel_tol=1 / 10**FLOAT_PRECISION,
             )
 
         case SPBMetricDataTypes.FloatArray:
@@ -515,7 +518,7 @@ def compare_metrics(graphql_metric: SPBMetric, payload_metric: Payload.Metric):
                     payload_metric), strict=True
             ):
                 assert math.isclose(
-                    val1, val2, rel_tol=1 / 10**FLOAT_PRECISION)
+                    val1, val2, rel_tol=1 / 10**FLOAT_PRECISION,)
 
         case SPBMetricDataTypes.Template:
             compare_templates(graphql_metric.value,
@@ -619,7 +622,8 @@ def compare_datasets(graphql_dataset: SPBDataSet, dataset: Payload.DataSet):
             match datatype:
                 case SPBDataSetDataTypes.Float:
                     assert math.isclose(
-                        literal_eval(graphql_dt_val.value.data), dt_val.float_value, rel_tol=1 / 10**FLOAT_PRECISION
+                        literal_eval(
+                            graphql_dt_val.value.data), dt_val.float_value, rel_tol=1 / 10**FLOAT_PRECISION
                     )
 
                 case SPBDataSetDataTypes.String:  # literal_eval doesn't support string
@@ -641,7 +645,7 @@ def compare_propertyset(graphql_propertyset: SPBPropertySet, propertyset: Payloa
             case SPBPropertyValueTypes.Float:
                 assert gql_prop_val.value == spb_prop_val.value
                 assert math.isclose(
-                    literal_eval(gql_prop_val.value.data), prop_val.float_value, rel_tol=1 / 10**FLOAT_PRECISION
+                    literal_eval(gql_prop_val.value.data), prop_val.float_value, rel_tol=1 / 10**FLOAT_PRECISION,
                 )
 
             case SPBPropertyValueTypes.String:
