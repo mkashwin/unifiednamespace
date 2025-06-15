@@ -29,15 +29,15 @@ lint:
   enabled:
     - shfmt@3.6.0
     - actionlint@1.7.7
-    - trufflehog@3.88.35
+    - trufflehog@3.89.1
     - osv-scanner@2.0.2
     - markdownlint@0.45.0
     - hadolint@2.12.1-beta
     - cspell@9.0.2
-    - gitleaks@8.27.0
+    - gitleaks@8.27.2
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.437
+    - checkov@3.2.441
     - trivy@0.63.0
     - git-diff-check
     - prettier@3.5.3
