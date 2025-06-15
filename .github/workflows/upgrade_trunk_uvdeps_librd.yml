@@ -38,7 +38,8 @@ jobs:
             # Extract lines starting with 'version' and the line before each
             changes=$(git diff "uv.lock" | grep   "+version = " -B 2 | tr '\n' ';' | sed 's/--/==/g')
             echo $changes
-            echo "check_in_msg='Ran uv sync --upgrade. Updated packages: ${changes}'" >> $GITHUB_OUTPUT
+            echo "check_in_msg='Updated packages: ${changes}'" >> $GITHUB_OUTPUT
+            echo "check_in_title='Ran uv sync --upgrade'" >> $GITHUB_OUTPUT
           else
             echo "No changes detected in uv dependencies."
           fi
@@ -47,6 +48,7 @@ jobs:
         id: librdkafka_upgrade
         env:
           check_in_msg: ${{ steps.uv_sync_upgrade.outputs.check_in_msg }}
+          check_in_title: ${{ steps.uv_sync_upgrade.outputs.check_in_title }}
         run: |
           # Define the path to the Dockerfile. Currently using only 06_uns_kafka but will update 07_uns_graphql also
           KAKFA_DOCKER="./06_uns_kafka/Dockerfile"
@@ -64,20 +66,23 @@ jobs:
             sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
             sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
             echo "check_in_msg=${check_in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
+            echo "check_in_title=${check_in_title}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
           else
             echo "check_in_msg=${check_in_msg}"  >> $GITHUB_OUTPUT
+            echo "check_in_title=${check_in_title}" >> $GITHUB_OUTPUT"
           fi
 
       - name: "Check for changed files and then create branch to commit changes as well as PR"
         id: create_branch
         env:
           check_in_msg: ${{ steps.librdkafka_upgrade.outputs.check_in_msg }}
+          check_in_title: ${{ steps.librdkafka_upgrade.outputs.check_in_title }}
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "Github Actions"
 
           if [[ -z "$check_in_msg" ]]; then
-            check_in_msg="Automated update: trunk, uv, librdkafka"
+            check_in_msg="Automated update: uv, librdkafka"
           fi
 
           if [[ -n $(git status --porcelain) ]]; then
@@ -91,6 +96,8 @@ jobs:
             git commit -m "$check_in_msg"
             git push origin $TARGET_BRANCH_NAME || exit 1
             echo "TARGET_BRANCH_NAME=${TARGET_BRANCH_NAME}" >> $GITHUB_OUTPUT
+            echo "check_in_msg=${check_in_msg}" >> $GITHUB_OUTPUT
+            echo "check_in_title=${check_in_title}" >> $GITHUB_OUTPUT
           else
             raise_pr=false
           fi
@@ -101,6 +108,7 @@ jobs:
           echo "raise_pr=${{ steps.create_branch.outputs.raise_pr }}"
           echo "TARGET_BRANCH_NAME=${{ steps.create_branch.outputs.TARGET_BRANCH_NAME }}"
           echo "check_in_msg=${{ steps.create_branch.outputs.check_in_msg }}"
+          echo "check_in_title=${{ steps.create_branch.outputs.check_in_title }}"
 
       - name: Raise Pull Request
         if: steps.create_branch.outputs.raise_pr == 'true'
@@ -110,8 +118,12 @@ jobs:
         uses: devops-infra/action-pull-request@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          title: "${{ env.check_in_msg }}"
+          title: "${{ env.check_in_title }}"
           label: "uv_sync,librdkafka,upgrade"
           source_branch: "${{ env.TARGET_BRANCH_NAME }}"
           target_branch: "main"
+          body: |
+            Automated update of uv dependencies and librdkafka version.
+            Changes made:
+            - "${{ env.check_in_msg }}"
           get_diff: true
