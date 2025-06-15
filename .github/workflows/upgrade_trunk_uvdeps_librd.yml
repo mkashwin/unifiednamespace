@@ -69,7 +69,7 @@ jobs:
             echo "check_in_title=${check_in_title}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
           else
             echo "check_in_msg=${check_in_msg}"  >> $GITHUB_OUTPUT
-            echo "check_in_title=${check_in_title}" >> $GITHUB_OUTPUT"
+            echo "check_in_title=${check_in_title}" >> $GITHUB_OUTPUT
           fi
 
       - name: "Check for changed files and then create branch to commit changes as well as PR"
