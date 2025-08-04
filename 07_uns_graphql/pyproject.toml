@@ -51,7 +51,7 @@ uns_graphql_healthcheck = "uns_graphql.health_check:main"
 [dependency-groups]
 main = ["uns-mqtt"]
 test = [
-    "strawberry-graphql[debug-server]>=0.260,<0.261",
+    "strawberry-graphql[debug-server]>=0.260,<0.279",
     "pytest>=8.3.4,<9",
     "pytest-xdist>=3.6.1,<4",
     "pytest-asyncio>=0.25,<0.26",
