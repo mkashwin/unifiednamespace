@@ -24,7 +24,7 @@ jobs:
           fi
 
       - name: Raise Pull Request
-        uses: devops-infra/action-pull-request@v0.6.0
+        uses: devops-infra/action-pull-request@v0.6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Creating PR for branch ${{ github.ref_name }} "
