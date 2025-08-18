@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
@@ -132,7 +132,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
 
@@ -211,7 +211,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
 
@@ -242,7 +242,7 @@ jobs:
     steps:
       - name: Checkout Code
         if: startsWith(needs.update-version.outputs.branch_name, 'main')
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.update-version.outputs.sha_tag }}
           fetch-depth: 0
