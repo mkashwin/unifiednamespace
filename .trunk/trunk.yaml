@@ -33,11 +33,11 @@ lint:
     - osv-scanner@2.2.2
     - markdownlint@0.45.0
     - hadolint@2.12.1-beta
-    - cspell@9.2.0
+    - cspell@9.2.1
     - gitleaks@8.28.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.467
+    - checkov@3.2.469
     - trivy@0.65.0
     - git-diff-check
     - prettier@3.6.2

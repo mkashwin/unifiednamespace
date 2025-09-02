@@ -19,7 +19,6 @@ see [kafka_handler.py.convert_MQTT_KAFKA_topic()](./src/uns_kafka/kafka_handler.
 
 1. **Integration Options to KAFKA**
    There are two possibles ways to integrate the current setup
-
    - _Bridge MQTT to KAFKA_:
      Which is the approach I have chosen primarily because it provides flexibility and decoupling between all the service. Also most enterprise Kafka brokers have an inbuilt KAFKA plugin to ease the integration of MQTT to KAFKA
 

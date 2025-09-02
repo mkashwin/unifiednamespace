@@ -47,7 +47,6 @@ This module has two scripts in `bash` and configuration file.
    ```
 
    where
-
    - `198.168.220.0 MASK 255.255.255.128` is the IP range allocated to MetalLB
    - `198.168.200.1` is the DHCP server for your virtual box network
 
@@ -60,7 +59,6 @@ This module has two scripts in `bash` and configuration file.
    ```
 
    where
-
    - `198.168.220.0/24` is the IP range allocated to MetalLB
    - `198.168.200.1` is the DHCP server for your virtual box network
    - `vboxnet0` is the virtual box network adaptor setup

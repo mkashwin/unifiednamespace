@@ -236,7 +236,6 @@ uv run pytest  test/
 1. The protoc executable for [Linux](./protobuf/bin/protoc) is for x86_64 architecture and will need execute rights to be able to run and compile the [sparkplug_b.proto](./sparkplug_b/sparkplug_b.proto) specification.
    The protoc executable for [Windows](./protobuf/bin/protoc.exe) is for a 64 bit processor.
    For other architectures please download the appropriate pre compiled version of [Protobuf release v32.0](https://github.com/protocolbuffers/protobuf/releases/tag/v32.0) e.g.
-
    - [protoc-32.0-linux-aarch_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v32.0/protoc-32.0-linux-aarch_64.zip)
    - [protoc-32.0-linux-ppcle_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v32.0/protoc-32.0-linux-ppcle_64.zip)
    - [protoc-32.0-linux-x86_32.zip](https://github.com/protocolbuffers/protobuf/releases/download/v32.0/protoc-32.0-linux-x86_32.zip)
