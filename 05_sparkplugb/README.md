@@ -7,7 +7,6 @@ This SparkplugB decoder is an MQTT Application Node deployed on the edge with th
 - subscribes to the Topic _`spBv1.0/#`_
 - decodes the payload received and extract the metrics received
 - enhance the decoded message to add
-
   - \*\<group_id\>
   - \*\<edge_node_id\>
   - *\<device_id\>*if provided\*

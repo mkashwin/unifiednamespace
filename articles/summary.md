@@ -19,7 +19,6 @@ Our Unified Namespace architecture seamlessly converges OT and IT data into a si
 Within 4 months, pilot a production line with full OEE transparency. Scale enterprise-wide in 12–18 months, future-proofing operations with an event-driven, loosely coupled architecture.
 This is not just a technical upgrade—it’s a **strategic imperative** to outpace competitors, mitigate cybersecurity risks, and empower your workforce with actionable intelligence.
 
-
 ## Manufacturing Value Chain
 
 Manufacturing generates data at every stage, yet this data is not accessible or mostly ignored. For effective usage of AI & ML and Data Analytics, we have to establish a mechanism for extracting and correlating this data and reducing data acquisition costs.
@@ -33,4 +32,4 @@ _Figure 1: High-level view of systems generating data in the manufacturing value
 
 ## Transform data from a liability to your most valuable asset.
 
-*Leadership starts with foresight*. Let’s build a foundation for sustained innovation
+_Leadership starts with foresight_. Let’s build a foundation for sustained innovation

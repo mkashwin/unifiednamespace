@@ -34,7 +34,6 @@ This is a critical concept to allow scalability by preventing point to point con
 The overall architecture and the deployment setup is as follows
 
 1. Factory1
-
    - K8s Cluster on the edge
    - MQTT edge installed on K8s
    - Bridge between Factory1 and the Enterprise MQTT clusters
@@ -43,7 +42,6 @@ The overall architecture and the deployment setup is as follows
    - UNS SparkplugB client to translate message from SparkPlug to UNS
 
 1. Factory2
-
    - K8s Cluster on the edge
    - MQTT edge installed on K8s
    - Bridge between Factory2 and the Enterprise MQTT clusters

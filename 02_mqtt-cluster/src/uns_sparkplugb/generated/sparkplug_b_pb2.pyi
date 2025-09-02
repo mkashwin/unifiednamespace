@@ -111,7 +111,7 @@ class Payload(_message.Message):
             boolean_value: bool
             string_value: str
             extension_value: Payload.Template.Parameter.ParameterValueExtension
-            def __init__(self, name: _Optional[str] = ..., type: _Optional[int] = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: bool = ..., string_value: _Optional[str] = ..., extension_value: _Optional[_Union[Payload.Template.Parameter.ParameterValueExtension, _Mapping]] = ...) -> None: ...
+            def __init__(self, name: _Optional[str] = ..., type: _Optional[int] = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ..., string_value: _Optional[str] = ..., extension_value: _Optional[_Union[Payload.Template.Parameter.ParameterValueExtension, _Mapping]] = ...) -> None: ...
         VERSION_FIELD_NUMBER: _ClassVar[int]
         METRICS_FIELD_NUMBER: _ClassVar[int]
         PARAMETERS_FIELD_NUMBER: _ClassVar[int]
@@ -122,7 +122,7 @@ class Payload(_message.Message):
         parameters: _containers.RepeatedCompositeFieldContainer[Payload.Template.Parameter]
         template_ref: str
         is_definition: bool
-        def __init__(self, version: _Optional[str] = ..., metrics: _Optional[_Iterable[_Union[Payload.Metric, _Mapping]]] = ..., parameters: _Optional[_Iterable[_Union[Payload.Template.Parameter, _Mapping]]] = ..., template_ref: _Optional[str] = ..., is_definition: bool = ...) -> None: ...
+        def __init__(self, version: _Optional[str] = ..., metrics: _Optional[_Iterable[_Union[Payload.Metric, _Mapping]]] = ..., parameters: _Optional[_Iterable[_Union[Payload.Template.Parameter, _Mapping]]] = ..., template_ref: _Optional[str] = ..., is_definition: _Optional[bool] = ...) -> None: ...
     class DataSet(_message.Message):
         __slots__ = ("num_of_columns", "columns", "types", "rows")
         Extensions: _python_message._ExtensionDict
@@ -146,7 +146,7 @@ class Payload(_message.Message):
             boolean_value: bool
             string_value: str
             extension_value: Payload.DataSet.DataSetValue.DataSetValueExtension
-            def __init__(self, int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: bool = ..., string_value: _Optional[str] = ..., extension_value: _Optional[_Union[Payload.DataSet.DataSetValue.DataSetValueExtension, _Mapping]] = ...) -> None: ...
+            def __init__(self, int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ..., string_value: _Optional[str] = ..., extension_value: _Optional[_Union[Payload.DataSet.DataSetValue.DataSetValueExtension, _Mapping]] = ...) -> None: ...
         class Row(_message.Message):
             __slots__ = ("elements",)
             Extensions: _python_message._ExtensionDict
@@ -190,7 +190,7 @@ class Payload(_message.Message):
         propertyset_value: Payload.PropertySet
         propertysets_value: Payload.PropertySetList
         extension_value: Payload.PropertyValue.PropertyValueExtension
-        def __init__(self, type: _Optional[int] = ..., is_null: bool = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: bool = ..., string_value: _Optional[str] = ..., propertyset_value: _Optional[_Union[Payload.PropertySet, _Mapping]] = ..., propertysets_value: _Optional[_Union[Payload.PropertySetList, _Mapping]] = ..., extension_value: _Optional[_Union[Payload.PropertyValue.PropertyValueExtension, _Mapping]] = ...) -> None: ...
+        def __init__(self, type: _Optional[int] = ..., is_null: _Optional[bool] = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ..., string_value: _Optional[str] = ..., propertyset_value: _Optional[_Union[Payload.PropertySet, _Mapping]] = ..., propertysets_value: _Optional[_Union[Payload.PropertySetList, _Mapping]] = ..., extension_value: _Optional[_Union[Payload.PropertyValue.PropertyValueExtension, _Mapping]] = ...) -> None: ...
     class PropertySet(_message.Message):
         __slots__ = ("keys", "values")
         Extensions: _python_message._ExtensionDict
@@ -224,7 +224,7 @@ class Payload(_message.Message):
         file_type: str
         md5: str
         description: str
-        def __init__(self, is_multi_part: bool = ..., content_type: _Optional[str] = ..., size: _Optional[int] = ..., seq: _Optional[int] = ..., file_name: _Optional[str] = ..., file_type: _Optional[str] = ..., md5: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
+        def __init__(self, is_multi_part: _Optional[bool] = ..., content_type: _Optional[str] = ..., size: _Optional[int] = ..., seq: _Optional[int] = ..., file_name: _Optional[str] = ..., file_type: _Optional[str] = ..., md5: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
     class Metric(_message.Message):
         __slots__ = ("name", "alias", "timestamp", "datatype", "is_historical", "is_transient", "is_null", "metadata", "properties", "int_value", "long_value", "float_value", "double_value", "boolean_value", "string_value", "bytes_value", "dataset_value", "template_value", "extension_value")
         class MetricValueExtension(_message.Message):
@@ -269,7 +269,7 @@ class Payload(_message.Message):
         dataset_value: Payload.DataSet
         template_value: Payload.Template
         extension_value: Payload.Metric.MetricValueExtension
-        def __init__(self, name: _Optional[str] = ..., alias: _Optional[int] = ..., timestamp: _Optional[int] = ..., datatype: _Optional[int] = ..., is_historical: bool = ..., is_transient: bool = ..., is_null: bool = ..., metadata: _Optional[_Union[Payload.MetaData, _Mapping]] = ..., properties: _Optional[_Union[Payload.PropertySet, _Mapping]] = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: bool = ..., string_value: _Optional[str] = ..., bytes_value: _Optional[bytes] = ..., dataset_value: _Optional[_Union[Payload.DataSet, _Mapping]] = ..., template_value: _Optional[_Union[Payload.Template, _Mapping]] = ..., extension_value: _Optional[_Union[Payload.Metric.MetricValueExtension, _Mapping]] = ...) -> None: ...
+        def __init__(self, name: _Optional[str] = ..., alias: _Optional[int] = ..., timestamp: _Optional[int] = ..., datatype: _Optional[int] = ..., is_historical: _Optional[bool] = ..., is_transient: _Optional[bool] = ..., is_null: _Optional[bool] = ..., metadata: _Optional[_Union[Payload.MetaData, _Mapping]] = ..., properties: _Optional[_Union[Payload.PropertySet, _Mapping]] = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ..., string_value: _Optional[str] = ..., bytes_value: _Optional[bytes] = ..., dataset_value: _Optional[_Union[Payload.DataSet, _Mapping]] = ..., template_value: _Optional[_Union[Payload.Template, _Mapping]] = ..., extension_value: _Optional[_Union[Payload.Metric.MetricValueExtension, _Mapping]] = ...) -> None: ...
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     METRICS_FIELD_NUMBER: _ClassVar[int]
     SEQ_FIELD_NUMBER: _ClassVar[int]
