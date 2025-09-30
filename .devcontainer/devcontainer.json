@@ -12,7 +12,7 @@
       "version": "latest",
       "dockerDashComposeVersion": "v2"
     },
-    "ghcr.io/devcontainers-contrib/features/pipx-package:1": {
+    "ghcr.io/devcontainers-extra/features/pipx-package:1": {
       "includeDeps": true,
       "package": "black",
       "version": "latest",
