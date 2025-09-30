@@ -1,6 +1,6 @@
 [project]
 name = "uns_graphql"
-version = "0.9.3"
+version = "0.9.35"
 description = "Provide GraphQL capabilities to the UNS across all data sources -MQTT, KAFKA, Historian & GraphDB"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.12, <4"

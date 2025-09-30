@@ -1,6 +1,6 @@
 [project]
 name = "uns-mqtt"
-version = "0.9.3"
+version = "0.9.35"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.12, <4"
