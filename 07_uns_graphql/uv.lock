@@ -1639,7 +1639,7 @@ wheels = [
 
 [[package]]
 name = "uns-graphql"
-version = "0.9.3"
+version = "0.9.35"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -1698,7 +1698,7 @@ test = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.9.3"
+version = "0.9.35"
 source = { editable = "../02_mqtt-cluster" }
 dependencies = [
     { name = "logger" },
