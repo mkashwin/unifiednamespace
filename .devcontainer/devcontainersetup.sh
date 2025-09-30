@@ -12,8 +12,7 @@ if [[ -n $(docker ps -aq -f name=uns_graphdb) ]]; then
 	docker start uns_graphdb && docker exec -it uns_graphdb bash -c "rm /var/lib/neo4j/run/*"
 else
 	UNS_graphdb__username=neo4j
-	# trunk-ignore(shellcheck/SC2312)
-	UNS_graphdb__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+	UNS_graphdb__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]' || true)
 	echo "graphdb:
   username: ${UNS_graphdb__username}
   password: ${UNS_graphdb__password}
@@ -40,16 +39,13 @@ dynaconf_merge: true
 
 fi
 
-# 2.2 Timescale DB
 # trunk-ignore(shellcheck/SC2312)
 if [[ -n $(docker ps -aq -f name=uns_timescaledb) ]]; then
 	docker start uns_timescaledb
 else
-	# trunk-ignore(shellcheck/SC2312)
-	POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+	POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]' || true)
 	UNS_historian__username=uns_dbuser
-	# trunk-ignore(shellcheck/SC2312)
-	UNS_historian__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+	UNS_historian__password=$(openssl rand -base64 32 | tr -dc '[:alnum:]' || true)
 
 	UNS_historian__database=uns_historian
 	UNS_historian__table=unifiednamespace
@@ -137,19 +133,28 @@ fi
 if [[ -n $(docker ps -aq -f name=uns_kafka) ]]; then
 	docker start uns_kafka
 else
+	CLUSTER_ID=$(openssl rand -base64 32 | tr -dc '[:alnum:]' || true)
 	docker run \
 		--name uns_kafka \
 		--env KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:9092" \
-		--env ALLOW_PLAINTEXT_LISTENER="yes" \
-		--env KAFKA_CFG_NODE_ID="0" \
-		--env KAFKA_CFG_PROCESS_ROLES="controller,broker" \
-		--env KAFKA_CFG_LISTENERS="PLAINTEXT://:9092,CONTROLLER://:9093" \
-		--env KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP="CONTROLLER:PLAINTEXT, PLAINTEXT:PLAINTEXT" \
-		--env KAFKA_CFG_CONTROLLER_QUORUM_VOTERS="0@localhost:9093" \
-		--env KAFKA_CFG_CONTROLLER_LISTENER_NAMES="CONTROLLER" \
+		--env KAFKA_BROKER_ID=1 \
+		--env KAFKA_LISTENER_SECURITY_PROTOCOL_MAP="PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT" \
+		--env KAFKA_ADVERTISED_LISTENERS="PLAINTEXT://localhost:29092,PLAINTEXT_HOST://localhost:9092" \
+		--env KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+		--env KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0 \
+		--env KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1 \
+		--env KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1 \
+		--env KAFKA_PROCESS_ROLES="broker,controller" \
+		--env KAFKA_NODE_ID=1 \
+		--env KAFKA_CONTROLLER_QUORUM_VOTERS="1@localhost:29093" \
+		--env KAFKA_LISTENERS="PLAINTEXT://localhost:29092,CONTROLLER://localhost:29093,PLAINTEXT_HOST://0.0.0.0:9092" \
+		--env KAFKA_INTER_BROKER_LISTENER_NAME="PLAINTEXT" \
+		--env KAFKA_CONTROLLER_LISTENER_NAMES="CONTROLLER" \
+		--env KAFKA_LOG_DIRS="/tmp/kraft-combined-logs" \
+		--env CLUSTER_ID="${CLUSTER_ID}" \
 		-p 9092:9092 \
 		-d \
-		bitnami/kafka:latest
+		apache/kafka:latest
 fi
 
 # 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
