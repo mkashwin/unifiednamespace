@@ -487,11 +487,11 @@ wheels = [
 
 [[package]]
 name = "dynaconf"
-version = "3.2.11"
+version = "3.2.12"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/62/eb/e9d1249ff56b11e63fd8c7d0fcc1f94704e21693c16862bf0ebfb07bd61a/dynaconf-3.2.11.tar.gz", hash = "sha256:4cfc6a730c533bf1a1d0bf266ae202133a22236bb3227d23eff4b8542d4034a5", size = 234694, upload-time = "2025-05-06T15:44:59.16Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/bd/7a6f84b68268fe1d12e709faec7d293e0c37c9c03bacaf363de41e7e7568/dynaconf-3.2.12.tar.gz", hash = "sha256:29cea583b007d890e6031fa89c0ac489b631c73dbee83bcd5e6f97602c26354e", size = 313801, upload-time = "2025-10-10T19:54:06.164Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/64/580c74003a356c5662e7b1da43ecd7cbda6e8f970c87b30c5a654c8ccb53/dynaconf-3.2.11-py2.py3-none-any.whl", hash = "sha256:660de90879d4da236f79195692a7d197957224d7acf922bcc6899187dc7b4a27", size = 236536, upload-time = "2025-05-06T15:44:56.18Z" },
+    { url = "https://files.pythonhosted.org/packages/26/68/51adede38ab2ee9ecfddb8b60a80a42b618a72f1018fcf60974e5d852831/dynaconf-3.2.12-py2.py3-none-any.whl", hash = "sha256:eb2a11865917dff8810c6098cd736b8f4d2f4e39ad914500e2dfbe064b82c499", size = 237788, upload-time = "2025-10-10T19:54:03.731Z" },
 ]
 
 [[package]]
@@ -505,16 +505,16 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.118.3"
+version = "0.119.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/e0/b2c4c5fed29587f0c0c56cec9b59f2c3ca58fd40e6c96d9a788219662a35/fastapi-0.118.3.tar.gz", hash = "sha256:5bf36d9bb0cd999e1aefcad74985a6d6a1fc3a35423d497f9e1317734633411d", size = 312055, upload-time = "2025-10-10T10:40:18.15Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/f9/5c5bcce82a7997cc0eb8c47b7800f862f6b56adc40486ed246e5010d443b/fastapi-0.119.0.tar.gz", hash = "sha256:451082403a2c1f0b99c6bd57c09110ed5463856804c8078d38e5a1f1035dbbb7", size = 336756, upload-time = "2025-10-11T17:13:40.53Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/04/2f9e8a965f4214883258a6f716fea324d1b81e97bce6346cfbafffe6b86c/fastapi-0.118.3-py3-none-any.whl", hash = "sha256:8b9673dc083b4b9d3d295d49ba1c0a2abbfb293d34ba210fd9b0a90d5f39981e", size = 97957, upload-time = "2025-10-10T10:40:16.118Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/70/584c4d7cad80f5e833715c0a29962d7c93b4d18eed522a02981a6d1b6ee5/fastapi-0.119.0-py3-none-any.whl", hash = "sha256:90a2e49ed19515320abb864df570dd766be0662c5d577688f1600170f7f73cf2", size = 107095, upload-time = "2025-10-11T17:13:39.048Z" },
 ]
 
 [[package]]
@@ -1691,7 +1691,7 @@ wheels = [
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.283.2"
+version = "0.283.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "graphql-core" },
@@ -1700,9 +1700,9 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/25/15475da816a58e261883debdae91499a9b780c8c9ef40727b7e7a538c837/strawberry_graphql-0.283.2.tar.gz", hash = "sha256:d8e63dcc0472e59d57e00c39de4d620699288127bc571698d82ab292498c744e", size = 212061, upload-time = "2025-10-07T17:26:16.776Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/74/729c227b1e7fce28678290a5013ddceb543f350b6c14ae83400ab2c727d1/strawberry_graphql-0.283.3.tar.gz", hash = "sha256:375e545856b7587debd4e0f1e2a6fca19d09cc126238a07b9e5164e5eb09342a", size = 212141, upload-time = "2025-10-10T20:03:46.985Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/4c/851fb4e30c3080e950201ab1ba45379072309b320c546edb239d3cf2f57d/strawberry_graphql-0.283.2-py3-none-any.whl", hash = "sha256:2442ab07ad408dc05c41a90685aa14038e617285e9b1abd6c73a8c43fb7ea399", size = 309811, upload-time = "2025-10-07T17:26:13.97Z" },
+    { url = "https://files.pythonhosted.org/packages/23/1b/aa358ef730d727d2e42810bf943542a8cc4c15aa2401f8629d356643a06f/strawberry_graphql-0.283.3-py3-none-any.whl", hash = "sha256:3751d86a219d81a16a13f335bb7d2fa3f57a85fab83d7d284b8ea88e2261d68b", size = 309885, upload-time = "2025-10-10T20:03:44.051Z" },
 ]
 
 [package.optional-dependencies]
