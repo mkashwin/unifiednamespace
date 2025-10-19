@@ -57,17 +57,24 @@ jobs:
           current_version=$(grep -oP '(?<=LIBRDKAFKA_VER=")[^"]*' "$KAKFA_DOCKER")
 
           latest_release=$(curl -s https://api.github.com/repos/confluentinc/librdkafka/releases/latest | jq -r '.tag_name')
-          # drop the leading v character in the version 
-          latest_release=${latest_release:1}
-          if [[ "$current_version" != "$latest_release" ]]; then
-            OLD_TEXT=LIBRDKAFKA_VER=\"${current_version}\"
-            NEW_TEXT=LIBRDKAFKA_VER=\"${latest_release}\"
-            # Use sed to replace all instances of OLD_TEXT with NEW_TEXT in the file
-            sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
-            sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
-            echo "check_in_msg=${check_in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
-            echo "check_in_title=${check_in_title}, 'upgraded librdkafka to v${latest_release}'"  >> $GITHUB_OUTPUT
+          # check if the api call was successful and latest_release is not null
+          if [[ "$latest_release" != "null" ]]; then
+            # drop the leading v character in the version
+            latest_release=${latest_release:1}
+            if [[ "$current_version" != "$latest_release" ]]; then
+              OLD_TEXT=LIBRDKAFKA_VER=\"${current_version}\"
+              NEW_TEXT=LIBRDKAFKA_VER=\"${latest_release}\"
+              # Use sed to replace all instances of OLD_TEXT with NEW_TEXT in the file
+              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
+              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
+              echo "check_in_msg=${check_in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
+              echo "check_in_title=${check_in_title}, 'upgraded librdkafka to v${latest_release}'"  >> $GITHUB_OUTPUT
+            else
+              echo "check_in_msg=${check_in_msg}"  >> $GITHUB_OUTPUT
+              echo "check_in_title=${check_in_title}" >> $GITHUB_OUTPUT
+            fi
           else
+            echo "Failed to fetch the latest release information for librdkafka."
             echo "check_in_msg=${check_in_msg}"  >> $GITHUB_OUTPUT
             echo "check_in_title=${check_in_title}" >> $GITHUB_OUTPUT
           fi
