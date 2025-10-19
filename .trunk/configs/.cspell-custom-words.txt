@@ -57,9 +57,9 @@ IPRANGE
 ireduce
 ISMASTER
 isready
-itsmechlark
 Jeppson
 Johan
+KAFKA
 k8scluster
 kafka
 keepalive
