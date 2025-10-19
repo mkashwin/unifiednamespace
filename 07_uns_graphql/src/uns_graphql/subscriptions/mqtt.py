@@ -75,7 +75,8 @@ class MQTTSubscription:
                 async for msg in client.messages:
                     yield MQTTMessage(topic=str(msg.topic), payload=msg.payload)
         except MqttError as ex:
-            LOGGER.error("Error while connecting to MQTT Broker %s", str(ex), stack_info=True, exc_info=True)
+            LOGGER.error("Error while connecting to MQTT Broker %s",
+                         ex, stack_info=True, exc_info=True)
             await asyncio.sleep(MQTTConfig.retry_interval)
 
     @classmethod

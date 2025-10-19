@@ -74,8 +74,8 @@ class UnsMqttGraphDb:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(
-            client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}",
+                     client, userdata, msg)
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
                 node_types = GraphDBConfig.spb_node_types
@@ -98,7 +98,7 @@ class UnsMqttGraphDb:
         except SystemError as system_error:
             LOGGER.error(
                 "Fatal Error while parsing Message: %s\nTopic: %s \nMessage:%s\nExiting.........",
-                str(system_error),
+                system_error,
                 msg.topic,
                 msg.payload,
                 stack_info=True,
@@ -109,7 +109,7 @@ class UnsMqttGraphDb:
             # pylint: disable=broad-exception-caught
             LOGGER.error(
                 "Error persisting the message to the Graph DB: %s \nTopic: %s \nMessage:%s",
-                str(ex),
+                ex,
                 msg.topic,
                 msg.payload,
                 stack_info=True,
@@ -130,8 +130,8 @@ class UnsMqttGraphDb:
         Callback function executed every time the client is disconnected from the MQTT broker
         """
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(
-                reason_codes), stack_info=True)
+            LOGGER.error("Unexpected disconnection.:%s",
+                         reason_codes, stack_info=True)
 
     # end of on_disconnect-------------------------------------------------------------------------
 

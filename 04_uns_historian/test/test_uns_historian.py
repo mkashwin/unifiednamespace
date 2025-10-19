@@ -98,7 +98,8 @@ test_data_list: list[dict[str, list[dict | bytes | str]]] = [
         ],
     },
     {
-        "spBv1.0/uns_group/NBIRTH/eon1":  # test_data[1]: test for SparkplugB messages
+        # test_data[1]: test for SparkplugB messages
+        "spBv1.0/uns_group/NBIRTH/eon1":
         [
             (
                 b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
@@ -160,7 +161,8 @@ async def clean_up_database():
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="uns_mqtt_historian")
 @pytest.mark.parametrize(  # convert test data dict into tuples for pytest parameterize
-    "topic, messages", [(topic, messages) for dictionary in test_data_list for topic, messages in dictionary.items()]
+    "topic, messages", [(topic, messages)
+                        for dictionary in test_data_list for topic, messages in dictionary.items()]
 )
 def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # noqa: ARG001
     uns_mqtt_historian = None
@@ -197,7 +199,8 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
+            uns_publisher.publish(topic=topic, payload=message,
+                                  qos=2, retain=True, properties=publish_properties)
             # allow for the message to be received
             time.sleep(0.1)
 
@@ -223,14 +226,17 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = convert_spb_bytes_payload_to_dict(message)
 
             result = loop.run_until_complete(
-                execute_prepared_async(select_query, topic, message, uns_mqtt_historian.client_id)
+                execute_prepared_async(
+                    select_query, topic, message, uns_mqtt_historian.client_id)
             )
 
             assert result is not None, "Should have gotten a result"
-            assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
+            assert len(
+                result) == 1, "Should have gotten only one record because we inserted only one record"
 
     finally:
         # clean up the topic and disconnect the publisher
-        uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
+        uns_publisher.publish(topic=topic, payload=b"",
+                              qos=2, retain=True, properties=publish_properties)
         uns_publisher.disconnect()
         uns_mqtt_historian.uns_client.disconnect()
