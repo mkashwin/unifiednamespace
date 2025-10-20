@@ -96,7 +96,7 @@ jobs:
         if: steps.check_release.outputs.new_release == 'true'
         env:
           latest_release: ${{ steps.check_release.outputs.latest_release }}
-        uses: devops-infra/action-pull-request@v0.6.1
+        uses: devops-infra/action-pull-request@v1.0.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Updating protocol buffers version to ${{env.latest_release}}"

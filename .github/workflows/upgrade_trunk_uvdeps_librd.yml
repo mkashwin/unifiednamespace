@@ -116,7 +116,7 @@ jobs:
           check_in_msg: ${{ steps.create_branch.outputs.check_in_msg }}
           check_in_title: ${{ steps.create_branch.outputs.check_in_title }}
           TARGET_BRANCH_NAME: ${{ steps.create_branch.outputs.TARGET_BRANCH_NAME }}
-        uses: devops-infra/action-pull-request@v0.6.1
+        uses: devops-infra/action-pull-request@v1.0.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{ env.check_in_title }}"
