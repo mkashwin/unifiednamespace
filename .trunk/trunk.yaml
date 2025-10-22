@@ -50,6 +50,11 @@ lint:
         # Ignore generated files
         - "**/generated/**"
         - "*/images/*"
+    - linters: [gitleaks]
+      paths:
+        # Ignore test certificates used for integration tests
+        - "**/test/*/certs/*/*.key"
+        - "**/test/*/certs/*/*.pem"
 actions:
   enabled:
     - trunk-announce

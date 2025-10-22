@@ -57,7 +57,8 @@ class UNSSparkPlugBMapper:
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
 
-        self.spb_2_uns_pub: Spb2UNSPublisher = Spb2UNSPublisher(self.uns_client)
+        self.spb_2_uns_pub: Spb2UNSPublisher = Spb2UNSPublisher(
+            self.uns_client)
         self.uns_client.run(
             host=MQTTConfig.host,
             port=MQTTConfig.port,
@@ -73,7 +74,8 @@ class UNSSparkPlugBMapper:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}", str(client), str(userdata), str(msg))
+        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}",
+                     client, userdata, msg)
         try:
             if msg.topic.startswith(UnsMQTTClient.SPARKPLUG_NS):
                 topic_path: list[str] = msg.topic.split("/")
@@ -95,15 +97,19 @@ class UNSSparkPlugBMapper:
                         msg.payload, group_id, message_type, edge_node_id, device_id
                     )
                 else:
-                    LOGGER.error("Message received on an Unknown/non compliant SparkplugB topic: %s", msg.topic)
+                    LOGGER.error(
+                        "Message received on an Unknown/non compliant SparkplugB topic: %s", msg.topic)
             else:
-                LOGGER.warning("Subscribed to a  non SparkplugB topic: %s. Message ignored", msg.topic)
+                LOGGER.warning(
+                    "Subscribed to a  non SparkplugB topic: %s. Message ignored", msg.topic)
         except SystemError as system_error:
-            LOGGER.error("Fatal Error while parsing Message: %s. Exiting", str(system_error), stack_info=True, exc_info=True)
+            LOGGER.error("Fatal Error while parsing Message: %s. Exiting",
+                         system_error, stack_info=True, exc_info=True)
             # raise system_error
         except Exception as ex:
             # pylint: disable=broad-exception-caught
-            LOGGER.error("Error parsing SparkplugB message payload: %s", str(ex), stack_info=True, exc_info=True)
+            LOGGER.error("Error parsing SparkplugB message payload: %s",
+                         ex, stack_info=True, exc_info=True)
 
     def on_disconnect(
         self,
@@ -119,7 +125,8 @@ class UNSSparkPlugBMapper:
         # Cleanup when the MQTT broker gets disconnected
         LOGGER.debug("SparkplugB listener got disconnected")
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s", str(reason_codes), stack_info=True)
+            LOGGER.error("Unexpected disconnection.:%s",
+                         reason_codes, stack_info=True)
 
 
 def main():

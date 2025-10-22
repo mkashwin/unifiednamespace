@@ -1,0 +1,23 @@
+# Allow anonymous users on listeners with allow_anonymous true
+user anonymous
+topic readwrite #
+
+# Authenticated users
+
+# Read/Write user - full access to # hierarchy
+user rw
+topic readwrite #
+
+# Read Only user - can read but not write to # hierarchy
+user ro
+topic read #
+
+# Write Only user - can write but not read from # hierarchy
+user wo
+topic write #
+
+# Allow anonymous users (if any) to read public topics
+pattern read $SYS/#
+
+# Client certificate based access (using CN as username)
+pattern readwrite %u/#

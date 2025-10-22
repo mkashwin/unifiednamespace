@@ -39,7 +39,8 @@ REL_ATTR_KEY = "attribute_name"
 REL_ATTR_TYPE = "type"
 REL_INDEX = "index"
 
-SANITIZE_PATTERN = r"[^A-Za-z0-9_]"  # used to sanitize fields sent to Neo4j which cant be sent as params
+# used to sanitize fields sent to Neo4j which cant be sent as params
+SANITIZE_PATTERN = r"[^A-Za-z0-9_]"
 
 
 class GraphDBHandler:
@@ -90,7 +91,8 @@ class GraphDBHandler:
         except SystemError as ex:
             raise ex
         except Exception as ex:
-            LOGGER.error("Failed to create the driver: %s", str(ex), stack_info=True, exc_info=True)
+            LOGGER.error("Failed to create the driver: %s",
+                         ex, stack_info=True, exc_info=True)
             raise SystemError(ex) from ex
 
     def connect(self, retry: int = 0) -> neo4j.Driver:
@@ -116,7 +118,8 @@ class GraphDBHandler:
         """
         try:
             if self.driver is None:
-                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth, database=self.database)
+                self.driver = neo4j.GraphDatabase.driver(
+                    self.uri, auth=self.auth, database=self.database)
             self.driver.verify_connectivity()
         except (
             exceptions.DatabaseError,
@@ -125,17 +128,19 @@ class GraphDBHandler:
             exceptions.ServiceUnavailable,
         ) as ex:
             if retry >= self.max_retry:
-                LOGGER.error("No. of retries exceeded %s", str(self.max_retry), stack_info=True, exc_info=True)
+                LOGGER.error("No. of retries exceeded %s",
+                             self.max_retry, stack_info=True, exc_info=True)
                 raise SystemError(ex) from ex
 
             retry += 1
-            LOGGER.error("Error Connecting to %s.\n Error: %s", self.database, str(ex), stack_info=True, exc_info=True)
+            LOGGER.error("Error Connecting to %s.\n Error: %s",
+                         self.database, ex, stack_info=True, exc_info=True)
             time.sleep(self.sleep_btw_attempts)
             self.connect(retry=retry)
 
         except Exception as ex:
             LOGGER.error(
-                "Error Connecting to %s. Unable to retry. Error: %s", self.database, str(ex), stack_info=True, exc_info=True
+                "Error Connecting to %s. Unable to retry. Error: %s", self.database, ex, stack_info=True, exc_info=True
             )
             raise SystemError(ex) from ex
         return self.driver
@@ -150,7 +155,8 @@ class GraphDBHandler:
                 self.driver = None
             except Exception as ex:
                 # pylint: disable=broad-exception-caught
-                LOGGER.error("Failed to close the driver:%s", str(ex), stack_info=True, exc_info=True)
+                LOGGER.error("Failed to close the driver:%s",
+                             ex, stack_info=True, exc_info=True)
                 self.driver = None
 
     def persist_mqtt_msg(
@@ -158,7 +164,8 @@ class GraphDBHandler:
         topic: str,
         message: dict,
         timestamp: float = time.time(),
-        node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"),
+        node_types: tuple = ("ENTERPRISE", "FACILITY",
+                             "AREA", "LINE", "DEVICE"),
         attr_node_type: str | None = "NESTED_ATTRIBUTE",
         retry: int = 0,
     ):
@@ -181,18 +188,20 @@ class GraphDBHandler:
         try:
             driver = self.connect(retry)
             with driver.session(database=self.database) as session:
-                session.execute_write(self.save_all_nodes, topic, message, timestamp, node_types, attr_node_type)
+                session.execute_write(
+                    self.save_all_nodes, topic, message, timestamp, node_types, attr_node_type)
         except (exceptions.TransientError, exceptions.TransactionError, exceptions.SessionExpired) as ex:
             if retry >= self.max_retry:
-                LOGGER.error("No. of retries exceeded %s", str(self.max_retry), stack_info=True, exc_info=True)
+                LOGGER.error("No. of retries exceeded %s",
+                             self.max_retry, stack_info=True, exc_info=True)
                 raise ex
 
             retry += 1
             LOGGER.error(
                 "Error persisting \ntopic:%s \nmessage %s. on Error: %s",
                 topic,
-                str(message),
-                str(ex),
+                message,
+                ex,
                 stack_info=True,
                 exc_info=True,
             )
@@ -233,8 +242,10 @@ class GraphDBHandler:
         nodes = topic.split("/")
 
         for node in nodes:
-            LOGGER.debug("Processing sub topic: %s of topic:%s", str(node), str(topic))
-            node_type: str = GraphDBHandler.get_topic_node_type(count, node_types)
+            LOGGER.debug("Processing sub topic: %s of topic:%s",
+                         node, topic)
+            node_type: str = GraphDBHandler.get_topic_node_type(
+                count, node_types)
             if node != nodes[-1]:  # check if this is the leaf node of the topic
                 response = GraphDBHandler.save_node(
                     session=session,
@@ -287,7 +298,8 @@ class GraphDBHandler:
         attr_node_type (str): The type of attribute node. i.e the child nodes of attribute node
         timestamp (float): The timestamp of when the attribute nodes were saved.
         """
-        primitive_properties, compound_properties = GraphDBHandler.separate_plain_composite_attributes(attr_nodes)
+        primitive_properties, compound_properties = GraphDBHandler.separate_plain_composite_attributes(
+            attr_nodes)
         if len(primitive_properties) > 0 or len(compound_properties) > 0:  # Dont create empty node
             response = GraphDBHandler.save_node(
                 session=session,
@@ -327,7 +339,8 @@ class GraphDBHandler:
                     # to avoid clashes get the name of the child node sub_dict["name"] and append to the key
                     # Not using index because the length of the array could change across invocations
                     # if name is not present use the current index number
-                    sub_dict_name = sub_dict.get("name", key + "_" + str(index))
+                    sub_dict_name = sub_dict.get(
+                        "name", key + "_" + str(index))
 
                     GraphDBHandler.save_attribute_nodes(
                         session=session,
@@ -335,7 +348,8 @@ class GraphDBHandler:
                         node_type=attr_node_type,
                         lastnode_id=attr_node_id,
                         attr_nodes=sub_dict,
-                        nodetype_props={REL_ATTR_KEY: key, REL_ATTR_TYPE: "list", REL_INDEX: index},
+                        nodetype_props={REL_ATTR_KEY: key,
+                                        REL_ATTR_TYPE: "list", REL_INDEX: index},
                         attr_node_type=attr_node_type,
                         timestamp=timestamp,
                     )
@@ -401,11 +415,11 @@ class GraphDBHandler:
         """
         LOGGER.debug(
             "Saving node: %s of type: %s and attributes: %s with parent: %s",
-            str(nodename),
-            str(nodetype),
-            str(node_props),
-            str(nodetype_props),
-            str(parent_id),
+            nodename,
+            nodetype,
+            node_props,
+            nodetype_props,
+            parent_id,
         )
         # attributes should not be null for the query to work
         node_props = GraphDBHandler.transform_node_params_for_neo4j(node_props)
@@ -460,7 +474,7 @@ class GraphDBHandler:
     RETURN value.child
     """
 
-        LOGGER.debug("CQL statement to be executed: %s", str(query))
+        LOGGER.debug("CQL statement to be executed: %s", query)
 
         result: neo4j.Result = session.run(
             query,

@@ -1,0 +1,57 @@
+###############################################################################
+# Copyright (c) 2021 Ashwin Krishnan
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of MIT and  is provided "as is",
+# without warranty of any kind, express or implied, including but
+# not limited to the warranties of merchantability, fitness for a
+# particular purpose and noninfringement. In no event shall the
+# authors, contributors or copyright holders be liable for any claim,
+# damages or other liability, whether in an action of contract,
+# tort or otherwise, arising from, out of or in connection with the software
+# or the use or other dealings in the software.
+#
+# Contributors:
+#    -
+###############################################################################
+# This is a docker-compose to rapidly deploy a mosquitto mqtt broker with multiple listeners for testing
+# DO NOT USE FOR PRODUCTION DEPLOYMENT
+# This uses a custom mosquitto configuration file present in the same folder
+# along with certificates for encrypted connections, password file for authenticated connections and acl file for access control
+
+services:
+  mqtt-broker:
+    image: "eclipse-mosquitto:latest"
+    container_name: mqtt-broker
+    ports:
+      # MQTT TCP listeners
+      - "1883:1883" # MQTT, unencrypted, unauthenticated
+      - "1884:1884" # MQTT, unencrypted, authenticated
+      - "8883:8883" # MQTT, encrypted, unauthenticated
+      - "8884:8884" # MQTT, encrypted, client certificate required
+      - "8885:8885" # MQTT, encrypted, authenticated
+      - "8886:8886" # MQTT, encrypted, unauthenticated
+
+      # MQTT WebSockets listeners
+      - "8080:8080" # MQTT over WebSockets, unencrypted, unauthenticated
+      - "8081:8081" # MQTT over WebSockets, encrypted, unauthenticated
+      - "8090:8090" # MQTT over WebSockets, unencrypted, authenticated
+      - "8091:8091" # MQTT over WebSockets, encrypted, authenticated
+
+    volumes:
+      - "./mosquitto.conf:/mosquitto/config/mosquitto.conf"
+      - "./certs/server:/mosquitto/certs/server"
+      - "./certs/ca:/mosquitto/certs/ca"
+      - "./passwd:/mosquitto/config/passwd"
+      - "./acl:/mosquitto/config/acl"
+    networks:
+      - mqtt-network
+    restart: unless-stopped
+
+networks:
+  mqtt-network:
+    driver: bridge
+
+volumes:
+  mqtt-data:
+    driver: local

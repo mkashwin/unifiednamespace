@@ -98,12 +98,12 @@ class UnsMQTTClient(mqtt_client.Client):
                  'transport': %s,
                  'reconnect_on_failure': %s
                  }""",
-            str(client_id),
-            str(clean_session),
-            str(userdata),
-            str(protocol),
-            str(transport),
-            str(reconnect_on_failure),
+            client_id,
+            clean_session,
+            userdata,
+            protocol,
+            transport,
+            reconnect_on_failure,
         )
 
         if protocol not in MQTTVersion.__members__.values():
@@ -138,23 +138,23 @@ class UnsMQTTClient(mqtt_client.Client):
             """
             LOGGER.debug(
                 "{ Client: %s, Userdata: %s, Flags: %s, reason_code: %s}",
-                str(client),
-                str(userdata),
-                str(flags),
-                str(return_code),
+                client,
+                userdata,
+                flags,
+                return_code,
             )
             if return_code == 0:
                 LOGGER.debug(
-                    "Connection established. Returned code=%s", str(return_code))
+                    "Connection established. Returned code=%s", return_code)
                 for topic in self.topics:
                     self.subscribe(topic, self.qos, options=None,
                                    properties=properties)
 
                 LOGGER.info(
-                    "Successfully connected %s to MQTT Broker", str(self))
+                    "Successfully connected %s to MQTT Broker", self)
             else:
                 LOGGER.error("Bad connection. Returned code=%s",
-                             str(return_code))
+                             return_code)
                 client.bad_connection_flag = True
 
         def on_uns_subscribe(client: mqtt_client, userdata, mid, reason_codes, properties=None):
@@ -164,11 +164,11 @@ class UnsMQTTClient(mqtt_client.Client):
             """
             LOGGER.info(
                 "Successfully connected: %s with reason_code: %s, userdata:%s , mid:%s, properties:%s",
-                str(client),
-                str(reason_codes),
-                str(userdata),
-                str(mid),
-                str(properties),
+                client,
+                reason_codes,
+                userdata,
+                mid,
+                properties,
             )
 
         self.on_connect = on_uns_connect
@@ -207,7 +207,7 @@ class UnsMQTTClient(mqtt_client.Client):
             "ciphers" - specifying which encryption ciphers are allowed for this connection
 
             "keyfile_password" - pass phrase used to decrypt certfile and
-                                 keyfile incase it is encrypted
+                                 keyfile in case it is encrypted
 
             "insecure_cert" - Boolean to allow self signed certificates.
                               When true, hostname matching will be skipped
@@ -235,7 +235,7 @@ class UnsMQTTClient(mqtt_client.Client):
                          keepalive=keepalive, properties=properties)
         except Exception as ex:
             LOGGER.error("Unable to connect to MQTT broker: %s",
-                         str(ex), stack_info=True, exc_info=True)
+                         ex, stack_info=True, exc_info=True)
             raise SystemError(ex) from ex
 
     def setup_tls(self, tls):
@@ -401,20 +401,20 @@ class UnsMQTTClient(mqtt_client.Client):
                 # If a key is not found break the loop as we cant proceed further
                 # to search for child nodes
                 LOGGER.warning(
-                    "Unable to find attribute %s in %s. Skipping !!!", key, str(message))
+                    "Unable to find attribute %s in %s. Skipping !!!", key, message)
                 break
 
                 # descent into the nested key
             if count == len(ignored_attr) - 1:
                 # we are at leaf node hence can delete the key & value
                 LOGGER.info("%s deleted and will not be persisted",
-                            str((key, msg_cursor[key])))
+                            (key, msg_cursor[key]))
                 del msg_cursor[key]
             else:
                 msg_cursor = msg_cursor[key]
             if not isinstance(msg_cursor, dict):
                 LOGGER.warning(
-                    "key: %s should return a dict but found:%s. Cant proceed hence skipping !!!", key, str(message))
+                    "key: %s should return a dict but found:%s. Cant proceed hence skipping !!!", key, message)
                 break
             count += 1
         return message

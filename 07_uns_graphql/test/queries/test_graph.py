@@ -61,7 +61,8 @@ main_node.__getitem__.side_effect = (
 uns_child_1 = MagicMock(spec=Node, autospec=True)
 uns_child_1.element_id = "nested_child_1"
 uns_child_1.labels = frozenset({"NESTED_ATTRIBUTE", "TEST_MULTIPLE_LABELS"})
-uns_child_1.items.return_value = {"node_name": "dict_list_1", "_created_timestamp": 1486144500000, "x": "y"}.items()
+uns_child_1.items.return_value = {
+    "node_name": "dict_list_1", "_created_timestamp": 1486144500000, "x": "y"}.items()
 uns_child_1.__getitem__.side_effect = (
     lambda key: "dict_list_1"
     if key == NODE_NAME_KEY
@@ -76,7 +77,8 @@ uns_child_1.__getitem__.side_effect = (
 uns_child_2 = MagicMock(spec=Node, autospec=True)
 uns_child_2.element_id = "nested_child_2"
 uns_child_2.labels = frozenset({"NESTED_ATTRIBUTE"})
-uns_child_2.items.return_value = {"node_name": "dict_list_0", "_created_timestamp": 1486144500000, "a": "b"}.items()
+uns_child_2.items.return_value = {
+    "node_name": "dict_list_0", "_created_timestamp": 1486144500000, "a": "b"}.items()
 uns_child_2.__getitem__.side_effect = (
     lambda key: "dict_list_0"
     if key == NODE_NAME_KEY
@@ -337,7 +339,8 @@ async def test_get_uns_nodes(
     topics: list[str],
     has_result_errors: bool,
 ):
-    mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+    mqtt_topic_list = [MQTTTopicInput.from_pydantic(
+        MQTTTopic(topic=topic)) for topic in topics]
     with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_uns_graphdb):
         graph_query = GraphQuery()
         try:
@@ -368,7 +371,8 @@ async def test_get_uns_nodes_by_property(
 ):
     mqtt_topic_list = None
     if topics is not None:
-        mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+        mqtt_topic_list = [MQTTTopicInput.from_pydantic(
+            MQTTTopic(topic=topic)) for topic in topics]
     with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_uns_graphdb):
         graph_query = GraphQuery()
         try:
@@ -383,7 +387,8 @@ async def test_get_uns_nodes_by_property(
 @pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize(
     "metric_names",
-    [(["Inputs/A"]), ("Inputs/A"), (["Inputs/A", "Inputs/B"]), (["Output/F"]), ([]), (None)],
+    [(["Inputs/A"]), ("Inputs/A"), (["Inputs/A", "Inputs/B"]),
+     (["Output/F"]), ([]), (None)],
 )
 async def test_get_spb_nodes_by_metric(metric_names: list[str]):
     with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_spb_graphdb):
@@ -428,10 +433,14 @@ def test_get_node_type(labels: list[str], valid_labels: tuple[str], expected_res
 @pytest.mark.parametrize(
     "parent, nested_children, relationships, expected_result, is_error",
     [
-        (main_node, [uns_child_1, uns_child_2, uns_child_3], [uns_rel_1, uns_rel_2, uns_rel_3], uns_dict_result, False),
-        (sbp_node, [spb_child_1, spb_child_2, spb_child_3], [spb_rel_1, spb_rel_2, spb_rel_3], spb_result_dict, False),
-        (None, [spb_child_1, spb_child_2, spb_child_3], [spb_rel_1, spb_rel_2, spb_rel_3], None, True),
-        (main_node, None, None, {"TestMetric2": "Test_UNS_with_NestedLists", "timestamp": 1486144510000}, False),
+        (main_node, [uns_child_1, uns_child_2, uns_child_3], [
+         uns_rel_1, uns_rel_2, uns_rel_3], uns_dict_result, False),
+        (sbp_node, [spb_child_1, spb_child_2, spb_child_3], [
+         spb_rel_1, spb_rel_2, spb_rel_3], spb_result_dict, False),
+        (None, [spb_child_1, spb_child_2, spb_child_3],
+         [spb_rel_1, spb_rel_2, spb_rel_3], None, True),
+        (main_node, None, None, {
+         "TestMetric2": "Test_UNS_with_NestedLists", "timestamp": 1486144510000}, False),
     ],
 )
 def test_get_nested_properties(
@@ -441,7 +450,8 @@ def test_get_nested_properties(
     Test GraphQuery.get_nested_properties()
     """
     try:
-        result = GraphQuery.get_nested_properties(parent=parent, nested_children=nested_children, relationships=relationships)
+        result = GraphQuery.get_nested_properties(
+            parent=parent, nested_children=nested_children, relationships=relationships)
         assert result == expected_result
     except Exception as ex:
         assert is_error, f"Should not throw any exceptions. Got {ex}"
@@ -527,7 +537,8 @@ async def test_strawberry_get_uns_nodes_by_property(
     with patch("uns_graphql.queries.graph.GraphDB", return_value=mocked_uns_graphdb):
         result = await schema.execute(
             query=query,
-            variable_values={"property_keys": property_keys, "mqtt_topics": mqtt_topics, "exclude_topics": exclude_topics},
+            variable_values={"property_keys": property_keys,
+                             "mqtt_topics": mqtt_topics, "exclude_topics": exclude_topics},
         )
         if not has_result_errors:
             assert not result.errors
@@ -602,7 +613,8 @@ async def setup_graphdb_data():
     with open(file=Path(__file__).resolve().parent / "test_data.cypher") as file:
         cypher_script = file.read()
     # Filter out lines that are not valid Cypher queries
-    valid_queries = cypher_script.replace(":begin\n", "").replace(":commit\n", "").split(";")
+    valid_queries = cypher_script.replace(
+        ":begin\n", "").replace(":commit\n", "").split(";")
     # Execute each query separately
     driver = await GraphDB.get_graphdb_driver()
     async with driver.session() as session:
@@ -708,7 +720,8 @@ async def test_get_uns_nodes_integration(
     topics: list[str],
     expected_result: list[UNSNode],
 ):
-    mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+    mqtt_topic_list = [MQTTTopicInput.from_pydantic(
+        MQTTTopic(topic=topic)) for topic in topics]
     graph_query = GraphQuery()
     try:
         result = await graph_query.get_uns_nodes(topics=mqtt_topic_list)
@@ -770,7 +783,8 @@ async def test_get_uns_nodes_integration(
                     namespace="test/uns/ar1/ln2",
                     node_name="ln2",
                     node_type="LINE",
-                    payload=JSONPayload(data={"TestMetric2": "TestUNS", "timestamp": 1486144502122}),
+                    payload=JSONPayload(
+                        data={"TestMetric2": "TestUNS", "timestamp": 1486144502122}),
                     created=datetime.fromtimestamp(1486144502.122, UTC),
                     last_updated=datetime.fromtimestamp(1486144502.122, UTC),
                 )
@@ -807,7 +821,8 @@ async def test_get_uns_nodes_by_property_integration(
 ):
     mqtt_topic_list = None
     if topics is not None:
-        mqtt_topic_list = [MQTTTopicInput.from_pydantic(MQTTTopic(topic=topic)) for topic in topics]
+        mqtt_topic_list = [MQTTTopicInput.from_pydantic(
+            MQTTTopic(topic=topic)) for topic in topics]
 
     graph_query = GraphQuery()
     try:
@@ -822,12 +837,18 @@ async def test_get_uns_nodes_by_property_integration(
 eon1_payload = {
     "timestamp": 1671554024644,
     "metrics": [
-        {"name": "Inputs/A", "alias": 0, "timestamp": 1486144502122, "datatype": 11, "value": False},
-        {"name": "Inputs/B", "alias": 1, "timestamp": 1486144502122, "datatype": 11, "value": False},
-        {"name": "Outputs/E", "alias": 2, "timestamp": 1486144502122, "datatype": 11, "value": False},
-        {"name": "Outputs/F", "alias": 3, "timestamp": 1486144502122, "datatype": 11, "value": False},
-        {"name": "Properties/Hardware Make", "alias": 4, "timestamp": 1486144502122, "datatype": 12, "value": "Sony"},
-        {"name": "Properties/Weight", "alias": 5, "timestamp": 1486144502122, "datatype": 3, "value": 200},
+        {"name": "Inputs/A", "alias": 0, "timestamp": 1486144502122,
+            "datatype": 11, "value": False},
+        {"name": "Inputs/B", "alias": 1, "timestamp": 1486144502122,
+            "datatype": 11, "value": False},
+        {"name": "Outputs/E", "alias": 2, "timestamp": 1486144502122,
+            "datatype": 11, "value": False},
+        {"name": "Outputs/F", "alias": 3, "timestamp": 1486144502122,
+            "datatype": 11, "value": False},
+        {"name": "Properties/Hardware Make", "alias": 4,
+            "timestamp": 1486144502122, "datatype": 12, "value": "Sony"},
+        {"name": "Properties/Weight", "alias": 5,
+            "timestamp": 1486144502122, "datatype": 3, "value": 200},
     ],
     "seq": 0,
 }
@@ -844,29 +865,37 @@ eon1_payload = {
         (
             ["Inputs/A"],
             [
-                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
-                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1",
+                        payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1",
+                        payload=eon1_payload),
             ],
         ),
         (
             "Inputs/A",
             [
-                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
-                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1",
+                        payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1",
+                        payload=eon1_payload),
             ],
         ),
         (
             ["Inputs/A", "Inputs/B"],
             [
-                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
-                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1",
+                        payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1",
+                        payload=eon1_payload),
             ],
         ),
         (
             ["Outputs/F"],
             [
-                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1", payload=eon1_payload),
-                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1", payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NBIRTH/eon1",
+                        payload=eon1_payload),
+                SPBNode(topic="spBv1.0/uns_group/NDATA/eon1",
+                        payload=eon1_payload),
             ],
         ),
         ([], []),

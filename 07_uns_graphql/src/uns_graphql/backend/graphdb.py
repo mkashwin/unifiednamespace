@@ -71,11 +71,13 @@ class GraphDB:
             await cls._graphdb_driver.verify_connectivity()
             LOGGER.debug("GraphDB driver connectivity verified")
         except Neo4jError as ex:
-            LOGGER.error("Failed to verify GraphDB driver connectivity: %s", str(ex), stack_info=True, exc_info=True)
+            LOGGER.error("Failed to verify GraphDB driver connectivity: %s",
+                         ex, stack_info=True, exc_info=True)
             # In case of connectivity failure, close the existing driver and create a new one
             await cls.release_graphdb_driver()
             if retry >= MAX_RETRIES:
-                LOGGER.error("No. of retries exceeded %s", str(MAX_RETRIES), stack_info=True, exc_info=True)
+                LOGGER.error("No. of retries exceeded %s",
+                             MAX_RETRIES, stack_info=True, exc_info=True)
                 raise ex  # Re-raise the exception after cleanup
 
             await asyncio.sleep(SLEEP_BTW_ATTEMPT)
@@ -96,7 +98,8 @@ class GraphDB:
                 await cls._graphdb_driver.close()
                 LOGGER.info("GraphDB driver closed successfully")
             except Neo4jError as ex:
-                LOGGER.error("Error closing the GraphDB driver: %s", str(ex), stack_info=True, exc_info=True)
+                LOGGER.error("Error closing the GraphDB driver: %s",
+                             ex, stack_info=True, exc_info=True)
             finally:
                 cls._graphdb_driver = None
         else:
@@ -115,7 +118,8 @@ class GraphDB:
             list: The results of the query.
         """
 
-        LOGGER.debug("Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
+        LOGGER.debug(
+            "Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
         driver = await self.get_graphdb_driver()
 
         async def read(read_tx, query: str, *args, **kwargs) -> list[Record]:
@@ -127,10 +131,12 @@ class GraphDB:
             try:
                 records = await session.execute_read(read, query=query, *args, **kwargs)  # noqa: B026
 
-                LOGGER.debug("Query executed successfully, retrieved records: %s", records)
+                LOGGER.debug(
+                    "Query executed successfully, retrieved records: %s", records)
                 return records
             except Exception as ex:
-                LOGGER.error("Error executing query: %s", str(ex), stack_info=True, exc_info=True)
+                LOGGER.error("Error executing query: %s", ex,
+                             stack_info=True, exc_info=True)
                 raise
             finally:
                 await session.close()

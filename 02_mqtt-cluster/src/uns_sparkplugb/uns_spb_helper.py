@@ -263,7 +263,7 @@ class SpBMessageGenerator:
         Helper method for getting the next sequence number
         """
         ret_val = self.msg_seq_number
-        LOGGER.debug("Sequence Number:%s", str(ret_val))
+        LOGGER.debug("Sequence Number:%s", ret_val)
         self.msg_seq_number += 1
         if self.msg_seq_number == 256:
             self.msg_seq_number = 0
@@ -274,7 +274,7 @@ class SpBMessageGenerator:
         Helper method for getting the next birth/death sequence number
         """
         ret_val = self.birth_death_seq_num
-        LOGGER.debug("Birth/Death Sequence Number:%s", str(ret_val))
+        LOGGER.debug("Birth/Death Sequence Number:%s", ret_val)
         self.birth_death_seq_num += 1
         if self.birth_death_seq_num == 256:
             self.birth_death_seq_num = 0
