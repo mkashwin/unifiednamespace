@@ -49,10 +49,8 @@ jobs:
       - name: Setup MQTT Broker for Integration Tests
         shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install docker-compose
           cd ./02_mqtt-cluster/test/local_mqtt
-          docker-compose  -f mosquitto_docker-compose.yml up -d --wait
+          docker compose  -f mosquitto_docker-compose.yml up -d --wait
 
       - name: Run all type of tests
         uses: ./.github/include/execute_tests/
@@ -66,4 +64,4 @@ jobs:
         shell: bash
         run: |
           cd ./02_mqtt-cluster/test/local_mqtt
-          docker-compose  -f mosquitto_docker-compose.yml down
+          docker compose  -f mosquitto_docker-compose.yml down

@@ -73,7 +73,8 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("reconnect_on_failure", [(True), (False)])
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
 @pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
-def test_01_unauthenticated_connections(clean_session, protocol, broker, transport, port, reconnect_on_failure, topics, tls, qos):
+def test_01_unauthenticated_connections(clean_session, protocol,
+                                        broker, transport, port, reconnect_on_failure, topics, tls, qos):
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
