@@ -27,18 +27,24 @@ import pytest
 from uns_mqtt.mqtt_listener import MQTTVersion, UnsMQTTClient
 
 EMQX_HOST = "broker.emqx.io"  # test the client against the hosted emqx broker
-EMQX_CERT_FILE = Path(__file__).resolve().parent / "cert" / "broker.emqx.io-ca.crt"
+EMQX_CERT_FILE = Path(__file__).resolve().parent / \
+    "cert" / "broker.emqx.io-ca.crt"
 
-MOSQUITTO_HOST = "test.mosquitto.org"  # test the client against the hosted mosquitto broker
-MOSQUITTO_CERT_FILE = Path(__file__).resolve().parent / "cert" / "mosquitto.org.crt"
+# MOSQUITTO_HOST = "test.mosquitto.org"  # test the client against the hosted mosquitto broker
+# MOSQUITTO_CERT_FILE = Path(__file__).resolve().parent / "cert" / "mosquitto.org.crt"
+MOSQUITTO_HOST = "localhost"  # test the client against the hosted mosquitto broker
+MOSQUITTO_CERT_FILE = Path(__file__).resolve(
+).parent / "local_mqtt" / "certs" / "server" / "server.crt"
 
 ONE_TOPIC = ["test/uns/#"]
 
-TWO_TOPICS = ["test/uns/#", "spBv1.0/#"]  # used to reduce load on the hosted broker
+# used to reduce load on the hosted broker
+TWO_TOPICS = ["test/uns/#", "spBv1.0/#"]
 KEEP_ALIVE = 60
 
 
 @pytest.mark.integrationtest()
+@pytest.mark.parametrize("broker", [MOSQUITTO_HOST])  # EMQX_HOST
 @pytest.mark.parametrize("protocol", [(MQTTVersion.MQTTv5), (MQTTVersion.MQTTv311)])
 #                                     (UNS_MQTT_Listener.MQTTv31)])
 # There appears to be a bug for MQTTv31. The call backs are not occurring
@@ -46,19 +52,19 @@ KEEP_ALIVE = 60
     "transport,port,tls",
     [
         ("tcp", 1883, None),
-        ("websockets", 8083, None),
+        ("websockets", 8080, None),  # 8083
         (
             "tcp",
             8883,
             {
-                "ca_certs": EMQX_CERT_FILE,
+                "ca_certs": MOSQUITTO_CERT_FILE  # EMQX_CERT_FILE,
             },
         ),
         (
             "websockets",
-            8084,
+            8081,  # 8084
             {
-                "ca_certs": EMQX_CERT_FILE,
+                "ca_certs": MOSQUITTO_CERT_FILE  # EMQX_CERT_FILE,,
             },
         ),
     ],
@@ -67,7 +73,7 @@ KEEP_ALIVE = 60
 @pytest.mark.parametrize("reconnect_on_failure", [(True), (False)])
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
 @pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
-def test_01_unauthenticated_connections(clean_session, protocol, transport, port, reconnect_on_failure, topics, tls, qos):
+def test_01_unauthenticated_connections(clean_session, protocol, broker, transport, port, reconnect_on_failure, topics, tls, qos):
     """
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
@@ -87,16 +93,19 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport, port
 
     def on_connect(client, userdata, flags, result_code, properties=None):
         callback.append(True)
-        old_on_connect(client=client, userdata=userdata, flags=flags, return_code=result_code, properties=properties)
+        old_on_connect(client=client, userdata=userdata, flags=flags,
+                       return_code=result_code, properties=properties)
         if result_code != 0:
-            assert pytest.fail(), f"Client should have connected. Connection error:{result_code}"
+            assert pytest.fail(
+            ), f"Client should have connected. Connection error:{result_code}"
 
     uns_client.on_connect_fail = on_connect_fail
     old_on_connect = uns_client.on_connect
     uns_client.on_connect = on_connect
 
     try:
-        uns_client.run(EMQX_HOST, port, tls=tls, keepalive=KEEP_ALIVE, topics=topics, qos=qos)
+        uns_client.run(broker, port, tls=tls,
+                       keepalive=KEEP_ALIVE, topics=topics, qos=qos)
 
         while not uns_client.is_connected():
             time.sleep(1)
@@ -117,6 +126,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport, port
 
 ###############################################################################
 @pytest.mark.integrationtest()
+@pytest.mark.parametrize("broker", [MOSQUITTO_HOST])
 @pytest.mark.parametrize("protocol", [(MQTTVersion.MQTTv5), (MQTTVersion.MQTTv311), (MQTTVersion.MQTTv31)])
 @pytest.mark.parametrize(
     "transport,port,tls",
@@ -145,7 +155,7 @@ def test_01_unauthenticated_connections(clean_session, protocol, transport, port
 @pytest.mark.parametrize("qos", [(0), (1), (2)])
 @pytest.mark.parametrize("topics", [TWO_TOPICS, ONE_TOPIC])
 def test_02_authenticated_connections(
-    clean_session, protocol, transport, port, reconnect_on_failure, username, password, topics, tls, qos
+    clean_session, protocol, broker, transport, port, reconnect_on_failure, username, password, topics, tls, qos
 ):
     """
     Test all the parameters ( including username password against Mosquitto's hosted broker)
@@ -166,16 +176,18 @@ def test_02_authenticated_connections(
 
     def on_connect(client, userdata, flags, result_code, properties=None):
         callback.append(True)
-        old_on_connect(client=client, userdata=userdata, flags=flags, return_code=result_code, properties=properties)
+        old_on_connect(client=client, userdata=userdata, flags=flags,
+                       return_code=result_code, properties=properties)
         if result_code != 0:
-            assert pytest.fail(), f"Client should have connected. Connection error:{result_code}"
+            assert pytest.fail(
+            ), f"Client should have connected. Connection error:{result_code}"
 
     uns_client.on_connect_fail = on_connect_fail
     old_on_connect = uns_client.on_connect
     uns_client.on_connect = on_connect
     try:
         uns_client.run(
-            MOSQUITTO_HOST, port, username=username, password=password, tls=tls, keepalive=KEEP_ALIVE, topics=topics, qos=qos
+            broker, port, username=username, password=password, tls=tls, keepalive=KEEP_ALIVE, topics=topics, qos=qos
         )
         while not uns_client.is_connected():
             time.sleep(1)
@@ -429,7 +441,8 @@ def test_filter_ignored_attributes(topic: str, json_dict: dict, mqtt_ignored_att
     """
     Test case for Uns_MQTT_ClientWrapper.filter_ignored_attributes
     """
-    result = UnsMQTTClient.filter_ignored_attributes(topic, json_dict, mqtt_ignored_attributes)
+    result = UnsMQTTClient.filter_ignored_attributes(
+        topic, json_dict, mqtt_ignored_attributes)
     assert result == expected_result, f""" message:{json_dict},
             Attributes to filter:{mqtt_ignored_attributes},
             Expected Result:{expected_result},

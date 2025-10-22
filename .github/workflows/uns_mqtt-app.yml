@@ -46,6 +46,12 @@ jobs:
         with:
           module: 02_mqtt-cluster
 
+      - name: Setup MQTT Broker for Integration Tests
+        shell: bash
+        run: |
+          cd ./02_mqtt-cluster/test/local_mqtt
+          docker-compose  -f mosquitto_docker-compose.yml up -d
+
       - name: Run all type of tests
         uses: ./.github/include/execute_tests/
         with:
@@ -53,3 +59,9 @@ jobs:
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
           pytest_flags: ${{ inputs.pytest_add_opts }}
+
+      - name: Shutdown  MQTT Broker for Integration Tests
+        shell: bash
+        run: |
+          cd ./02_mqtt-cluster/test/local_mqtt
+          docker-compose  -f mosquitto_docker-compose.yml down
