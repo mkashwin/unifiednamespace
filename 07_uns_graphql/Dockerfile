@@ -34,7 +34,7 @@ ENV UNS_MODULE="07_uns_graphql"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    LIBRDKAFKA_VER="2.12.0"
+    LIBRDKAFKA_VER="2.12.1"
 # spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/07_uns_graphql
 LABEL org.opencontainers.image.description="Provide GraphQL capabilities for the UNS across all data sources"
@@ -75,7 +75,7 @@ RUN  pip install  --no-cache-dir --upgrade pip uv && \
     # Install the required dependencies for the project using uv as that user
     su uns_user -c "uv lock  \
     && uv add /02_mqtt-cluster -n \
-    && uv sync --group main"
+    && uv sync --group main --compile-bytecode"
 
 USER uns_user
 

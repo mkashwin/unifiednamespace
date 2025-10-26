@@ -34,7 +34,7 @@ ENV UNS_MODULE="06_uns_kafka"\
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    LIBRDKAFKA_VER="2.12.0"
+    LIBRDKAFKA_VER="2.12.1"
 # spell-checker:enable
 LABEL org.opencontainers.image.source=https://github.com/mkashwin/unifiednamespace/tree/main/06_uns_kafka
 LABEL org.opencontainers.image.description="Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
@@ -75,7 +75,7 @@ RUN  pip install  --no-cache-dir --upgrade pip uv && \
     # Install the required dependencies for the project using uv as that user
     su uns_user -c "uv lock  \
     && uv add /02_mqtt-cluster -n \
-    && uv sync --group main"
+    && uv sync --group main --compile-bytecode"
 
 USER uns_user
 

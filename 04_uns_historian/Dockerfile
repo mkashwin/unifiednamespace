@@ -64,7 +64,7 @@ RUN  pip install  --no-cache-dir --upgrade pip uv && \
     # Install the required dependencies for the project using uv as that user
     su uns_user -c "uv lock  \
     && uv add /02_mqtt-cluster -n \
-    && uv sync --group main"
+    && uv sync --group main --compile-bytecode"
 
 USER uns_user
 

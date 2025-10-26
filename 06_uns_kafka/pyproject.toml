@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
     "logger~=1.4",
     "dynaconf~=3.2",
-    "confluent-kafka>=2.9.0,<3",
+    "confluent-kafka==2.12.0", #"confluent-kafka>=2.12.0,<3", # Fixed to 2.12.0 to resolve compatibility issues
     "psutil>=6.1.1,<8",
 ]
 
