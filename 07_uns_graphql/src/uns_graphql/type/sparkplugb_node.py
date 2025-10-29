@@ -88,7 +88,7 @@ class SPBPropertySet:
     """
 
     keys: list[str]
-    values: list[typing.Annotated[SPBPropertyValue,
+    values: list[typing.Annotated["SPBPropertyValue",
                                   strawberry.lazy(".sparkplugb_node")]]
 
     def __init__(self, propertyset: Payload.PropertySet) -> None:
@@ -220,7 +220,7 @@ class SPBTemplate:
     """
 
     version: str | None
-    metrics: list[typing.Annotated[SPBMetric,
+    metrics: list[typing.Annotated["SPBMetric",
                                    strawberry.lazy(".sparkplugb_node")]]
     parameters: list[SPBTemplateParameter] | None
     template_ref: str | None
