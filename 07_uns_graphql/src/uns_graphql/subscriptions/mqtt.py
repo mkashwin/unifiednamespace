@@ -44,7 +44,7 @@ class MQTTSubscription:
     @strawberry.subscription(
         description=" Subscribe to MQTT messages based on provided list of topics. MQTT wildcards are supported "
     )
-    async def get_mqtt_messages(self, topics: list[MQTTTopicInput]) -> typing.AsyncGenerator[MQTTMessage, None]:
+    async def get_mqtt_messages(self, topics: list[MQTTTopicInput]) -> typing.AsyncGenerator[MQTTMessage]:
         """
         Subscribe to MQTT messages based on provided topics.
 
