@@ -40,7 +40,7 @@ class KAFKASubscription:
     """
 
     @strawberry.subscription(description="Subscribe to Kafka messages based on provided topics. Wildcards/Regex not supported")
-    async def get_kafka_messages(self, topics: list[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage, None]:
+    async def get_kafka_messages(self, topics: list[KAFKATopicInput]) -> typing.AsyncGenerator[StreamingMessage]:
         """
         Subscribe to Kafka messages based on provided topics.
 
@@ -67,18 +67,20 @@ class KAFKASubscription:
         consumer.subscribe([x.topic for x in topics], on_assign=reset_offset)
 
         # Inner async function to poll and yield messages from Kafka
-        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage, None]:
+        async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage]:
             try:
                 while True:
                     # Poll for messages with a specified timeout
-                    msg = consumer.poll(timeout=KAFKAConfig.consumer_poll_timeout)
+                    msg = consumer.poll(
+                        timeout=KAFKAConfig.consumer_poll_timeout)
                     if msg is None:
                         await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
                         continue
 
                     if msg.error():
                         # Log and raise an error if there is an issue with the message
-                        LOGGER.error(f"Error Message received from Kafka Broker msg: {msg.error()!s}")
+                        LOGGER.error(
+                            f"Error Message received from Kafka Broker msg: {msg.error()!s}")
                         raise ValueError(msg.error())
 
                     # Yield the received message as a StreamingMessage
@@ -86,7 +88,8 @@ class KAFKASubscription:
             except asyncio.CancelledError:
                 LOGGER.info("Kafka listener cancelled.")
             except Exception as e:
-                LOGGER.error(f"Unexpected error in Kafka listener: {e!s}", exc_info=True)
+                LOGGER.error(
+                    f"Unexpected error in Kafka listener: {e!s}", exc_info=True)
             finally:
                 # Ensure the consumer is closed properly
                 LOGGER.info("Closing Kafka consumer.")

@@ -54,6 +54,7 @@ jobs:
           KAKFA_DOCKER="./06_uns_kafka/Dockerfile"
           GRAPHQL_DOCKER="./07_uns_graphql/Dockerfile"
 
+
           current_version=$(grep -oP '(?<=LIBRDKAFKA_VER=")[^"]*' "$KAKFA_DOCKER")
 
           latest_release=$(curl -s https://api.github.com/repos/confluentinc/librdkafka/releases/latest | jq -r '.tag_name')
@@ -67,6 +68,8 @@ jobs:
               # Use sed to replace all instances of OLD_TEXT with NEW_TEXT in the file
               sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
               sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
+              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "./.devcontainer/devcontainersetup.sh"
+              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "./.github/include/setup_librdkafka/action.yml"
               echo "check_in_msg=${check_in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
               echo "check_in_title=${check_in_title}, 'upgraded librdkafka to v${latest_release}'"  >> $GITHUB_OUTPUT
             else

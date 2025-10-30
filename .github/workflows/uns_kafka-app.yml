@@ -79,6 +79,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: install librdkafka
+        uses: ./.github/include/setup_librdkafka/
+
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
         with:
