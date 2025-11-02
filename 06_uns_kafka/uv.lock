@@ -126,9 +126,19 @@ wheels = [
 
 [[package]]
 name = "confluent-kafka"
-version = "2.12.0"
+version = "2.12.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/78/5e/ceed3dd7e69ecdb1197b625fd6248fa1bbb44782def202609421b8a273fa/confluent_kafka-2.12.0.tar.gz", hash = "sha256:2a8d8734c6eaf30a751dde2ad75fc78b35aad60d66a3a7aa837c7513f36c29b7", size = 250313, upload-time = "2025-10-10T00:08:01.932Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/03/5c/af272d90e0f75f5516087df97cd1e2e04673df2245c0e43754e0ec5cde48/confluent_kafka-2.12.1-cp314-cp314-macosx_13_0_arm64.whl", hash = "sha256:8c708d3f774217871a3959443606b28a667587ed783b70c3c01f057a38eaeedb", size = 3162878, upload-time = "2025-10-21T20:50:55.867Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/cf/768d89e471572f348bf94802b2381b64fc7105315d76be1a611bb6f1d62b/confluent_kafka-2.12.1-cp314-cp314-macosx_13_0_x86_64.whl", hash = "sha256:e26739ed8d19c7def3dde37fec621373cf15682a1a80b37add51ae435ee19d5f", size = 3602141, upload-time = "2025-10-21T20:50:59.011Z" },
+    { url = "https://files.pythonhosted.org/packages/71/a1/8ad5e17883bcc07022e40859f76e7bc595524ebbf1fc71b9d54e148e9806/confluent_kafka-2.12.1-cp314-cp314-manylinux_2_28_aarch64.whl", hash = "sha256:1460e51e72a03cafc10cebd52d25b84cc494983e1f51c46ccd043f46fab6f1d5", size = 3695891, upload-time = "2025-10-21T20:51:01.738Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/2d/a8077855fd282eed2d29faef6522d96937ea64aa789ad79c3d0fbf3d95c1/confluent_kafka-2.12.1-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:77e1013062934294a374ef4f694179e0365e36317b4f8d3f84b009e4136cdc2f", size = 3947450, upload-time = "2025-10-21T20:51:04.653Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/40/fdc769717baa73e8aad16c2d2b523d1a702b1dc8e9cfc243dbfe9d3a152e/confluent_kafka-2.12.1-cp314-cp314-win_amd64.whl", hash = "sha256:0b9c1bc62e97123c969c8ec3f3623ad1ac85f3c1953da7b3b288cb759b3e21aa", size = 4245354, upload-time = "2025-10-21T20:51:07.303Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/e8/db65e7e9b5bf45f97fefa7c78039826ed3c6d32c02e599ee913f8cede480/confluent_kafka-2.12.1-cp314-cp314t-macosx_13_0_arm64.whl", hash = "sha256:b711de5a45eb8e54b4c1cb5bf841b969e53e680e971514003b210f0e544f96d9", size = 3161515, upload-time = "2025-10-21T20:51:09.893Z" },
+    { url = "https://files.pythonhosted.org/packages/64/ba/63526ae0c56b95892b73f66a81b2aae9af417c642b0818ec9e4e7e944223/confluent_kafka-2.12.1-cp314-cp314t-macosx_13_0_x86_64.whl", hash = "sha256:2672953ac47d80b6f5de9f4c182766a7cd26615afb0aaa1b8b00f4a7cfc62943", size = 3600003, upload-time = "2025-10-21T20:51:12.785Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/1e/19b6eb0927d853d7149b97f88e7a4585f3a4d06cf6d8b575e8a80fcffce2/confluent_kafka-2.12.1-cp314-cp314t-manylinux_2_28_aarch64.whl", hash = "sha256:43db6424ac66ff88bbe6ba1a686196d1f6bd79aa54d5611f1f0473bf5be47efa", size = 3694769, upload-time = "2025-10-21T20:51:15.43Z" },
+    { url = "https://files.pythonhosted.org/packages/33/19/3452a5417ca856d37d6cf9b063764c4e11ce4dcec412c28cb12336ffd3aa/confluent_kafka-2.12.1-cp314-cp314t-manylinux_2_28_x86_64.whl", hash = "sha256:7e58b64832b31e8a91ae933c1c8d44de41d80b4352507b79b7c67d908845a6b3", size = 3946110, upload-time = "2025-10-21T20:51:18.233Z" },
+]
 
 [[package]]
 name = "coverage"
@@ -386,11 +396,11 @@ wheels = [
 
 [[package]]
 name = "marshmallow"
-version = "4.0.1"
+version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cc/ff/8f092fe402ef12aa71b7f4ceba0c557ce4d5876a9cf421e01a67b7210560/marshmallow-4.0.1.tar.gz", hash = "sha256:e1d860bd262737cb2d34e1541b84cb52c32c72c9474e3fe6f30f137ef8b0d97f", size = 220453, upload-time = "2025-08-28T15:01:37.044Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/2c/e40834adb0bb6f21d7372ad90e616eda82116d4f090d93c29ceb2366cdaf/marshmallow-4.1.0.tar.gz", hash = "sha256:daa9862f74e2f7864980d25c29b4ea72944cde48aa17537e3bd5797a4ae62d71", size = 220619, upload-time = "2025-11-01T15:40:37.096Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/18/297efc62b3539b9cd379fc49be3740a02e4c8a43e486f50322cfe0b9568a/marshmallow-4.0.1-py3-none-any.whl", hash = "sha256:72f14ef346f81269dbddee891bac547dda1501e9e08b6a809756ea3dbb7936a1", size = 48414, upload-time = "2025-08-28T15:01:35.221Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/df/081ea8c41696d598e7cea4f101e49da718a9b6c9dcaaad4e76dfc11a022c/marshmallow-4.1.0-py3-none-any.whl", hash = "sha256:9901660499be3b880dc92d6b5ee0b9a79e94265b7793f71021f92040c07129f1", size = 48286, upload-time = "2025-11-01T15:40:35.542Z" },
 ]
 
 [[package]]
