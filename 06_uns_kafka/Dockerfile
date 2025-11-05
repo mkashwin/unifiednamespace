@@ -51,6 +51,8 @@ COPY ./02_mqtt-cluster/src /02_mqtt-cluster/src
 COPY ./${UNS_MODULE}/src ./src/
 
 # install minimalistic missing packages & security fixes
+# trunk-ignore(hadolint/DL3003)
+# trunk-ignore(trivy/DS013)
 RUN apk update && \ 
     apk add --no-cache  libffi-dev libc-dev gcc bash g++ make && \
     apk upgrade --no-cache libexpat libcrypto3 libssl3 busybox ssl_client && \
