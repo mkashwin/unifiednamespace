@@ -35,7 +35,7 @@ Repository = "https://github.com/mkashwin/unifiednamespace/tree/main/02_mqtt-clu
 
 [dependency-groups]
 test = [
-    "pytest>=8.3.4,<9",
+    "pytest>=8.3.4,<10",
     "pytest-xdist>=3.6.1,<4",
     "pytest-timeout>=2.3.1,<3",
     "pytest-cov>=6.0.0,<8",
