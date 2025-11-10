@@ -43,7 +43,7 @@ uns_graphdb_healthcheck = "uns_graphdb.health_check:main"
 [dependency-groups]
 main = ["uns_mqtt"]
 test = [
-    "pytest>=8.3.4,<9",
+    "pytest>=8.3.4,<10",
     "pytest-xdist>=3.6.1,<4",
     "pytest-cov>=6.0.0,<8",
     "pytest-timeout>=2.3.1,<3",
