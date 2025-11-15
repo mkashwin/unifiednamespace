@@ -820,7 +820,7 @@ wheels = [
 
 [[package]]
 name = "uns-kafka-mapper"
-version = "0.9.35"
+version = "0.9.38"
 source = { editable = "." }
 dependencies = [
     { name = "confluent-kafka" },
@@ -861,7 +861,7 @@ test = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.9.35"
+version = "0.9.38"
 source = { editable = "../02_mqtt-cluster" }
 dependencies = [
     { name = "logger" },

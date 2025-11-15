@@ -1,6 +1,6 @@
 [project]
 name = "uns_kafka_mapper"
-version = "0.9.35"
+version = "0.9.38"
 description = "Listens to the UNS namespace, converts UNS topic to Kafka topic and publishes the message to Kafka"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"

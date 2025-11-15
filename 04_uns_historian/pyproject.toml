@@ -1,6 +1,6 @@
 [project]
 name = "uns_historian"
-version = "0.9.35"
+version = "0.9.38"
 description = "Historian implementation for a UNS setup"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"
