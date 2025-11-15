@@ -774,7 +774,7 @@ wheels = [
 
 [[package]]
 name = "uns-mqtt"
-version = "0.9.35"
+version = "0.9.38"
 source = { editable = "." }
 dependencies = [
     { name = "logger" },
