@@ -50,10 +50,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: install librdkafka
-        uses: ./.github/include/setup_librdkafka/
-        if: ${{ (matrix.module =='./06_uns_kafka') || (matrix.module =='./07_uns_graphql') }}
-
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
         with:
