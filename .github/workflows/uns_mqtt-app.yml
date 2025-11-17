@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           cd ./02_mqtt-cluster/test/local_mqtt
-          # docker compose  -f mosquitto_docker-compose.yml up -d --wait
+          # docker compose  -f mosquitto_docker-compose.yaml up -d --wait
           docker compose  -f emqx_docker-compose.yaml up -d --wait
 
       - name: Run all type of tests
@@ -65,4 +65,4 @@ jobs:
         shell: bash
         run: |
           cd ./02_mqtt-cluster/test/local_mqtt
-          docker compose  -f mosquitto_docker-compose.yml down
+          docker compose  -f mosquitto_docker-compose.yaml down
