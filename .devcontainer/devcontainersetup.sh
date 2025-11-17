@@ -1,21 +1,8 @@
 #!/bin/bash
 # This script is to be executed on creation of the dev container in order to create a working development environment
 WORKSPACE=/workspaces/unifiednamespace
-# 1.0 libraries needed for the python environment
-LIBRDKAFKA_VER="2.12.1"
-# Need to install https://github.com/confluentinc/librdkafka/releases/tag/v${LIBRDKAFKA_VER} as alpine does not have this version
-wget -q https://github.com/confluentinc/librdkafka/archive/refs/tags/v"${LIBRDKAFKA_VER}".zip
-unzip -o v"${LIBRDKAFKA_VER}".zip
-# trunk-ignore(shellcheck/SC2164)
-cd librdkafka-"${LIBRDKAFKA_VER}"
-sudo bash -c "./configure --install-deps --disable-gssapi --disable-lz4-ext --enable-static
-    ./configure --prefix /usr && \
-    make && \
-    make install"
-cd .. &&
-	rm v"${LIBRDKAFKA_VER}".zip &&
-	rm -rf librdkafka-"${LIBRDKAFKA_VER}"
-# 1.1 setup the python environment
+
+# 1.0 setup the python environment
 pip3 install --upgrade pip uv
 uv sync
 
