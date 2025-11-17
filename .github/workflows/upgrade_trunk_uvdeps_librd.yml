@@ -51,11 +51,11 @@ jobs:
           check_in_title: ${{ steps.uv_sync_upgrade.outputs.check_in_title }}
         run: |
           # Define the path to the Dockerfile. Currently using only 06_uns_kafka but will update 07_uns_graphql also
-          KAKFA_DOCKER="./06_uns_kafka/Dockerfile"
+          KAFKA_DOCKER="./06_uns_kafka/Dockerfile"
           GRAPHQL_DOCKER="./07_uns_graphql/Dockerfile"
 
 
-          current_version=$(grep -oP '(?<=LIBRDKAFKA_VER=")[^"]*' "$KAKFA_DOCKER")
+          current_version=$(grep -oP '(?<=LIBRDKAFKA_VER=")[^"]*' "$KAFKA_DOCKER")
 
           latest_release=$(curl -s https://api.github.com/repos/confluentinc/librdkafka/releases/latest | jq -r '.tag_name')
           # check if the api call was successful and latest_release is not null
@@ -66,10 +66,9 @@ jobs:
               OLD_TEXT=LIBRDKAFKA_VER=\"${current_version}\"
               NEW_TEXT=LIBRDKAFKA_VER=\"${latest_release}\"
               # Use sed to replace all instances of OLD_TEXT with NEW_TEXT in the file
-              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAKFA_DOCKER"
+              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$KAFKA_DOCKER"
               sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "$GRAPHQL_DOCKER"
-              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "./.devcontainer/devcontainersetup.sh"
-              sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "./.github/include/setup_librdkafka/action.yml"
+
               echo "check_in_msg=${check_in_msg}, upgraded librdkafka to v${latest_release}"  >> $GITHUB_OUTPUT
               echo "check_in_title=${check_in_title}, 'upgraded librdkafka to v${latest_release}'"  >> $GITHUB_OUTPUT
             else

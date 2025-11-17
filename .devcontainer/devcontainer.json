@@ -37,7 +37,6 @@
     "vscode": {
       "extensions": [
         "streetsidesoftware.code-spell-checker",
-        "VisualStudioExptTeam.vscodeintellicode",
         "DavidAnson.vscode-markdownlint",
         "redhat.vscode-yaml",
         "trunk.io",
