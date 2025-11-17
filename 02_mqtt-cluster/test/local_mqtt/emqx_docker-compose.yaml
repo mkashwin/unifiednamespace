@@ -1,0 +1,167 @@
+###############################################################################
+# Copyright (c) 2021 Ashwin Krishnan
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of MIT and  is provided "as is",
+# without warranty of any kind, express or implied, including but
+# not limited to the warranties of merchantability, fitness for a
+# particular purpose and noninfringement. In no event shall the
+# authors, contributors or copyright holders be liable for any claim,
+# damages or other liability, whether in an action of contract,
+# tort or otherwise, arising from, out of or in connection with the software
+# or the use or other dealings in the software.
+#
+# Contributors:
+#    -
+###############################################################################
+# This is a docker-compose to rapidly deploy an emqx mqtt broker with multiple listeners for testing
+# DO NOT USE FOR PRODUCTION DEPLOYMENT
+# This uses a custom acl file  and user import file to setup users with different permission levels
+# along with certificates for encrypted connections
+
+services:
+  emqx:
+    image: "emqx/emqx:latest"
+    container_name: emqx-mqtt
+    restart: unless-stopped
+    ports:
+      # MQTT Ports
+      - "1883:1883" # MQTT, unencrypted, unauthenticated
+      - "1884:1884" # MQTT, unencrypted, authenticated
+      - "8883:8883" # MQTT, encrypted, unauthenticated
+      - "8884:8884" # MQTT, encrypted, client certificate required
+      - "8885:8885" # MQTT, encrypted, authenticated
+      - "8886:8886" # MQTT, encrypted, unauthenticated
+      # WebSocket Ports
+      - "8080:8080" # MQTT over WebSockets, unencrypted, unauthenticated
+      - "8081:8081" # MQTT over WebSockets, encrypted, unauthenticated
+      - "8090:8090" # MQTT over WebSockets, unencrypted, authenticated
+      - "8091:8091" # MQTT over WebSockets, encrypted, authenticated
+      # Dashboard
+      - "18083:18083" # EMQX Dashboard
+    environment:
+      - EMQX_NAME=emqx
+      - EMQX_HOST=127.0.0.1
+
+      # Dashboard
+      #- EMQX_DASHBOARD__DEFAULT_USERNAME=admin
+      #- EMQX_DASHBOARD__DEFAULT_PASSWORD=public
+      - EMQX_DASHBOARD__LISTENERS__HTTP__BIND=18083
+
+      # Node Configuration
+      - EMQX_NODE__COOKIE=emqxsecretcookie
+      - EMQX_NODE__DATA_DIR=data
+
+      # Listener 1883 - MQTT unencrypted, unauthenticated
+      - "EMQX_LISTENERS__TCP__DEFAULT__BIND=0.0.0.0:1883"
+      - EMQX_LISTENERS__TCP__DEFAULT__MAX_CONNECTIONS=1024000
+      - EMQX_LISTENERS__TCP__DEFAULT__ENABLE_AUTHN=false
+
+      # Listener 1884 - MQTT unencrypted, authenticated
+      - "EMQX_LISTENERS__TCP__AUTHENTICATED__BIND=0.0.0.0:1884"
+      - EMQX_LISTENERS__TCP__AUTHENTICATED__MAX_CONNECTIONS=1024000
+      - EMQX_LISTENERS__TCP__AUTHENTICATED__ENABLE_AUTHN=true
+
+      # Listener 8883 - MQTT encrypted, unauthenticated
+      - "EMQX_LISTENERS__SSL__DEFAULT__BIND=0.0.0.0:8883"
+      - EMQX_LISTENERS__SSL__DEFAULT__MAX_CONNECTIONS=512000
+      - EMQX_LISTENERS__SSL__DEFAULT__ENABLE_AUTHN=false
+      - EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__CACERTFILE=/opt/emqx/etc/certs/ca/ca.crt
+      - EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__CERTFILE=/opt/emqx/etc/certs/server/server.crt
+      - EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__KEYFILE=/opt/emqx/etc/certs/server/server.key
+      - EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__VERIFY=verify_none
+
+      # Listener 8884 - MQTT encrypted, client certificate required
+      - "EMQX_LISTENERS__SSL__CLIENT_CERT__BIND=0.0.0.0:8884"
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__MAX_CONNECTIONS=512000
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__ENABLE_AUTHN=false
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__SSL_OPTIONS__CACERTFILE=/opt/emqx/etc/certs/ca/ca.crt
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__SSL_OPTIONS__CERTFILE=/opt/emqx/etc/certs/server/server.crt
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__SSL_OPTIONS__KEYFILE=/opt/emqx/etc/certs/server/server.key
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__SSL_OPTIONS__VERIFY=verify_peer
+      - EMQX_LISTENERS__SSL__CLIENT_CERT__SSL_OPTIONS__FAIL_IF_NO_PEER_CERT=true
+
+      # Listener 8885 - MQTT encrypted, authenticated
+      - "EMQX_LISTENERS__SSL__AUTHENTICATED__BIND=0.0.0.0:8885"
+      - EMQX_LISTENERS__SSL__AUTHENTICATED__MAX_CONNECTIONS=512000
+      - EMQX_LISTENERS__SSL__AUTHENTICATED__ENABLE_AUTHN=true
+      - EMQX_LISTENERS__SSL__AUTHENTICATED__SSL_OPTIONS__CACERTFILE=/opt/emqx/etc/certs/ca/ca.crt
+      - EMQX_LISTENERS__SSL__AUTHENTICATED__SSL_OPTIONS__CERTFILE=/opt/emqx/etc/certs/server/server.crt
+      - EMQX_LISTENERS__SSL__AUTHENTICATED__SSL_OPTIONS__KEYFILE=/opt/emqx/etc/certs/server/server.key
+      - EMQX_LISTENERS__SSL__AUTHENTICATED__SSL_OPTIONS__VERIFY=verify_none
+
+      # Listener 8886 - MQTT encrypted, unauthenticated (alt)
+      - "EMQX_LISTENERS__SSL__UNAUTH_ALT__BIND=0.0.0.0:8886"
+      - EMQX_LISTENERS__SSL__UNAUTH_ALT__MAX_CONNECTIONS=512000
+      - EMQX_LISTENERS__SSL__UNAUTH_ALT__ENABLE_AUTHN=false
+      - EMQX_LISTENERS__SSL__UNAUTH_ALT__SSL_OPTIONS__CACERTFILE=/opt/emqx/etc/certs/ca/ca.crt
+      - EMQX_LISTENERS__SSL__UNAUTH_ALT__SSL_OPTIONS__CERTFILE=/opt/emqx/etc/certs/server/server.crt
+      - EMQX_LISTENERS__SSL__UNAUTH_ALT__SSL_OPTIONS__KEYFILE=/opt/emqx/etc/certs/server/server.key
+      - EMQX_LISTENERS__SSL__UNAUTH_ALT__SSL_OPTIONS__VERIFY=verify_none
+
+      # Listener 8080 - WebSocket unencrypted, unauthenticated
+      - "EMQX_LISTENERS__WS__DEFAULT__BIND=0.0.0.0:8080"
+      - EMQX_LISTENERS__WS__DEFAULT__MAX_CONNECTIONS=1024000
+      - EMQX_LISTENERS__WS__DEFAULT__ENABLE_AUTHN=false
+      - EMQX_LISTENERS__WS__DEFAULT__WEBSOCKET__MQTT_PATH=/mqtt
+
+      # Listener 8081 - WebSocket encrypted, unauthenticated
+      - "EMQX_LISTENERS__WSS__DEFAULT__BIND=0.0.0.0:8081"
+      - EMQX_LISTENERS__WSS__DEFAULT__MAX_CONNECTIONS=512000
+      - EMQX_LISTENERS__WSS__DEFAULT__ENABLE_AUTHN=false
+      - EMQX_LISTENERS__WSS__DEFAULT__WEBSOCKET__MQTT_PATH=/mqtt
+      - EMQX_LISTENERS__WSS__DEFAULT__SSL_OPTIONS__CACERTFILE=/opt/emqx/etc/certs/ca/ca.crt
+      - EMQX_LISTENERS__WSS__DEFAULT__SSL_OPTIONS__CERTFILE=/opt/emqx/etc/certs/server/server.crt
+      - EMQX_LISTENERS__WSS__DEFAULT__SSL_OPTIONS__KEYFILE=/opt/emqx/etc/certs/server/server.key
+      - EMQX_LISTENERS__WSS__DEFAULT__SSL_OPTIONS__VERIFY=verify_none
+
+      # Listener 8090 - WebSocket unencrypted, authenticated
+      - "EMQX_LISTENERS__WS__AUTHENTICATED__BIND=0.0.0.0:8090"
+      - EMQX_LISTENERS__WS__AUTHENTICATED__MAX_CONNECTIONS=1024000
+      - EMQX_LISTENERS__WS__AUTHENTICATED__ENABLE_AUTHN=true
+      - EMQX_LISTENERS__WS__AUTHENTICATED__WEBSOCKET__MQTT_PATH=/mqtt
+
+      # Listener 8091 - WebSocket encrypted, authenticated
+      - "EMQX_LISTENERS__WSS__AUTHENTICATED__BIND=0.0.0.0:8091"
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__MAX_CONNECTIONS=512000
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__ENABLE_AUTHN=true
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__WEBSOCKET__MQTT_PATH=/mqtt
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__SSL_OPTIONS__CACERTFILE=/opt/emqx/etc/certs/ca/ca.crt
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__SSL_OPTIONS__CERTFILE=/opt/emqx/etc/certs/server/server.crt
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__SSL_OPTIONS__KEYFILE=/opt/emqx/etc/certs/server/server.key
+      - EMQX_LISTENERS__WSS__AUTHENTICATED__SSL_OPTIONS__VERIFY=verify_none
+
+      # Authentication
+      - EMQX_AUTHENTICATION__1__MECHANISM=password_based
+      - EMQX_AUTHENTICATION__1__BACKEND=built_in_database
+      - EMQX_AUTHENTICATION__1__USER_ID_TYPE=username
+
+      # Authorization
+      - EMQX_AUTHORIZATION__NO_MATCH=deny
+      - EMQX_AUTHORIZATION__DENY_ACTION=disconnect
+      - EMQX_AUTHORIZATION__SOURCES__1__TYPE=file
+      - EMQX_AUTHORIZATION__SOURCES__1__ENABLE=true
+      - EMQX_AUTHORIZATION__SOURCES__1__PATH=/opt/emqx/etc/acl.conf
+
+    volumes:
+      # - "./emqx-data:/opt/emqx/data"
+      # - "./emqx-log:/opt/emqx/log"
+      # - "./emqx-etc:/opt/emqx/etc"
+      - "./certs:/opt/emqx/etc/certs:ro"
+      - "./emqx-acl.conf:/opt/emqx/etc/acl.conf:ro"
+      - "./emqx_user-import.csv:/opt/emqx/etc/auth-built-in-db-bootstrap.csv:ro"
+    networks:
+      - emqx-network
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  emqx-network:
+    driver: bridge
+# volumes:
+#   emqx-data:
+#   emqx-log:
+#   emqx-etc:

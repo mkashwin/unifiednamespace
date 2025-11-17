@@ -1,0 +1,4 @@
+user_id,password,is_superuser
+rw,readwrite,false
+ro,readonly,false
+wo,writeonly,false
