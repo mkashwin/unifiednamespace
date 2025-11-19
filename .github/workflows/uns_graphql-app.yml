@@ -80,7 +80,12 @@ jobs:
       uns_mqtt:
         image: "emqx/emqx:latest"
         ports:
-          - "1883:1883"
+          # MQTT Ports
+          - "1883:1883" # MQTT, unencrypted, unauthenticated
+          - "1884:1884" # MQTT, unencrypted, authenticated
+          # WebSocket Ports
+          - "8080:8080" # MQTT over WebSockets, unencrypted, unauthenticated
+          - "8090:8090" # MQTT over WebSockets, unencrypted, authenticated
 
       uns_graphdb:
         image: "neo4j:latest"

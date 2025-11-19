@@ -177,7 +177,7 @@ async def test_get_mqtt_messages(topics: list[MQTTTopicInput], expected_messages
 
         assert len(received_messages) == len(expected_messages)
     finally:
-        async_message_list.aclose()
+        await async_message_list.aclose()
 
 
 class AsyncContextManagerMock:
@@ -326,7 +326,8 @@ async def publish_to_mqtt(expected_messages: list[Message]):
             ],
         ),
         (  # Test with topics from  sparkplugB with protobuf responses
-            [MQTTTopicInput(topic="topic/+"), MQTTTopicInput(topic="spBv1.0/#")],
+            [MQTTTopicInput(topic="topic/+"),
+             MQTTTopicInput(topic="spBv1.0/#")],
             [
                 Message(
                     topic="topic/1",

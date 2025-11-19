@@ -55,13 +55,15 @@ def test_mqtt_config():
     """
     Test if the mqtt configurations are valid
     """
-    assert MQTTConfig.transport in (None, "tcp", "ws"), f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
+    assert MQTTConfig.transport in (
+        None, "tcp", "websockets"), f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
 
     assert MQTTConfig.version in {
         item.value for item in ProtocolVersion
     }, f"Invalid value for key 'mqtt.version':{MQTTConfig.version}"
 
-    assert MQTTConfig.qos in (None, 0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
+    assert MQTTConfig.qos in (
+        None, 0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
 
     # assert MQTTConfig.reconnect_on_failure in (
     #     None,
@@ -77,7 +79,8 @@ def test_mqtt_config():
 
     assert MQTTConfig.host is not None, f"Invalid value for key 'mqtt.host'{MQTTConfig.mqtt_host}"
 
-    assert isinstance(MQTTConfig.port, int) or MQTTConfig.port is None, f"Invalid value for key 'mqtt.port':{MQTTConfig.port}"
+    assert isinstance(
+        MQTTConfig.port, int) or MQTTConfig.port is None, f"Invalid value for key 'mqtt.port':{MQTTConfig.port}"
     assert (
         isinstance(
             MQTTConfig.port,
@@ -94,7 +97,8 @@ def test_mqtt_config():
     ), "Either both username & password need to be specified or neither"
 
     assert (MQTTConfig.tls is None) or (
-        isinstance(MQTTConfig.tls, dict) and not bool(MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
+        isinstance(MQTTConfig.tls, dict) and not bool(
+            MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
     ), "Check the configuration provided for tls connection to the broker. " "the property ca_certs is missing"
 
     assert (MQTTConfig.tls is None) or (
@@ -120,11 +124,13 @@ def test_graph_db_configs():
     ), f"configuration 'graphdb.url':{GraphDBConfig.conn_url} is not a valid Neo4j URL"
 
     assert (
-        GraphDBConfig.user is not None and isinstance(GraphDBConfig.user, str) and len(GraphDBConfig.user) > 0
+        GraphDBConfig.user is not None and isinstance(
+            GraphDBConfig.user, str) and len(GraphDBConfig.user) > 0
     ), "Invalid username configured at key: 'graphdb.username'. Cannot be None or empty string"
 
     assert (
-        GraphDBConfig.password is not None and isinstance(GraphDBConfig.password, str) and len(GraphDBConfig.password) > 0
+        GraphDBConfig.password is not None and isinstance(
+            GraphDBConfig.password, str) and len(GraphDBConfig.password) > 0
     ), "Invalid password configured at key: 'graphdb.password'. Cannot be None or empty string"
 
     assert GraphDBConfig.uns_node_types is not None and len(GraphDBConfig.uns_node_types) > 0, (
@@ -169,7 +175,8 @@ def test_timescale_db_configs():
         )
 
     assert (
-        HistorianConfig.db_user is not None and isinstance(HistorianConfig.db_user, str) and len(HistorianConfig.db_user) > 0
+        HistorianConfig.db_user is not None and isinstance(
+            HistorianConfig.db_user, str) and len(HistorianConfig.db_user) > 0
     ), "Invalid username configured at key: 'historian.username'. Cannot be None or empty string"
 
     assert (
@@ -189,17 +196,21 @@ def test_timescale_db_configs():
     ), f"Invalid value for key 'historian.sslmode'{HistorianConfig.db_sslmode}"
 
     assert (
-        HistorianConfig.db_sslcert is None or Path(HistorianConfig.db_sslcert).is_file()
+        HistorianConfig.db_sslcert is None or Path(
+            HistorianConfig.db_sslcert).is_file()
     ), f"Unable to find ssl certificate at: {HistorianConfig.db_sslcert}"
     assert (
-        HistorianConfig.db_sslkey is None or Path(HistorianConfig.db_sslkey).is_file()
+        HistorianConfig.db_sslkey is None or Path(
+            HistorianConfig.db_sslkey).is_file()
     ), f"Unable to find ssl secret key at: {HistorianConfig.db_sslkey}"
 
     assert (
-        HistorianConfig.db_sslrootcert is None or Path(HistorianConfig.db_sslrootcert).is_file()
+        HistorianConfig.db_sslrootcert is None or Path(
+            HistorianConfig.db_sslrootcert).is_file()
     ), f"Unable to find ssl certificate authority at: {HistorianConfig.db_sslrootcert}"
     assert (
-        HistorianConfig.db_sslcrl is None or Path(HistorianConfig.db_sslcrl).is_file()
+        HistorianConfig.db_sslcrl is None or Path(
+            HistorianConfig.db_sslcrl).is_file()
     ), f"Unable to find ssl certificate revocation list at: {HistorianConfig.db_sslcrl}"
 
     assert (
@@ -210,7 +221,8 @@ def test_timescale_db_configs():
          Cannot be None or empty string"""
 
     assert (
-        HistorianConfig.table is not None and isinstance(HistorianConfig.table, str) and len(HistorianConfig.table) > 0
+        HistorianConfig.table is not None and isinstance(
+            HistorianConfig.table, str) and len(HistorianConfig.table) > 0
     ), f"""Invalid database name configured at key: 'historian.table' value:{HistorianConfig.table}.
          Cannot be None or empty string"""
 
@@ -260,7 +272,8 @@ def test_connectivity_to_graphdb():
     if port is None or port == "":
         port = 7687
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex((host, port)) == 0, f"Host: {host} is not reachable at port:{port}"
+    assert sock.connect_ex(
+        (host, port)) == 0, f"Host: {host} is not reachable at port:{port}"
 
 
 @pytest.mark.integrationtest()
@@ -275,7 +288,8 @@ def test_connectivity_to_historian():
         port = 5432
     # if port not provided use default postgres port
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex((hostname, port)) == 0, f"Host: {hostname} is not reachable at port:{port}"
+    assert sock.connect_ex(
+        (hostname, port)) == 0, f"Host: {hostname} is not reachable at port:{port}"
 
 
 @pytest.mark.integrationtest()

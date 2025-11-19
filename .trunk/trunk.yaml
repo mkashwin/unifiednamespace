@@ -31,13 +31,13 @@ lint:
     - actionlint@1.7.8
     - trufflehog@3.91.0
     - osv-scanner@2.2.4
-    - markdownlint@0.45.0
+    - markdownlint@0.46.0
     - hadolint@2.14.0
     - cspell@9.3.2
     - gitleaks@8.29.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.493
+    - checkov@3.2.494
     - trivy@0.67.2
     - git-diff-check
     - prettier@3.6.2

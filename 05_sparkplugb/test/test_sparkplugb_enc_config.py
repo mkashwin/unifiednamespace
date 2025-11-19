@@ -42,7 +42,8 @@ def test_mqtt_config():
     """
     # run these tests only if both configuration files exists or mandatory environment vars are set
 
-    assert MQTTConfig.transport in ("tcp", "ws"), f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
+    assert MQTTConfig.transport in (
+        "tcp", "websockets"), f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
 
     assert MQTTConfig.version_code in (
         MQTTVersion.MQTTv31,
@@ -50,7 +51,8 @@ def test_mqtt_config():
         MQTTVersion.MQTTv5,
     ), f"Invalid value for key 'mqtt.version':{MQTTConfig.version_code}"
 
-    assert MQTTConfig.qos in (0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
+    assert MQTTConfig.qos in (
+        0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
 
     assert MQTTConfig.reconnect_on_failure in (
         True,
@@ -78,7 +80,8 @@ def test_mqtt_config():
     ), "Either both username & password need to be specified or neither"
 
     assert (MQTTConfig.tls is None) or (
-        isinstance(MQTTConfig.tls, dict) and not bool(MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
+        isinstance(MQTTConfig.tls, dict) and not bool(
+            MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
     ), "Check the configuration provided for tls connection to the broker." "The property ca_certs is missing"
 
     assert (MQTTConfig.tls is None) or (
@@ -89,7 +92,8 @@ def test_mqtt_config():
         assert bool(
             re.fullmatch(REGEX_TO_MATCH_TOPIC, topic),
         ), f"configuration 'mqtt.topics':{MQTTConfig.topics} has an invalid MQTT topic topic:{topic}"
-        assert topic.startswith(UnsMQTTClient.SPARKPLUG_NS), f"topic:{topic} is not a SparkplugB namespace"
+        assert topic.startswith(
+            UnsMQTTClient.SPARKPLUG_NS), f"topic:{topic} is not a SparkplugB namespace"
 
     assert (MQTTConfig.keepalive is not None) and (
         MQTTConfig.keepalive > 0
@@ -102,7 +106,7 @@ def test_mqtt_config():
     # Should be a valid JSON key name
     assert (isinstance(MQTTConfig.timestamp_key, str)) and (
         len(MQTTConfig.timestamp_key) > 0
-    ), f"Configuration 'mqtt.timestamp_attribute':{MQTTConfig.timestamp_key } is not a valid JSON key"
+    ), f"Configuration 'mqtt.timestamp_attribute':{MQTTConfig.timestamp_key} is not a valid JSON key"
 
 
 @pytest.mark.integrationtest()

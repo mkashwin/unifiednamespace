@@ -45,12 +45,14 @@ class MQTTConfig:
     for all MQTT Broker specific configurations
     """
 
-    transport: Literal["tcp", "websockets"] = settings.get("mqtt.transport", "tcp")
+    transport: Literal["tcp", "websockets"] = settings.get(
+        "mqtt.transport", "tcp")
     version: Literal[MQTTVersion.MQTTv5, MQTTVersion.MQTTv311, MQTTVersion.MQTTv31] = settings.get(
         "mqtt.version", MQTTVersion.MQTTv5
     )
     qos: Literal[0, 1, 2] = settings.get("mqtt.qos", 1)
-    reconnect_on_failure: bool = settings.get("mqtt.reconnect_on_failure", True)
+    reconnect_on_failure: bool = settings.get(
+        "mqtt.reconnect_on_failure", True)
     clean_session: bool | None = settings.get("mqtt.clean_session", None)
 
     host: str = settings.get("mqtt.host")
@@ -62,7 +64,8 @@ class MQTTConfig:
     if isinstance(topics, str):
         topics = [topics]
     keepalive: int = settings.get("mqtt.keep_alive", 60)
-    ignored_attributes: dict | None = settings.get("mqtt.ignored_attributes", None)
+    ignored_attributes: dict | None = settings.get(
+        "mqtt.ignored_attributes", None)
     timestamp_key = settings.get("mqtt.timestamp_attribute", "timestamp")
     if host is None:
         LOGGER.error(
@@ -90,12 +93,15 @@ class GraphDBConfig:
     # if we want to use a database different from the default
     database: str | None = settings.get("graphdb.database", None)
 
-    uns_node_types: tuple = tuple(settings.get("graphdb.uns_node_types", ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
+    uns_node_types: tuple = tuple(settings.get(
+        "graphdb.uns_node_types", ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE")))
 
     spb_node_types: tuple = tuple(
-        settings.get("graphdb.spB_node_types", ("spBv1_0", "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
+        settings.get("graphdb.spB_node_types", ("spBv1_0",
+                     "GROUP", "MESSAGE_TYPE", "EDGE_NODE", "DEVICE"))
     )
-    nested_attributes_node_type: str = settings.get("graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
+    nested_attributes_node_type: str = settings.get(
+        "graphdb.nested_attribute_node_type", "NESTED_ATTRIBUTE")
 
     if db_url is None:
         LOGGER.error(
