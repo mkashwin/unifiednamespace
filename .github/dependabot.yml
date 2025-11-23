@@ -60,6 +60,14 @@ updates:
       - dependency-type: "all"
 
   - package-ecosystem: "pip"
+    directory: "./99_simulator" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"
+
+  - package-ecosystem: "pip"
     directory: "./" # Location of package manifests
     schedule:
       interval: "weekly"

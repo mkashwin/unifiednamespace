@@ -46,6 +46,7 @@ jobs:
             "./05_sparkplugb",
             "./06_uns_kafka",
             "./07_uns_graphql",
+            "./99_simulator",
           ]
     steps:
       - uses: actions/checkout@v5
