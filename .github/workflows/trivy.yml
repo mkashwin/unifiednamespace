@@ -41,7 +41,7 @@ jobs:
           - { module: 07_uns_graphql, image: uns/graphql }
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Build an image from Dockerfile
 
