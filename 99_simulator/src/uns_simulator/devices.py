@@ -156,8 +156,7 @@ class PLC(AsyncMQTTDevice):
         # Equipment state
         self.operational = True
         self.performance = 1.0
-        # trunk-ignore(ruff/S311)
-        self.operating_hours = random.randint(0, 5000)
+        self.operating_hours = random.randint(0, 5000)  # noqa: S311
         self.last_maintenance = datetime.now().isoformat()
 
         LOGGER.info("Initialized PLC %s for equipment %s",
@@ -180,7 +179,7 @@ class PLC(AsyncMQTTDevice):
                 # Generate value with realistic variation
 
                 current_value = base_value + \
-                    random.uniform(-variation,  # trunk-ignore(ruff/S311)
+                    random.uniform(-variation,  # noqa: S311
                                    variation)
                 # Determine status based on deviation
                 deviation = abs(current_value - base_value)
@@ -221,17 +220,13 @@ class PLC(AsyncMQTTDevice):
             Status data dictionary
         """
         # Simulate occasional equipment state changes
-        # trunk-ignore(ruff/S311)
-        if random.random() < 0.02:  # 2% chance of fault
+        if random.random() < 0.02:   # noqa: S311 # 2% chance of fault
             self.operational = False
-            # trunk-ignore(ruff/S311)
-            self.performance = round(random.uniform(0.5, 0.8), 2)
+            self.performance = round(random.uniform(0.5, 0.8), 2)  # noqa: S311
             LOGGER.warning("PLC %s equipment fault simulated", self.plc_id)
-        # trunk-ignore(ruff/S311)
-        elif random.random() < 0.05 and not self.operational:  # 5% chance of recovery
+        elif random.random() < 0.05 and not self.operational:   # noqa: S311 # 5% chance of recovery
             self.operational = True
-            # trunk-ignore(ruff/S311)
-            self.performance = round(random.uniform(0.9, 1.0), 2)
+            self.performance = round(random.uniform(0.9, 1.0), 2)  # noqa: S311
             LOGGER.info("PLC %s equipment recovery simulated", self.plc_id)
 
         status_data = {
@@ -256,8 +251,8 @@ class PLC(AsyncMQTTDevice):
         Returns:
             Alarm data dictionary or None if no alarms
         """
-        # trunk-ignore(ruff/S311)
-        if random.random() < 0.05:  # 5% chance of alarm
+
+        if random.random() < 0.05:   # noqa: S311 # 5% chance of alarm
             alarm_types = [
                 ("HIGH_TEMPERATURE", "High temperature detected", "HIGH"),
                 ("LOW_PRESSURE", "Low pressure warning", "MEDIUM"),
@@ -265,13 +260,11 @@ class PLC(AsyncMQTTDevice):
                 ("COMMUNICATION_LOSS", "Communication loss with sensor", "MEDIUM")
             ]
 
-            # trunk-ignore(ruff/S311)
-            alarm_type, message, severity = random.choice(alarm_types)
+            alarm_type, message, severity = random.choice(alarm_types)  # noqa: S311
 
             alarm_data = {
                 'alarms': [{
-                    # trunk-ignore(ruff/S311)
-                    'id': f"ALM_{random.randint(1000, 9999)}",
+                    'id': f"ALM_{random.randint(1000, 9999)}",  # noqa: S311
                     'type': alarm_type,
                     'message': message,
                     'severity': severity,
@@ -375,17 +368,12 @@ class SCADA(AsyncMQTTDevice):
             'system_name': self.system_name,
             'system_status': 'Operational',
             # Simulated device count
-            # trunk-ignore(ruff/S311)
-            'connected_devices': random.randint(5, 10),
-            # trunk-ignore(ruff/S311)
-            'data_points_per_second': random.randint(500, 1500),
+            'connected_devices': random.randint(5, 10),  # noqa: S311
+            'data_points_per_second': random.randint(500, 1500),  # noqa: S311
             'system_uptime_hours': round(uptime / 3600, 2),
-            # trunk-ignore(ruff/S311)
-            'cpu_usage_percent': round(random.uniform(10, 60), 1),
-            # trunk-ignore(ruff/S311)
-            'memory_usage_percent': round(random.uniform(20, 80), 1),
-            # trunk-ignore(ruff/S311)
-            'alarms_active': random.randint(0, 3),
+            'cpu_usage_percent': round(random.uniform(10, 60), 1),  # noqa: S311
+            'memory_usage_percent': round(random.uniform(20, 80), 1),  # noqa: S311
+            'alarms_active': random.randint(0, 3),  # noqa: S311
             'version': '2.1.4'
         }
 
@@ -439,8 +427,7 @@ class HMI(AsyncMQTTDevice):
         super().__init__(f"HMI_{hmi_id}", hierarchy, mqtt_config)
         self.hmi_id = hmi_id
         self.current_screen = "MainDashboard"
-        # trunk-ignore(ruff/S311)
-        self.operator = f"operator{random.randint(1, 5)}"
+        self.operator = f"operator{random.randint(1, 5)}"  # noqa: S311
         self.interaction_count = 0
         self.session_start = datetime.now()
 
@@ -457,8 +444,7 @@ class HMI(AsyncMQTTDevice):
         actions = []
 
         # 30% chance of operator action each cycle
-        # trunk-ignore(ruff/S311)
-        if random.random() < 0.3:
+        if random.random() < 0.3:  # noqa: S311
             action_types = [
                 ("SETPOINT_CHANGE", "Changed temperature setpoint"),
                 ("ALARM_ACKNOWLEDGE", "Acknowledged alarm"),
@@ -468,14 +454,12 @@ class HMI(AsyncMQTTDevice):
                 ("TREND_VIEW", "Viewed trend data")
             ]
 
-            # trunk-ignore(ruff/S311)
-            action_type, description = random.choice(action_types)
+            action_type, description = random.choice(action_types)  # noqa: S311
 
             # Simulate screen navigation with action
             screens = ["MainDashboard", "AlarmSummary", "TrendDisplay",
                        "ControlPanel", "RecipeManagement"]
-            # trunk-ignore(ruff/S311)
-            self.current_screen = random.choice(screens)
+            self.current_screen = random.choice(screens)  # noqa: S311
 
             action_data = {
                 'type': action_type,
@@ -490,13 +474,10 @@ class HMI(AsyncMQTTDevice):
 
             # Add context-specific data
             if action_type == "SETPOINT_CHANGE":
-                # trunk-ignore(ruff/S311)
-                action_data['parameter'] = f"Temp_Setpoint_{random.randint(1, 5)}"
-                # trunk-ignore(ruff/S311)
-                action_data['new_value'] = round(random.uniform(60, 90), 2)
+                action_data['parameter'] = f"Temp_Setpoint_{random.randint(1, 5)}"  # noqa: S311
+                action_data['new_value'] = round(random.uniform(60, 90), 2)  # noqa: S311
                 action_data['old_value'] = round(
-                    # trunk-ignore(ruff/S311)
-                    action_data['new_value'] - random.uniform(1, 5), 2)
+                    action_data['new_value'] - random.uniform(1, 5), 2)  # noqa: S311
 
             actions.append(action_data)
             self.interaction_count += 1

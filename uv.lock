@@ -1293,6 +1293,7 @@ dependencies = [
     { name = "uns-historian" },
     { name = "uns-kafka-mapper" },
     { name = "uns-mqtt" },
+    { name = "uns-simulator" },
     { name = "uns-spb-mapper" },
 ]
 
@@ -1314,6 +1315,7 @@ requires-dist = [
     { name = "uns-historian", editable = "04_uns_historian" },
     { name = "uns-kafka-mapper", editable = "06_uns_kafka" },
     { name = "uns-mqtt", editable = "02_mqtt-cluster" },
+    { name = "uns-simulator", editable = "99_simulator" },
     { name = "uns-spb-mapper", editable = "05_sparkplugb" },
 ]
 
@@ -1475,6 +1477,32 @@ requires-dist = [
     { name = "logger", specifier = "~=1.4" },
     { name = "paho-mqtt", specifier = ">=2.1.0,<3" },
     { name = "protobuf", specifier = "~=6.31" },
+]
+
+[package.metadata.requires-dev]
+test = [
+    { name = "pytest", specifier = ">=8.3.4,<10" },
+    { name = "pytest-cov", specifier = ">=6.0.0,<8" },
+    { name = "pytest-timeout", specifier = ">=2.3.1,<3" },
+    { name = "pytest-xdist", specifier = ">=3.6.1,<4" },
+    { name = "safety", specifier = ">=3.4.0,<4" },
+]
+
+[[package]]
+name = "uns-simulator"
+version = "0.9.38"
+source = { editable = "99_simulator" }
+dependencies = [
+    { name = "aiomqtt" },
+    { name = "dynaconf" },
+    { name = "logger" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiomqtt", specifier = ">=2.4.0,<3" },
+    { name = "dynaconf", specifier = "~=3.2" },
+    { name = "logger", specifier = "~=1.4" },
 ]
 
 [package.metadata.requires-dev]

@@ -36,6 +36,7 @@ dependencies = [
     "uns_spb_mapper",
     "uns_kafka_mapper",
     "uns_graphql",
+    "uns_simulator",
 ]
 
 [project.urls]
@@ -63,9 +64,10 @@ uns_historian = { path = "./04_uns_historian", editable = true}
 uns_spb_mapper = { path = "./05_sparkplugb", editable = true }
 uns_kafka_mapper = { path = "./06_uns_kafka", editable = true}
 uns_graphql = { path = "./07_uns_graphql", editable = true }
+uns_simulator = { path = "./99_simulator", editable = true }
 
 [tool.uv.workspace]
-members = ["uns_mqtt", "uns_graphdb", "uns_historian", "uns_spb_mapper", "uns_kafka_mapper", "uns_graphql"]
+members = ["uns_mqtt", "uns_graphdb", "uns_historian", "uns_spb_mapper", "uns_kafka_mapper", "uns_graphql","uns_simulator"]
 
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
@@ -79,6 +81,7 @@ testpaths = [
     "05_sparkplugb/test",
     "06_uns_kafka/test",
     "07_uns_graphql/test",
+    "99_simulator/test",
 ]
 
 [tool.ruff]
