@@ -128,7 +128,7 @@ jobs:
           CLUSTER_ID: "$(UNS_kafka_cluster_id) "
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
@@ -196,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Compile and Test Dockerfile
         uses: ./.github/include/test_docker_builds/

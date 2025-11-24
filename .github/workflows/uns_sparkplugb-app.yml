@@ -62,7 +62,7 @@ jobs:
           - "8090:8090" # MQTT over WebSockets, unencrypted, authenticated
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Compile and Test Dockerfile
         uses: ./.github/include/test_docker_builds/
