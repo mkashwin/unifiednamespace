@@ -9,8 +9,7 @@ from uns_simulator import devices
 
 # Dummy replacements to avoid external dependencies and network I/O
 class DummyClient:
-    # trunk-ignore(ruff/ARG002)
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # noqa: ARG002
         self.published = []
 
     async def __aenter__(self):
@@ -19,8 +18,7 @@ class DummyClient:
     async def __aexit__(self, exc_type, exc, tb):
         return False
 
-    # trunk-ignore(ruff/ARG002)
-    async def publish(self, topic, payload, *args, **kwargs):
+    async def publish(self, topic, payload, *args, **kwargs):  # noqa: ARG002
         # store topic and parsed payload for assertions
         try:
             parsed = json.loads(payload)
