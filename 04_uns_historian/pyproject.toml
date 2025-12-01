@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "logger~=1.4",
-    "asyncpg>=0.30,<0.31",
+    "asyncpg>=0.30,<0.32",
     "dynaconf~=3.2",
     "psutil>=6.1.1,<8",
 ]
