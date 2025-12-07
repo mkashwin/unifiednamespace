@@ -132,6 +132,11 @@ def main():
     """
     try:
         uns_mqtt_historian = None
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
         uns_mqtt_historian = UnsMqttHistorian()
         uns_mqtt_historian.uns_client.loop_forever(retry_first_connection=True)
     finally:
