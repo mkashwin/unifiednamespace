@@ -166,10 +166,10 @@ class HistorianHandler:
             # Timestamp is normally in milliseconds and needs to be converted prior to insertion
             db_timestamp = datetime.fromtimestamp(timestamp / 1000, UTC)
         # sometimes when qos is not 2, the mqtt message may be delivered multiple times. in such case avoid duplicate inserts
-        # trunk-ignore(ruff/S608)
-        sql_cmd = f"""INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg )
-                        VALUES ($1,$2,$3,$4)
-                        ON CONFLICT DO NOTHING
-                        RETURNING *;"""  # noqa: S608: This is a prepared statement and the values are sanitized
+        sql_cmd = (
+                        f"INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg ) \n" +  # noqa:S608:
+                        "VALUES ($1,$2,$3,$4) \n" +
+                        "ON CONFLICT DO NOTHING \n" +
+                        "RETURNING *;")  # This is a prepared statement and the values are sanitized
         params = [db_timestamp, topic, client_id, json.dumps(message)]
         return await self.execute_prepared(sql_cmd, *params)

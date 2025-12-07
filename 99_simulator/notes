@@ -1,0 +1,33 @@
+docker run -d \
+-p 3000:3000 \
+--name=grafana \
+"-e GF_INSTALL_PLUGINS=grafana-mqtt-datasource, grafana-kafka-datasource,  grafana-datasource-plugin-neo4j, " \
+grafana/grafana
+
+docker inspect --format='{{.NetworkSettings.IPAddress}}' emqx-mqtt
+docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_graphdb
+docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_timescaledb
+docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_kafka
+
+
+
+  uns_grafana:
+    image: "grafana/grafana:latest"
+    ports:
+      - "3000:3000"
+    environment:
+      GF_INSTALL_PLUGINS: "grafana-mqtt-datasource, grafana-kafka-datasource,  grafana-datasource-plugin-neo4j"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      uns_mqtt_broker:
+        condition: service_healthy
+      uns_neo4j_db:
+        condition: service_healthy
+      uns_timescale_db:
+        condition: service_healthy
+      uns_kafka_broker:
+        condition: service_healthy

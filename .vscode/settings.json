@@ -21,7 +21,9 @@
     "./06_uns_kafka/src",
     "./06_uns_kafka/test",
     "./07_uns_graphql/src",
-    "./07_uns_graphql/test"
+    "./07_uns_graphql/test",
+    "./99_simulator/src",
+    "./99_simulator/test"
   ],
   "python.languageServer": "Default",
   "python.missingPackage.severity": "Error",
