@@ -1,7 +1,7 @@
 mqtt:
   host: "localhost" # must be specified. No defaults e.g.198.168.220.3 broker.emqx.io
   port: 1883 # Default value 1883 if not specified
-  topics: ["test/uns/#", "spBv1.0/#"] # Default Topic is a wild card #. if required can be tuned to listen subset
+  topics: ["test/uns/#", "ManufacturingCo/#", "spBv1.0/#"] # Default Topic is a wild card #. if required can be tuned to listen subset
   qos: 1 # Default value is 1. Recommend 1 or 2. Do not use 0
   keep_alive: 60
   reconnect_on_failure: True

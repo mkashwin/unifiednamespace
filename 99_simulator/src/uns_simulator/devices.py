@@ -68,7 +68,7 @@ class AsyncMQTTDevice:
             # Enrich data with metadata
             enriched_data = {
                 **data,
-                'timestamp': datetime.now().isoformat(),
+                'timestamp': datetime.timestamp(datetime.now()),
                 'source': self.device_id,
                 'equipment': equipment
             }
@@ -157,7 +157,7 @@ class PLC(AsyncMQTTDevice):
         self.operational = True
         self.performance = 1.0
         self.operating_hours = random.randint(0, 5000)  # noqa: S311
-        self.last_maintenance = datetime.now().isoformat()
+        self.last_maintenance = datetime.timestamp(datetime.now())
 
         LOGGER.info("Initialized PLC %s for equipment %s",
                     plc_id, self.equipment.name)
@@ -268,7 +268,7 @@ class PLC(AsyncMQTTDevice):
                     'type': alarm_type,
                     'message': message,
                     'severity': severity,
-                    'timestamp': datetime.now().isoformat(),
+                    'timestamp': datetime.timestamp(datetime.now()),
                     'acknowledged': False
                 }]
             }
@@ -466,7 +466,7 @@ class HMI(AsyncMQTTDevice):
                 'description': description,
                 'operator': self.operator,
                 'screen': self.current_screen,
-                'timestamp': datetime.now().isoformat(),
+                'timestamp': datetime.timestamp(datetime.now()),
                 'session_duration_minutes': round(
                     (datetime.now() - self.session_start).total_seconds() / 60, 1
                 )

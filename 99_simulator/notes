@@ -31,3 +31,25 @@ docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_kafka
         condition: service_healthy
       uns_kafka_broker:
         condition: service_healthy
+
+--------------
+#Clean up databases
+
+docker exec \
+		-e PGPASSWORD="${POSTGRES_PASSWORD}" \
+		-e UNS_historian__database="${UNS_historian__database}" \
+		-e UNS_historian__username="${UNS_historian__username}" \
+		-e UNS_historian__password="${UNS_historian__password}" \
+		-e UNS_historian__table="${UNS_historian__table}" \
+		-it uns_timescaledb \
+		bash -c "
+    echo \"DELETE FROM ${UNS_historian__table};\" | PGPASSWORD=${UNS_historian__password} psql -U ${UNS_historian__username} -p 5432 -d ${UNS_historian__database}
+    "
+
+docker exec \
+    -e UNS_graphdb__username="${UNS_graphdb__username}" \
+    -e UNS_graphdb__password="${UNS_graphdb__password}" \
+    -it uns_graphdb  \
+		bash -c "
+    cypher-shell -u ${UNS_graphdb__username} -p ${UNS_graphdb__password} \"MATCH (n) DETACH DELETE n; \"
+    "

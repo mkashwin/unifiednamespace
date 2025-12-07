@@ -79,9 +79,9 @@ class UNSKafkaMapper:
         # Connect to Kafka, convert the MQTT topic to Kafka topic and send the message
         self.kafka_handler.publish(
             msg.topic,
-            self.uns_client.get_payload_as_dict(
-                topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=self.mqtt_ignored_attributes
-            ),
+            str(self.uns_client.get_payload_as_dict(
+                topic=msg.topic, payload=msg.payload, mqtt_ignored_attributes=MQTTConfig.ignored_attributes
+            )),
         )
 
     def on_disconnect(
