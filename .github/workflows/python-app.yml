@@ -49,7 +49,7 @@ jobs:
             "./99_simulator",
           ]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
