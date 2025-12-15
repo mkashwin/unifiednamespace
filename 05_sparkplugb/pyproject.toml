@@ -5,10 +5,9 @@ description = "SparkplugB decoder to parse and unpack  SparkplugB messages to th
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 maintainers = [
     { name = "Himanshu Dhami", email = "himanshudhami@gmail.com" },
-    { name = "Johan Jeppson", email = "logic4human@gmail.com" },
 ]
 keywords = [
     "uns",
@@ -16,7 +15,7 @@ keywords = [
     "sparkplugb",
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    # "License :: OSI Approved :: MIT License",
     "Intended Audience :: Manufacturing",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -39,7 +38,7 @@ uns_spb_mapper = "uns_spb_mapper.uns_sparkplugb_listener:main"
 uns_spb_mapper_healthcheck = "uns_spb_mapper.health_check:main"
 
 [dependency-groups]
-main = ["uns-mqtt"]
+main = ["uns_mqtt"]
 test = [
     "pytest>=8.3.4,<10",
     "pytest-xdist>=3.5.0,<4",
@@ -55,7 +54,7 @@ default-groups = [
 ]
 
 [tool.uv.sources]
-uns-mqtt = { path = "../02_mqtt-cluster", editable = true }
+uns_mqtt = { path = "../02_mqtt-cluster", editable = true }
 
 [tool.hatch.build.targets.sdist]
 include = ["src/uns_spb_mapper"]

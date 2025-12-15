@@ -5,10 +5,9 @@ description = "Listens to the UNS namespace, converts UNS topic to Kafka topic a
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 maintainers = [
     { name = "Himanshu Dhami", email = "himanshudhami@gmail.com" },
-    { name = "Johan Jeppson", email = "logic4human@gmail.com" },
 ]
 keywords = [
     "uns",
@@ -16,7 +15,7 @@ keywords = [
     "kafka",
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    # "License :: OSI Approved :: MIT License",
     "Intended Audience :: Manufacturing",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -40,7 +39,7 @@ uns_kafka_mapper = "uns_kafka.uns_kafka_listener:main"
 uns_kafka_healthcheck = "uns_kafka.health_check:main"
 
 [dependency-groups]
-main = ["uns-mqtt"]
+main = ["uns_mqtt"]
 test = [
     "pytest>=8.3.4,<10",
     "pytest-xdist>=3.6.1,<4",
@@ -56,7 +55,7 @@ default-groups = [
 ]
 
 [tool.uv.sources]
-uns-mqtt = { path = "../02_mqtt-cluster", editable = true }
+uns_mqtt = { path = "../02_mqtt-cluster", editable = true }
 
 [tool.hatch.build.targets.sdist]
 include = ["src/uns_kafka"]

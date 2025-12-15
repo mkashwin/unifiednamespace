@@ -1,14 +1,13 @@
 [project]
-name = "uns-mqtt"
+name = "uns_mqtt"
 version = "0.9.38"
 description = "Base package for mqtt clients required for all UNS clients to be built on MQTT. Supports based SparkplugB processing"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 maintainers = [
     { name = "Himanshu Dhami", email = "himanshudhami@gmail.com" },
-    { name = "Johan Jeppson", email = "logic4human@gmail.com" },
 ]
 keywords = [
     "uns",
@@ -16,7 +15,7 @@ keywords = [
     "sparkplugB",
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    # "License :: OSI Approved :: MIT License",
     "Intended Audience :: Manufacturing",
     "Programming Language :: Python",
      "Development Status :: 4 - Beta",

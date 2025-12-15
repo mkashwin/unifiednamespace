@@ -5,10 +5,9 @@ description = "Provide GraphQL capabilities to the UNS across all data sources -
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 maintainers = [
     { name = "Himanshu Dhami", email = "himanshudhami@gmail.com" },
-    { name = "Johan Jeppson", email = "logic4human@gmail.com" },
 ]
 keywords = [
     "uns",
@@ -19,7 +18,7 @@ keywords = [
     "kafka",
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    # "License :: OSI Approved :: MIT License",
     "Intended Audience :: Manufacturing",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -49,7 +48,7 @@ uns_graphql_app = "uns_graphql.uns_graphql_app:main"
 uns_graphql_healthcheck = "uns_graphql.health_check:main"
 
 [dependency-groups]
-main = ["uns-mqtt"]
+main = ["uns_mqtt"]
 test = [
     "strawberry-graphql[debug-server]>=0.283",
     "pytest>=8.3.4,<10",
@@ -68,7 +67,7 @@ default-groups = [
 ]
 
 [tool.uv.sources]
-uns-mqtt = { path = "../02_mqtt-cluster", editable = true }
+uns_mqtt = { path = "../02_mqtt-cluster", editable = true }
 
 [tool.hatch.build.targets.sdist]
 include = ["src/uns_graphql"]

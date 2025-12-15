@@ -22,6 +22,8 @@
     "./06_uns_kafka/test",
     "./07_uns_graphql/src",
     "./07_uns_graphql/test",
+    "./08_uns_mcp/src",
+    "./08_uns_mcp/test",
     "./99_simulator/src",
     "./99_simulator/test"
   ],
@@ -63,5 +65,7 @@
       "scope": "user",
       "addWords": true
     }
-  }
+  },
+  "python.defaultInterpreterPath": "python3",
+  "python.envFile": "${workspaceFolder}/.env"
 }

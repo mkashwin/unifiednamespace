@@ -5,10 +5,9 @@ description = "Set of modules / tools to realize an UNS for your organization"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
 requires-python = ">=3.14, <4"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 maintainers = [
     { name = "Himanshu Dhami", email = "himanshudhami@gmail.com" },
-    { name = "Johan Jeppson", email = "logic4human@gmail.com" },
 ]
 keywords = [
     "uns",
@@ -18,9 +17,10 @@ keywords = [
     "historian",
     "kafka",
     "graphql",
+    "mcp"
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    # "License :: OSI Approved :: MIT License",
     "Intended Audience :: Manufacturing",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -36,6 +36,7 @@ dependencies = [
     "uns_spb_mapper",
     "uns_kafka_mapper",
     "uns_graphql",
+    "uns_mcp",
     "uns_simulator",
 ]
 
@@ -53,6 +54,34 @@ test = [
     "pytest-retry>=1.7.0,<2",
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "uns_mqtt",
+    "uns_graphdb",
+    "uns_historian",
+    "uns_spb_mapper",
+    "uns_kafka_mapper",
+    "uns_graphql",
+    "uns_mcp",
+    "uns_simulator",
+]
+
+[tool.hatch.build.targets.sdist]
+packages = [
+    "uns_mqtt",
+    "uns_graphdb",
+    "uns_historian",
+    "uns_spb_mapper",
+    "uns_kafka_mapper",
+    "uns_graphql",
+    "uns_mcp",
+    "uns_simulator",
+]
+
 [tool.uv]
 package = false
 default-groups = ["test"]
@@ -64,10 +93,20 @@ uns_historian = { path = "./04_uns_historian", editable = true}
 uns_spb_mapper = { path = "./05_sparkplugb", editable = true }
 uns_kafka_mapper = { path = "./06_uns_kafka", editable = true}
 uns_graphql = { path = "./07_uns_graphql", editable = true }
+uns_mcp = { path = "./08_uns_mcp", editable = true }
 uns_simulator = { path = "./99_simulator", editable = true }
 
 [tool.uv.workspace]
-members = ["uns_mqtt", "uns_graphdb", "uns_historian", "uns_spb_mapper", "uns_kafka_mapper", "uns_graphql","uns_simulator"]
+members = [
+    "uns_mqtt",
+    "uns_graphdb",
+    "uns_historian",
+    "uns_spb_mapper",
+    "uns_kafka_mapper",
+    "uns_graphql",
+    "uns_mcp",
+    "uns_simulator",
+]
 
 [tool.pytest.ini_options]
 markers = ["integrationtest: mark a test as an integration test"]
@@ -81,6 +120,7 @@ testpaths = [
     "05_sparkplugb/test",
     "06_uns_kafka/test",
     "07_uns_graphql/test",
+    "08_uns_mcp/test",
     "99_simulator/test",
 ]
 
