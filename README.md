@@ -14,7 +14,7 @@ If you are looking for an alternative Unified Namespace implementation with ente
 
 ## What is the Unified Name Space?
 
-A Unified Namespace is an **_architecture_** that establishes a **_centralized repository_** of data, events,  information, and context **_across all IT and OT systems_** where any application or device can consume or publish data needed for a specific action via an **_event-driven_** and **_loosely coupled architecture_** ​along with the **_relevant context and history_**
+A Unified Namespace is an **_architecture_** that establishes a ***centralized repository*** of data, events,  information, and context **_across all IT and OT systems_** where any application or device can consume or publish data needed for a specific action via an **_event-driven_** and **_loosely coupled architecture_** ​along with the **_relevant context and history_**
 
 This is a critical concept to allow scalability by preventing point to point connectivity.
 ![Credit Walter Reynolds -- IIOT University](./images/UNS.png)
@@ -182,6 +182,7 @@ Since I did not have the enterprise version of the MQTT brokers, I decided to de
 - The MQTT listener to read SPB messages, translate and transform them to the UNS can be found at [05_sparkplugb](./05_sparkplugb/README.md)
 - The MQTT listener to publish UNS messages, to a kafka topic [06_uns_kafka](./06_uns_kafka/README.md)
 - A module which connects with all the data sources; Neo4j, TimescaleDB, Kafka and MQTT to provide GraphQL apis to query the UNS [07_uns_graphql](./07_uns_graphql/README.md)
+- A simulator for test purposes [99_simulator](./99_simulator/README.md)
 
 I choose to write the client in Python even thought Python is not as performant as Go, C or Rust primarily because
 
@@ -220,6 +221,7 @@ The current project contains the following microservices
 1. [05_sparkplugb](./05_sparkplugb/README.md): Python project for mqtt listener that listens to the SparkplugB namespace and for translates relevant messages to publish to the UNS namespace
 1. [06_uns_kafka](./06_uns_kafka/README.md): Python project for mqtt listener that subscribes to the MQTT broker and publishes to the KAFKA broker
 1. [07_uns_graphql](./07_uns_graphql/README.md): Python project for GraphQL server to query the Unified NameSpace
+1. [99_simulator](./99_simulator/README.md): Python project for simulating data creation to the UNS. _*NOT TO BE USED IN PRODUCTION*_
 
 Each microservice can be independently imported into VSCode by going into the specific microservice folder. Instructions on setting up the python pip & virtual environments are provided in the respective ´README.md´ within that folder
 However to import all microservices into the same workspace, the following commands need to be executed in the terminal of your VSCode and the current folder as [`.`](/.) (parent to all the microservices)
@@ -265,6 +267,7 @@ uv run pytest  ./04_uns_historian
 uv run pytest  ./05_sparkplugb
 uv run pytest  ./06_uns_kafka
 uv run pytest  ./07_uns_graphql
+uv run pytest  ./99_simulator
 ```
 
 ```python
@@ -275,6 +278,7 @@ uv run pytest -m "not integrationtest" ./04_uns_historian
 uv run pytest -m "not integrationtest" ./05_sparkplugb
 uv run pytest -m "not integrationtest" ./06_uns_kafka
 uv run pytest -m "not integrationtest" ./07_uns_graphql
+# 99_simulator has no integration tests hence the normal call will suffice
 ```
 
 ## Known Limitations / workarounds
