@@ -1,5 +1,5 @@
 [project]
-name = "uns-simulator"
+name = "uns_simulator"
 version = "0.9.38"
 description = "Simulator to publishing messages into the UNS"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
