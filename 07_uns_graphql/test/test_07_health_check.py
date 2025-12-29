@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import psutil
-import psutil._common
 import pytest
 
 import uns_graphql.health_check as health_check
@@ -26,14 +25,14 @@ def test_check_listening_port():
     port_positive_test = 9000
     port_negative_test = 9900
     with patch("psutil.net_connections") as mock_net_connections:
-        # cSpell:ignore laddr sconn
-        mock_conn = MagicMock(psutil._common.sconn, autospec=True)
+        # cSpell:ignore laddr sconn _ntuples
+        mock_conn = MagicMock(psutil._ntuples.sconn, autospec=True)
         mock_conn.status = "LISTEN"
         mock_conn.laddr.port = port_positive_test
         mock_net_connections.return_value = [
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
             mock_conn,
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
         ]
         assert health_check.check_listening_port(port=port_positive_test)
         assert not health_check.check_listening_port(port=port_negative_test)
@@ -82,13 +81,13 @@ def test_main_positive(args: list[str], port: int):
         ]
         # mock the uvicorn process listening on specified port
         # cSpell:ignore laddr sconn
-        mock_uvicorn_conn = MagicMock(psutil._common.sconn, autospec=True)
+        mock_uvicorn_conn = MagicMock(psutil._ntuples.sconn, autospec=True)
         mock_uvicorn_conn.status = "LISTEN"
         mock_uvicorn_conn.laddr.port = port
         mock_net_connections.return_value = [
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
             mock_uvicorn_conn,
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
         ]
         mock_net_connections.return_value = [
             mock_uvicorn_conn,
@@ -215,14 +214,14 @@ def test_main_multiple_scenarios(
         ]
         # mock the uvicorn process listening on specified port
         # cSpell:ignore laddr sconn
-        mock_uvicorn_conn = MagicMock(psutil._common.sconn, autospec=True)
+        mock_uvicorn_conn = MagicMock(psutil._ntuples.sconn, autospec=True)
         mock_uvicorn_conn.status = "LISTEN"
         if uvicorn_running:  # dont provide the port in the mock if the test scenario needs to check uvicorn not running
             mock_uvicorn_conn.laddr.port = port
         mock_net_connections.return_value = [
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
             mock_uvicorn_conn,
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
         ]
         mock_net_connections.return_value = [
             mock_uvicorn_conn,
