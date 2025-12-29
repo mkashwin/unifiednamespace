@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import psutil
-import psutil._common
 import pytest
 
 from uns_kafka import health_check
@@ -54,8 +53,8 @@ def test_check_process():
 def test_check_existing_connection(host_ip: str, host: str | None, port: int, match_conn: bool):
     with patch("socket.gethostbyname") as mock_socket, patch("psutil.net_connections") as mock_net_connections:
         mock_socket.return_value = host_ip
-        # cSpell:ignore raddr sconn
-        mock_conn = MagicMock(psutil._common.sconn, autospec=True)
+        # cSpell:ignore raddr sconn _ntuples
+        mock_conn = MagicMock(psutil._ntuples.sconn, autospec=True)
         mock_conn.status = "ESTABLISHED"
         # Match connection based based on match_conn value
         if match_conn:
@@ -63,9 +62,9 @@ def test_check_existing_connection(host_ip: str, host: str | None, port: int, ma
             mock_conn.raddr.ip = host_ip
 
         mock_net_connections.return_value = [
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
             mock_conn,
-            MagicMock(psutil._common.sconn, autospec=True),
+            MagicMock(psutil._ntuples.sconn, autospec=True),
         ]
         assert health_check.check_existing_connection(host, port) == match_conn
 
@@ -73,19 +72,23 @@ def test_check_existing_connection(host_ip: str, host: str | None, port: int, ma
 @pytest.mark.parametrize(
     "process_info, remote_host_port_list,sys_err_ext_count",
     [
-        ({"cmdline": ["python", "uns_kafka_mapper"]}, [(mqtt_host, mqtt_port), (kafka_host, kafka_port)], 0)
+        ({"cmdline": ["python", "uns_kafka_mapper"]}, [
+         (mqtt_host, mqtt_port), (kafka_host, kafka_port)], 0)
         for (kafka_host, kafka_port) in kafka_host_port_list
     ] +
     [
-         ({"cmdline": ["python", "something else"]}, [(mqtt_host, mqtt_port), (kafka_host, kafka_port)], 1)
-         for (kafka_host, kafka_port) in kafka_host_port_list
-    ] +
-    [
-        ({"cmdline": ["python", "uns_kafka_mapper"]}, [(kafka_host, kafka_port)], 1)
+        ({"cmdline": ["python", "something else"]}, [
+         (mqtt_host, mqtt_port), (kafka_host, kafka_port)], 1)
         for (kafka_host, kafka_port) in kafka_host_port_list
     ] +
     [
-        ({"cmdline": ["python", "uns_kafka_mapper"]}, [(mqtt_host, mqtt_port)], 1),
+        ({"cmdline": ["python", "uns_kafka_mapper"]},
+         [(kafka_host, kafka_port)], 1)
+        for (kafka_host, kafka_port) in kafka_host_port_list
+    ] +
+    [
+        ({"cmdline": ["python", "uns_kafka_mapper"]},
+         [(mqtt_host, mqtt_port)], 1),
         ({"cmdline": ["python", "uns_kafka_mapper"]}, [], 2),
         ({"cmdline": ["python", "anything"]}, [], 3),
     ],
@@ -98,7 +101,7 @@ def test_main_multiple_scenarios(process_info: dict, remote_host_port_list: list
                        if 0 then no erroneous exits and only sys.exit(0) was called
     """
     with patch("sys.exit") as mock_exit, patch("psutil.process_iter") as mock_process_iter, patch(
-        "psutil.net_connections") as mock_net_connections, patch("socket.gethostbyname") as mock_socket:
+            "psutil.net_connections") as mock_net_connections, patch("socket.gethostbyname") as mock_socket:
         # mock the kafka listener  process
         mock_kafka_process = MagicMock(spec=psutil.Process, autospec=True)
         mock_kafka_process.info = process_info
@@ -110,7 +113,7 @@ def test_main_multiple_scenarios(process_info: dict, remote_host_port_list: list
         mock_conn_list = []
         for (host, port) in remote_host_port_list:
             mock_socket.gethostbyname.return_value = host
-            mock_conn = MagicMock(psutil._common.sconn, autospec=True)
+            mock_conn = MagicMock(psutil._ntuples.sconn, autospec=True)
             mock_conn.status = "ESTABLISHED"
             mock_conn.raddr.port = port
             mock_conn.raddr.ip = host
