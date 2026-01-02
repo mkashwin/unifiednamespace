@@ -22,6 +22,7 @@ import json
 
 import pytest
 import strawberry
+from strawberry.schema.config import StrawberryConfig
 
 from uns_graphql.type.basetype import BytesPayload, Int64, JSONPayload
 
@@ -53,7 +54,8 @@ def test_json_payload(input_data, expected_output):
         schema = strawberry.Schema(query=Query)
         result = schema.execute_sync(query, root_value=Query(payload=payload))
         assert not result.errors
-        assert result.data.get("payload").get("data") == json.dumps(expected_output)
+        assert result.data.get("payload").get(
+            "data") == json.dumps(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -71,9 +73,11 @@ def test_bytes_payload(input_data):
 
     query = "{ payload { data} }"
     schema = strawberry.Schema(query=Query)
-    result = schema.execute_sync(query, root_value=Query(payload=BytesPayload(data=input_data)))
+    result = schema.execute_sync(query, root_value=Query(
+        payload=BytesPayload(data=input_data)))
     assert not result.errors
-    assert result.data.get("payload").get("data") == base64.b64encode(input_data).decode()
+    assert result.data.get("payload").get(
+        "data") == base64.b64encode(input_data).decode()
 
 
 @pytest.mark.parametrize(
@@ -86,10 +90,11 @@ def test_bytes_payload(input_data):
 def test_int64_type(input_data, expected_output):
     @strawberry.type
     class Query:
-        value: Int64  # type: ignore
+        value: int  # type: ignore
 
     query = "{ value }"
-    schema = strawberry.Schema(query=Query)
+    schema = strawberry.Schema(query=Query, config=StrawberryConfig(
+        scalar_map={int: Int64}))
     # schema = strawberry.Schema(query=Query,scalar_overrides={int: Int64})
     result = schema.execute_sync(query, root_value=Query(value=input_data))
 

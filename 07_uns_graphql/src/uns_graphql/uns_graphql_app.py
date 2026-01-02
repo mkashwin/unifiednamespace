@@ -24,6 +24,7 @@ import strawberry
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from strawberry.fastapi import GraphQLRouter
+from strawberry.schema.config import StrawberryConfig
 
 from uns_graphql.queries import graph, historian
 from uns_graphql.subscriptions.kafka import KAFKASubscription
@@ -73,7 +74,9 @@ class UNSGraphql:
             await Query.on_shutdown()
             await Subscription.on_shutdown()
 
-    schema = strawberry.Schema(query=Query, subscription=Subscription, scalar_overrides={int: Int64})
+    schema = strawberry.Schema(
+        query=Query, subscription=Subscription, config=StrawberryConfig(
+            scalar_map={int: Int64}))
     graphql_app = GraphQLRouter(schema)
     LOGGER.info("GraphQL app created")
     app = FastAPI()

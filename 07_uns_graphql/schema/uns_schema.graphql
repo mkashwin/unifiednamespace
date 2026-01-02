@@ -29,6 +29,11 @@ type HistoricalUNSEvent {
 }
 
 """
+Int 64 field since GraphQL doesn't support int64, only int 32
+"""
+scalar Int64
+
+"""
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf).
 """
 scalar JSON
@@ -126,7 +131,7 @@ type Query {
 }
 
 type SPBDataSet {
-  numOfColumns: Union!
+  numOfColumns: Int64!
   columns: [String!]!
   types: [String!]!
   rows: [SPBDataSetRow!]!
@@ -143,8 +148,8 @@ type SPBDataSetValue {
 type SPBMetadata {
   isMultiPart: Boolean
   contentType: String
-  size: Union
-  seq: Union
+  size: Int64
+  seq: Int64
   fileName: String
   fileType: String
   md5: String
@@ -153,7 +158,7 @@ type SPBMetadata {
 
 type SPBMetric {
   name: String!
-  alias: Union
+  alias: Int64
   timestamp: DateTime!
   datatype: String!
   isHistorical: Boolean
@@ -168,7 +173,7 @@ type SPBNode {
   topic: String!
   timestamp: DateTime!
   metrics: [SPBMetric!]!
-  seq: Union!
+  seq: Int64!
   uuid: ID
   body: Base64
 }
@@ -251,8 +256,3 @@ type UNSNode {
   created: DateTime!
   lastUpdated: DateTime!
 }
-
-"""
-Int 64 field since GraphQL doesn't support int64, only int 32
-"""
-scalar Union
