@@ -43,7 +43,7 @@ lint:
     - prettier@3.7.4
     - shellcheck@0.11.0
     - yamllint@1.37.1
-    - ruff@0.14.10
+    - ruff@0.14.11
   ignore:
     - linters: [ALL]
       paths:
