@@ -82,13 +82,13 @@ StringArray: DataType
 DateTimeArray: DataType
 
 class Payload(_message.Message):
-    __slots__ = ()
+    __slots__ = ("timestamp", "metrics", "seq", "uuid", "body")
     Extensions: _python_message._ExtensionDict
     class Template(_message.Message):
-        __slots__ = ()
+        __slots__ = ("version", "metrics", "parameters", "template_ref", "is_definition")
         Extensions: _python_message._ExtensionDict
         class Parameter(_message.Message):
-            __slots__ = ()
+            __slots__ = ("name", "type", "int_value", "long_value", "float_value", "double_value", "boolean_value", "string_value", "extension_value")
             class ParameterValueExtension(_message.Message):
                 __slots__ = ()
                 Extensions: _python_message._ExtensionDict
@@ -124,10 +124,10 @@ class Payload(_message.Message):
         is_definition: bool
         def __init__(self, version: _Optional[str] = ..., metrics: _Optional[_Iterable[_Union[Payload.Metric, _Mapping]]] = ..., parameters: _Optional[_Iterable[_Union[Payload.Template.Parameter, _Mapping]]] = ..., template_ref: _Optional[str] = ..., is_definition: _Optional[bool] = ...) -> None: ...
     class DataSet(_message.Message):
-        __slots__ = ()
+        __slots__ = ("num_of_columns", "columns", "types", "rows")
         Extensions: _python_message._ExtensionDict
         class DataSetValue(_message.Message):
-            __slots__ = ()
+            __slots__ = ("int_value", "long_value", "float_value", "double_value", "boolean_value", "string_value", "extension_value")
             class DataSetValueExtension(_message.Message):
                 __slots__ = ()
                 Extensions: _python_message._ExtensionDict
@@ -148,7 +148,7 @@ class Payload(_message.Message):
             extension_value: Payload.DataSet.DataSetValue.DataSetValueExtension
             def __init__(self, int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ..., string_value: _Optional[str] = ..., extension_value: _Optional[_Union[Payload.DataSet.DataSetValue.DataSetValueExtension, _Mapping]] = ...) -> None: ...
         class Row(_message.Message):
-            __slots__ = ()
+            __slots__ = ("elements",)
             Extensions: _python_message._ExtensionDict
             ELEMENTS_FIELD_NUMBER: _ClassVar[int]
             elements: _containers.RepeatedCompositeFieldContainer[Payload.DataSet.DataSetValue]
@@ -163,7 +163,7 @@ class Payload(_message.Message):
         rows: _containers.RepeatedCompositeFieldContainer[Payload.DataSet.Row]
         def __init__(self, num_of_columns: _Optional[int] = ..., columns: _Optional[_Iterable[str]] = ..., types: _Optional[_Iterable[int]] = ..., rows: _Optional[_Iterable[_Union[Payload.DataSet.Row, _Mapping]]] = ...) -> None: ...
     class PropertyValue(_message.Message):
-        __slots__ = ()
+        __slots__ = ("type", "is_null", "int_value", "long_value", "float_value", "double_value", "boolean_value", "string_value", "propertyset_value", "propertysets_value", "extension_value")
         class PropertyValueExtension(_message.Message):
             __slots__ = ()
             Extensions: _python_message._ExtensionDict
@@ -192,7 +192,7 @@ class Payload(_message.Message):
         extension_value: Payload.PropertyValue.PropertyValueExtension
         def __init__(self, type: _Optional[int] = ..., is_null: _Optional[bool] = ..., int_value: _Optional[int] = ..., long_value: _Optional[int] = ..., float_value: _Optional[float] = ..., double_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ..., string_value: _Optional[str] = ..., propertyset_value: _Optional[_Union[Payload.PropertySet, _Mapping]] = ..., propertysets_value: _Optional[_Union[Payload.PropertySetList, _Mapping]] = ..., extension_value: _Optional[_Union[Payload.PropertyValue.PropertyValueExtension, _Mapping]] = ...) -> None: ...
     class PropertySet(_message.Message):
-        __slots__ = ()
+        __slots__ = ("keys", "values")
         Extensions: _python_message._ExtensionDict
         KEYS_FIELD_NUMBER: _ClassVar[int]
         VALUES_FIELD_NUMBER: _ClassVar[int]
@@ -200,13 +200,13 @@ class Payload(_message.Message):
         values: _containers.RepeatedCompositeFieldContainer[Payload.PropertyValue]
         def __init__(self, keys: _Optional[_Iterable[str]] = ..., values: _Optional[_Iterable[_Union[Payload.PropertyValue, _Mapping]]] = ...) -> None: ...
     class PropertySetList(_message.Message):
-        __slots__ = ()
+        __slots__ = ("propertyset",)
         Extensions: _python_message._ExtensionDict
         PROPERTYSET_FIELD_NUMBER: _ClassVar[int]
         propertyset: _containers.RepeatedCompositeFieldContainer[Payload.PropertySet]
         def __init__(self, propertyset: _Optional[_Iterable[_Union[Payload.PropertySet, _Mapping]]] = ...) -> None: ...
     class MetaData(_message.Message):
-        __slots__ = ()
+        __slots__ = ("is_multi_part", "content_type", "size", "seq", "file_name", "file_type", "md5", "description")
         Extensions: _python_message._ExtensionDict
         IS_MULTI_PART_FIELD_NUMBER: _ClassVar[int]
         CONTENT_TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -226,7 +226,7 @@ class Payload(_message.Message):
         description: str
         def __init__(self, is_multi_part: _Optional[bool] = ..., content_type: _Optional[str] = ..., size: _Optional[int] = ..., seq: _Optional[int] = ..., file_name: _Optional[str] = ..., file_type: _Optional[str] = ..., md5: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
     class Metric(_message.Message):
-        __slots__ = ()
+        __slots__ = ("name", "alias", "timestamp", "datatype", "is_historical", "is_transient", "is_null", "metadata", "properties", "int_value", "long_value", "float_value", "double_value", "boolean_value", "string_value", "bytes_value", "dataset_value", "template_value", "extension_value")
         class MetricValueExtension(_message.Message):
             __slots__ = ()
             Extensions: _python_message._ExtensionDict
