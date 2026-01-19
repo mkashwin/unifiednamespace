@@ -122,8 +122,7 @@ if [[ -n $(docker ps -aq -f name=uns_emqx_mqtt) ]]; then
 	docker start uns_emqx_mqtt
 else
 	docker run -d \
-		--name emqx-mqtt \
-		--restart unless-stopped \
+		--name uns_emqx_mqtt --restart unless-stopped \
 		-p 1883:1883 \
 		-p 1884:1884 \
 		-p 8883:8883 \
@@ -243,8 +242,8 @@ else
 fi
 
 # 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
-# always created
-INPUT_FILES=$(find "${WORKSPACE}" -type f -not -path "${WORKSPACE}/07_uns_graphql/*" -name ".secrets.yaml")
+# always created. Updated to ignore 08_uns_mcp to avoid conflicts
+INPUT_FILES=$(find "${WORKSPACE}" -type f -not -path "${WORKSPACE}/07_uns_graphql/*" -not -path "${WORKSPACE}/08_uns_mcp/*" -name ".secrets.yaml")
 
 # Define the output file
 OUTPUT_FILE=${WORKSPACE}/07_uns_graphql/conf/.secrets.yaml
@@ -257,6 +256,9 @@ for yaml_file in ${INPUT_FILES}; do
 done
 # Execute the merge command and write the output to the file
 eval "${merge_command}" >"${OUTPUT_FILE}"
+
+# copy the graphql secrets to mcp as well
+cp "${WORKSPACE}"/07_uns_graphql/conf/.secrets.yaml "${WORKSPACE}"/08_uns_mcp/conf/.secrets.yaml
 
 #install trunk
 # trunk-ignore(shellcheck/SC2312)

@@ -52,13 +52,19 @@
       "label": "Timescaledb"
     },
     "7474": {
-      "label": "neo4j browser"
+      "label": "Neo4j browser"
     },
     "7687": {
       "label": "Neo4j database"
     },
-    "8083": {
+    "8080": {
       "label": "MQTT Websockets"
+    },
+    "9092": {
+      "label": "KAFKA"
+    },
+    "8000": {
+      "label": "GraphQL Server"
     }
   }
   // Configure tool-specific properties.
