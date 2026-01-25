@@ -26,7 +26,7 @@ classifiers = [
 dependencies = [
     "logger~=1.4",
     "paho-mqtt>=2.1.0,<3",
-    "protobuf~=6.31",
+    "protobuf>=6.32,<7",
 ]
 
 [project.urls]

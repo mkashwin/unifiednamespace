@@ -9,6 +9,10 @@ inputs:
     description: "Boolean, If True all tests should run. If False skip tests tagged for integration"
     required: False
     default: "false"
+  test_by_directory:
+    description: "Boolean, If True tests are run directory by directory. This is done to reduce memory consumption on large test suites."
+    required: False
+    default: "false"
   pytest_flags:
     description: "String, additional flags to be passed to pytest while running tests"
     required: False
@@ -36,15 +40,33 @@ runs:
         # change to current directory of module            
         cd ./${{ inputs.module }}
         if [[ ${RUNNER_DEBUG} == 1 ]] ; then
-          PYTEST_CMD="uv run pytest --debug "
+          PYTEST_CMD="uv run pytest --debug ${{inputs.pytest_flags}} "
         else
-          PYTEST_CMD="uv run pytest"
+          PYTEST_CMD="uv run pytest ${{inputs.pytest_flags}}"
         fi
-          
-        if ${{ inputs.integration_tests }} ; then
-         $PYTEST_CMD ${{inputs.pytest_flags}}
+
+        if ! ${{ inputs.integration_tests }} ; then
+          PYTEST_CMD="$PYTEST_CMD -m 'not integrationtest' "
+        fi
+
+        if ${{ inputs.test_by_directory }} ; then
+          # Execute tests directory by directory
+          for d in $(find ./test -type d) ; do
+            if ls "$d"/test_*.py >/dev/null 2>&1 ; then
+              echo "------------------------------------------"
+              echo "Running tests in directory: $d"
+              ($PYTEST_CMD "$d"/*.py)
+              if [ $? -ne 0 ]; then
+                  echo "Tests failed in $d. Stopping."
+                  read  -n 1
+                  exit 1
+              fi
+              echo "------------------------------------------"
+              echo ""
+            fi
         else
-          $PYTEST_CMD ${{inputs.pytest_flags}} -m "not integrationtest"
+          # Execute all tests together
+          $PYTEST_CMD ${{inputs.pytest_flags}}
         fi
 
     - name: Run Safety CLI to check for vulnerabilities

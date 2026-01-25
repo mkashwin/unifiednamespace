@@ -4,7 +4,7 @@ docker run -d \
 "-e GF_INSTALL_PLUGINS=grafana-mqtt-datasource, grafana-kafka-datasource,  grafana-datasource-plugin-neo4j, " \
 grafana/grafana
 
-docker inspect --format='{{.NetworkSettings.IPAddress}}' emqx-mqtt
+docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_emqx_mqtt
 docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_graphdb
 docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_timescaledb
 docker inspect --format='{{.NetworkSettings.IPAddress}}' uns_kafka
@@ -53,3 +53,17 @@ docker exec \
 		bash -c "
     cypher-shell -u ${UNS_graphdb__username} -p ${UNS_graphdb__password} \"MATCH (n) DETACH DELETE n; \"
     "
+
+
+for d in $(find ./test -type d) ; do
+    if ls "$d"/test_*.py >/dev/null 2>&1 ; then
+        echo "------------------------------------------"
+        echo "Running tests in directory: $d"
+        (uv run pytest "$d"/*.py)
+        if [ $? -ne 0 ]; then
+            echo "Tests failed in $d. Stopping."
+            read  -n 1
+            exit 1
+        fi
+    fi
+done
