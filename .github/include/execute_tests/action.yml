@@ -64,6 +64,7 @@ runs:
               echo "------------------------------------------"
               echo ""
             fi
+          done
         else
           # Execute all tests together
           $PYTEST_CMD ${{inputs.pytest_flags}}
