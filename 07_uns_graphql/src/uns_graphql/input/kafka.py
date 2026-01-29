@@ -33,7 +33,7 @@ class KAFKATopic(BaseModel):
 
 
 @strawberry.experimental.pydantic.input(
-    model=KAFKATopic, all_fields=True, description="Valid Kafka Topic to subscribe to. Does not accept wildcards or RegEx"
+    model=KAFKATopic, all_fields=True, description="Valid Kafka Topic to subscribe to. Accepts wildcards or RegEx"
 )
 class KAFKATopicInput:
     pass
