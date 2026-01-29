@@ -16,7 +16,6 @@
 *******************************************************************************
 """
 
-import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -66,26 +65,25 @@ async def create_topics(message_vals):
     topics = list({msg[0] for msg in message_vals})
 
     # Function to Delete topics if present
-    async def delete_existing_topics(admin, topics):
+    def delete_existing_topics(admin, topics):
         fs = admin.delete_topics(topics)
         # Wait for each operation to finish.
-        for topic, f in fs.items():
+        for f in fs.values():
             try:
                 f.result()  # The result itself is None
             except Exception:
                 # Topic might not exist, which is fine for delete
-                pass
+                continue
 
-    async def create_new_topics(admin, topics):
+    def create_new_topics(admin, topics):
         new_topics = [NewTopic(topic, num_partitions=1, replication_factor=1) for topic in topics]
         fs = admin.create_topics(new_topics)
         # Wait for each operation to finish.
-        for topic, f in fs.items():
+        for f in fs.values():
             try:
                 f.result()  # The result itself is None
             except Exception as e:
-                print(f"Failed to create topic {topic}: {e}")
-                raise
+                raise e
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
     async def produce_messages():  # noqa: RUF029
@@ -108,13 +106,13 @@ async def create_topics(message_vals):
         producer.flush()
 
     # Delete topics
-    await delete_existing_topics(admin, topics)
-    await create_new_topics(admin, topics)
+    delete_existing_topics(admin, topics)
+    create_new_topics(admin, topics)
     # Run message producer in a separate thread
     await produce_messages()
     yield
     # Delete topics
-    await delete_existing_topics(admin, topics)
+    delete_existing_topics(admin, topics)
 
 
 @pytest.mark.asyncio(loop_scope="function")
