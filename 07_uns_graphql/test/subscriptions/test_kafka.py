@@ -67,15 +67,25 @@ async def create_topics(message_vals):
 
     # Function to Delete topics if present
     async def delete_existing_topics(admin, topics):
-        admin.delete_topics(topics)
-        # Give some time for the topics to be deleted
-        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout + 1)
+        fs = admin.delete_topics(topics)
+        # Wait for each operation to finish.
+        for topic, f in fs.items():
+            try:
+                f.result()  # The result itself is None
+            except Exception:
+                # Topic might not exist, which is fine for delete
+                pass
 
     async def create_new_topics(admin, topics):
         new_topics = [NewTopic(topic, num_partitions=1, replication_factor=1) for topic in topics]
-        admin.create_topics(new_topics)
-        # Give some time for the topics to be created
-        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout + 1)
+        fs = admin.create_topics(new_topics)
+        # Wait for each operation to finish.
+        for topic, f in fs.items():
+            try:
+                f.result()  # The result itself is None
+            except Exception as e:
+                print(f"Failed to create topic {topic}: {e}")
+                raise
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
     async def produce_messages():  # noqa: RUF029
