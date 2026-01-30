@@ -2,8 +2,14 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
   "name": "Python 3",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dedevv/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/python:3.14-bookworm",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  //"image": "mcr.microsoft.com/devcontainers/python:1-3.14-bullseye",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "containerEnv": {
+    "WORKSPACE_DEFAULT_PATH": "${containerWorkspaceFolder}"
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "moby": true,
@@ -18,9 +24,6 @@
       "version": "latest",
       "injections": "pytest",
       "interpreter": "python3"
-    },
-    "ghcr.io/jsburckhardt/devcontainer-features/uv": {
-      "version": "latest"
     },
     "ghcr.io/trunk-io/devcontainer-feature/trunk": {
       "version": "latest"
@@ -52,18 +55,20 @@
       "label": "Timescaledb"
     },
     "7474": {
-      "label": "neo4j browser"
+      "label": "Neo4j browser"
     },
     "7687": {
       "label": "Neo4j database"
     },
-    "8083": {
+    "8000": {
+      "label": "GraphQL Server"
+    },
+    "8080": {
       "label": "MQTT Websockets"
+    },
+    "9092": {
+      "label": "KAFKA"
     }
-  }
-  // Configure tool-specific properties.
-  // "customizations": {},
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  // "remoteUser": "root"
-  //"updateContentCommand": "trunk install"
+  },
+  "remoteUser": "vscode"
 }
