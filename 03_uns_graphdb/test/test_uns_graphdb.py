@@ -19,8 +19,6 @@ Tests for Uns_MQTT_GraphDb
 """
 
 import json
-import sys
-from pathlib import Path
 
 import pytest
 from neo4j import exceptions
@@ -29,14 +27,9 @@ from paho.mqtt.properties import Properties
 from uns_mqtt.mqtt_listener import MQTTVersion
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
+import test_graphdb_handler
 from uns_graphdb.graphdb_config import GraphDBConfig
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
-
-test_folder = (Path(__file__).resolve().parent.parent / "test").resolve()
-sys.path.insert(0, str(test_folder))
-# @FIXME Hack done to be able to import utility modules in the tests directories
-# @See https://docs.pytest.org/en/7.1.x/explanation/pythonpath.html importlib
-import test_graphdb_handler  # noqa: E402
 
 
 @pytest.mark.integrationtest()
