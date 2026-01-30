@@ -1,9 +1,9 @@
 #!/bin/bash
 # This script is to be executed on creation of the dev container in order to create a working development environment
-WORKSPACE=/workspaces/unifiednamespace
 
 # 1.0 setup the python environment
 pip3 install --upgrade pip uv
+uv python install --default 3.14
 uv sync
 
 # 2. create minimalistic secret files for all the modules.
@@ -18,7 +18,7 @@ else
   username: ${UNS_graphdb__username}
   password: ${UNS_graphdb__password}
 dynaconf_merge: true
-  " >"${WORKSPACE}"/03_uns_graphdb/conf/.secrets.yaml
+  " >"${WORKSPACE_DEFAULT_PATH}"/03_uns_graphdb/conf/.secrets.yaml
 	# 2.1.1 New instance of Graph DB used by 03_uns_graphdb
 	sudo rm -rf "${HOME}"/neo4j
 
@@ -57,7 +57,7 @@ else
 dynaconf_merge: true
   # This password is for your reference if you ever need to login as postgres user
   # POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  " >"${WORKSPACE}"/04_uns_historian/conf/.secrets.yaml
+  " >"${WORKSPACE_DEFAULT_PATH}"/04_uns_historian/conf/.secrets.yaml
 
 	# 2.2.1 Historian DB used by 04_uns_historian
 	sudo rm -rf "${HOME}"/timescaledb
@@ -207,9 +207,9 @@ else
 		-e EMQX_AUTHORIZATION__SOURCES__1__TYPE=file \
 		-e EMQX_AUTHORIZATION__SOURCES__1__ENABLE=true \
 		-e EMQX_AUTHORIZATION__SOURCES__1__PATH=/opt/emqx/etc/acl.conf \
-		-v "${WORKSPACE}/02_mqtt-cluster/test/local_mqtt/certs:/opt/emqx/etc/certs:ro" \
-		-v "${WORKSPACE}/02_mqtt-cluster/test/local_mqtt/emqx-acl.conf:/opt/emqx/etc/acl.conf:ro" \
-		-v "${WORKSPACE}/02_mqtt-cluster/test/local_mqtt/emqx_user-import.csv:/opt/emqx/etc/auth-built-in-db-bootstrap.csv:ro" \
+		-v "${WORKSPACE_DEFAULT_PATH}/02_mqtt-cluster/test/local_mqtt/certs:/opt/emqx/etc/certs:ro" \
+		-v "${WORKSPACE_DEFAULT_PATH}/02_mqtt-cluster/test/local_mqtt/emqx-acl.conf:/opt/emqx/etc/acl.conf:ro" \
+		-v "${WORKSPACE_DEFAULT_PATH}/02_mqtt-cluster/test/local_mqtt/emqx_user-import.csv:/opt/emqx/etc/auth-built-in-db-bootstrap.csv:ro" \
 		emqx/emqx:latest
 fi
 
@@ -244,10 +244,10 @@ fi
 
 # 2.5 Merge the secret configurations of the other modules for graphQL service to successfully integrate with the back ends
 # always created
-INPUT_FILES=$(find "${WORKSPACE}" -type f -not -path "${WORKSPACE}/07_uns_graphql/*" -name ".secrets.yaml")
+INPUT_FILES=$(find "${WORKSPACE_DEFAULT_PATH}" -type f -not -path "${WORKSPACE_DEFAULT_PATH}/07_uns_graphql/*" -name ".secrets.yaml")
 
 # Define the output file
-OUTPUT_FILE=${WORKSPACE}/07_uns_graphql/conf/.secrets.yaml
+OUTPUT_FILE=${WORKSPACE_DEFAULT_PATH}/07_uns_graphql/conf/.secrets.yaml
 
 merge_command="docker run --rm -v \"/\":/workdir mikefarah/yq eval-all '. as \$item ireduce ({}; . * \$item )'"
 
