@@ -67,8 +67,7 @@ class UnsMqttHistorian:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}",
-                     client, userdata, msg)
+        LOGGER.debug("{Client: %s,Userdata: %s,Message: %s,}", client, userdata, msg)
 
         try:
             # get the payload as a dict object
@@ -82,8 +81,7 @@ class UnsMqttHistorian:
                     await uns_historian_handler.persist_mqtt_msg(
                         client_id=client._client_id.decode(),
                         topic=msg.topic,
-                        timestamp=float(filtered_message.get(
-                            MQTTConfig.timestamp_key, time.time())),
+                        timestamp=float(filtered_message.get(MQTTConfig.timestamp_key, time.time())),
                         message=filtered_message,
                     )
 
@@ -120,8 +118,7 @@ class UnsMqttHistorian:
         Callback function executed every time the client is disconnected from the MQTT broker
         """
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         reason_codes, stack_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", reason_codes, stack_info=True)
         # dont close the DB Pool as the client may disconnect multiple times and reconnect
 
 
