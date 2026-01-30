@@ -22,7 +22,7 @@ import asyncio
 import json
 import random
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
@@ -68,16 +68,29 @@ def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historia
 
 def test_uns_mqtt_historian_main_positive_pool_closure(mock_uns_client, mock_historian_handler):  # noqa: ARG001
     # verify that the main method closed the pool in normal execution
-    main()
-    mock_historian_handler.close_pool.assert_called_once()
+    mock_loop = MagicMock()
+    with patch("asyncio.new_event_loop", return_value=mock_loop), \
+         patch("asyncio.set_event_loop"):
+
+        main()
+
+        mock_loop.run_forever.assert_called_once()
+        mock_historian_handler.close_pool.assert_called_once()
 
 
 def test_uns_mqtt_historian_main_negative_pool_closure(mock_uns_client, mock_historian_handler):
     # verify that the main method closed the pool even if exceptions were raised
-    mock_uns_client.loop_forever.side_effect = Exception("Mocked MQTT Error")
-    try:
-        main()
-    except Exception:
+    mock_loop = MagicMock()
+    mock_loop.run_forever.side_effect = Exception("Mocked Loop Error")
+
+    with patch("asyncio.new_event_loop", return_value=mock_loop), \
+         patch("asyncio.set_event_loop"):
+
+        try:
+            main()
+        except Exception:
+            pass
+
         mock_historian_handler.close_pool.assert_called_once()
 
 
