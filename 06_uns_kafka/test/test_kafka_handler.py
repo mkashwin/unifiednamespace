@@ -158,9 +158,13 @@ def test_publish(mqtt_topic: str, message):
     kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
     try:
         # Run tests only when connectivity to broker is there
+        attempts = 0
         while True:
             msg = kafka_listener.poll(1.0)
             if msg is None:
+                attempts += 1
+                if attempts > 30:
+                    pytest.fail("Timeout waiting for message")
                 # wait
                 print("Waiting...")  # noqa: T201
             elif msg.error():
