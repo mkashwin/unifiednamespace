@@ -16,7 +16,7 @@
 *******************************************************************************
 """
 
-import contextlib
+import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -66,22 +66,16 @@ async def create_topics(message_vals):
     topics = list({msg[0] for msg in message_vals})
 
     # Function to Delete topics if present
-    def delete_existing_topics(admin, topics):
-        fs = admin.delete_topics(topics)
-        # Wait for each operation to finish.
-        for f in fs.values():
-            with contextlib.suppress(Exception):
-                f.result()  # The result itself is None
+    async def delete_existing_topics(admin, topics):
+        admin.delete_topics(topics)
+        # Give some time for the topics to be deleted
+        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout + 1)
 
-    def create_new_topics(admin, topics):
+    async def create_new_topics(admin, topics):
         new_topics = [NewTopic(topic, num_partitions=1, replication_factor=1) for topic in topics]
-        fs = admin.create_topics(new_topics)
-        # Wait for each operation to finish.
-        for f in fs.values():
-            try:
-                f.result()  # The result itself is None
-            except Exception as e:
-                raise e
+        admin.create_topics(new_topics)
+        # Give some time for the topics to be created
+        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout + 1)
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
     async def produce_messages():  # noqa: RUF029
@@ -104,13 +98,13 @@ async def create_topics(message_vals):
         producer.flush()
 
     # Delete topics
-    delete_existing_topics(admin, topics)
-    create_new_topics(admin, topics)
+    await delete_existing_topics(admin, topics)
+    await create_new_topics(admin, topics)
     # Run message producer in a separate thread
     await produce_messages()
     yield
     # Delete topics
-    delete_existing_topics(admin, topics)
+    await delete_existing_topics(admin, topics)
 
 
 @pytest.mark.asyncio(loop_scope="function")
@@ -174,7 +168,6 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
 # FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
 # Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_kafka_1")
-@pytest.mark.skip(reason="Kafka integration tests unstable in CI environment due to connection issues")
 @pytest.mark.parametrize(
     "kafka_topics, message_vals",
     [
