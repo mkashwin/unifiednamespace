@@ -38,7 +38,7 @@ def mock_asyncpg():
     with patch("asyncpg.create_pool") as create_pool_mock:
         create_pool_mock.return_value = asyncio.Future()
         pool_instance = AsyncMock(spec=asyncpg.Pool)
-        pool_instance.is_closing = False
+        pool_instance.is_closing.return_value = False
         create_pool_mock.return_value.set_result(pool_instance)
 
         yield create_pool_mock
@@ -57,12 +57,12 @@ async def test_shared_pool(mock_asyncpg):
     assert pool1 is pool2
     mock_asyncpg.assert_called_once()
 
+    # Clean up the shared pool so subsequent tests don't use the mock
+    await HistorianHandler.close_pool()
+
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="uns_historian")
 @pytest.mark.parametrize(
     "timestamp, topic, publisher, message, is_error",
     [
@@ -131,9 +131,6 @@ async def test_persist_mqtt_msg(
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="uns_historian")
 @pytest.mark.parametrize(
     "query, params, is_error",
     [
