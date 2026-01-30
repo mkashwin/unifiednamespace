@@ -238,6 +238,5 @@ REGEX_FOR_MQTT_TOPIC = (
 )
 
 # This regex matches the following:
-#   - Topic names: A string consisting of alphanumeric characters, hyphens, and periods.
-# TODO add support for wildcards or RegEx
-REGEX_FOR_KAFKA_TOPIC = r"^[a-zA-Z0-9._-]+$"
+#   - Topic names: A string consisting of alphanumeric characters, hyphens, periods, and regex metacharacters.
+REGEX_FOR_KAFKA_TOPIC = r"^[a-zA-Z0-9._*+?^$()\[\]{}|\\,:!-]+$"
