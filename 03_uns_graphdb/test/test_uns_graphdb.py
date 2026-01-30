@@ -21,13 +21,13 @@ Tests for Uns_MQTT_GraphDb
 import json
 
 import pytest
+import test_graphdb_handler
 from neo4j import exceptions
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 from uns_mqtt.mqtt_listener import MQTTVersion
 from uns_sparkplugb.uns_spb_helper import convert_spb_bytes_payload_to_dict
 
-import test_graphdb_handler
 from uns_graphdb.graphdb_config import GraphDBConfig
 from uns_graphdb.uns_mqtt_graphdb import UnsMqttGraphDb
 
@@ -143,15 +143,18 @@ def test_mqtt_graphdb_persistence(topic: str, message: dict):
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                     database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_read(test_graphdb_handler.read_topic_nodes, node_type, attr_nd_typ, topic, message_dict)
+                    session.execute_read(
+                        test_graphdb_handler.read_topic_nodes, node_type, attr_nd_typ, topic, message_dict)
             except (exceptions.TransientError, exceptions.TransactionError) as ex:
-                pytest.fail("Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
+                pytest.fail(
+                    "Connection to either the MQTT Broker or " f"the Graph DB did not happen: Exception {ex}")
             finally:
                 # After successfully validating the data run a new transaction to delete
                 with uns_mqtt_graphdb.graph_db_handler.connect().session(
                     database=uns_mqtt_graphdb.graph_db_handler.database,
                 ) as session:
-                    session.execute_write(test_graphdb_handler.cleanup_test_data, topic.split("/")[0], node_type[0])
+                    session.execute_write(
+                        test_graphdb_handler.cleanup_test_data, topic.split("/")[0], node_type[0])
                 uns_mqtt_graphdb.uns_client.disconnect()
 
         # --- end of function
