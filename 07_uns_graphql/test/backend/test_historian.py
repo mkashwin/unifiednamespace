@@ -79,13 +79,15 @@ async def prepare_database(historian_pool):  # noqa: ARG001
     delete_sql_cmd = f""" DELETE FROM {HistorianConfig.table} WHERE
                                time =  $1  AND
                                topic = $2 AND
-                               client_id = $3 AND
-                               mqtt_msg = $4;"""  # noqa: S608
+                               client_id = $3;"""  # noqa: S608
 
     # clean up database before inserting to avoid UniqueViolationError if previous run crashed
     for row in test_data_set:
+        # row is (time, topic, client_id, mqtt_msg)
+        # we only need the first 3 for delete
+        delete_params = list(row)[:3]
         async with HistorianDBPool() as historian:
-            await historian.execute_prepared(delete_sql_cmd, *list(row))
+            await historian.execute_prepared(delete_sql_cmd, *delete_params)
 
     # insert testdata into database
     for row in test_data_set:
@@ -94,8 +96,9 @@ async def prepare_database(historian_pool):  # noqa: ARG001
     yield
     # clean up database
     for row in test_data_set:
+        delete_params = list(row)[:3]
         async with HistorianDBPool() as historian:
-            await historian.execute_prepared(delete_sql_cmd, *list(row))
+            await historian.execute_prepared(delete_sql_cmd, *delete_params)
 
 
 @pytest.mark.asyncio(loop_scope="session")
