@@ -37,13 +37,13 @@ from uns_historian.historian_handler import HistorianHandler
 from uns_historian.uns_mqtt_historian import UnsMqttHistorian, main
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def mock_uns_client():
     with patch("uns_historian.uns_mqtt_historian.UnsMQTTClient", autospec=True) as mock_client:
         yield mock_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def mock_historian_handler():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
