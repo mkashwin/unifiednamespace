@@ -19,6 +19,8 @@ Test cases for uns_kafka.uns_kafka_listener
 """
 
 import json
+import threading
+import uuid
 
 import pytest
 from confluent_kafka import OFFSET_END, Consumer
@@ -133,6 +135,38 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
     """
     uns_kafka_mapper: UNSKafkaMapper = None
     admin_client = None
+    done_event = threading.Event()
+
+    # Make topic unique
+    unique_suffix = str(uuid.uuid4())
+    mqtt_topic = f"{mqtt_topic}/{unique_suffix}"
+    # Adjust expected kafka topic as per logic (replace / with .)
+    # But wait, test case provides kafka_topic as param.
+    # The logic is replace / with .
+    # If I append /uuid to mqtt, kafka topic gets .uuid appended.
+    # But the test param kafka_topic is fixed.
+    # I must update kafka_topic too.
+
+    # Actually, the logic is: KafkaHandler.convert_mqtt_kafka_topic
+    # So if I change mqtt_topic, I should re-calculate kafka_topic or append to it.
+    # But the expected_kafka_topic is passed as param.
+    # I should construct the new kafka_topic based on new mqtt_topic?
+    # Or just modify both.
+
+    # Original: "a/b/c" -> "a.b.c"
+    # New: "a/b/c/uuid" -> "a.b.c.uuid"
+
+    # BUT, the test data is: ("a/b/c", ..., "a.b.c", ...)
+    # The code uses `kafka_topic` from param for subscription.
+    # It does NOT use KafkaHandler.convert_mqtt_kafka_topic(mqtt_topic) to determine subscription topic?
+    # Let's check code:
+    # kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
+
+    # AND `uns_kafka_mapper` uses `KafkaHandler.convert_mqtt_kafka_topic` internally to publish.
+    # So if I change `mqtt_topic`, the mapper publishes to `converted_topic`.
+    # I must ensure `kafka_topic` (subscription) matches `converted_topic`.
+
+    kafka_topic = f"{kafka_topic}.{unique_suffix}"
 
     try:
         uns_kafka_mapper = UNSKafkaMapper()
@@ -151,21 +185,24 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
             """
             Inline method decorator over on_message callback
             """
-            old_on_message(client, userdata, msg)
-            # Flush the producer to force publishing to the broker
-            uns_kafka_mapper.kafka_handler.flush()
+            try:
+                old_on_message(client, userdata, msg)
+                # Flush the producer to force publishing to the broker
+                uns_kafka_mapper.kafka_handler.flush(timeout=10)
 
-            # Create a consumer to read the Kafka broker
-            kafka_listener: Consumer = get_kafka_consumer(KAFKAConfig.kafka_config_map)
+                # Create a consumer to read the Kafka broker
+                kafka_listener: Consumer = get_kafka_consumer(KAFKAConfig.kafka_config_map)
 
-            # Set up a callback to handle the '--reset' flag.
-            def reset_offset(consumer, partitions):
-                for part in partitions:
-                    part.offset = OFFSET_END
-                consumer.assign(partitions)
+                # Set up a callback to handle the '--reset' flag.
+                def reset_offset(consumer, partitions):
+                    for part in partitions:
+                        part.offset = OFFSET_END
+                    consumer.assign(partitions)
 
-            kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
-            check_kafka_topics(uns_kafka_mapper.uns_client, kafka_listener, expected_kafka_msg)
+                kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
+                check_kafka_topics(uns_kafka_mapper.uns_client, kafka_listener, expected_kafka_msg)
+            finally:
+                done_event.set()
             # ---------------- end of inline method
 
         # Overriding on_message is more reliable that on_publish because some times
@@ -177,12 +214,23 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
             topic=mqtt_topic, payload=payload, qos=uns_kafka_mapper.uns_client.qos, retain=False, properties=publish_properties
         )
 
+        # Wait for callback to finish verification
+        if not done_event.wait(timeout=30):
+            pytest.fail("Timeout waiting for message processing callback")
+
     except Exception as ex:
         pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
         if admin_client is not None:
+            # Note: We rely on test execution environment cleanup or ensure client is closed?
+            # admin_client.delete_topics([kafka_topic])
+            # Wait, check_kafka_topics closes kafka_listener.
+            # Here we just clean up mqtt client.
+            # But we created a topic implicitly?
+            # No, auto-creation.
+            # We should delete it.
             admin_client.delete_topics([kafka_topic])
 
 
@@ -193,7 +241,7 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
     consumer_config: dict = {}
     consumer_config["bootstrap.servers"] = kafka_producer_config.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_mapper_test_consumer"
-    consumer_config["group.id"] = "uns_kafka_mapper_test_consumers"
+    consumer_config["group.id"] = f"uns_kafka_mapper_test_consumers_{uuid.uuid4()}"
     consumer_config["auto.offset.reset"] = "earliest"
     return Consumer(consumer_config)
 
@@ -203,9 +251,13 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
     Checks the kafka topic for teh expected message
     """
     try:
+        attempts = 0
         while True:
             msg = kafka_listener.poll(1.0)
             if msg is None:
+                attempts += 1
+                if attempts > 15:
+                    pytest.fail("Timeout waiting for message")
                 # wait
                 print("Waiting...")  # noqa: T201
 
