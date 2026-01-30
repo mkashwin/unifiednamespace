@@ -64,11 +64,11 @@ class KafkaHandler:
         else:
             LOGGER.info("Message delivered to topic: %s", msg.topic())
 
-    def flush(self) -> int:
+    def flush(self, timeout: float = 10.0) -> int:
         """
         Flush the publisher queue to the broker
         """
-        self.producer.flush()
+        return self.producer.flush(timeout)
 
     @staticmethod
     def convert_mqtt_kafka_topic(mqtt_topic: str) -> str:
