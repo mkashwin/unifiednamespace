@@ -23,7 +23,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 import strawberry
-from neo4j import Record
 from neo4j.graph import Node, Relationship
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 

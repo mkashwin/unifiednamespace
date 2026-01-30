@@ -106,7 +106,7 @@ class GraphDB:
         else:
             LOGGER.warning("Trying to close an already closed driver")
 
-    async def execute_read_query(self, query: str, *args, **kwargs) -> typing.AsyncGenerator[Record, None]:
+    async def execute_read_query(self, query: str, *args, **kwargs) -> typing.AsyncGenerator[Record]:
         """
         Executes a (CQL) query with the provided positional and keyword parameters.
 
@@ -116,7 +116,7 @@ class GraphDB:
             **kwargs: Keyword parameters for the CQL query.
 
         Returns:
-            typing.AsyncGenerator[Record, None]: The results of the query.
+            typing.AsyncGenerator[Record]: The results of the query.
         """
 
         LOGGER.debug("Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
