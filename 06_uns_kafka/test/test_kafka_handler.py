@@ -19,6 +19,7 @@ Test cases for uns_kafka.kafka_handler#KafkaHandler
 """
 
 import json
+import uuid
 
 import pytest
 from confluent_kafka import OFFSET_BEGINNING, Consumer, Producer
@@ -35,10 +36,17 @@ def test_kafka_handler_init():
     """
     KafkaHandler#init
     """
-    kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
-    assert kafka_handler.config == KAFKA_CONFIG, f"""The kafka configuration was not properly initialized.\n
-            Expected config:{KAFKA_CONFIG}, received {kafka_handler.config}"""
-    assert kafka_handler.producer is not None and isinstance(kafka_handler.producer, Producer)
+    kafka_handler: KafkaHandler = None
+    try:
+        kafka_handler = KafkaHandler(KAFKA_CONFIG)
+        assert kafka_handler.config == KAFKA_CONFIG, f"""The kafka configuration was not properly initialized.\n
+                Expected config:{KAFKA_CONFIG}, received {kafka_handler.config}"""
+        assert kafka_handler.producer is not None and isinstance(kafka_handler.producer, Producer)
+    finally:
+        if kafka_handler and kafka_handler.producer:
+            # Purge queue to prevent destructor hang
+            kafka_handler.producer.purge()
+            kafka_handler.flush(timeout=5)
 
 
 @pytest.mark.parametrize(
@@ -127,6 +135,8 @@ def test_publish(mqtt_topic: str, message):
     """
     KafkaHandler#publish
     """
+    # Make topic unique to avoid parallel test interference
+    mqtt_topic = f"{mqtt_topic}/{uuid.uuid4()}"
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
     assert kafka_handler is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKA_CONFIG}"
     assert (
@@ -140,10 +150,10 @@ def test_publish(mqtt_topic: str, message):
     consumer_config: dict = {}
     consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_test_consumer"
-    consumer_config["group.id"] = "uns_kafka_test_consumers"
+    consumer_config["group.id"] = f"uns_kafka_test_consumers_{uuid.uuid4()}"
     consumer_config["auto.offset.reset"] = "earliest"
     kafka_handler.publish(mqtt_topic, message)
-    kafka_handler.flush()
+    kafka_handler.flush(timeout=10)
 
     kafka_listener: Consumer = Consumer(consumer_config)
 
@@ -158,9 +168,13 @@ def test_publish(mqtt_topic: str, message):
     kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
     try:
         # Run tests only when connectivity to broker is there
+        attempts = 0
         while True:
             msg = kafka_listener.poll(1.0)
             if msg is None:
+                attempts += 1
+                if attempts > 15:
+                    pytest.fail("Timeout waiting for message")
                 # wait
                 print("Waiting...")  # noqa: T201
             elif msg.error():
@@ -173,5 +187,8 @@ def test_publish(mqtt_topic: str, message):
         pass
     finally:
         # Leave group and commit final offsets
-        admin_client.delete_topics([kafka_topic])
         kafka_listener.close()
+        admin_client.delete_topics([kafka_topic])
+        if kafka_handler and kafka_handler.producer:
+            # Purge queue to prevent destructor hang in case flush failed
+            kafka_handler.producer.purge()

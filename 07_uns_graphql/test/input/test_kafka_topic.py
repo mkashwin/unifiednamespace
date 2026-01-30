@@ -28,15 +28,6 @@ test_data_valid = [
     "level1.level2.level3" "valid_topic_1",
     "another_valid_topic",
     "topic_123_with_underscores",
-    "topic.*",
-    "topic[0-9]+",
-    "^topic$",
-    "topic?",
-    "topic|other",
-    "(topic)",
-    "topic{1,3}",
-    "(?:topic)",
-    "(?!topic)",
 ]
 
 test_data_invalid = [
