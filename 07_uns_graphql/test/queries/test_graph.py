@@ -634,9 +634,6 @@ async def setup_graphdb_data():
 
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.parametrize(
     "topics, expected_result",
     [
@@ -732,9 +729,6 @@ async def test_get_uns_nodes_integration(
 
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics,expected_result",
     [
@@ -856,9 +850,6 @@ eon1_payload = {
 
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.parametrize(
     "metric_names, expected_result",
     [
