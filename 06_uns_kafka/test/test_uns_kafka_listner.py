@@ -33,6 +33,7 @@ from uns_kafka.uns_kafka_config import KAFKAConfig
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
 
 
+@pytest.mark.skip(reason="CI Hangs due to threading issues in UnsMQTTClient/paho-mqtt")
 @pytest.mark.integrationtest()
 def test_uns_kafka_mapper_init():
     """
