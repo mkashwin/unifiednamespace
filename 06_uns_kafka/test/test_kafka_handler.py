@@ -128,6 +128,8 @@ def test_publish(mqtt_topic: str, message):
     """
     KafkaHandler#publish
     """
+    # Make topic unique to avoid parallel test interference
+    mqtt_topic = f"{mqtt_topic}/{uuid.uuid4()}"
     kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
     assert kafka_handler is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKA_CONFIG}"
     assert (
@@ -178,5 +180,5 @@ def test_publish(mqtt_topic: str, message):
         pass
     finally:
         # Leave group and commit final offsets
-        admin_client.delete_topics([kafka_topic])
         kafka_listener.close()
+        admin_client.delete_topics([kafka_topic])
