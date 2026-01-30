@@ -77,6 +77,13 @@ QUERY = """
 QUERY_PARAMS = {"propertyNames": ["seq", "dict_list"], "topicFilter": ["(.)*"]}
 
 
+@pytest.fixture(autouse=True)
+def mock_graphdb_config():
+    """Reduce retries and sleep time for tests to fail fast."""
+    with patch("uns_graphql.backend.graphdb.MAX_RETRIES", 1), patch("uns_graphql.backend.graphdb.SLEEP_BTW_ATTEMPT", 0.1):
+        yield
+
+
 @pytest_asyncio.fixture(loop_scope="function", scope="function")
 async def mock_graphdb_driver():
     """Fixture to mock the Neo4j async driver."""
