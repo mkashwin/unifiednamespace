@@ -144,7 +144,7 @@ def test_publish(mqtt_topic: str, message):
     consumer_config["group.id"] = f"uns_kafka_test_consumers_{uuid.uuid4()}"
     consumer_config["auto.offset.reset"] = "earliest"
     kafka_handler.publish(mqtt_topic, message)
-    kafka_handler.flush()
+    kafka_handler.flush(timeout=10)
 
     kafka_listener: Consumer = Consumer(consumer_config)
 

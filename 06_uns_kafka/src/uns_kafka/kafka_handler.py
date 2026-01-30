@@ -64,7 +64,7 @@ class KafkaHandler:
         else:
             LOGGER.info("Message delivered to topic: %s", msg.topic())
 
-    def flush(self, timeout: float = 10.0) -> int:
+    def flush(self, timeout: float = -1) -> int:
         """
         Flush the publisher queue to the broker
         """
