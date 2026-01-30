@@ -49,8 +49,9 @@ class KafkaHandler:
         # Configure Retry
         if self.producer is None:
             self.producer = Producer(self.config)
-        else:
-            self.producer.produce(KafkaHandler.convert_mqtt_kafka_topic(topic), message, callback=self.delivery_callback)
+
+        self.producer.produce(KafkaHandler.convert_mqtt_kafka_topic(topic), message, callback=self.delivery_callback)
+        self.producer.poll(0)
 
     def delivery_callback(self, err: Exception, msg: dict):
         """
@@ -63,11 +64,11 @@ class KafkaHandler:
         else:
             LOGGER.info("Message delivered to topic: %s", msg.topic())
 
-    def flush(self) -> int:
+    def flush(self, timeout: float = -1) -> int:
         """
         Flush the publisher queue to the broker
         """
-        self.producer.flush()
+        return self.producer.flush(timeout)
 
     @staticmethod
     def convert_mqtt_kafka_topic(mqtt_topic: str) -> str:
