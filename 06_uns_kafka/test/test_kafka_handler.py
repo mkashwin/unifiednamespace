@@ -19,6 +19,7 @@ Test cases for uns_kafka.kafka_handler#KafkaHandler
 """
 
 import json
+import uuid
 
 import pytest
 from confluent_kafka import OFFSET_BEGINNING, Consumer, Producer
@@ -140,7 +141,7 @@ def test_publish(mqtt_topic: str, message):
     consumer_config: dict = {}
     consumer_config["bootstrap.servers"] = KAFKA_CONFIG.get("bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_test_consumer"
-    consumer_config["group.id"] = "uns_kafka_test_consumers"
+    consumer_config["group.id"] = f"uns_kafka_test_consumers_{uuid.uuid4()}"
     consumer_config["auto.offset.reset"] = "earliest"
     kafka_handler.publish(mqtt_topic, message)
     kafka_handler.flush()
@@ -163,7 +164,7 @@ def test_publish(mqtt_topic: str, message):
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 attempts += 1
-                if attempts > 30:
+                if attempts > 15:
                     pytest.fail("Timeout waiting for message")
                 # wait
                 print("Waiting...")  # noqa: T201
