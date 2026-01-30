@@ -265,13 +265,13 @@ class Query:
             topics = [topics]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results = graph_db.execute_read_query(
+        results: list[Record] = await graph_db.execute_read_query(
             query=Query._SEARCH_BY_TOPIC_QUERY,
             topics=[mqtt_topic.topic for mqtt_topic in topics],
             labels=Query.UNS_LABEL_FILTER,
         )
         uns_node_list: list[UNSNode] = []
-        async for record in results:
+        for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -338,11 +338,11 @@ class Query:
         )
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results = graph_db.execute_read_query(
+        results: list[Record] = await graph_db.execute_read_query(
             query=final_query, propertyNames=property_keys, topicFilter=topic_regex_list
         )
         uns_node_list: list[UNSNode] = []
-        async for record in results:
+        for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -378,11 +378,11 @@ class Query:
             metric_names = [metric_names]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results = graph_db.execute_read_query(
+        results: list[Record] = await graph_db.execute_read_query(
             query=Query._SEARCH_SPB_BY_METRIC_QUERY, metric_names=metric_names
         )
         spb_metric_nodes: list[SPBNode] = []
-        async for record in results:
+        for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]

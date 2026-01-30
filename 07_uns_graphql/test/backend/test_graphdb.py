@@ -150,14 +150,13 @@ async def test_execute_query(
     try:
         # Pass args and kwargs only if they are not None
         if args is None and kwargs is None:
-            result_gen = graph_db.execute_read_query(query)
+            result = await graph_db.execute_read_query(query)
         elif args is None:
-            result_gen = graph_db.execute_read_query(query, **kwargs)
+            result = await graph_db.execute_read_query(query, **kwargs)
         elif kwargs is None:
-            result_gen = graph_db.execute_read_query(query, *args)
+            result = await graph_db.execute_read_query(query, *args)
         else:
-            result_gen = graph_db.execute_read_query(query, *args, **kwargs)
-        result = [record async for record in result_gen]
+            result = await graph_db.execute_read_query(query, *args, **kwargs)
         assert result is not None
     except Exception as ex:
         if is_error:

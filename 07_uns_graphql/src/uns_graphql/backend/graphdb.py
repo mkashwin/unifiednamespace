@@ -20,9 +20,8 @@ Encapsulates integration with the Graph database database
 
 import asyncio
 import logging
-import typing
 
-from neo4j import READ_ACCESS, AsyncDriver, AsyncGraphDatabase, Record
+from neo4j import AsyncDriver, AsyncGraphDatabase, Record
 from neo4j.exceptions import Neo4jError
 
 from uns_graphql.graphql_config import GraphDBConfig
@@ -106,7 +105,7 @@ class GraphDB:
         else:
             LOGGER.warning("Trying to close an already closed driver")
 
-    async def execute_read_query(self, query: str, *args, **kwargs) -> typing.AsyncGenerator[Record, None]:
+    async def execute_read_query(self, query: str, *args, **kwargs) -> list[Record]:
         """
         Executes a (CQL) query with the provided positional and keyword parameters.
 
@@ -116,19 +115,28 @@ class GraphDB:
             **kwargs: Keyword parameters for the CQL query.
 
         Returns:
-            typing.AsyncGenerator[Record, None]: The results of the query.
+            list: The results of the query.
         """
 
-        LOGGER.debug("Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
+        LOGGER.debug(
+            "Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
         driver = await self.get_graphdb_driver()
 
-        async with driver.session(default_access_mode=READ_ACCESS) as session:
-            try:
-                result = await session.run(query, *args, **kwargs)
-                async for record in result:
-                    yield record
+        async def read(read_tx, query: str, *args, **kwargs) -> list[Record]:
+            result = await read_tx.run(query, *args, **kwargs)
+            records: list[Record] = [record async for record in result]
+            return records
 
-                LOGGER.debug("Query executed successfully")
+        async with driver.session() as session:
+            try:
+                records = await session.execute_read(read, query=query, *args, **kwargs)  # noqa: B026
+
+                LOGGER.debug(
+                    "Query executed successfully, retrieved records: %s", records)
+                return records
             except Exception as ex:
-                LOGGER.error("Error executing query: %s", ex, stack_info=True, exc_info=True)
+                LOGGER.error("Error executing query: %s", ex,
+                             stack_info=True, exc_info=True)
                 raise
+            finally:
+                await session.close()
