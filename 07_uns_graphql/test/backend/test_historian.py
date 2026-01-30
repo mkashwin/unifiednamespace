@@ -82,6 +82,11 @@ async def prepare_database(historian_pool):  # noqa: ARG001
                                client_id = $3 AND
                                mqtt_msg = $4;"""  # noqa: S608
 
+    # clean up database before inserting to avoid UniqueViolationError if previous run crashed
+    for row in test_data_set:
+        async with HistorianDBPool() as historian:
+            await historian.execute_prepared(delete_sql_cmd, *list(row))
+
     # insert testdata into database
     for row in test_data_set:
         async with HistorianDBPool() as historian:

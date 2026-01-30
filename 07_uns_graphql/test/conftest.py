@@ -1,7 +1,6 @@
 import os
-
 import pytest
-
+import sys
 
 def pytest_collection_modifyitems(config, items):
     """
@@ -30,7 +29,14 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         # Check if the item belongs to the relevant test functions
         # item.name might include parametrization, so we check if it starts with the key
+        # Also check item.originalname for parametrized tests
+        func_name_in_item = item.originalname if hasattr(item, 'originalname') else item.name
+
+        # Fallback to name if originalname is None (sometimes happens)
+        if func_name_in_item is None:
+            func_name_in_item = item.name
+
         for func_name, group_name in group_mapping.items():
-            if item.name.startswith(func_name):
+            if func_name_in_item == func_name or item.name.startswith(func_name):
                 item.add_marker(pytest.mark.xdist_group(name=group_name))
                 break
