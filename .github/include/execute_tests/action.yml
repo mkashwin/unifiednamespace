@@ -9,6 +9,10 @@ inputs:
     description: "Boolean, If True all tests should run. If False skip tests tagged for integration"
     required: False
     default: "false"
+  test_by_directory:
+    description: "Boolean, If True tests are run directory by directory. This is done to reduce memory consumption on large test suites."
+    required: False
+    default: "false"
   pytest_flags:
     description: "String, additional flags to be passed to pytest while running tests"
     required: False
