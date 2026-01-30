@@ -134,7 +134,7 @@ class HistorianHandler:
         """
         try:
             if self._conn is None or self._conn.is_closed():
-                self._conn = await self._pool().acquire()
+                self._conn = await self._pool.acquire()
             stmt: PreparedStatement = await self._conn.prepare(query)
             results: Record = await stmt.fetch(*args)
             return results
@@ -142,10 +142,6 @@ class HistorianHandler:
         except asyncpg.PostgresError as ex:
             LOGGER.error(f"Error executing prepared statement: {ex}")
             raise
-        finally:
-            # Ensure that the connection is released back to the pool
-            if self._conn and not self._conn.is_closed():
-                await self._pool.release(self._conn)
 
     async def persist_mqtt_msg(self, client_id: str, topic: str, timestamp: float | None, message: dict):
         """
