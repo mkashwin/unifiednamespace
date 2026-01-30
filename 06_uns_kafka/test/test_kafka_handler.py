@@ -36,10 +36,17 @@ def test_kafka_handler_init():
     """
     KafkaHandler#init
     """
-    kafka_handler: KafkaHandler = KafkaHandler(KAFKA_CONFIG)
-    assert kafka_handler.config == KAFKA_CONFIG, f"""The kafka configuration was not properly initialized.\n
-            Expected config:{KAFKA_CONFIG}, received {kafka_handler.config}"""
-    assert kafka_handler.producer is not None and isinstance(kafka_handler.producer, Producer)
+    kafka_handler: KafkaHandler = None
+    try:
+        kafka_handler = KafkaHandler(KAFKA_CONFIG)
+        assert kafka_handler.config == KAFKA_CONFIG, f"""The kafka configuration was not properly initialized.\n
+                Expected config:{KAFKA_CONFIG}, received {kafka_handler.config}"""
+        assert kafka_handler.producer is not None and isinstance(kafka_handler.producer, Producer)
+    finally:
+        if kafka_handler and kafka_handler.producer:
+            # Purge queue to prevent destructor hang
+            kafka_handler.producer.purge()
+            kafka_handler.flush(timeout=5)
 
 
 @pytest.mark.parametrize(
@@ -182,3 +189,6 @@ def test_publish(mqtt_topic: str, message):
         # Leave group and commit final offsets
         kafka_listener.close()
         admin_client.delete_topics([kafka_topic])
+        if kafka_handler and kafka_handler.producer:
+            # Purge queue to prevent destructor hang in case flush failed
+            kafka_handler.producer.purge()
