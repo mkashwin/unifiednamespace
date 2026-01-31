@@ -193,6 +193,9 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
 
         uns_mqtt_historian.uns_client.loop_start()
 
+        # Allow some time for the historian to connect and subscribe
+        loop.run_until_complete(asyncio.sleep(1.0))
+
         # 2. Create an MQTT publisher
         uns_publisher: UnsMQTTClient = create_publisher()
         uns_publisher.loop_start()
@@ -246,6 +249,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
 
     finally:
         # clean up the topic and disconnect the publisher
-        uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
-        uns_publisher.disconnect()
+        if uns_publisher is not None:
+            uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
+            uns_publisher.disconnect()
         uns_mqtt_historian.uns_client.disconnect()
