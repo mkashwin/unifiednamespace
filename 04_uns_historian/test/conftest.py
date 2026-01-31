@@ -51,7 +51,5 @@ def pytest_collection_modifyitems(config, items):
 
     for item in items:
         # Check if the item belongs to the relevant test functions
-        if item.name.startswith("test_persist_mqtt_msg") or item.name.startswith(
-            "test_execute_prepared"
-        ):
+        if item.name.startswith("test_persist_mqtt_msg") or item.name.startswith("test_execute_prepared"):
             item.add_marker(pytest.mark.xdist_group(name="uns_historian"))

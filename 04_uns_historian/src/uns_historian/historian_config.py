@@ -101,11 +101,11 @@ class HistorianConfig:
 
     if hostname is None:
         LOGGER.error(
-            "Historian Url not provided. " "Update key 'historian.hostname' in '../../conf/settings.yaml'",
+            "Historian Url not provided. Update key 'historian.hostname' in '../../conf/settings.yaml'",
         )
     if database is None:
         LOGGER.error(
-            "Historian Database name  not provided. " "Update key 'historian.database' in '../../conf/settings.yaml'",
+            "Historian Database name  not provided. Update key 'historian.database' in '../../conf/settings.yaml'",
         )
     if table is None:
         LOGGER.error(
