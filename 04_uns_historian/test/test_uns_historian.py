@@ -176,18 +176,16 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
     uns_publisher = None
     try:
         # 1. Start the historian listener in a new thread
-        uns_mqtt_historian = UnsMqttHistorian()
+        loop = asyncio.get_event_loop()
+        uns_mqtt_historian = UnsMqttHistorian(loop=loop)
         mgs_received: list = []
         old_on_message = uns_mqtt_historian.uns_client.on_message
-        # Loop inside on_message_decorator is null for some reason. hence trying to set outer loop in callback
-        loop = asyncio.get_event_loop()
 
         def on_message_decorator(client, userdata, msg):
             """
             Override / wrap the existing on_message callback so that
             we can track the messages were processed
             """
-            asyncio.set_event_loop(loop)
             old_on_message(client, userdata, msg)
             mgs_received.append(msg)
 
@@ -208,11 +206,19 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
             # to allow the tests to be idempotent across multiple runs
             uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
             # allow for the message to be received
-            time.sleep(0.1)
+            # We must use the loop to sleep so pending async tasks (DB writes) can run
+            loop.run_until_complete(asyncio.sleep(0.1))
 
         # wait for uns_mqtt_historian to have persisted to the database
-        while len(mgs_received) < len(messages):
-            time.sleep(0.1)
+        # instead of waiting on messages received, we wait until the DB has the records
+        # this handles the async nature better as persistence happens after receipt
+        max_retries = 50
+        for _ in range(max_retries):
+            # We must use the loop to sleep so pending async tasks (DB writes) can run
+            loop.run_until_complete(asyncio.sleep(0.1))
+            if len(mgs_received) >= len(messages):
+                break
+
         # disconnect the historian listener to free the asyncio loop
         uns_mqtt_historian.uns_client.disconnect()
         uns_mqtt_historian.uns_client.loop_stop()
