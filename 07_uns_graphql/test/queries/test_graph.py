@@ -311,15 +311,22 @@ spb_result_dict: dict = {
     ],
 }
 
+
+async def async_gen(items):
+    await asyncio.sleep(0)
+    for item in items:
+        yield item
+
+
 # Mock the datahandler for UNS queries
 mocked_uns_graphdb = MagicMock(spec=GraphDB, autospec=True)
 # Mocking all the query functions to give the same result
-mocked_uns_graphdb.execute_read_query.return_value = uns_result
+mocked_uns_graphdb.execute_read_query.side_effect = lambda *_, **__: async_gen(uns_result)
 
 # Mock the datahandler for SPB queries
 mocked_spb_graphdb = MagicMock(spec=GraphDB, autospec=True)
 # Mocking all the query functions to give the same result
-mocked_spb_graphdb.execute_read_query.return_value = spb_result
+mocked_spb_graphdb.execute_read_query.side_effect = lambda *_, **__: async_gen(spb_result)
 
 
 @pytest.mark.asyncio(loop_scope="function")
