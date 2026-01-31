@@ -33,7 +33,6 @@ from uns_kafka.uns_kafka_config import KAFKAConfig
 from uns_kafka.uns_kafka_listener import UNSKafkaMapper
 
 
-@pytest.mark.skip(reason="CI Hangs due to threading issues in UnsMQTTClient/paho-mqtt")
 @pytest.mark.integrationtest()
 def test_uns_kafka_mapper_init():
     """
@@ -45,11 +44,13 @@ def test_uns_kafka_mapper_init():
         assert uns_kafka_mapper is not None, "Connection to either the MQTT Broker or Kafka broker did not happen"
 
         assert uns_kafka_mapper.kafka_handler.producer, "Connection to Kafka broker did not happen"
-        assert uns_kafka_mapper.kafka_handler.producer.list_topics(), "Connection to Kafka broker did not happen"
+        assert uns_kafka_mapper.kafka_handler.producer.list_topics(
+        ), "Connection to Kafka broker did not happen"
         assert uns_kafka_mapper.uns_client, "Connection to MQTT broker did not happen"
 
     except Exception as ex:
-        pytest.fail("Connection to either the MQTT Broker or Kafka broker did not happen" f" Exception {ex}")
+        pytest.fail(
+            "Connection to either the MQTT Broker or Kafka broker did not happen" f" Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
@@ -58,7 +59,6 @@ def test_uns_kafka_mapper_init():
                 uns_kafka_mapper.uns_client.client.loop_stop()
 
 
-@pytest.mark.skip(reason="CI Hangs due to threading issues in UnsMQTTClient/paho-mqtt")
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "mqtt_topic, mqtt_message,kafka_topic,expected_kafka_msg",
@@ -196,7 +196,8 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
                 uns_kafka_mapper.kafka_handler.flush(timeout=10)
 
                 # Create a consumer to read the Kafka broker
-                kafka_listener: Consumer = get_kafka_consumer(KAFKAConfig.kafka_config_map)
+                kafka_listener: Consumer = get_kafka_consumer(
+                    KAFKAConfig.kafka_config_map)
 
                 # Set up a callback to handle the '--reset' flag.
                 def reset_offset(consumer, partitions):
@@ -205,7 +206,8 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
                     consumer.assign(partitions)
 
                 kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
-                check_kafka_topics(uns_kafka_mapper.uns_client, kafka_listener, expected_kafka_msg)
+                check_kafka_topics(uns_kafka_mapper.uns_client,
+                                   kafka_listener, expected_kafka_msg)
             finally:
                 done_event.set()
             # ---------------- end of inline method
@@ -224,7 +226,8 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
             pytest.fail("Timeout waiting for message processing callback")
 
     except Exception as ex:
-        pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
+        pytest.fail(
+            f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
             uns_kafka_mapper.uns_client.disconnect()
@@ -240,7 +243,8 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
     Utility method to create a consumer based on producer config
     """
     consumer_config: dict = {}
-    consumer_config["bootstrap.servers"] = kafka_producer_config.get("bootstrap.servers")
+    consumer_config["bootstrap.servers"] = kafka_producer_config.get(
+        "bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_mapper_test_consumer"
     consumer_config["group.id"] = f"uns_kafka_mapper_test_consumers_{uuid.uuid4()}"
     consumer_config["auto.offset.reset"] = "earliest"
@@ -265,7 +269,8 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:
-                assert json.loads(msg.value().decode("utf-8")) == json.loads(expected_kafka_msg)
+                assert json.loads(msg.value().decode("utf-8")
+                                  ) == json.loads(expected_kafka_msg)
                 break
 
     finally:
