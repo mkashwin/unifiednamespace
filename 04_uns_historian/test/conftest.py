@@ -48,10 +48,25 @@ def pytest_collection_modifyitems(config, items):
     # If running individually (or small subset), xdist grouping is not needed and might cause overhead/issues
     if len(items) <= 1:
         return
+    # Mapping of test functions to their xdist group names
+    group_mapping = {
+        "test_persist_mqtt_msg": "uns_historian",
+        "test_execute_prepared": "uns_historian",
+        "test_uns_mqtt_historian": "mqtt_uns_historian",
 
+    }
     for item in items:
         # Check if the item belongs to the relevant test functions
-        if item.name.startswith("test_persist_mqtt_msg") or item.name.startswith(
-            "test_execute_prepared"
-        ):
-            item.add_marker(pytest.mark.xdist_group(name="uns_historian"))
+        # item.name might include parametrization, so we check if it starts with the key
+        # Also check item.originalname for parametrized tests
+        func_name_in_item = item.originalname if hasattr(
+            item, 'originalname') else item.name
+
+        # Fallback to name if originalname is None (sometimes happens)
+        if func_name_in_item is None:
+            func_name_in_item = item.name
+
+        for func_name, group_name in group_mapping.items():
+            if func_name_in_item == func_name or item.name.startswith(func_name):
+                item.add_marker(pytest.mark.xdist_group(name=group_name))
+            break
