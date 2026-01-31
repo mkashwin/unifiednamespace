@@ -101,7 +101,7 @@ class UNSKafkaMapper:
             LOGGER.error("Unexpected disconnection.:%s",
                          reason_codes, stack_info=True)
         # force flushing the kafka connection
-        self.kafka_handler.flush()
+        self.kafka_handler.flush(1)
 
 
 def main():
