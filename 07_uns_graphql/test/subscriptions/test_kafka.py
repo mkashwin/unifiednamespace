@@ -168,7 +168,7 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
 
 
 @pytest.mark.asyncio(loop_scope="function")
-@pytest.mark.integrationtest()
+@pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "kafka_topics, message_vals",
     [

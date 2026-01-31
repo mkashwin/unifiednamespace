@@ -142,7 +142,7 @@ async def test_get_historic_events(
 
 
 @pytest.mark.integrationtest
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope="session", scope="session")
 @pytest.mark.parametrize(
     "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
     [

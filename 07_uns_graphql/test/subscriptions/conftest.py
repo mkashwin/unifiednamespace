@@ -19,11 +19,6 @@ def pytest_collection_modifyitems(config, items):
 
     # Mapping of test functions to their xdist group names
     group_mapping = {
-        "test_get_historic_events": "graphql_historian",
-        "test_get_historic_events_for_property_keys": "graphql_historian",
-        "test_get_uns_nodes_integration": "graphql_graphdb",
-        "test_get_uns_nodes_by_property_integration": "graphql_graphdb",
-        "test_get_spb_nodes_integration": "graphql_graphdb",
         "test_get_kafka_messages_integration": "graphql_kafka_1",
     }
 
@@ -31,7 +26,8 @@ def pytest_collection_modifyitems(config, items):
         # Check if the item belongs to the relevant test functions
         # item.name might include parametrization, so we check if it starts with the key
         # Also check item.originalname for parametrized tests
-        func_name_in_item = item.originalname if hasattr(item, 'originalname') else item.name
+        func_name_in_item = item.originalname if hasattr(
+            item, 'originalname') else item.name
 
         # Fallback to name if originalname is None (sometimes happens)
         if func_name_in_item is None:
@@ -40,4 +36,4 @@ def pytest_collection_modifyitems(config, items):
         for func_name, group_name in group_mapping.items():
             if func_name_in_item == func_name or item.name.startswith(func_name):
                 item.add_marker(pytest.mark.xdist_group(name=group_name))
-                break
+            break

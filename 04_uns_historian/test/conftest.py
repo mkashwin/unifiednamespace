@@ -52,8 +52,7 @@ def pytest_collection_modifyitems(config, items):
     group_mapping = {
         "test_persist_mqtt_msg": "uns_historian",
         "test_execute_prepared": "uns_historian",
-        "test_uns_mqtt_historian": "mqtt_uns_historian",
-
+        "test_uns_mqtt_historian": "mqtt_uns_historian"
     }
     for item in items:
         # Check if the item belongs to the relevant test functions
