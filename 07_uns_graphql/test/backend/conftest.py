@@ -19,8 +19,8 @@ def pytest_collection_modifyitems(config, items):
 
     # Mapping of test functions to their xdist group names
     group_mapping = {
-        "test_get_historic_events": "graphql_historian",
-        "test_get_historic_events_for_property_keys": "graphql_historian"
+        # "test_get_historic_events": "graphql_historian",
+        # "test_get_historic_events_for_property_keys": "graphql_historian"
     }
 
     for item in items:

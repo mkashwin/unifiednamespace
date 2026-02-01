@@ -19,9 +19,9 @@ def pytest_collection_modifyitems(config, items):
 
     # Mapping of test functions to their xdist group names
     group_mapping = {
-        "test_get_uns_nodes_by_property_integration": "graphql_graphdb",
-        "test_get_spb_nodes_integration": "graphql_graphdb",
-        "test_get_uns_nodes_integration": "graphql_historian"
+        # "test_get_uns_nodes_by_property_integration": "graphql_graphdb",
+        # "test_get_spb_nodes_integration": "graphql_graphdb",
+        # "test_get_uns_nodes_integration": "graphql_historian"
     }
 
     for item in items:
@@ -38,4 +38,4 @@ def pytest_collection_modifyitems(config, items):
         for func_name, group_name in group_mapping.items():
             if func_name_in_item == func_name or item.name.startswith(func_name):
                 item.add_marker(pytest.mark.xdist_group(name=group_name))
-#                 break
+                break

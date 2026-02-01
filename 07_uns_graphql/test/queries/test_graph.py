@@ -633,6 +633,7 @@ async def setup_graphdb_data():
 
 
 @pytest.mark.asyncio(loop_scope="module")
+@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "topics, expected_result",
@@ -724,10 +725,17 @@ async def test_get_uns_nodes_integration(
         result = await graph_query.get_uns_nodes(topics=mqtt_topic_list)
     except Exception as ex:
         pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result  # Ensure the result matches the expected result
+    # Ensure the result matches the expected result, ignoring order
+    assert len(result) == len(expected_result)
+    if (len(result) > 0):
+        for item in result:
+            assert item in expected_result
+        for item in expected_result:
+            assert item in result
 
 
 @pytest.mark.asyncio(loop_scope="module")
+@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics,expected_result",
@@ -849,6 +857,7 @@ eon1_payload = {
 
 
 @pytest.mark.asyncio(loop_scope="module")
+@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "metric_names, expected_result",
