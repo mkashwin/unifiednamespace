@@ -16,6 +16,9 @@
 *******************************************************************************
 """
 
+import os
+
+import pytest
 import pytest_asyncio
 
 from uns_historian.historian_handler import HistorianHandler
@@ -30,3 +33,23 @@ async def historian_pool():
     yield pool
     # Close the connection pool after all tests are completed
     await HistorianHandler.close_pool()
+
+
+def pytest_collection_modifyitems(config, items):
+    """
+    Dynamically add xdist_group marker to uns_historian tests unless running in VSCode discovery
+    or running individually.
+    """
+    # Check if we should skip adding the marker
+    is_vscode = "VSCODE_PID" in os.environ
+    if config.getoption("--collect-only") and is_vscode:
+        return
+
+    # If running individually (or small subset), xdist grouping is not needed and might cause overhead/issues
+    if len(items) <= 1:
+        return
+
+    for item in items:
+        # Check if the item belongs to the relevant test functions
+        if item.name.startswith("test_persist_mqtt_msg") or item.name.startswith("test_execute_prepared"):
+            item.add_marker(pytest.mark.xdist_group(name="uns_historian"))

@@ -68,8 +68,7 @@ async def test_shared_pool(mock_asyncpg):
     "timestamp, topic, publisher, message, is_error",
     [
         (1701232000, "a/b/c", "client1", {"key1": "value1"}, False),
-        (1701234000, "topic1", "client2", {
-         "key2": "value2", "key3": 10}, False),
+        (1701234000, "topic1", "client2", {"key2": "value2", "key3": 10}, False),
         # if timestamp not provided, current time should be used
         (None, "topic2", "client3", {"key4": "value4"}, False),
         # Topic cant be null
@@ -96,8 +95,7 @@ async def test_persist_mqtt_msg(
                 message=message,
             )
         assert result is not None, "Should have gotten a result"
-        assert len(
-            result) == 1, "Should have gotten only one record because we inserted only one record"
+        assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
         if timestamp is None:
             # since getting the exact timestamp in the function is difficult.
             # We check if the timestamp is greater or equal to the current timestamp recorded while entering this function
@@ -105,9 +103,7 @@ async def test_persist_mqtt_msg(
             assert current_time <= result[0]["time"]
         else:
             # check for timestamp considering the  precision change done from milliseconds to microseconds
-            assert timestamp / \
-                1000 == result[0]["time"].timestamp(
-                ), "timestamps did not match"
+            assert timestamp / 1000 == result[0]["time"].timestamp(), "timestamps did not match"
 
         assert topic == result[0]["topic"], "topic stored is not what was received"
         result[0]["client_id"], "client_id stored is not what was received"
@@ -139,8 +135,7 @@ async def test_persist_mqtt_msg(
         (f"SELECT * from {HistorianConfig.table};", [], False),  # noqa: S608
         (
             f"INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg ) VALUES ($1,$2,$3,$4) RETURNING *;",  # noqa: S608
-            [datetime.fromtimestamp(1701232000, UTC), "a/b/c",
-                                    "historian_test_client1", '{"key1": "value1"}'],
+            [datetime.fromtimestamp(1701232000, UTC), "a/b/c", "historian_test_client1", '{"key1": "value1"}'],
             False,
         ),
         (

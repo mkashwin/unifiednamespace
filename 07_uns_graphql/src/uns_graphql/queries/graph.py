@@ -23,7 +23,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 import strawberry
-from neo4j import Record
 from neo4j.graph import Node, Relationship
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -265,13 +264,13 @@ class Query:
             topics = [topics]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_read_query(
+        results = graph_db.execute_read_query(
             query=Query._SEARCH_BY_TOPIC_QUERY,
             topics=[mqtt_topic.topic for mqtt_topic in topics],
             labels=Query.UNS_LABEL_FILTER,
         )
         uns_node_list: list[UNSNode] = []
-        for record in results:
+        async for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -338,11 +337,11 @@ class Query:
         )
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_read_query(
+        results = graph_db.execute_read_query(
             query=final_query, propertyNames=property_keys, topicFilter=topic_regex_list
         )
         uns_node_list: list[UNSNode] = []
-        for record in results:
+        async for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -378,11 +377,11 @@ class Query:
             metric_names = [metric_names]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_read_query(
+        results = graph_db.execute_read_query(
             query=Query._SEARCH_SPB_BY_METRIC_QUERY, metric_names=metric_names
         )
         spb_metric_nodes: list[SPBNode] = []
-        for record in results:
+        async for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]

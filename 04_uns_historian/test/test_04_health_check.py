@@ -63,14 +63,10 @@ def test_check_existing_connection(host_ip: str, host: str | None, port: int, ma
 @pytest.mark.parametrize(
     "process_info, remote_host_port_list,sys_err_ext_count",
     [
-        ({"cmdline": ["python", "uns_historian"]}, [
-         (mqtt_host, mqtt_port), (historian_host, historian_port)], 0),
-        ({"cmdline": ["python", "something else"]}, [
-         (mqtt_host, mqtt_port), (historian_host, historian_port)], 1),
-        ({"cmdline": ["python", "uns_historian"]},
-         [(historian_host, historian_port)], 1),
-        ({"cmdline": ["python", "uns_historian"]},
-         [(mqtt_host, mqtt_port)], 1),
+        ({"cmdline": ["python", "uns_historian"]}, [(mqtt_host, mqtt_port), (historian_host, historian_port)], 0),
+        ({"cmdline": ["python", "something else"]}, [(mqtt_host, mqtt_port), (historian_host, historian_port)], 1),
+        ({"cmdline": ["python", "uns_historian"]}, [(historian_host, historian_port)], 1),
+        ({"cmdline": ["python", "uns_historian"]}, [(mqtt_host, mqtt_port)], 1),
         ({"cmdline": ["python", "uns_historian"]}, [], 2),
         ({"cmdline": ["python", "anything"]}, [], 3),
     ],
@@ -82,18 +78,22 @@ def test_main_multiple_scenarios(process_info: dict, remote_host_port_list: list
     sys_err_ext_count: count of expected calls to sys.exit(1)
                        if 0 then no erroneous exits and only sys.exit(0) was called
     """
-    with patch("sys.exit") as mock_exit, patch("psutil.process_iter") as mock_process_iter, patch(
-            "psutil.net_connections") as mock_net_connections, patch("socket.gethostbyname") as mock_socket:
+    with (
+        patch("sys.exit") as mock_exit,
+        patch("psutil.process_iter") as mock_process_iter,
+        patch("psutil.net_connections") as mock_net_connections,
+        patch("socket.gethostbyname") as mock_socket,
+    ):
         # mock the historian listener  process
         mock_historian_process = MagicMock(spec=psutil.Process, autospec=True)
         mock_historian_process.info = process_info
         mock_process_iter.return_value = [
             mock_historian_process,
         ]
-        mock_socket.return_value = "::1"          # mocking ip to localhost
+        mock_socket.return_value = "::1"  # mocking ip to localhost
         # mock the services connected to process based in test params
         mock_conn_list = []
-        for (host, port) in remote_host_port_list:
+        for host, port in remote_host_port_list:
             mock_socket.gethostbyname.return_value = host
             mock_conn = MagicMock(psutil._ntuples.sconn, autospec=True)
             mock_conn.status = "ESTABLISHED"
