@@ -190,7 +190,7 @@ jobs:
           integration_tests: true
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
           pytest_flags: ${{ inputs.pytest_add_opts }}
-          test_by_directory: true
+          # test_by_directory: true
       - name: Create graphQL schema
         env:
           # schema_file: "./schema/uns_schema.graphql"

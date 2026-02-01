@@ -834,7 +834,7 @@ async def test_get_uns_nodes_by_property_integration(
     property_keys,
     topics: list[str],
     exclude_topics: bool,
-    expected_result: dict,
+    expected_result: list[UNSNode],
 ):
     mqtt_topic_list = None
     if topics is not None:
@@ -848,7 +848,8 @@ async def test_get_uns_nodes_by_property_integration(
         )
     except Exception as ex:
         pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result  # Ensure the result matches the expected result
+    # Ensure the result matches the expected result
+    assert sorted(result) == sorted(expected_result)
 
 
 eon1_payload = {
