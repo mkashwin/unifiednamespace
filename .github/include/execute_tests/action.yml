@@ -40,7 +40,7 @@ runs:
         # change to current directory of module            
         cd ./${{ inputs.module }}
         if [[ ${RUNNER_DEBUG} == 1 ]] ; then
-          PYTEST_CMD="uv run pytest --debug ${{inputs.pytest_flags}} "
+          PYTEST_CMD="uv run pytest --debug=pytest_debug.log ${{inputs.pytest_flags}} "
         else
           PYTEST_CMD="uv run pytest ${{inputs.pytest_flags}}"
         fi
