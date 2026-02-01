@@ -12,8 +12,6 @@ plugins:
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
   enabled:
-    - go@1.21.0
-    - node@22.16.0
     - python@>3.10.8
   definitions:
     - type: python
@@ -33,7 +31,7 @@ lint:
     - osv-scanner@2.3.2
     - markdownlint@0.47.0
     - hadolint@2.14.0
-    - cspell@9.6.2
+    - cspell@9.6.0
     - gitleaks@8.30.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
