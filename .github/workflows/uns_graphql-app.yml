@@ -141,7 +141,7 @@ jobs:
           KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
           KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
           KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-          CLUSTER_ID: "$(UNS_kafka_cluster_id) "
+          CLUSTER_ID: "${{ env.UNS_kafka_cluster_id }}"
         options: >
           --health-cmd="/opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1"
           --health-interval=5s
