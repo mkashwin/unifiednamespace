@@ -633,8 +633,10 @@ async def setup_graphdb_data():
 
 
 @pytest.mark.asyncio(loop_scope="module")
-@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.integrationtest
+@pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "topics, expected_result",
     [
@@ -736,6 +738,8 @@ async def test_get_uns_nodes_integration(
 
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics,expected_result",
@@ -857,8 +861,10 @@ eon1_payload = {
 
 
 @pytest.mark.asyncio(loop_scope="module")
-@pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.integrationtest
+@pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "metric_names, expected_result",
     [

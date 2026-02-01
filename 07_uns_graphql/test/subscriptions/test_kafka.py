@@ -169,6 +169,9 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
 
 @pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.integrationtest
+@pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "kafka_topics, message_vals",
     [

@@ -16,9 +16,6 @@
 *******************************************************************************
 """
 
-import os
-
-import pytest
 import pytest_asyncio
 
 from uns_historian.historian_handler import HistorianHandler
@@ -33,39 +30,3 @@ async def historian_pool():
     yield pool
     # Close the connection pool after all tests are completed
     await HistorianHandler.close_pool()
-
-
-def pytest_collection_modifyitems(config, items):
-    """
-    Dynamically add xdist_group marker to uns_historian tests unless running in VSCode discovery
-    or running individually.
-    """
-    # Check if we should skip adding the marker
-    is_vscode = "VSCODE_PID" in os.environ
-    if config.getoption("--collect-only") and is_vscode:
-        return
-
-    # If running individually (or small subset), xdist grouping is not needed and might cause overhead/issues
-    if len(items) <= 1:
-        return
-    # Mapping of test functions to their xdist group names
-    group_mapping = {
-        "test_persist_mqtt_msg": "uns_historian",
-        "test_execute_prepared": "uns_historian",
-        "test_uns_mqtt_historian": "mqtt_uns_historian"
-    }
-    for item in items:
-        # Check if the item belongs to the relevant test functions
-        # item.name might include parametrization, so we check if it starts with the key
-        # Also check item.originalname for parametrized tests
-        func_name_in_item = item.originalname if hasattr(
-            item, 'originalname') else item.name
-
-        # Fallback to name if originalname is None (sometimes happens)
-        if func_name_in_item is None:
-            func_name_in_item = item.name
-
-        for func_name, group_name in group_mapping.items():
-            if func_name_in_item == func_name or item.name.startswith(func_name):
-                item.add_marker(pytest.mark.xdist_group(name=group_name))
-            break

@@ -102,8 +102,10 @@ async def prepare_database(historian_pool):  # noqa: ARG001
 
 
 @pytest.mark.asyncio(loop_scope="session")
-@pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.integrationtest
+@pytest.mark.xdist_group(name="graphql_historian")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "topic_list,publisher_list,from_date, to_date, count_of_return",
     [
@@ -143,8 +145,10 @@ async def test_get_historic_events(
 
 
 @pytest.mark.integrationtest
-@pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.xdist_group(name="graphql_historian")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
     [
