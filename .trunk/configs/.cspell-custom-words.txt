@@ -137,3 +137,9 @@ virtualenv
 Waehner
 websockets
 xdist
+CACERTFILE
+clientid
+usefixtures
+writeonly
+modifyitems
+emqxsecretcookie

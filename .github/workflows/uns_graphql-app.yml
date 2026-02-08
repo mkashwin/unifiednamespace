@@ -86,6 +86,11 @@ jobs:
           # WebSocket Ports
           - "8080:8080" # MQTT over WebSockets, unencrypted, unauthenticated
           - "8090:8090" # MQTT over WebSockets, unencrypted, authenticated
+        options: >
+          --health-cmd="/opt/emqx/bin/emqx ctl status || exit 1"
+          --health-interval=1s
+          --health-timeout=10s
+          --health-retries=20
 
       uns_graphdb:
         image: "neo4j:latest"
@@ -98,6 +103,12 @@ jobs:
           apoc.import.file.enabled: true
           apoc.import.file.use_neo4j_config: true
           NEO4J_PLUGINS: '["apoc"]'
+        options: >
+          --health-cmd="wget http://localhost:7474 || exit 1"
+          --health-interval=1s
+          --health-timeout=10s
+          --health-retries=20
+          --health-start-period=3s
 
       uns_timescaledb:
         image: "timescale/timescaledb:latest-pg16"
@@ -105,6 +116,11 @@ jobs:
           - "5432:5432"
         env:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        options: >
+          --health-cmd="pg_isready --username=postgres && psql --username=postgres --list || exit 1"
+          --health-interval=10s
+          --health-timeout=10s
+          --health-retries=20
 
       uns_kafka:
         image: "apache/kafka:latest"
@@ -125,8 +141,13 @@ jobs:
           KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
           KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
           KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-          CLUSTER_ID: "$(UNS_kafka_cluster_id) "
-
+          CLUSTER_ID: "${{ env.UNS_kafka_cluster_id }}"
+        options: >
+          --health-cmd="/opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1"
+          --health-interval=5s
+          --health-timeout=10s
+          --health-retries=5
+          --health-start-period=10s
     steps:
       - uses: actions/checkout@v6
 
