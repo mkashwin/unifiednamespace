@@ -63,6 +63,7 @@ async def test_shared_pool(mock_asyncpg):
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
+@pytest.mark.xdist_group(name="uns_historian")
 @pytest.mark.parametrize(
     "timestamp, topic, publisher, message, is_error",
     [
@@ -127,6 +128,7 @@ async def test_persist_mqtt_msg(
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
+@pytest.mark.xdist_group(name="uns_historian")
 @pytest.mark.parametrize(
     "query, params, is_error",
     [

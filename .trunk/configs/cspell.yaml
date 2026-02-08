@@ -47,3 +47,4 @@ ignorePaths:
   - "**/.trunk/**"
   - "**/.devcontainer/*"
   - "**/*_cache/**"
+  - "**/passwd"
