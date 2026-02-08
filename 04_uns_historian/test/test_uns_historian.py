@@ -165,8 +165,7 @@ async def clean_up_database():
 
 
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
+@pytest.mark.xdist_group(name="mqtt_historian")
 @pytest.mark.xdist_group(name="uns_mqtt_historian")
 @pytest.mark.parametrize(  # convert test data dict into tuples for pytest parameterize
     "topic, messages", [(topic, messages) for dictionary in test_data_list for topic, messages in dictionary.items()]

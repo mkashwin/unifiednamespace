@@ -96,11 +96,12 @@ class GraphDB:
         if cls._graphdb_driver is not None:
             LOGGER.debug("Releasing GraphDB driver")
             try:
-                await cls._graphdb_driver.close()
+                # Add a 10-second timeout to prevent infinite hangs during teardown
+                await asyncio.wait_for(cls._graphdb_driver.close(), timeout=10.0)
                 LOGGER.info("GraphDB driver closed successfully")
-            except Neo4jError as ex:
-                LOGGER.error("Error closing the GraphDB driver: %s",
-                             ex, stack_info=True, exc_info=True)
+            except (TimeoutError, Neo4jError) as ex:
+                LOGGER.error(
+                    "Error/Timeout closing the GraphDB driver: %s", ex)
             finally:
                 cls._graphdb_driver = None
         else:
@@ -119,7 +120,8 @@ class GraphDB:
             typing.AsyncGenerator[Record]: The results of the query.
         """
 
-        LOGGER.debug("Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
+        LOGGER.debug(
+            "Executing query: %s with args: %s and kwargs: %s", query, args, kwargs)
         driver = await self.get_graphdb_driver()
 
         async with driver.session(default_access_mode=READ_ACCESS) as session:
@@ -130,5 +132,6 @@ class GraphDB:
 
                 LOGGER.debug("Query executed successfully")
             except Exception as ex:
-                LOGGER.error("Error executing query: %s", ex, stack_info=True, exc_info=True)
+                LOGGER.error("Error executing query: %s", ex,
+                             stack_info=True, exc_info=True)
                 raise

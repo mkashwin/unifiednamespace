@@ -53,3 +53,24 @@ class UNSNode:
 
     # Timestamp of when this node was last modified
     last_updated: datetime
+
+    def __eq__(self, other):
+        """
+        Compare UNSNode instances based on their identifying attributes.
+        Two nodes are equal if they have the same namespace and node_type.
+        """
+        if not isinstance(other, UNSNode):
+            return NotImplemented
+
+        return (
+            self.namespace == other.namespace and
+            self.node_type == other.node_type and
+            self.node_name == other.node_name
+        )
+
+    def __hash__(self):
+        """
+        Generate hash based on immutable identifying attributes.
+        Uses namespace and node_type as the unique identifier.
+        """
+        return hash((self.namespace, self.node_type, self.node_name))
