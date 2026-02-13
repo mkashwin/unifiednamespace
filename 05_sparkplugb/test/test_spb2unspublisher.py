@@ -540,6 +540,8 @@ def test_publish_to_uns_connected(
         if len(msg_published) == len(all_uns_messages):
             client.disconnect()
 
+    published = False
+
     def on_connect(
         client,  # noqa: ARG001
         userdata,  # noqa: ARG001
@@ -550,7 +552,9 @@ def test_publish_to_uns_connected(
         """
         Call back for connection to MQTT
         """
-        if reason_code == 0:
+        nonlocal published
+        if reason_code == 0 and not published:
+            published = True
             spb_to_uns_pub.publish_to_uns(all_uns_messages)
 
     uns_client.on_connect = on_connect
