@@ -114,8 +114,8 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
             )
 
 
-@pytest_asyncio.fixture(scope="function", loop_scope="function")
-async def kafka_setup_unique(request):
+@pytest.fixture(scope="function")
+def kafka_setup_unique(request):
     """
     Fixture to setup unique Kafka topics per test to avoid collisions and race conditions.
     """
@@ -150,8 +150,7 @@ async def kafka_setup_unique(request):
     for f in fs.values():
         try:
             f.result(timeout=10)
-        except Exception as e:
-            print(f"Error creating topic: {e}")
+        except Exception:
             raise
 
     # Produce messages
