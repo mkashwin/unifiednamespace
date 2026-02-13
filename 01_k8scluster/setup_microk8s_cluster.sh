@@ -12,6 +12,66 @@ DEFAULT_NETWORK_LINK="enp0s3"
 FAILUREDOMAIN=40
 # spell-checker:enable
 source ./config.conf
+
+wait_for_pods() {
+	local namespace="$1"
+	local label="$2"
+	local timeout="${3:-300}"
+	local interval=5
+
+	echo "Waiting for pods in namespace '$namespace' ${label:+with label '$label'} to be ready..."
+
+	local start_time
+	start_time=$(date +%s)
+	local end_time=$((start_time + timeout))
+
+	while true; do
+		local now
+		now=$(date +%s)
+		if [ "$now" -ge "$end_time" ]; then
+			echo "Timeout waiting for pods in namespace '$namespace'"
+			return 1
+		fi
+
+		local cmd=(microk8s kubectl get pods -n "$namespace")
+		if [ -n "$label" ]; then
+			cmd+=(-l "$label")
+		fi
+
+		# check if any pods exist
+		if ! "${cmd[@]}" >/dev/null 2>&1; then
+			# command failed (namespace not found?), wait and retry
+			sleep "$interval"
+			continue
+		fi
+
+		local output
+		output=$("${cmd[@]}" --no-headers 2>/dev/null)
+
+		if [ -z "$output" ]; then
+			# No pods found. Maybe resource creation is slow.
+			echo "No pods found in namespace '$namespace' yet. Waiting..."
+		else
+			# Check status of all pods
+			# Use awk to check each line
+			# Columns: NAME READY STATUS RESTARTS AGE
+			if echo "$output" | awk '{
+                split($2, ready, "/")
+                status = $3
+                if (status == "Completed" || status == "Succeeded") next
+                if (status == "Running" && ready[1] == ready[2]) next
+                exit 1
+            }'; then
+				echo "All pods in namespace '$namespace' are ready."
+				return 0
+			fi
+			echo "Waiting for pods to be ready..."
+		fi
+
+		sleep "$interval"
+	done
+}
+
 # Obtain the current IP of this node
 # trunk-ignore(shellcheck/SC2312)
 LOCAL_IP=$(ip address show dev "${DEFAULT_NETWORK_LINK}" | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's/["/24"]//g')
@@ -88,7 +148,12 @@ sudo microk8s enable core/mayastor --default-pool-size 20G
 microk8s kubectl get pod -n mayastor
 microk8s kubectl get diskpool -n mayastor
 # spell-checker:enable
-# FIXME wait for them to be deployed and running
+
+# Wait for components to be deployed and running
+wait_for_pods "ingress" ""
+wait_for_pods "mayastor" ""
+wait_for_pods "kube-system" "k8s-app=kubernetes-dashboard"
+
 microk8s enable metallb:"${METALLB_IPRANGE}"
 # FIXME which IP address range to use? how to add the routing 198.168.200.100-198.168.200.150
 # e.g. if you specify 198.168.220.1-198.168.220.126
