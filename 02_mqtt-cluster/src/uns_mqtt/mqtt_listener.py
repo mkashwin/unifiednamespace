@@ -366,19 +366,21 @@ class UnsMQTTClient(mqtt_client.Client):
         #                           -> any set of characters except "/"
         # replace all occurrences of "#" wildcard with (.)*
         #                           -> any set of characters including "/"
-        regex_exp: str = ""
+        parts: list[str] = []
         last_value: str = None
         for curr_value in regex_list:
             if curr_value == "+":
-                regex_exp += "[^/]*/"
+                parts.append("[^/]*/")
             elif curr_value == "#":
                 if last_value is None:  # Handle if subscribed to #
-                    regex_exp += "(.*)*/"
+                    parts.append("(.*)*/")
                 else:  # need to wrap the last / in optional too i.e. 'a/#' should map to just 'a' too
-                    regex_exp = regex_exp[:-1] + "(/.*)*"
+                    parts[-1] = parts[-1][:-1] + "(/.*)*"
             else:
-                regex_exp += curr_value + "/"
+                parts.append(curr_value + "/")
             last_value = curr_value
+
+        regex_exp = "".join(parts)
         if len(regex_exp) > 1 and regex_exp[-1] == "/":
             regex_exp = regex_exp[:-1]
         return regex_exp
