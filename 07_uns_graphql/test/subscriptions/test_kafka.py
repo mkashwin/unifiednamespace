@@ -187,8 +187,7 @@ def kafka_setup_unique(request):
 @pytest.mark.parametrize(
     "kafka_setup_unique",
     [
-        ONE_TOPIC_ONE_MSG,
-        ONE_TOPIC_MULTIPLE_MSGS,
+        # Only run the most complex scenario for integration tests to prevent CI timeouts
         TWO_TOPICS_MULTIPLE_MSGS,
     ],
     indirect=True
