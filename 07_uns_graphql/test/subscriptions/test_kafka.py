@@ -69,16 +69,25 @@ async def create_topics(message_vals):
 
     # Function to Delete topics if present
     async def delete_existing_topics(admin, topics):
-        admin.delete_topics(topics)
-        # Give some time for the topics to be deleted
-        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout + 1)
+        fs = admin.delete_topics(topics)
+        # Wait for operation to finish
+        for f in fs.values():
+            try:
+                f.result()
+            except Exception:
+                # Suppress exceptions if topic doesn't exist
+                pass
 
     async def create_new_topics(admin, topics):
         new_topics = [NewTopic(topic, num_partitions=1,
                                replication_factor=1) for topic in topics]
-        admin.create_topics(new_topics)
-        # Give some time for the topics to be created
-        await asyncio.sleep(KAFKAConfig.consumer_poll_timeout + 1)
+        fs = admin.create_topics(new_topics)
+        # Wait for operation to finish
+        for f in fs.values():
+            try:
+                f.result()
+            except Exception:
+                pass
 
     # Function to Create Kafka producer inside a context manager to ensure proper cleanup
     async def produce_messages():  # noqa: RUF029
@@ -186,12 +195,13 @@ async def test_get_kafka_messages_integration(create_topics, kafka_topics: list[
     try:
         index: int = 0
         async_message_list = subscription.get_kafka_messages(kafka_topics)
-        async for message in async_message_list:
-            assert isinstance(message, StreamingMessage)
-            received_messages.append(message)
-            index = index + 1
-            if index == len(message_vals):
-                break
+        async with asyncio.timeout(30):
+            async for message in async_message_list:
+                assert isinstance(message, StreamingMessage)
+                received_messages.append(message)
+                index = index + 1
+                if index == len(message_vals):
+                    break
     finally:
         await async_message_list.aclose()
 
