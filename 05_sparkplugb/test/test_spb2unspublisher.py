@@ -550,7 +550,8 @@ def test_publish_to_uns_connected(
         """
         Call back for connection to MQTT
         """
-        spb_to_uns_pub.publish_to_uns(all_uns_messages)
+        if reason_code == 0:
+            spb_to_uns_pub.publish_to_uns(all_uns_messages)
 
     uns_client.on_connect = on_connect
     uns_client.on_publish = on_publish
