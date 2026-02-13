@@ -1,6 +1,6 @@
 
-import pytest
 from uns_mqtt.mqtt_listener import UnsMQTTClient
+
 
 def test_get_regex_caching():
     """Verify that get_regex_for_topic_with_wildcard is cached."""
@@ -19,6 +19,7 @@ def test_get_regex_caching():
     UnsMQTTClient.get_regex_for_topic_with_wildcard(wildcard)
     info_after_second = UnsMQTTClient.get_regex_for_topic_with_wildcard.cache_info()
     assert info_after_second.hits >= 1
+
 
 def test_cached_pattern_caching():
     """Verify that _get_cached_pattern is cached."""
