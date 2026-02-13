@@ -55,16 +55,14 @@ def test_spb_2_uns_publisher_init(clean_session, protocol, reconnect_on_failure)
     spb_to_uns_publisher = Spb2UNSPublisher(uns_client)
     if protocol == MQTTVersion.MQTTv5:
         assert spb_to_uns_publisher.is_mqtt_v5 is True, (
-            "Spb2UNSPublisher#isMQTTv5 should have been True" f"but was {
-                spb_to_uns_publisher.is_mqtt_v5}"
+            f"Spb2UNSPublisher#isMQTTv5 should have been Truebut was {spb_to_uns_publisher.is_mqtt_v5}"
         )
     else:
         assert spb_to_uns_publisher.is_mqtt_v5 is False, (
-            "Spb2UNSPublisher#isMQTTv5 should have been False " f" but was {
-                spb_to_uns_publisher.is_mqtt_v5}"
+            f"Spb2UNSPublisher#isMQTTv5 should have been False  but was {spb_to_uns_publisher.is_mqtt_v5}"
         )
 
-    assert spb_to_uns_publisher.mqtt_client == uns_client, "Spb2UNSPublisher#mqtt_client should " "have correctly initialized"
+    assert spb_to_uns_publisher.mqtt_client == uns_client, "Spb2UNSPublisher#mqtt_client should have correctly initialized"
     assert (
         len(
             spb_to_uns_publisher.node_device_metric_alias_map,
@@ -101,21 +99,20 @@ def test_clear_metric_alias(cache_key, clean_session, protocol, reconnect_on_fai
     spb_to_uns_pub.save_name_for_alias(cache_key, "value2", 2)
     spb_to_uns_pub.save_name_for_alias(cache_key, "value3", 3)
 
-    assert (
-        len(spb_to_uns_pub.node_device_metric_alias_map[cache_key]) == 3
-    ), "Spb2UNSPublisher#node_device_metric_alias_map for cache_key should not be empty"
+    assert len(spb_to_uns_pub.node_device_metric_alias_map[cache_key]) == 3, (
+        "Spb2UNSPublisher#node_device_metric_alias_map for cache_key should not be empty"
+    )
     spb_to_uns_pub.clear_metric_alias(cache_key)
-    assert (
-        cache_key not in spb_to_uns_pub.node_device_metric_alias_map
-    ), "Spb2UNSPublisher#node_device_metric_alias_map for cache_key should be empty"
+    assert cache_key not in spb_to_uns_pub.node_device_metric_alias_map, (
+        "Spb2UNSPublisher#node_device_metric_alias_map for cache_key should be empty"
+    )
 
 
 @pytest.mark.parametrize("cache_key", ["group1_/edge_node_1/None", "group1_/edge_node_1/MyDevice"])
 @pytest.mark.parametrize(
     "metric,name",
     [
-        (SimpleNamespace(
-            **{Spb2UNSPublisher.SPB_NAME: "metric_name"}), "metric_name"),
+        (SimpleNamespace(**{Spb2UNSPublisher.SPB_NAME: "metric_name"}), "metric_name"),
         (
             SimpleNamespace(
                 **{
@@ -167,8 +164,7 @@ def test_negative_get_metric_name(cache_key, metric):
     )
     # Connection not made to broker
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
-    assert spb_to_uns_pub.get_metric_name(
-        cache_key, metric) is None, f"Metric name should be none for metric:{metric}"
+    assert spb_to_uns_pub.get_metric_name(cache_key, metric) is None, f"Metric name should be none for metric:{metric}"
 
 
 @pytest.mark.parametrize(
@@ -224,8 +220,7 @@ def test_get_metric_name_from_alias(cache_key, metric, name: str, alias: int):
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
 
     assert spb_2_uns_pub.node_device_metric_alias_map[cache_key][alias] == name, (
-        f"Metric AliasMap was not filled {
-            spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
+        f"Metric AliasMap was not filled {spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
         f"with alias: {alias} and name: {name}."
     )
     # remove the name from the metric and check again.
@@ -240,8 +235,7 @@ def test_get_metric_name_from_alias(cache_key, metric, name: str, alias: int):
         == name
     ), f"Incorrect Name: {name} retrieved from metric: {metric}."
     assert spb_2_uns_pub.node_device_metric_alias_map[cache_key][alias] == name, (
-        f"Metric AliasMap was not filled {
-            spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
+        f"Metric AliasMap was not filled {spb_2_uns_pub.node_device_metric_alias_map[cache_key]}"
         f"with alias: {alias} and name: {name}."
     )
 
@@ -281,8 +275,7 @@ def test_get_spb_context(group_id: str, message_type: str, edge_node_id: str, de
     received_ctx = Spb2UNSPublisher.get_spb_context(
         group_id=group_id, message_type=message_type, edge_node_id=edge_node_id, device_id=device_id
     )
-    assert received_ctx == expected_ctx, f"The context received: {
-        received_ctx}" f"was not as expected: {expected_ctx}"
+    assert received_ctx == expected_ctx, f"The context received: {received_ctx}was not as expected: {expected_ctx}"
 
 
 @pytest.mark.parametrize(
@@ -338,25 +331,21 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
             datatype=metric_data[2],
             value=metric_data[3],
         )
-    parsed_payload: dict = Spb2UNSPublisher.get_payload(
-        spb_data_payload.SerializeToString())
+    parsed_payload: dict = Spb2UNSPublisher.get_payload(spb_data_payload.SerializeToString())
     assert parsed_payload is not None, "parsed payload should not be none"
 
     assert parsed_payload == spb_data_payload, (
-        f"parsed payload: {parsed_payload} is not matching" f" original payload: {
-            spb_data_payload}"
+        f"parsed payload: {parsed_payload} is not matching original payload: {spb_data_payload}"
     )
 
-    parsed_metrics_list: list = Spb2UNSPublisher.get_metrics_from_payload(
-        spb_data_payload.SerializeToString())
+    parsed_metrics_list: list = Spb2UNSPublisher.get_metrics_from_payload(spb_data_payload.SerializeToString())
     assert len(parsed_metrics_list) == len(metrics_list)
     for parsed_metric, org_metric in zip(parsed_metrics_list, metrics_list, strict=True):
         name = parsed_metric.name
         alias = parsed_metric.alias
         datatype = parsed_metric.datatype
 
-        value = getattr(parsed_metric, SPBMetricDataTypes(
-            datatype).get_field_name())
+        value = getattr(parsed_metric, SPBMetricDataTypes(datatype).get_field_name())
 
         if alias is not None:
             assert alias == org_metric[1]
@@ -366,7 +355,10 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
         assert datatype == org_metric[2]
         if datatype == sparkplug_b_pb2.Float or datatype == sparkplug_b_pb2.Double:
             assert math.isclose(
-                value, org_metric[3], rel_tol=1 / 10**FLOAT_PRECISION, )
+                value,
+                org_metric[3],
+                rel_tol=1 / 10**FLOAT_PRECISION,
+            )
         else:
             assert value == org_metric[3]
 
@@ -541,7 +533,7 @@ def test_publish_to_uns_connected(
             client.disconnect()
 
     def on_connect(
-        client,  # noqa: ARG001
+        client,
         userdata,  # noqa: ARG001
         flags,  # noqa: ARG001
         reason_code,
@@ -552,17 +544,58 @@ def test_publish_to_uns_connected(
         """
         if reason_code == 0:
             spb_to_uns_pub.publish_to_uns(all_uns_messages)
+        # Wait until client.is_connected() is true.
+        # In Paho MQTT (especially newer versions), the callback might fire
+        # before the internal _sock is fully registered as 'connected' in some thread race conditions,
+        # or verify that we are indeed connected.
+        # Given the CI environment might be slow, we'll implement a small wait loop if needed,
+        # BUT since we are in the callback loop thread, blocking here is bad.
+        # However, publish_to_uns checks is_connected().
 
+        # HACK: Force Paho's internal connected flag if we received success
+        # This is risky but effective for tests if Paho's internals are accessible.
+        # Paho 1.x uses _state. Paho 2.x behaves differently.
+        # Instead, let's just use a loop with timeout inside publish_to_uns OR modify how we call it.
+
+        # Actually, let's just sleep briefly to allow the client loop (if threaded) to update?
+        # No, we are IN the loop callback (loop_forever).
+
+        # If we are in loop_forever, the loop is blocked processing this callback.
+        # Paho sets self._state = mqtt_cs_connected BEFORE calling on_connect.
+        # So is_connected() SHOULD return true.
+        # Unless `reason_code` is NOT 0.
+
+        if reason_code != 0:
+            # Connection failed, so we shouldn't try to publish.
+            # IMPORTANT: We MUST disconnect to ensure loop_forever() exits, otherwise the test hangs.
+            client.disconnect()
+            return
+
+        # Sometimes in CI, is_connected() lags behind the callback slightly due to threading/GIL issues
+        # even if using loop_forever. Wait briefly for it to be true.
+        for _ in range(20):
+            if client.is_connected():
+                break
+            time.sleep(0.1)
+
+        if not client.is_connected():
+            # Still not connected? Abort to prevent hang or ConnectionError.
+            # Ensure we disconnect so the test finishes (fail fast).
+            client.disconnect()
+            return
+
+        spb_to_uns_pub.publish_to_uns(all_uns_messages)
+
+    # UnsMQTTClient initializes its own on_connect. We overwrite it.
+    # This is fine as long as we don't need its logic (logging/subscribing).
     uns_client.on_connect = on_connect
     uns_client.on_publish = on_publish
     try:
-        uns_client.run(host=host, port=port, tls=tls,
-                       topics="spBv1.0", qos=qos)
+        uns_client.run(host=host, port=port, tls=tls, topics="spBv1.0", qos=qos)
         uns_client.loop_forever(retry_first_connection=True)
         assert True, "Successfully executed the test with no exceptions"
     finally:
         uns_client.loop_stop()
         uns_client.disconnect()
 
-    assert len(msg_published) == len(
-        all_uns_messages), "Not all messages were published"
+    assert len(msg_published) == len(all_uns_messages), "Not all messages were published"
