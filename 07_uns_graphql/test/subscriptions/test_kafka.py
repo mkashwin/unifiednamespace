@@ -21,7 +21,6 @@ import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
-import pytest_asyncio
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, NewTopic
 
