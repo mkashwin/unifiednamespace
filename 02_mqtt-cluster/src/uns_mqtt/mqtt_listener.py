@@ -359,7 +359,7 @@ class UnsMQTTClient(mqtt_client.Client):
         return False
 
     @staticmethod
-    @functools.lru_cache(maxsize=128)
+    @functools.lru_cache(maxsize=1024)
     def _get_cached_pattern(topic_with_wildcard: str) -> re.Pattern:
         """
         Returns a compiled regex pattern for the given wildcard topic.
@@ -370,7 +370,7 @@ class UnsMQTTClient(mqtt_client.Client):
         return re.compile(regex_exp)
 
     @staticmethod
-    @functools.lru_cache(maxsize=128)
+    @functools.lru_cache(maxsize=1024)
     def get_regex_for_topic_with_wildcard(topic_with_wildcard) -> str:
         regex_list = topic_with_wildcard.split("/")
         # Using Regex to do matching
