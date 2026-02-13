@@ -173,12 +173,14 @@ async def kafka_setup_unique(request):
     yield unique_topics, unique_messages
 
     # Cleanup: Delete topics
-    fs = admin.delete_topics(topics_to_create)
-    for f in fs.values():
-        try:
-            f.result(timeout=10)
-        except Exception:
-            pass
+    # Skipping cleanup to save time and prevent timeouts in CI
+    # Topics are unique and will be cleaned up when the Kafka container is destroyed
+    # fs = admin.delete_topics(topics_to_create)
+    # for f in fs.values():
+    #     try:
+    #         f.result(timeout=10)
+    #     except Exception:
+    #         pass
 
 
 @pytest.mark.asyncio(loop_scope="function")
