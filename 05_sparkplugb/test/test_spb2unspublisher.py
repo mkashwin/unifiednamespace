@@ -564,7 +564,9 @@ def test_publish_to_uns_connected(
         # Unless `reason_code` is NOT 0.
 
         if reason_code != 0:
-            # Connection failed, so we shouldn't try to publish
+            # Connection failed, so we shouldn't try to publish.
+            # IMPORTANT: We MUST disconnect to ensure loop_forever() exits, otherwise the test hangs.
+            client.disconnect()
             return
 
         # Sometimes in CI, is_connected() lags behind the callback slightly due to threading/GIL issues
@@ -573,6 +575,12 @@ def test_publish_to_uns_connected(
             if client.is_connected():
                 break
             time.sleep(0.1)
+
+        if not client.is_connected():
+            # Still not connected? Abort to prevent hang or ConnectionError.
+            # Ensure we disconnect so the test finishes (fail fast).
+            client.disconnect()
+            return
 
         spb_to_uns_pub.publish_to_uns(all_uns_messages)
 
