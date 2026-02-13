@@ -91,8 +91,7 @@ class GraphDBHandler:
         except SystemError as ex:
             raise ex
         except Exception as ex:
-            LOGGER.error("Failed to create the driver: %s",
-                         ex, stack_info=True, exc_info=True)
+            LOGGER.error("Failed to create the driver: %s", ex, stack_info=True, exc_info=True)
             raise SystemError(ex) from ex
 
     def connect(self, retry: int = 0) -> neo4j.Driver:
@@ -118,8 +117,7 @@ class GraphDBHandler:
         """
         try:
             if self.driver is None:
-                self.driver = neo4j.GraphDatabase.driver(
-                    self.uri, auth=self.auth, database=self.database)
+                self.driver = neo4j.GraphDatabase.driver(self.uri, auth=self.auth, database=self.database)
             self.driver.verify_connectivity()
         except (
             exceptions.DatabaseError,
@@ -128,13 +126,11 @@ class GraphDBHandler:
             exceptions.ServiceUnavailable,
         ) as ex:
             if retry >= self.max_retry:
-                LOGGER.error("No. of retries exceeded %s",
-                             self.max_retry, stack_info=True, exc_info=True)
+                LOGGER.error("No. of retries exceeded %s", self.max_retry, stack_info=True, exc_info=True)
                 raise SystemError(ex) from ex
 
             retry += 1
-            LOGGER.error("Error Connecting to %s.\n Error: %s",
-                         self.database, ex, stack_info=True, exc_info=True)
+            LOGGER.error("Error Connecting to %s.\n Error: %s", self.database, ex, stack_info=True, exc_info=True)
             time.sleep(self.sleep_btw_attempts)
             self.connect(retry=retry)
 
@@ -155,8 +151,7 @@ class GraphDBHandler:
                 self.driver = None
             except Exception as ex:
                 # pylint: disable=broad-exception-caught
-                LOGGER.error("Failed to close the driver:%s",
-                             ex, stack_info=True, exc_info=True)
+                LOGGER.error("Failed to close the driver:%s", ex, stack_info=True, exc_info=True)
                 self.driver = None
 
     def persist_mqtt_msg(
@@ -164,8 +159,7 @@ class GraphDBHandler:
         topic: str,
         message: dict,
         timestamp: float = time.time(),
-        node_types: tuple = ("ENTERPRISE", "FACILITY",
-                             "AREA", "LINE", "DEVICE"),
+        node_types: tuple = ("ENTERPRISE", "FACILITY", "AREA", "LINE", "DEVICE"),
         attr_node_type: str | None = "NESTED_ATTRIBUTE",
         retry: int = 0,
     ):
@@ -188,12 +182,10 @@ class GraphDBHandler:
         try:
             driver = self.connect(retry)
             with driver.session(database=self.database) as session:
-                session.execute_write(
-                    self.save_all_nodes, topic, message, timestamp, node_types, attr_node_type)
+                session.execute_write(self.save_all_nodes, topic, message, timestamp, node_types, attr_node_type)
         except (exceptions.TransientError, exceptions.TransactionError, exceptions.SessionExpired) as ex:
             if retry >= self.max_retry:
-                LOGGER.error("No. of retries exceeded %s",
-                             self.max_retry, stack_info=True, exc_info=True)
+                LOGGER.error("No. of retries exceeded %s", self.max_retry, stack_info=True, exc_info=True)
                 raise ex
 
             retry += 1
@@ -236,41 +228,84 @@ class GraphDBHandler:
         attr_node_type : str
             The node type for attribute nodes
         """
-        response = None
-        count: int = 0
-        lastnode_id = None
         nodes = topic.split("/")
+        path_nodes = nodes[:-1]
+        leaf_node = nodes[-1]
 
-        for node in nodes:
-            LOGGER.debug("Processing sub topic: %s of topic:%s",
-                         node, topic)
-            node_type: str = GraphDBHandler.get_topic_node_type(
-                count, node_types)
-            if node != nodes[-1]:  # check if this is the leaf node of the topic
-                response = GraphDBHandler.save_node(
-                    session=session,
-                    nodename=node,
-                    nodetype=node_type,
-                    node_props=None,
-                    parent_id=lastnode_id,
-                    timestamp=timestamp,
-                )
-                records = list(response)
-                lastnode_id = records[0][0].element_id
+        lastnode_id = None
+        if path_nodes:
+            lastnode_id = GraphDBHandler.save_topic_path(session, path_nodes, node_types, timestamp)
 
-            else:  # if this is the leaf node of the topic then save the attributes to this nodes
-                GraphDBHandler.save_attribute_nodes(
-                    session=session,
-                    nodename=node,
-                    lastnode_id=lastnode_id,
-                    attr_nodes=message,
-                    node_type=node_type,
-                    attr_node_type=attr_node_type,
-                    timestamp=timestamp,
-                )
-            count += 1
+        # Process the leaf node
+        count = len(path_nodes)
+        node_type = GraphDBHandler.get_topic_node_type(count, node_types)
+
+        GraphDBHandler.save_attribute_nodes(
+            session=session,
+            nodename=leaf_node,
+            lastnode_id=lastnode_id,
+            attr_nodes=message,
+            node_type=node_type,
+            attr_node_type=attr_node_type,
+            timestamp=timestamp,
+        )
 
     # method Ends
+
+    # static method starts
+    @staticmethod
+    def save_topic_path(session: neo4j.Session, path_nodes: list[str], node_types: tuple, timestamp: float) -> str | None:
+        """
+        Saves the path of the topic (excluding the leaf node) in a single query.
+        Returns the element_id of the last node in the path.
+        """
+        if not path_nodes:
+            return None
+
+        query = ""
+        params = {"timestamp": timestamp}
+        last_var = None
+
+        # Handle first node (Root)
+        node_name = path_nodes[0]
+        node_type = GraphDBHandler.get_topic_node_type(0, node_types)
+        last_var = "n0"
+        params["name0"] = node_name
+
+        query += f"""
+        MERGE ({last_var}:{node_type} {{ node_name: $name0 }})
+        ON CREATE SET {last_var}.{CREATED_TIMESTAMP_KEY} = $timestamp
+        ON MATCH SET {last_var}.{MODIFIED_TIMESTAMP_KEY} = $timestamp
+        """
+
+        # Handle subsequent nodes
+        for i in range(1, len(path_nodes)):
+            node_name = path_nodes[i]
+            node_type = GraphDBHandler.get_topic_node_type(i, node_types)
+            var_name = f"n{i}"
+            params[f"name{i}"] = node_name
+
+            # Merge the relationship AND the child node in one go
+            # This ensures that if the relationship doesn't exist, a new node is created (or pattern created)
+            # matching the behavior of save_node (creating new child if not attached to parent)
+            query += f"""
+            MERGE ({last_var})-[r{i}:{NODE_RELATION_NAME}]->({var_name}:{node_type} {{ node_name: $name{i} }})
+            ON CREATE SET {var_name}.{CREATED_TIMESTAMP_KEY} = $timestamp
+            ON MATCH SET {var_name}.{MODIFIED_TIMESTAMP_KEY} = $timestamp
+            """
+            last_var = var_name
+
+        query += f"RETURN {last_var}"
+
+        LOGGER.debug("CQL statement for path: %s", query)
+
+        result = session.run(query, **params)
+        record = result.single()
+        if record:
+            return record[0].element_id
+        return None
+
+    # static method ends
 
     # static method starts
     @staticmethod
@@ -298,8 +333,7 @@ class GraphDBHandler:
         attr_node_type (str): The type of attribute node. i.e the child nodes of attribute node
         timestamp (float): The timestamp of when the attribute nodes were saved.
         """
-        primitive_properties, compound_properties = GraphDBHandler.separate_plain_composite_attributes(
-            attr_nodes)
+        primitive_properties, compound_properties = GraphDBHandler.separate_plain_composite_attributes(attr_nodes)
         if len(primitive_properties) > 0 or len(compound_properties) > 0:  # Dont create empty node
             response = GraphDBHandler.save_node(
                 session=session,
@@ -339,8 +373,7 @@ class GraphDBHandler:
                     # to avoid clashes get the name of the child node sub_dict["name"] and append to the key
                     # Not using index because the length of the array could change across invocations
                     # if name is not present use the current index number
-                    sub_dict_name = sub_dict.get(
-                        "name", key + "_" + str(index))
+                    sub_dict_name = sub_dict.get("name", key + "_" + str(index))
 
                     GraphDBHandler.save_attribute_nodes(
                         session=session,
@@ -348,8 +381,7 @@ class GraphDBHandler:
                         node_type=attr_node_type,
                         lastnode_id=attr_node_id,
                         attr_nodes=sub_dict,
-                        nodetype_props={REL_ATTR_KEY: key,
-                                        REL_ATTR_TYPE: "list", REL_INDEX: index},
+                        nodetype_props={REL_ATTR_KEY: key, REL_ATTR_TYPE: "list", REL_INDEX: index},
                         attr_node_type=attr_node_type,
                         timestamp=timestamp,
                     )
@@ -449,7 +481,7 @@ class GraphDBHandler:
             'CREATE (new_node:{nodetype} {{ node_name: $nodename }})
             SET new_node.{CREATED_TIMESTAMP_KEY} = $timestamp
             SET new_node += $attributes
-            MERGE (parent)-[r:{NODE_RELATION_NAME} {literal_map.replace('"', r'\"')} ]-> (new_node)
+            MERGE (parent)-[r:{NODE_RELATION_NAME} {literal_map.replace('"', r"\"")} ]-> (new_node)
             // Return the new child node, parent node
             RETURN new_node as child, parent as parent
             ',
