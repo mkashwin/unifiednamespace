@@ -24,7 +24,7 @@ from typing import Literal
 import pytest
 
 from uns_sparkplugb.generated.sparkplug_b_pb2 import Payload
-from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBPropertyValueTypes
+from uns_sparkplugb.uns_spb_enums import SPBDataSetDataTypes, SPBMetricDataTypes, SPBParameterTypes, SPBPropertyValueTypes
 from uns_sparkplugb.uns_spb_helper import SpBMessageGenerator
 
 DUMMY_PROPERTY_SET = Payload.PropertySet(
@@ -90,6 +90,31 @@ def create_dummy_dataset() -> Payload.DataSet:
         ],
     )
     return data_set
+
+
+def create_dummy_template() -> Payload.Template:
+    """
+    utility method to create a template
+    """
+    param1 = Payload.Template.Parameter(
+        name="param1",
+        type=SPBParameterTypes.String,
+        string_value="value1"
+    )
+    param2 = Payload.Template.Parameter(
+        name="param2",
+        type=SPBParameterTypes.UInt32,
+        int_value=123
+    )
+
+    template = Payload.Template(
+        version="1.0",
+        metrics=[],
+        parameters=[param1, param2],
+        template_ref="template_ref_1",
+        is_definition=False
+    )
+    return template
 
 
 @pytest.fixture(autouse=True)
@@ -312,6 +337,12 @@ def _convert_to_unsigned_int(value: int, factor: Literal[0, 8, 16, 32, 64]) -> i
                     "timestamp": 1486144502122,
                     "datatype": SPBMetricDataTypes.DataSet,
                     "value": create_dummy_dataset(),
+                },
+                {
+                    "name": "Inputs/template",
+                    "timestamp": 1486144502122,
+                    "datatype": SPBMetricDataTypes.Template,
+                    "value": create_dummy_template(),
                 },
             ],
         ),
