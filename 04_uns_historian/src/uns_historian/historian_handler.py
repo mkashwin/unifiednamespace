@@ -23,9 +23,8 @@ import logging
 from datetime import UTC, datetime
 
 import asyncpg
-from asyncpg import Pool, Record
+from asyncpg import Pool
 from asyncpg.connection import Connection
-from asyncpg.prepared_stmt import PreparedStatement
 
 from uns_historian.historian_config import HistorianConfig
 
@@ -135,9 +134,7 @@ class HistorianHandler:
         try:
             if self._conn is None or self._conn.is_closed():
                 self._conn = await self._pool.acquire()
-            stmt: PreparedStatement = await self._conn.prepare(query)
-            results: Record = await stmt.fetch(*args)
-            return results
+            return await self._conn.fetch(query, *args)
 
         except asyncpg.PostgresError as ex:
             LOGGER.error(f"Error executing prepared statement: {ex}")
