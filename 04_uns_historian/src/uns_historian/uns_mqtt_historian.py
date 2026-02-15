@@ -37,7 +37,7 @@ class UnsMqttHistorian:
     persists all messages to the Historian
     """
 
-    def __init__(self):
+    def __init__(self, loop=None):
         self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
         self.uns_client: UnsMQTTClient = UnsMQTTClient(
             client_id=self.client_id,
@@ -50,8 +50,8 @@ class UnsMqttHistorian:
         # Callback messages
         self.uns_client.on_message = self.on_message
         self.uns_client.on_disconnect = self.on_disconnect
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(HistorianHandler.get_shared_pool())
+        self.loop = loop or asyncio.get_event_loop()
+        self.loop.run_until_complete(HistorianHandler.get_shared_pool())
         self.uns_client.run(
             host=MQTTConfig.host,
             port=MQTTConfig.port,
@@ -67,8 +67,7 @@ class UnsMqttHistorian:
         """
         Callback function executed every time a message is received by the subscriber
         """
-        LOGGER.debug("{" "Client: %s," "Userdata: %s," "Message: %s," "}",
-                     client, userdata, msg)
+        LOGGER.debug("{Client: %s,Userdata: %s,Message: %s,}", client, userdata, msg)
 
         try:
             # get the payload as a dict object
@@ -82,13 +81,11 @@ class UnsMqttHistorian:
                     await uns_historian_handler.persist_mqtt_msg(
                         client_id=client._client_id.decode(),
                         topic=msg.topic,
-                        timestamp=float(filtered_message.get(
-                            MQTTConfig.timestamp_key, time.time())),
+                        timestamp=float(filtered_message.get(MQTTConfig.timestamp_key, time.time())),
                         message=filtered_message,
                     )
 
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(run_async_handler())
+            asyncio.run_coroutine_threadsafe(run_async_handler(), self.loop)
 
         except SystemError as system_error:
             LOGGER.error(
@@ -121,8 +118,7 @@ class UnsMqttHistorian:
         Callback function executed every time the client is disconnected from the MQTT broker
         """
         if reason_codes != 0:
-            LOGGER.error("Unexpected disconnection.:%s",
-                         reason_codes, stack_info=True)
+            LOGGER.error("Unexpected disconnection.:%s", reason_codes, stack_info=True)
         # dont close the DB Pool as the client may disconnect multiple times and reconnect
 
 
@@ -130,20 +126,23 @@ def main():
     """
     Main function invoked from command line
     """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    uns_mqtt_historian = None
+
     try:
-        uns_mqtt_historian = None
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        uns_mqtt_historian = UnsMqttHistorian()
-        uns_mqtt_historian.uns_client.loop_forever(retry_first_connection=True)
+        uns_mqtt_historian = UnsMqttHistorian(loop)
+        uns_mqtt_historian.uns_client.loop_start()
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
     finally:
         if uns_mqtt_historian is not None:
+            uns_mqtt_historian.uns_client.loop_stop()
             uns_mqtt_historian.uns_client.disconnect()
-        loop = asyncio.get_event_loop()
         loop.run_until_complete(HistorianHandler.close_pool())
+        loop.close()
 
 
 if __name__ == "__main__":

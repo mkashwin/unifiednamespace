@@ -1,5 +1,9 @@
 #!/bin/bash
 # This script is to be executed on creation of the dev container in order to create a working development environment
+if [[ -z ${WORKSPACE_DEFAULT_PATH} ]]; then
+	WORKSPACE_DEFAULT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+	exit 1
+fi
 
 # 1.0 setup the python environment
 pip3 install --upgrade pip uv
@@ -122,7 +126,7 @@ if [[ -n $(docker ps -aq -f name=uns_emqx_mqtt) ]]; then
 	docker start uns_emqx_mqtt
 else
 	docker run -d \
-		--name emqx-mqtt \
+		--name uns_emqx_mqtt \
 		--restart unless-stopped \
 		-p 1883:1883 \
 		-p 1884:1884 \

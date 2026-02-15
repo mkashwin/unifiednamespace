@@ -23,7 +23,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 import strawberry
-from neo4j import Record
 from neo4j.graph import Node, Relationship
 from uns_mqtt.mqtt_listener import UnsMQTTClient
 
@@ -155,7 +154,7 @@ class Query:
                 WHEN nodeNames[idx] = "#" THEN
                 CASE
                     WHEN idx = 0 THEN 'MATCH (N' + toString(idx) + ':' + labels + ')'
-                    ELSE 'MATCH (N' + toString(idx-1)+')-[:{NODE_RELATION_NAME}*]->(N' + toString(idx) + ':' + labels + ')'
+                    ELSE 'MATCH (N' + toString(idx-1)+')-[:{NODE_RELATION_NAME}*1..10]->(N' + toString(idx) + ':' + labels + ')'
                 END
                 // Handle the "+" wildcard
                 WHEN nodeNames[idx] = "+" THEN
@@ -179,10 +178,10 @@ class Query:
         CALL apoc.cypher.run(finalQuery, {{}}) YIELD  value
 
         WITH DISTINCT value.resultNode as resultNode
-        // Step 4: Use APOC to find the path from each node to the root, excluding '{ GraphDBConfig.nested_attribute_node_type }' nodes
+        // Step 4: Use APOC to find the path from each node to the root, excluding '{GraphDBConfig.nested_attribute_node_type}' nodes
         CALL apoc.path.subgraphNodes(resultNode, {{
-        relationshipFilter: '{ NODE_RELATION_NAME }<',
-        labelFilter: '-{ GraphDBConfig.nested_attribute_node_type }',
+        relationshipFilter: '{NODE_RELATION_NAME}<',
+        labelFilter: '-{GraphDBConfig.nested_attribute_node_type}',
         maxLevel: -1
         }}) YIELD node AS pathNode
 
@@ -195,9 +194,9 @@ class Query:
                         WHEN fullPath = '' THEN n.node_name
                         ELSE  n.node_name + '/' + fullPath
                     END) AS fullName
-        // Step 6: Find nested children with label "{  GraphDBConfig.nested_attribute_node_type }" and their relationships
-        OPTIONAL MATCH (resultNode)-[r:{NODE_RELATION_NAME}]->(nestedChild:{  GraphDBConfig.nested_attribute_node_type })
-        OPTIONAL MATCH (nestedChild)-[nestedRel:{NODE_RELATION_NAME}*]->(child:{  GraphDBConfig.nested_attribute_node_type })
+        // Step 6: Find nested children with label "{GraphDBConfig.nested_attribute_node_type}" and their relationships
+        OPTIONAL MATCH (resultNode)-[r:{NODE_RELATION_NAME}]->(nestedChild:{GraphDBConfig.nested_attribute_node_type})
+        OPTIONAL MATCH (nestedChild)-[nestedRel:{NODE_RELATION_NAME}*]->(child:{GraphDBConfig.nested_attribute_node_type})
 
         // Step 7: Return the full path, resultNode, nested children, and relationships
         RETURN DISTINCT
@@ -221,13 +220,13 @@ class Query:
     _SEARCH_SPB_BY_METRIC_QUERY = f"""WITH $metric_names as metric_names
         UNWIND metric_names as metric_name
         MATCH (resultNode:{SPB_LABEL_FILTER})-[ rel:{NODE_RELATION_NAME}*{{attribute_name:"metrics"}} ]->
-            (:{ GraphDBConfig.nested_attribute_node_type }{{node_name:metric_name}})
+            (:{GraphDBConfig.nested_attribute_node_type}{{node_name:metric_name}})
 
         // Step 2: Use APOC to find the path from each node to the root,
         // excluding '{GraphDBConfig.nested_attribute_node_type}' nodes
         CALL apoc.path.subgraphNodes(resultNode, {{
         relationshipFilter: '{NODE_RELATION_NAME}<',
-        labelFilter: '-{ GraphDBConfig.nested_attribute_node_type }',
+        labelFilter: '-{GraphDBConfig.nested_attribute_node_type}',
         maxLevel: -1
         }}) YIELD node AS pathNode
 
@@ -241,10 +240,10 @@ class Query:
                         ELSE  n.node_name + '/' + fullPath
                     END) AS fullName
 
-        // Step 4: Find nested children with label "{ GraphDBConfig.nested_attribute_node_type }" and their relationships
+        // Step 4: Find nested children with label "{GraphDBConfig.nested_attribute_node_type}" and their relationships
 
-        OPTIONAL MATCH (resultNode)-[r:{NODE_RELATION_NAME}]->(nestedChild:{ GraphDBConfig.nested_attribute_node_type })
-        OPTIONAL MATCH (nestedChild)-[nestedRel:{NODE_RELATION_NAME}*]->(child:{ GraphDBConfig.nested_attribute_node_type })
+        OPTIONAL MATCH (resultNode)-[r:{NODE_RELATION_NAME}]->(nestedChild:{GraphDBConfig.nested_attribute_node_type})
+        OPTIONAL MATCH (nestedChild)-[nestedRel:{NODE_RELATION_NAME}*]->(child:{GraphDBConfig.nested_attribute_node_type})
 
         // Step 5: Return the full path, resultNode, nested children, and relationships
         RETURN DISTINCT
@@ -259,19 +258,20 @@ class Query:
         self,
         topics: list[MQTTTopicInput],
     ) -> list[UNSNode]:
-        LOGGER.debug("Query for Nodes in UNS with Params :\n" f"topics={topics}")
+        LOGGER.debug(
+            "Query for Nodes in UNS with Params :\n" f"topics={topics}")
         if type(topics) is not list:
             # convert single topic to array for consistent handling. Done need to convert to regex
             topics = [topics]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_read_query(
+        results = graph_db.execute_read_query(
             query=Query._SEARCH_BY_TOPIC_QUERY,
             topics=[mqtt_topic.topic for mqtt_topic in topics],
             labels=Query.UNS_LABEL_FILTER,
         )
         uns_node_list: list[UNSNode] = []
-        for record in results:
+        async for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -279,20 +279,25 @@ class Query:
 
             if node[MODIFIED_TIMESTAMP_KEY]:
                 # Timestamp is normally in milliseconds and needs to be converted to microsecond
-                modified_timestamp = datetime.fromtimestamp(node[MODIFIED_TIMESTAMP_KEY] / 1000, UTC)
+                modified_timestamp = datetime.fromtimestamp(
+                    node[MODIFIED_TIMESTAMP_KEY] / 1000, UTC)
             else:
                 # if the DB doesn't have any value, then created and modified timestamps are the same
                 # Timestamp is normally in milliseconds and needs to be converted to microsecond
-                modified_timestamp = datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC)
+                modified_timestamp = datetime.fromtimestamp(
+                    node[CREATED_TIMESTAMP_KEY] / 1000, UTC)
 
             uns_node: UNSNode = UNSNode(
                 node_name=node[NODE_NAME_KEY],
                 # As the node can have multiple labels extract only those which are of UNS Node types
-                node_type=Query.get_node_type(list(node.labels), GraphDBConfig.uns_node_types),
+                node_type=Query.get_node_type(
+                    list(node.labels), GraphDBConfig.uns_node_types),
                 namespace=topic,
-                payload=JSONPayload(Query.get_nested_properties(node, child_nodes, relationships)),
+                payload=JSONPayload(Query.get_nested_properties(
+                    node, child_nodes, relationships)),
                 # Timestamp is normally in milliseconds and needs to be converted to microsecond
-                created=datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC),
+                created=datetime.fromtimestamp(
+                    node[CREATED_TIMESTAMP_KEY] / 1000, UTC),
                 last_updated=modified_timestamp,
             )
             uns_node_list.append(uns_node)
@@ -323,7 +328,8 @@ class Query:
         if type(property_keys) is not list:
             property_keys = [property_keys]
 
-        topic_regex_list: list[str] = [UnsMQTTClient.get_regex_for_topic_with_wildcard(topic.topic) for topic in topics]
+        topic_regex_list: list[str] = [
+            UnsMQTTClient.get_regex_for_topic_with_wildcard(topic.topic) for topic in topics]
 
         topic_sub_query = None
         if len(topic_regex_list) == 0:
@@ -338,11 +344,11 @@ class Query:
         )
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_read_query(
+        results = graph_db.execute_read_query(
             query=final_query, propertyNames=property_keys, topicFilter=topic_regex_list
         )
         uns_node_list: list[UNSNode] = []
-        for record in results:
+        async for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -350,20 +356,25 @@ class Query:
 
             if node[MODIFIED_TIMESTAMP_KEY]:
                 # Timestamp is normally in milliseconds and needs to be converted to microsecond
-                modified_timestamp = datetime.fromtimestamp(node[MODIFIED_TIMESTAMP_KEY] / 1000, UTC)
+                modified_timestamp = datetime.fromtimestamp(
+                    node[MODIFIED_TIMESTAMP_KEY] / 1000, UTC)
             else:
                 # if the DB doesn't have any value, then created and modified timestamps are the same
                 # Timestamp is normally in milliseconds and needs to be converted to microsecond
-                modified_timestamp = datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC)
+                modified_timestamp = datetime.fromtimestamp(
+                    node[CREATED_TIMESTAMP_KEY] / 1000, UTC)
 
             uns_node: UNSNode = UNSNode(
                 node_name=node[NODE_NAME_KEY],
                 # As the node can have multiple labels extract only those which are of UNS Node types
-                node_type=Query.get_node_type(list(node.labels), GraphDBConfig.uns_node_types),
+                node_type=Query.get_node_type(
+                    list(node.labels), GraphDBConfig.uns_node_types),
                 namespace=topic,
-                payload=JSONPayload(Query.get_nested_properties(node, child_nodes, relationships)),
+                payload=JSONPayload(Query.get_nested_properties(
+                    node, child_nodes, relationships)),
                 # Timestamp is normally in milliseconds and needs to be converted to microsecond
-                created=datetime.fromtimestamp(node[CREATED_TIMESTAMP_KEY] / 1000, UTC),
+                created=datetime.fromtimestamp(
+                    node[CREATED_TIMESTAMP_KEY] / 1000, UTC),
                 last_updated=modified_timestamp,
             )
             uns_node_list.append(uns_node)
@@ -372,17 +383,18 @@ class Query:
     @strawberry.field(description="Get all the SPBNode by the provided metric name")
     async def get_spb_nodes_by_metric(self, metric_names: list[str]) -> list[SPBNode]:
         """ """
-        LOGGER.debug("Query for Nodes in SpB with Params :\n" f"topics={metric_names}")
+        LOGGER.debug(
+            "Query for Nodes in SpB with Params :\n" f"topics={metric_names}")
         if type(metric_names) is not list:
             # convert single topic to array for consistent handling. Done need to convert to regex
             metric_names = [metric_names]
         # Initialize the GraphDB
         graph_db = GraphDB()
-        results: list[Record] = await graph_db.execute_read_query(
+        results = graph_db.execute_read_query(
             query=Query._SEARCH_SPB_BY_METRIC_QUERY, metric_names=metric_names
         )
         spb_metric_nodes: list[SPBNode] = []
-        for record in results:
+        async for record in results:
             topic: str = record["fullName"]
             node: Node = record["resultNode"]
             child_nodes: list[Node] = record["nestedChildren"]
@@ -390,7 +402,8 @@ class Query:
 
             spb_node = SPBNode(
                 topic=topic,
-                payload=Query.get_nested_properties(node, child_nodes, relationships),
+                payload=Query.get_nested_properties(
+                    node, child_nodes, relationships),
             )
             spb_metric_nodes.append(spb_node)
 
@@ -447,7 +460,8 @@ class Query:
 
             #  logic for handling changing key NODE_NAME to lower case which was done while persisting
             if nested_properties.get(NODE_NAME_KEY.upper()):
-                nested_properties[NODE_NAME_KEY] = nested_properties.pop(NODE_NAME_KEY.upper())
+                nested_properties[NODE_NAME_KEY] = nested_properties.pop(
+                    NODE_NAME_KEY.upper())
 
             # save those objects against the element id for later retrieval
             node_to_prop[node.element_id] = nested_properties
@@ -459,10 +473,12 @@ class Query:
                 continue  # ensure that only relevant relations are processed
 
             attr_name = relation[REL_ATTR_KEY]
-            size: int = map_list_size.get((relation.nodes[0].element_id, attr_name), 0)
+            size: int = map_list_size.get(
+                (relation.nodes[0].element_id, attr_name), 0)
             index = int(relation[REL_INDEX])
             if size - 1 < index:
-                map_list_size[relation.nodes[0].element_id, attr_name] = index + 1
+                map_list_size[relation.nodes[0].element_id,
+                              attr_name] = index + 1
 
         for relation in relationships:
             # in a relationship relation.nodes[0] is the parent and relation.nodes[1] is the child
@@ -472,7 +488,8 @@ class Query:
             parent_property_map: dict = node_to_prop[relation.nodes[0].element_id]
             child_property_map: dict = node_to_prop[relation.nodes[1].element_id]
             attr_name: str = relation[REL_ATTR_KEY]
-            attr_type: str = relation[REL_ATTR_TYPE]  # will be either dict or list
+            # will be either dict or list
+            attr_type: str = relation[REL_ATTR_TYPE]
 
             match attr_type:
                 case "dict":
@@ -480,9 +497,12 @@ class Query:
                     parent_property_map[attr_name] = child_property_map
 
                 case "list":
-                    index = int(relation[REL_INDEX])  # will be null for dict, list index for list
-                    dict_size = map_list_size.get((relation.nodes[0].element_id, attr_name))
-                    child_list: list = parent_property_map.get(attr_name, [None] * dict_size)
+                    # will be null for dict, list index for list
+                    index = int(relation[REL_INDEX])
+                    dict_size = map_list_size.get(
+                        (relation.nodes[0].element_id, attr_name))
+                    child_list: list = parent_property_map.get(
+                        attr_name, [None] * dict_size)
 
                     # update the list map at correct index
                     child_list[index] = child_property_map

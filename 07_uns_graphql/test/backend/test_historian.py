@@ -79,8 +79,15 @@ async def prepare_database(historian_pool):  # noqa: ARG001
     delete_sql_cmd = f""" DELETE FROM {HistorianConfig.table} WHERE
                                time =  $1  AND
                                topic = $2 AND
-                               client_id = $3 AND
-                               mqtt_msg = $4;"""  # noqa: S608
+                               client_id = $3;"""  # noqa: S608
+
+    # clean up database before inserting to avoid UniqueViolationError if previous run crashed
+    for row in test_data_set:
+        # row is (time, topic, client_id, mqtt_msg)
+        # we only need the first 3 for delete
+        delete_params = list(row)[:3]
+        async with HistorianDBPool() as historian:
+            await historian.execute_prepared(delete_sql_cmd, *delete_params)
 
     # insert testdata into database
     for row in test_data_set:
@@ -89,15 +96,16 @@ async def prepare_database(historian_pool):  # noqa: ARG001
     yield
     # clean up database
     for row in test_data_set:
+        delete_params = list(row)[:3]
         async with HistorianDBPool() as historian:
-            await historian.execute_prepared(delete_sql_cmd, *list(row))
+            await historian.execute_prepared(delete_sql_cmd, *delete_params)
 
 
 @pytest.mark.asyncio(loop_scope="session")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_historian")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "topic_list,publisher_list,from_date, to_date, count_of_return",
     [
@@ -137,10 +145,10 @@ async def test_get_historic_events(
 
 
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
-@pytest.mark.xdist_group(name="graphql_historian")
 @pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.xdist_group(name="graphql_historian")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "property_keys,binary_operator, topics, from_timestamp, to_timestamp, count_of_return",
     [

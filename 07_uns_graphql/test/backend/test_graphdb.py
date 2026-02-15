@@ -77,6 +77,13 @@ QUERY = """
 QUERY_PARAMS = {"propertyNames": ["seq", "dict_list"], "topicFilter": ["(.)*"]}
 
 
+@pytest.fixture(autouse=True)
+def mock_graphdb_config():
+    """Reduce retries and sleep time for tests to fail fast."""
+    with patch("uns_graphql.backend.graphdb.MAX_RETRIES", 1), patch("uns_graphql.backend.graphdb.SLEEP_BTW_ATTEMPT", 0.1):
+        yield
+
+
 @pytest_asyncio.fixture(loop_scope="function", scope="function")
 async def mock_graphdb_driver():
     """Fixture to mock the Neo4j async driver."""
@@ -150,13 +157,14 @@ async def test_execute_query(
     try:
         # Pass args and kwargs only if they are not None
         if args is None and kwargs is None:
-            result = await graph_db.execute_read_query(query)
+            result_gen = graph_db.execute_read_query(query)
         elif args is None:
-            result = await graph_db.execute_read_query(query, **kwargs)
+            result_gen = graph_db.execute_read_query(query, **kwargs)
         elif kwargs is None:
-            result = await graph_db.execute_read_query(query, *args)
+            result_gen = graph_db.execute_read_query(query, *args)
         else:
-            result = await graph_db.execute_read_query(query, *args, **kwargs)
+            result_gen = graph_db.execute_read_query(query, *args, **kwargs)
+        result = [record async for record in result_gen]
         assert result is not None
     except Exception as ex:
         if is_error:

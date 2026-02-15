@@ -311,15 +311,24 @@ spb_result_dict: dict = {
     ],
 }
 
+
+async def async_gen(items):
+    await asyncio.sleep(0)
+    for item in items:
+        yield item
+
+
 # Mock the datahandler for UNS queries
 mocked_uns_graphdb = MagicMock(spec=GraphDB, autospec=True)
 # Mocking all the query functions to give the same result
-mocked_uns_graphdb.execute_read_query.return_value = uns_result
+mocked_uns_graphdb.execute_read_query.side_effect = lambda *_, **__: async_gen(
+    uns_result)
 
 # Mock the datahandler for SPB queries
 mocked_spb_graphdb = MagicMock(spec=GraphDB, autospec=True)
 # Mocking all the query functions to give the same result
-mocked_spb_graphdb.execute_read_query.return_value = spb_result
+mocked_spb_graphdb.execute_read_query.side_effect = lambda *_, **__: async_gen(
+    spb_result)
 
 
 @pytest.mark.asyncio(loop_scope="function")
@@ -626,17 +635,19 @@ async def setup_graphdb_data():
     yield current_loop
 
     # Teardown code i.e. clearing the database)
-    async with driver.session() as session:
-        await session.run("MATCH (n) DETACH DELETE n;")
-    # Release the driver
-    await GraphDB.release_graphdb_driver()
+    try:
+        async with driver.session() as session:
+            await session.run("MATCH (n) DETACH DELETE n;")
+    finally:
+        # Release the driver
+        await asyncio.wait_for(GraphDB.release_graphdb_driver(), timeout=5.0)
 
 
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "topics, expected_result",
     [
@@ -727,14 +738,20 @@ async def test_get_uns_nodes_integration(
         result = await graph_query.get_uns_nodes(topics=mqtt_topic_list)
     except Exception as ex:
         pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result  # Ensure the result matches the expected result
+    # Ensure the result matches the expected result, ignoring order
+    assert len(result) == len(expected_result)
+    if (len(result) > 0):
+        for item in result:
+            assert item in expected_result
+        for item in expected_result:
+            assert item in result
 
 
 @pytest.mark.asyncio(loop_scope="module")
-@pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
+@pytest.mark.integrationtest
 @pytest.mark.parametrize(
     "property_keys, topics, exclude_topics,expected_result",
     [
@@ -817,7 +834,7 @@ async def test_get_uns_nodes_by_property_integration(
     property_keys,
     topics: list[str],
     exclude_topics: bool,
-    expected_result: dict,
+    expected_result: list[UNSNode],
 ):
     mqtt_topic_list = None
     if topics is not None:
@@ -831,7 +848,8 @@ async def test_get_uns_nodes_by_property_integration(
         )
     except Exception as ex:
         pytest.fail(f"Should not throw any exceptions. Got {ex}")
-    assert result == expected_result  # Ensure the result matches the expected result
+    # Ensure the result matches the expected result
+    assert sorted(result) == sorted(expected_result)
 
 
 eon1_payload = {
@@ -856,9 +874,9 @@ eon1_payload = {
 
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
 @pytest.mark.xdist_group(name="graphql_graphdb")
+# Fix for xdist not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
+# VSCode executes the test but does not mark the result correctly when xdist_group is used.
 @pytest.mark.parametrize(
     "metric_names, expected_result",
     [

@@ -23,9 +23,8 @@ import logging
 from datetime import UTC, datetime
 
 import asyncpg
-from asyncpg import Pool, Record
+from asyncpg import Pool
 from asyncpg.connection import Connection
-from asyncpg.prepared_stmt import PreparedStatement
 
 from uns_historian.historian_config import HistorianConfig
 
@@ -135,9 +134,7 @@ class HistorianHandler:
         try:
             if self._conn is None or self._conn.is_closed():
                 self._conn = await self._pool.acquire()
-            stmt: PreparedStatement = await self._conn.prepare(query)
-            results: Record = await stmt.fetch(*args)
-            return results
+            return await self._conn.fetch(query, *args)
 
         except asyncpg.PostgresError as ex:
             LOGGER.error(f"Error executing prepared statement: {ex}")
@@ -163,9 +160,10 @@ class HistorianHandler:
             db_timestamp = datetime.fromtimestamp(timestamp / 1000, UTC)
         # sometimes when qos is not 2, the mqtt message may be delivered multiple times. in such case avoid duplicate inserts
         sql_cmd = (
-                        f"INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg ) \n" +  # noqa:S608:
-                        "VALUES ($1,$2,$3,$4) \n" +
-                        "ON CONFLICT DO NOTHING \n" +
-                        "RETURNING *;")  # This is a prepared statement and the values are sanitized
+            f"INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg ) \n"  # noqa:S608:
+            + "VALUES ($1,$2,$3,$4) \n"
+            + "ON CONFLICT DO NOTHING \n"
+            + "RETURNING *;"
+        )  # This is a prepared statement and the values are sanitized
         params = [db_timestamp, topic, client_id, json.dumps(message)]
         return await self.execute_prepared(sql_cmd, *params)

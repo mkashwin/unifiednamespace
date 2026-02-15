@@ -1,4 +1,6 @@
-# trunk-ignore-all(trivy/DS002,trivy/DS026,checkov/CKV_DOCKER_2,checkov/CKV_DOCKER_3)
+# trunk-ignore-all(trivy/DS-0026)
+# trunk-ignore-all(trivy/DS-0002)
+# trunk-ignore-all(checkov/CKV_DOCKER_2,checkov/CKV_DOCKER_3)
 FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm
 
 # Fix Yarn GPG key error

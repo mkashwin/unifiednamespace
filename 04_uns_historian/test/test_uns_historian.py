@@ -22,7 +22,7 @@ import asyncio
 import json
 import random
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
@@ -37,13 +37,13 @@ from uns_historian.historian_handler import HistorianHandler
 from uns_historian.uns_mqtt_historian import UnsMqttHistorian, main
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def mock_uns_client():
     with patch("uns_historian.uns_mqtt_historian.UnsMQTTClient", autospec=True) as mock_client:
         yield mock_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def mock_historian_handler():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -66,18 +66,27 @@ def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historia
     mock_historian_handler.close_pool.assert_not_called()
 
 
-def test_uns_mqtt_historian_main_positive_pool_closure(mock_uns_client, mock_historian_handler):  # noqa: ARG001
+@pytest.mark.usefixtures("mock_uns_client")
+def test_uns_mqtt_historian_main_positive_pool_closure(mock_historian_handler):
     # verify that the main method closed the pool in normal execution
-    main()
-    mock_historian_handler.close_pool.assert_called_once()
-
-
-def test_uns_mqtt_historian_main_negative_pool_closure(mock_uns_client, mock_historian_handler):
-    # verify that the main method closed the pool even if exceptions were raised
-    mock_uns_client.loop_forever.side_effect = Exception("Mocked MQTT Error")
-    try:
+    mock_loop = MagicMock()
+    with patch("asyncio.new_event_loop", return_value=mock_loop), patch("asyncio.set_event_loop"):
         main()
-    except Exception:
+
+        mock_loop.run_forever.assert_called_once()
+        mock_historian_handler.close_pool.assert_called_once()
+
+
+@pytest.mark.usefixtures("mock_uns_client")
+def test_uns_mqtt_historian_main_negative_pool_closure(mock_historian_handler):
+    # verify that the main method closed the pool even if exceptions were raised
+    mock_loop = MagicMock()
+    mock_loop.run_forever.side_effect = RuntimeError("Mocked Loop Error")
+
+    with patch("asyncio.new_event_loop", return_value=mock_loop), patch("asyncio.set_event_loop"):
+        with pytest.raises(RuntimeError):
+            main()
+
         mock_historian_handler.close_pool.assert_called_once()
 
 
@@ -99,8 +108,7 @@ test_data_list: list[dict[str, list[dict | bytes | str]]] = [
     },
     {
         # test_data[1]: test for SparkplugB messages
-        "spBv1.0/uns_group/NBIRTH/eon1":
-        [
+        "spBv1.0/uns_group/NBIRTH/eon1": [
             (
                 b"\x08\xc4\x89\x89\x83\xd30\x12\x17\n\x08Inputs/A\x10\x00\x18\xea\xf2\xf5\xa8\xa0+ "
                 b"\x0bp\x00\x12\x17\n\x08Inputs/B\x10\x01\x18\xea\xf2\xf5\xa8\xa0+ \x0bp\x00\x12\x18\n\t"
@@ -157,36 +165,35 @@ async def clean_up_database():
 
 
 @pytest.mark.integrationtest
-# FIXME not working with VsCode https://github.com/microsoft/vscode-python/issues/19374
-# Comment this marker and run test individually in VSCode. Uncomment for running from command line / CI
+@pytest.mark.xdist_group(name="mqtt_historian")
 @pytest.mark.xdist_group(name="uns_mqtt_historian")
 @pytest.mark.parametrize(  # convert test data dict into tuples for pytest parameterize
-    "topic, messages", [(topic, messages)
-                        for dictionary in test_data_list for topic, messages in dictionary.items()]
+    "topic, messages", [(topic, messages) for dictionary in test_data_list for topic, messages in dictionary.items()]
 )
 def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # noqa: ARG001
     uns_mqtt_historian = None
     uns_publisher = None
     try:
         # 1. Start the historian listener in a new thread
-        uns_mqtt_historian = UnsMqttHistorian()
+        loop = asyncio.get_event_loop()
+        uns_mqtt_historian = UnsMqttHistorian(loop=loop)
         mgs_received: list = []
         old_on_message = uns_mqtt_historian.uns_client.on_message
-        # Loop inside on_message_decorator is null for some reason. hence trying to set outer loop in callback
-        loop = asyncio.get_event_loop()
 
         def on_message_decorator(client, userdata, msg):
             """
             Override / wrap the existing on_message callback so that
             we can track the messages were processed
             """
-            asyncio.set_event_loop(loop)
             old_on_message(client, userdata, msg)
             mgs_received.append(msg)
 
         uns_mqtt_historian.uns_client.on_message = on_message_decorator
 
         uns_mqtt_historian.uns_client.loop_start()
+
+        # Allow some time for the historian to connect and subscribe
+        loop.run_until_complete(asyncio.sleep(1.0))
 
         # 2. Create an MQTT publisher
         uns_publisher: UnsMQTTClient = create_publisher()
@@ -199,14 +206,21 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(topic=topic, payload=message,
-                                  qos=2, retain=True, properties=publish_properties)
+            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
             # allow for the message to be received
-            time.sleep(0.1)
+            # We must use the loop to sleep so pending async tasks (DB writes) can run
+            loop.run_until_complete(asyncio.sleep(0.1))
 
         # wait for uns_mqtt_historian to have persisted to the database
-        while len(mgs_received) < len(messages):
-            time.sleep(0.1)
+        # instead of waiting on messages received, we wait until the DB has the records
+        # this handles the async nature better as persistence happens after receipt
+        max_retries = 50
+        for _ in range(max_retries):
+            # We must use the loop to sleep so pending async tasks (DB writes) can run
+            loop.run_until_complete(asyncio.sleep(0.1))
+            if len(mgs_received) >= len(messages):
+                break
+
         # disconnect the historian listener to free the asyncio loop
         uns_mqtt_historian.uns_client.disconnect()
         uns_mqtt_historian.uns_client.loop_stop()
@@ -226,17 +240,15 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = convert_spb_bytes_payload_to_dict(message)
 
             result = loop.run_until_complete(
-                execute_prepared_async(
-                    select_query, topic, message, uns_mqtt_historian.client_id)
+                execute_prepared_async(select_query, topic, message, uns_mqtt_historian.client_id)
             )
 
             assert result is not None, "Should have gotten a result"
-            assert len(
-                result) == 1, "Should have gotten only one record because we inserted only one record"
+            assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
 
     finally:
         # clean up the topic and disconnect the publisher
-        uns_publisher.publish(topic=topic, payload=b"",
-                              qos=2, retain=True, properties=publish_properties)
-        uns_publisher.disconnect()
+        if uns_publisher is not None:
+            uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
+            uns_publisher.disconnect()
         uns_mqtt_historian.uns_client.disconnect()

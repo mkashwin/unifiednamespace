@@ -22,13 +22,19 @@ jobs:
               echo "Cant create a pull on main or a tag. choose valid branch."
               exit 1
           fi
+      - name: Generate short label
+        id: label
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          SHORT_NAME="${BRANCH_NAME:0:40}"
+          echo "short_label=pr-${SHORT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Raise Pull Request
         uses: devops-infra/action-pull-request@v1.0.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Creating PR for branch ${{ github.ref_name }} "
-          label: "v${{ github.ref_name }},version-update"
+          label: "${{ steps.label.outputs.short_label }}"
           source_branch: "${{ github.ref_name }}"
           target_branch: "main"
           get_diff: true

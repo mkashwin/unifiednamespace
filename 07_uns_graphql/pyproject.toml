@@ -87,7 +87,7 @@ build-backend = "hatchling.build"
 norecursedirs = [".git", "build", "node_modules", "env*", "tmp*"]
 testpaths = ["test"]
 markers = ["integrationtest: mark a test as an integration test"]
-addopts = "-v -n 6 --dist loadgroup --timeout=300 --retries 1  --retry-delay 1 --durations=10 --full-trace --timeout-method=thread"
+addopts = "-n 6 --dist loadgroup --timeout=300 --retries 1  --retry-delay 1 --durations=10 "
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
