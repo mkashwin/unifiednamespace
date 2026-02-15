@@ -12,6 +12,8 @@ plugins:
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
   enabled:
+    - go@1.21.0
+    - node@22.16.0
     - python@>3.10.8
   definitions:
     - type: python
@@ -26,22 +28,22 @@ lint:
     - black
   enabled:
     - shfmt@3.6.0
-    - actionlint@1.7.10
-    - trufflehog@3.93.1
-    - osv-scanner@2.3.2
+    - actionlint@1.7.11
+    - trufflehog@3.93.3
+    - osv-scanner@2.3.3
     - markdownlint@0.47.0
     - hadolint@2.14.0
     - cspell@9.6.4
     - gitleaks@8.30.0
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.500
+    - checkov@3.2.501
     - trivy@0.69.1
     - git-diff-check
     - prettier@3.8.1
     - shellcheck@0.11.0
     - yamllint@1.38.0
-    - ruff@0.15.0
+    - ruff@0.15.1
   ignore:
     - linters: [ALL]
       paths:
