@@ -40,6 +40,9 @@ NODE_NAME_KEY = "node_name"
 CREATED_TIMESTAMP_KEY = "_created_timestamp"
 MODIFIED_TIMESTAMP_KEY = "_modified_timestamp"
 
+# Set of keys to be excluded from the properties map for faster membership check
+EXCLUDED_KEYS = {NODE_NAME_KEY, CREATED_TIMESTAMP_KEY, MODIFIED_TIMESTAMP_KEY}
+
 NODE_RELATION_NAME = "PARENT_OF"
 REL_ATTR_KEY = "attribute_name"
 REL_ATTR_TYPE = "type"
@@ -455,7 +458,7 @@ class Query:
                 # filter out special properties added to the neo4j node which were not present in the original payload
                 key: value
                 for key, value in node.items()
-                if key not in [NODE_NAME_KEY, CREATED_TIMESTAMP_KEY, MODIFIED_TIMESTAMP_KEY]
+                if key not in EXCLUDED_KEYS
             }
 
             #  logic for handling changing key NODE_NAME to lower case which was done while persisting
