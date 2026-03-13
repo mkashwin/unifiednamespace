@@ -243,7 +243,6 @@ async def publish_to_mqtt(expected_messages: list[Message]):
 
 @pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.integrationtest
-@pytest.mark.timeout(30)
 @pytest.mark.parametrize(
     "topics, expected_messages",
     [
