@@ -61,8 +61,7 @@ async def historian_pool():
     """
     Initialize a shared connection pool based on the pytest marker integrationtest
     """
-    pool = await HistorianDBPool.get_shared_pool()
-    yield pool
+    yield await HistorianDBPool.get_shared_pool()
     # Close the connection pool after all tests are completed
     await HistorianDBPool.close_pool()
 
