@@ -202,7 +202,7 @@ async def test_get_kafka_messages_integration(kafka_setup_unique):
         index: int = 0
         async_message_list = subscription.get_kafka_messages(kafka_topics)
         # Use asyncio.timeout (Python 3.11+) or wait_for
-        async with asyncio.timeout(30):
+        async with asyncio.timeout(10):
             async for message in async_message_list:
                 assert isinstance(message, StreamingMessage)
                 received_messages.append(message)

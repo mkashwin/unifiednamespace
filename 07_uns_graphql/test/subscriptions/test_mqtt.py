@@ -243,6 +243,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
 
 @pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.integrationtest
+@pytest.mark.timeout(10)
 @pytest.mark.parametrize(
     "topics, expected_messages",
     [
@@ -326,8 +327,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
             ],
         ),
         (  # Test with topics from  sparkplugB with protobuf responses
-            [MQTTTopicInput(topic="topic/+"),
-             MQTTTopicInput(topic="spBv1.0/#")],
+            [MQTTTopicInput(topic="topic/+"), MQTTTopicInput(topic="spBv1.0/#")],
             [
                 Message(
                     topic="topic/1",

@@ -55,15 +55,15 @@ def test_mqtt_config():
     """
     Test if the mqtt configurations are valid
     """
-    assert MQTTConfig.transport in (
-        None, "tcp", "websockets"), f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
+    assert MQTTConfig.transport in (None, "tcp", "websockets"), (
+        f"Invalid value for key 'mqtt.transport':{MQTTConfig.transport}"
+    )
 
-    assert MQTTConfig.version in {
-        item.value for item in ProtocolVersion
-    }, f"Invalid value for key 'mqtt.version':{MQTTConfig.version}"
+    assert MQTTConfig.version in {item.value for item in ProtocolVersion}, (
+        f"Invalid value for key 'mqtt.version':{MQTTConfig.version}"
+    )
 
-    assert MQTTConfig.qos in (
-        None, 0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
+    assert MQTTConfig.qos in (None, 0, 1, 2), f"Invalid value for key 'mqtt.qos':{MQTTConfig.qos}"
 
     # assert MQTTConfig.reconnect_on_failure in (
     #     None,
@@ -79,8 +79,7 @@ def test_mqtt_config():
 
     assert MQTTConfig.host is not None, f"Invalid value for key 'mqtt.host'{MQTTConfig.mqtt_host}"
 
-    assert isinstance(
-        MQTTConfig.port, int) or MQTTConfig.port is None, f"Invalid value for key 'mqtt.port':{MQTTConfig.port}"
+    assert isinstance(MQTTConfig.port, int) or MQTTConfig.port is None, f"Invalid value for key 'mqtt.port':{MQTTConfig.port}"
     assert (
         isinstance(
             MQTTConfig.port,
@@ -97,17 +96,16 @@ def test_mqtt_config():
     ), "Either both username & password need to be specified or neither"
 
     assert (MQTTConfig.tls is None) or (
-        isinstance(MQTTConfig.tls, dict) and not bool(
-            MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
-    ), "Check the configuration provided for tls connection to the broker. " "the property ca_certs is missing"
+        isinstance(MQTTConfig.tls, dict) and not bool(MQTTConfig.tls) and MQTTConfig.tls.get("ca_certs") is not None
+    ), "Check the configuration provided for tls connection to the broker. the property ca_certs is missing"
 
-    assert (MQTTConfig.tls is None) or (
-        Path(MQTTConfig.tls.get("ca_certs")).is_file()
-    ), f"Unable to find certificate at: {MQTTConfig.tls.get('ca_certs')}"
+    assert (MQTTConfig.tls is None) or (Path(MQTTConfig.tls.get("ca_certs")).is_file()), (
+        f"Unable to find certificate at: {MQTTConfig.tls.get('ca_certs')}"
+    )
 
-    assert (MQTTConfig.keep_alive is None) or (
-        MQTTConfig.keep_alive > 0
-    ), f"'mqtt.keep_alive'{MQTTConfig.keep_alive} must be a positive number"
+    assert (MQTTConfig.keep_alive is None) or (MQTTConfig.keep_alive > 0), (
+        f"'mqtt.keep_alive'{MQTTConfig.keep_alive} must be a positive number"
+    )
 
     assert MQTTConfig.retry_interval > 0, f"'mqtt.retry_interval'{MQTTConfig.retry_interval} must be a positive number"
 
@@ -123,18 +121,16 @@ def test_graph_db_configs():
         re.fullmatch(REGEX_FOR_NEO4J, GraphDBConfig.conn_url),
     ), f"configuration 'graphdb.url':{GraphDBConfig.conn_url} is not a valid Neo4j URL"
 
-    assert (
-        GraphDBConfig.user is not None and isinstance(
-            GraphDBConfig.user, str) and len(GraphDBConfig.user) > 0
-    ), "Invalid username configured at key: 'graphdb.username'. Cannot be None or empty string"
+    assert GraphDBConfig.user is not None and isinstance(GraphDBConfig.user, str) and len(GraphDBConfig.user) > 0, (
+        "Invalid username configured at key: 'graphdb.username'. Cannot be None or empty string"
+    )
 
     assert (
-        GraphDBConfig.password is not None and isinstance(
-            GraphDBConfig.password, str) and len(GraphDBConfig.password) > 0
+        GraphDBConfig.password is not None and isinstance(GraphDBConfig.password, str) and len(GraphDBConfig.password) > 0
     ), "Invalid password configured at key: 'graphdb.password'. Cannot be None or empty string"
 
     assert GraphDBConfig.uns_node_types is not None and len(GraphDBConfig.uns_node_types) > 0, (
-        "Invalid node_types configured at key:'graphdb.uns_node_types'. " "Must be list of length > 1"
+        "Invalid node_types configured at key:'graphdb.uns_node_types'. Must be list of length > 1"
     )
 
     for node_type in GraphDBConfig.uns_node_types:
@@ -143,7 +139,7 @@ def test_graph_db_configs():
         ), f"configuration {node_type} in {GraphDBConfig.uns_node_types} is not a valid node name"
 
     assert GraphDBConfig.spb_node_types is not None and len(GraphDBConfig.spb_node_types) == 5, (
-        "Invalid node_types configured at key:'graphdb.spB_node_types'. " "Must be list of length of 5"
+        "Invalid node_types configured at key:'graphdb.spB_node_types'. Must be list of length of 5"
     )
 
     for node_type in GraphDBConfig.spb_node_types:
@@ -165,18 +161,17 @@ def test_timescale_db_configs():
     # run these tests only if both configuration files exists or mandatory environment vars are set
     assert HistorianConfig.hostname is not None, f"Invalid value for key 'historian.hostname'{HistorianConfig.hostname}"
 
-    assert HistorianConfig.port is None or not isinstance(
-        HistorianConfig.port, int
-    ), f"Invalid value for key 'historian.port':{HistorianConfig.port}"
+    assert HistorianConfig.port is None or not isinstance(HistorianConfig.port, int), (
+        f"Invalid value for key 'historian.port':{HistorianConfig.port}"
+    )
 
     if HistorianConfig.port is not None:
         assert isinstance(HistorianConfig.port, int) and HistorianConfig.port >= 1024 and HistorianConfig.port <= 49151, (
-            f"'historian.port':{HistorianConfig.port} " "must be between 1024 to 49151"
+            f"'historian.port':{HistorianConfig.port} must be between 1024 to 49151"
         )
 
     assert (
-        HistorianConfig.db_user is not None and isinstance(
-            HistorianConfig.db_user, str) and len(HistorianConfig.db_user) > 0
+        HistorianConfig.db_user is not None and isinstance(HistorianConfig.db_user, str) and len(HistorianConfig.db_user) > 0
     ), "Invalid username configured at key: 'historian.username'. Cannot be None or empty string"
 
     assert (
@@ -195,23 +190,19 @@ def test_timescale_db_configs():
         "verify-full",
     ), f"Invalid value for key 'historian.sslmode'{HistorianConfig.db_sslmode}"
 
-    assert (
-        HistorianConfig.db_sslcert is None or Path(
-            HistorianConfig.db_sslcert).is_file()
-    ), f"Unable to find ssl certificate at: {HistorianConfig.db_sslcert}"
-    assert (
-        HistorianConfig.db_sslkey is None or Path(
-            HistorianConfig.db_sslkey).is_file()
-    ), f"Unable to find ssl secret key at: {HistorianConfig.db_sslkey}"
+    assert HistorianConfig.db_sslcert is None or Path(HistorianConfig.db_sslcert).is_file(), (
+        f"Unable to find ssl certificate at: {HistorianConfig.db_sslcert}"
+    )
+    assert HistorianConfig.db_sslkey is None or Path(HistorianConfig.db_sslkey).is_file(), (
+        f"Unable to find ssl secret key at: {HistorianConfig.db_sslkey}"
+    )
 
-    assert (
-        HistorianConfig.db_sslrootcert is None or Path(
-            HistorianConfig.db_sslrootcert).is_file()
-    ), f"Unable to find ssl certificate authority at: {HistorianConfig.db_sslrootcert}"
-    assert (
-        HistorianConfig.db_sslcrl is None or Path(
-            HistorianConfig.db_sslcrl).is_file()
-    ), f"Unable to find ssl certificate revocation list at: {HistorianConfig.db_sslcrl}"
+    assert HistorianConfig.db_sslrootcert is None or Path(HistorianConfig.db_sslrootcert).is_file(), (
+        f"Unable to find ssl certificate authority at: {HistorianConfig.db_sslrootcert}"
+    )
+    assert HistorianConfig.db_sslcrl is None or Path(HistorianConfig.db_sslcrl).is_file(), (
+        f"Unable to find ssl certificate revocation list at: {HistorianConfig.db_sslcrl}"
+    )
 
     assert (
         HistorianConfig.database is not None
@@ -221,8 +212,7 @@ def test_timescale_db_configs():
          Cannot be None or empty string"""
 
     assert (
-        HistorianConfig.table is not None and isinstance(
-            HistorianConfig.table, str) and len(HistorianConfig.table) > 0
+        HistorianConfig.table is not None and isinstance(HistorianConfig.table, str) and len(HistorianConfig.table) > 0
     ), f"""Invalid database name configured at key: 'historian.table' value:{HistorianConfig.table}.
          Cannot be None or empty string"""
 
@@ -235,13 +225,13 @@ def test_kafka_config():
     assert "client.id" in KAFKAConfig.config_map, f"Kafka configurations missing mandatory client.id: {KAFKAConfig.config_map}"
     assert "group.id" in KAFKAConfig.config_map, f"Kafka configurations missing mandatory group.id: {KAFKAConfig.config_map}"
 
-    assert ("bootstrap.servers" in KAFKAConfig.config_map) or (
-        "metadata.broker.list" in KAFKAConfig.config_map
-    ), f"Kafka configurations missing mandatory server config: {KAFKAConfig.config_map}"
+    assert ("bootstrap.servers" in KAFKAConfig.config_map) or ("metadata.broker.list" in KAFKAConfig.config_map), (
+        f"Kafka configurations missing mandatory server config: {KAFKAConfig.config_map}"
+    )
 
-    assert (
-        type(KAFKAConfig.consumer_poll_timeout) is float and KAFKAConfig.consumer_poll_timeout > 0
-    ), f"Kafka configurations had illegal value for consumer polling:{KAFKAConfig.consumer_poll_timeout}"
+    assert type(KAFKAConfig.consumer_poll_timeout) is float and KAFKAConfig.consumer_poll_timeout > 0, (
+        f"Kafka configurations had illegal value for consumer polling:{KAFKAConfig.consumer_poll_timeout}"
+    )
 
 
 @pytest.mark.integrationtest()
@@ -251,9 +241,9 @@ def test_connectivity_to_mqtt():
     there is connectivity to the MQTT broker
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert (
-        sock.connect_ex((MQTTConfig.host, MQTTConfig.port)) == 0
-    ), f"Host: {MQTTConfig.host} is not reachable at port:{MQTTConfig.port}"
+    assert sock.connect_ex((MQTTConfig.host, MQTTConfig.port)) == 0, (
+        f"Host: {MQTTConfig.host} is not reachable at port:{MQTTConfig.port}"
+    )
 
 
 @pytest.mark.integrationtest()
@@ -272,8 +262,7 @@ def test_connectivity_to_graphdb():
     if port is None or port == "":
         port = 7687
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex(
-        (host, port)) == 0, f"Host: {host} is not reachable at port:{port}"
+    assert sock.connect_ex((host, port)) == 0, f"Host: {host} is not reachable at port:{port}"
 
 
 @pytest.mark.integrationtest()
@@ -288,11 +277,11 @@ def test_connectivity_to_historian():
         port = 5432
     # if port not provided use default postgres port
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    assert sock.connect_ex(
-        (hostname, port)) == 0, f"Host: {hostname} is not reachable at port:{port}"
+    assert sock.connect_ex((hostname, port)) == 0, f"Host: {hostname} is not reachable at port:{port}"
 
 
 @pytest.mark.integrationtest()
+@pytest.mark.timeout(5)
 def test_connectivity_to_kafka():
     """
     Test if the provided configurations for the Kafka Server are valid and
@@ -302,7 +291,7 @@ def test_connectivity_to_kafka():
     assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKAConfig.config_map}"
     assert (
         producer.list_topics(
-            timeout=10,
+            timeout=5,
         )
         is not None
     ), f"Kafka configurations did allow connectivity to broker: {KAFKAConfig.config_map}"
