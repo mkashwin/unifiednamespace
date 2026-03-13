@@ -167,7 +167,10 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
 
                     dataset.rows.append(row)
             case "columns":
-                dataset.columns.extend(value)
+                if hasattr(value, "__iter__"):
+                    dataset.columns.extend(value)
+                else:
+                    raise TypeError("dataset columns value must be iterable")
 
             case "types":
                 dataset.types.extend(value)
