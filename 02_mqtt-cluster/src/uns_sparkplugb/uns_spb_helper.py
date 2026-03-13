@@ -72,7 +72,7 @@ def _fix_keys_and_value_types(spb_dict: dict) -> dict:
             # bytes have been base64 encoded into strings and we need to decode it
             value = base64.b64decode(value)
 
-        elif key in {SPBValueFieldName.INT, SPBValueFieldName.LONG, "timestamp", "alias", "seq", "num_of_columns", "size"}:
+        elif key in [SPBValueFieldName.INT, SPBValueFieldName.LONG, "timestamp", "alias", "seq", "num_of_columns", "size"]:
             # FIXME Need to do this as these int fields are converted to str in the dict conversion by #MessageToDict
             value = int(value)
 
