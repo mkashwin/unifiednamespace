@@ -111,9 +111,8 @@ def convert_dict_to_payload(spb_dict: dict) -> Payload:
     for key, value in spb_dict.items():
         if value is not None:
             if key == "metrics":
-                for metric_dict in value:
-                    spb_payload.metrics.append(
-                        convert_dict_to_metric(metric_dict))
+                spb_payload.metrics.extend(
+                    convert_dict_to_metric(metric_dict) for metric_dict in value)
             else:
                 setattr(spb_payload, key, value)
     return spb_payload
@@ -168,12 +167,10 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
 
                     dataset.rows.append(row)
             case "columns":
-                for col in value:
-                    dataset.columns.append(col)
+                dataset.columns.extend(value)
 
             case "types":
-                for datatype in value:
-                    dataset.types.append(datatype)
+                dataset.types.extend(value)
 
             case "num_of_columns":
                 dataset.num_of_columns = value
@@ -186,9 +183,8 @@ def convert_dict_to_template(template_dict: dict) -> Payload.Template:
     for key, value in template_dict.items():
         match key:
             case "metrics":
-                for metric_dict in value:
-                    template.metrics.append(
-                        convert_dict_to_metric(metric_dict))
+                template.metrics.extend(
+                    convert_dict_to_metric(metric_dict) for metric_dict in value)
             case "parameters":
                 for param_dict in value:
                     param_template = Payload.Template.Parameter()
@@ -649,9 +645,8 @@ class SpBMessageGenerator:
                     value=param[2], spb_object=parameter)
 
         metric.template_value.version = version
-        if metrics is not None and len(metrics) > 0:
-            for inner_metric in metrics:
-                metric.template_value.metrics.append(inner_metric)
+        if metrics:
+            metric.template_value.metrics.extend(metrics)
 
         return metric.template_value
 
