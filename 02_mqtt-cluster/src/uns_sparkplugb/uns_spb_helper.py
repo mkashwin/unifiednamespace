@@ -109,8 +109,9 @@ def convert_dict_to_payload(spb_dict: dict) -> Payload:
     for key, value in spb_dict.items():
         if value is not None:
             if key == "metrics":
-                for metric_dict in value:
-                    spb_payload.metrics.append(convert_dict_to_metric(metric_dict))
+                spb_payload.metrics.extend(
+                    convert_dict_to_metric(metric_dict) for metric_dict in value
+                )
             else:
                 setattr(spb_payload, key, value)
     return spb_payload
