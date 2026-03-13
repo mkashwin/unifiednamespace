@@ -3,7 +3,7 @@ name = "uns-simulator"
 version = "0.9.38"
 description = "Simulator to publishing messages into the UNS"
 authors = [{ name = "Ashwin Krishnan", email = "mkashwin@gmail.com" }]
-requires-python = ">=3.14, <4"
+requires-python = ">=3.12, <4"
 readme = "README.md"
 license = { text = "MIT" }
 maintainers = [
