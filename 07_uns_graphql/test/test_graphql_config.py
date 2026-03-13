@@ -299,10 +299,14 @@ def test_connectivity_to_kafka():
     there is connectivity to the Kafka cluster.
     """
     producer = Producer(KAFKAConfig.config_map)
-    assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKAConfig.config_map}"
-    assert (
-        producer.list_topics(
-            timeout=10,
-        )
-        is not None
-    ), f"Kafka configurations did allow connectivity to broker: {KAFKAConfig.config_map}"
+    try:
+        assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {KAFKAConfig.config_map}"
+        assert (
+            producer.list_topics(
+                timeout=10,
+            )
+            is not None
+        ), f"Kafka configurations did allow connectivity to broker: {KAFKAConfig.config_map}"
+    finally:
+        producer.purge()
+        producer.flush(1)

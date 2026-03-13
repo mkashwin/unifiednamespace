@@ -170,6 +170,9 @@ def kafka_setup_unique(request):
 
     yield unique_topics, unique_messages
 
+    producer.purge()
+    producer.flush(1)
+
     # Cleanup: Delete topics
     # Skipping cleanup to save time and prevent timeouts in CI
     # Topics are unique and will be cleaned up when the Kafka container is destroyed
