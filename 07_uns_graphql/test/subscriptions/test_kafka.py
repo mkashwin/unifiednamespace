@@ -184,7 +184,6 @@ def kafka_setup_unique(request):
 
 @pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.integrationtest
-@pytest.mark.skip(reason="Skip due to instability in connecting to the Kafka broker in sandbox CI environments")
 @pytest.mark.xdist_group(name="graphql_graphdb")
 @pytest.mark.parametrize(
     "kafka_setup_unique",

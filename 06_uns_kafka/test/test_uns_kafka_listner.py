@@ -32,7 +32,6 @@ from uns_kafka.uns_kafka_listener import UNSKafkaMapper
 
 
 @pytest.mark.integrationtest()
-@pytest.mark.skip(reason="UnsMQTTClient threading issues cause persistent CI hangs")
 def test_uns_kafka_mapper_init():
     """
     Test case for UNSKafkaMapper#init()
@@ -128,7 +127,6 @@ def test_uns_kafka_mapper_init():
         ),
     ],
 )
-@pytest.mark.skip(reason="UnsMQTTClient threading issues cause persistent CI hangs")
 def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic: str, expected_kafka_msg):
     """
     End to End testing of the listener by publishing to MQTT and validating correct message on KAFKA
@@ -205,7 +203,14 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
     Checks the kafka topic for teh expected message
     """
     try:
+        import time
+        start_time = time.time()
+        timeout = 15.0  # 15 seconds timeout to prevent CI hang
         while True:
+            if time.time() - start_time > timeout:
+                pytest.fail("Timeout waiting for Kafka message")
+                break
+
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait
