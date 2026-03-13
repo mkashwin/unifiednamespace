@@ -618,7 +618,12 @@ def test_add_metric_and_ddata_msg(timestamp: float, metrics: list[dict]):
                 "timestamp": 1486144502122,
                 "datatype": SPBMetricDataTypes.DataSet,
                 "value": create_dummy_dataset(),
-                # TODO Template
+            },
+            {
+                "name": "Inputs/template",
+                "timestamp": 1486144502122,
+                "datatype": SPBMetricDataTypes.Template,
+                "value": create_dummy_template(),
             },
         ],
     ],
