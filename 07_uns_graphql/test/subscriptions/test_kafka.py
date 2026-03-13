@@ -170,9 +170,6 @@ def kafka_setup_unique(request):
 
     yield unique_topics, unique_messages
 
-    producer.purge()
-    producer.flush(1)
-
     # Cleanup: Delete topics
     # Skipping cleanup to save time and prevent timeouts in CI
     # Topics are unique and will be cleaned up when the Kafka container is destroyed
@@ -198,12 +195,6 @@ def kafka_setup_unique(request):
 async def test_get_kafka_messages_integration(kafka_setup_unique):
     kafka_topics, message_vals = kafka_setup_unique
 
-    # Modify the global config to use a unique group.id for this test
-    # to avoid consumer group conflicts during parallel execution.
-    original_group_id = KAFKAConfig.config_map.get("group.id")
-    test_group_id = f"test_group_{uuid.uuid4()}"
-    KAFKAConfig.config_map["group.id"] = test_group_id
-
     received_messages = []
     subscription = KAFKASubscription()
     try:
@@ -219,11 +210,6 @@ async def test_get_kafka_messages_integration(kafka_setup_unique):
                     break
     finally:
         await async_message_list.aclose()
-        # Restore the original group.id
-        if original_group_id:
-            KAFKAConfig.config_map["group.id"] = original_group_id
-        else:
-            del KAFKAConfig.config_map["group.id"]
 
     # Ensure messages from both topics are received correctly
     topics_set = {msg.topic for msg in received_messages}
