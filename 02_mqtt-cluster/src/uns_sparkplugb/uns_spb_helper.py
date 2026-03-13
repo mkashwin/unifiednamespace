@@ -168,12 +168,10 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
 
                     dataset.rows.append(row)
             case "columns":
-                for col in value:
-                    dataset.columns.append(col)
+                dataset.columns.extend(value)
 
             case "types":
-                for datatype in value:
-                    dataset.types.append(datatype)
+                dataset.types.extend(value)
 
             case "num_of_columns":
                 dataset.num_of_columns = value
