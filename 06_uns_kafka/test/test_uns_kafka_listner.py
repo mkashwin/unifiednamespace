@@ -49,6 +49,9 @@ def test_uns_kafka_mapper_init():
         pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
+            if uns_kafka_mapper.kafka_handler and uns_kafka_mapper.kafka_handler.producer:
+                uns_kafka_mapper.kafka_handler.producer.purge()
+                uns_kafka_mapper.kafka_handler.flush(timeout=10)
             uns_kafka_mapper.uns_client.disconnect()
 
 
@@ -153,7 +156,7 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
             """
             old_on_message(client, userdata, msg)
             # Flush the producer to force publishing to the broker
-            uns_kafka_mapper.kafka_handler.flush()
+            uns_kafka_mapper.kafka_handler.flush(timeout=10)
 
             # Create a consumer to read the Kafka broker
             kafka_listener: Consumer = get_kafka_consumer(KAFKAConfig.kafka_config_map)
@@ -181,6 +184,9 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
         pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
+            if uns_kafka_mapper.kafka_handler and uns_kafka_mapper.kafka_handler.producer:
+                uns_kafka_mapper.kafka_handler.producer.purge()
+                uns_kafka_mapper.kafka_handler.flush(timeout=10)
             uns_kafka_mapper.uns_client.disconnect()
         if admin_client is not None:
             admin_client.delete_topics([kafka_topic])
@@ -204,6 +210,7 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
     """
     try:
         import time
+
         start_time = time.time()
         timeout = 15.0  # 15 seconds timeout to prevent CI hang
         while True:
