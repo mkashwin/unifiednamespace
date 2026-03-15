@@ -167,10 +167,8 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
                     dataset.columns.extend(value)
                 else:
                     raise TypeError("dataset columns value must be iterable")
-
             case "types":
-                for datatype in value:
-                    dataset.types.append(datatype)
+                dataset.types.extend(value)
 
             case "num_of_columns":
                 dataset.num_of_columns = value
@@ -643,9 +641,8 @@ class SpBMessageGenerator:
                 SPBParameterTypes(parameter.type).set_value_in_sparkplug(value=param[2], spb_object=parameter)
 
         metric.template_value.version = version
-        if metrics is not None and len(metrics) > 0:
-            for inner_metric in metrics:
-                metric.template_value.metrics.append(inner_metric)
+        if metrics:
+            metric.template_value.metrics.extend(metrics)
 
         return metric.template_value
 
