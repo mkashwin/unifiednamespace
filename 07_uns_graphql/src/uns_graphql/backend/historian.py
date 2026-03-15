@@ -241,7 +241,7 @@ class HistorianDBPool:
         # check that at least mandatory criteria is provided
         if property_keys is None or len(property_keys) == 0:
             raise ValueError("Mandatory criteria for fetching historic events by property_keys needs to be provided")
-        if binary_operator is not None and binary_operator not in ["AND", "OR", "NOT"]:
+        if binary_operator is not None and binary_operator not in {"AND", "OR", "NOT"}:
             raise ValueError(f"Should be on of ['AND', 'OR', 'NOT']. Got: {binary_operator}")
         base_query: str = f"SELECT time, topic, client_id, mqtt_msg FROM {HistorianConfig.table} WHERE"  # noqa: S608
         conditions: list[str] = []
