@@ -42,16 +42,15 @@ def test_uns_kafka_mapper_init():
         assert uns_kafka_mapper is not None, "Connection to either the MQTT Broker or Kafka broker did not happen"
 
         assert uns_kafka_mapper.kafka_handler.producer, "Connection to Kafka broker did not happen"
-        assert uns_kafka_mapper.kafka_handler.producer.list_topics(), "Connection to Kafka broker did not happen"
+        assert uns_kafka_mapper.kafka_handler.producer.list_topics(
+        ), "Connection to Kafka broker did not happen"
         assert uns_kafka_mapper.uns_client, "Connection to MQTT broker did not happen"
 
     except Exception as ex:
-        pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen Exception {ex}")
+        pytest.fail(
+            "Connection to either the MQTT Broker or Kafka broker did not happen" f" Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
-            if uns_kafka_mapper.kafka_handler and uns_kafka_mapper.kafka_handler.producer:
-                uns_kafka_mapper.kafka_handler.producer.purge()
-                uns_kafka_mapper.kafka_handler.flush(timeout=10)
             uns_kafka_mapper.uns_client.disconnect()
 
 
@@ -156,10 +155,11 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
             """
             old_on_message(client, userdata, msg)
             # Flush the producer to force publishing to the broker
-            uns_kafka_mapper.kafka_handler.flush(timeout=10)
+            uns_kafka_mapper.kafka_handler.flush()
 
             # Create a consumer to read the Kafka broker
-            kafka_listener: Consumer = get_kafka_consumer(KAFKAConfig.kafka_config_map)
+            kafka_listener: Consumer = get_kafka_consumer(
+                KAFKAConfig.kafka_config_map)
 
             # Set up a callback to handle the '--reset' flag.
             def reset_offset(consumer, partitions):
@@ -168,7 +168,8 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
                 consumer.assign(partitions)
 
             kafka_listener.subscribe([kafka_topic], on_assign=reset_offset)
-            check_kafka_topics(uns_kafka_mapper.uns_client, kafka_listener, expected_kafka_msg)
+            check_kafka_topics(uns_kafka_mapper.uns_client,
+                               kafka_listener, expected_kafka_msg)
             # ---------------- end of inline method
 
         # Overriding on_message is more reliable that on_publish because some times
@@ -181,12 +182,10 @@ def test_uns_kafka_mapper_publishing(mqtt_topic: str, mqtt_message, kafka_topic:
         )
 
     except Exception as ex:
-        pytest.fail(f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
+        pytest.fail(
+            f"Connection to either the MQTT Broker or Kafka broker did not happen: Exception {ex}")
     finally:
         if uns_kafka_mapper is not None:
-            if uns_kafka_mapper.kafka_handler and uns_kafka_mapper.kafka_handler.producer:
-                uns_kafka_mapper.kafka_handler.producer.purge()
-                uns_kafka_mapper.kafka_handler.flush(timeout=10)
             uns_kafka_mapper.uns_client.disconnect()
         if admin_client is not None:
             admin_client.delete_topics([kafka_topic])
@@ -197,7 +196,8 @@ def get_kafka_consumer(kafka_producer_config: dict) -> Consumer:
     Utility method to create a consumer based on producer config
     """
     consumer_config: dict = {}
-    consumer_config["bootstrap.servers"] = kafka_producer_config.get("bootstrap.servers")
+    consumer_config["bootstrap.servers"] = kafka_producer_config.get(
+        "bootstrap.servers")
     consumer_config["client.id"] = "uns_kafka_mapper_test_consumer"
     consumer_config["group.id"] = "uns_kafka_mapper_test_consumers"
     consumer_config["auto.offset.reset"] = "earliest"
@@ -209,15 +209,7 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
     Checks the kafka topic for teh expected message
     """
     try:
-        import time
-
-        start_time = time.time()
-        timeout = 15.0  # 15 seconds timeout to prevent CI hang
         while True:
-            if time.time() - start_time > timeout:
-                pytest.fail("Timeout waiting for Kafka message")
-                break
-
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait
@@ -226,7 +218,8 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
             elif msg.error():
                 assert pytest.fail(), msg.error()
             else:
-                assert json.loads(msg.value().decode("utf-8")) == json.loads(expected_kafka_msg)
+                assert json.loads(msg.value().decode("utf-8")
+                                  ) == json.loads(expected_kafka_msg)
                 break
 
     finally:

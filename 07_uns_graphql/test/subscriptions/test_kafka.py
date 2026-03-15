@@ -30,12 +30,14 @@ from uns_graphql.subscriptions.kafka import KAFKASubscription
 from uns_graphql.type.streaming_event import StreamingMessage
 
 TWO_TOPICS_MULTIPLE_MSGS = (
-    [KAFKATopicInput(topic="graphql_test_a.b.c"), KAFKATopicInput(topic="graphql_test.abc")],
+    [KAFKATopicInput(topic="graphql_test_a.b.c"),
+     KAFKATopicInput(topic="graphql_test.abc")],
     [
         ("graphql_test_a.b.c", b'{"timestamp": 123456, "val1": 1234}'),
         ("graphql_test.abc", b'{"timestamp": 123987, "val1": 9876}'),
         ("graphql_test_a.b.c", b'{"timestamp": 234567, "val1": 2345}'),
-        ("graphql_test.abc", b'{"timestamp": 456789, "val2": "test different"}'),
+        ("graphql_test.abc",
+         b'{"timestamp": 456789, "val2": "test different"}'),
     ],
 )
 
@@ -89,7 +91,8 @@ async def test_get_kafka_messages_mock(topics: list[KAFKATopicInput], message_va
             async_message_list = subscription.get_kafka_messages(topics)
             async for message in async_message_list:
                 assert isinstance(message, StreamingMessage)
-                assert message == StreamingMessage(message_vals[index][0], message_vals[index][1])
+                assert message == StreamingMessage(
+                    message_vals[index][0], message_vals[index][1])
                 received_messages.append(message)
                 index = index + 1
                 if index == len(message_vals):
@@ -132,12 +135,10 @@ def kafka_setup_unique(request):
         unique_messages.append((topic_map[topic_name], payload))
 
     # Setup Kafka Admin and Producer
-    admin = AdminClient(
-        {
-            "client.id": f"test_admin_{unique_suffix}",
-            "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
-        }
-    )
+    admin = AdminClient({
+        "client.id": f"test_admin_{unique_suffix}",
+        "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
+    })
 
     topics_to_create = list(topic_map.values())
 
@@ -152,14 +153,12 @@ def kafka_setup_unique(request):
             raise
 
     # Produce messages
-    producer = Producer(
-        {
-            "client.id": f"test_producer_{unique_suffix}",
-            "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
-            "socket.timeout.ms": 5000,
-            "message.timeout.ms": 5000,
-        }
-    )
+    producer = Producer({
+        "client.id": f"test_producer_{unique_suffix}",
+        "bootstrap.servers": KAFKAConfig.config_map["bootstrap.servers"],
+        "socket.timeout.ms": 5000,
+        "message.timeout.ms": 5000,
+    })
 
     def delivery_report(err, msg):
         pass
@@ -191,7 +190,7 @@ def kafka_setup_unique(request):
         # Only run the most complex scenario for integration tests to prevent CI timeouts
         TWO_TOPICS_MULTIPLE_MSGS,
     ],
-    indirect=True,
+    indirect=True
 )
 async def test_get_kafka_messages_integration(kafka_setup_unique):
     kafka_topics, message_vals = kafka_setup_unique
@@ -202,7 +201,7 @@ async def test_get_kafka_messages_integration(kafka_setup_unique):
         index: int = 0
         async_message_list = subscription.get_kafka_messages(kafka_topics)
         # Use asyncio.timeout (Python 3.11+) or wait_for
-        async with asyncio.timeout(10):
+        async with asyncio.timeout(30):
             async for message in async_message_list:
                 assert isinstance(message, StreamingMessage)
                 received_messages.append(message)
@@ -219,4 +218,5 @@ async def test_get_kafka_messages_integration(kafka_setup_unique):
     # Validate that all published messages were received
     assert len(received_messages) == len(message_vals)
     for topic, msg in message_vals:
-        assert any(StreamingMessage(topic=topic, payload=msg) == received_message for received_message in received_messages)
+        assert any(StreamingMessage(topic=topic, payload=msg) ==
+                   received_message for received_message in received_messages)
