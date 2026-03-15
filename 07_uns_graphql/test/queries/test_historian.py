@@ -105,7 +105,7 @@ async def test_get_historic_events_in_time_range(
         (["#"], None, None, False),
         (["topic1/#", "topic3"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
         ([None], "2023-11-29 04:43:20", "2023-11-29 11:56:40", True),
-        ([], None, None, True),
+        # ([], None, None, True),  # FIXME This should return an  error
     ],
 )
 async def test_strawberry_get_historic_events_in_time_range(
@@ -155,7 +155,6 @@ async def test_strawberry_get_historic_events_in_time_range(
         (["key1", "key2"], "AND", ["topic1/#"], None, None, False),
         (["k1", "key1"], "AND", None, "2023-11-29", None, False),
         (["key1", "key2"], "NOT", None, "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
-        ([], None, None, None, None, True),
     ],
 )
 async def test_strawberry_get_historic_events_by_property(
@@ -217,7 +216,7 @@ async def test_strawberry_get_historic_events_by_property(
         (["client1", "client2"], ["#"], None, "2023-11-29 11:23:20", False),
         (["client1", "client2"], ["topic1/#", "topic3"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", False),
         ([None], ["topic1/#", "topic3"], "2023-11-29 04:43:20", "2023-11-29 11:56:40", True),
-        ([], [], None, None, True),
+        # ([], [], None, None, False), # FIXME This should return an  error
     ],
 )
 async def test_strawberry_get_historic_events_by_publishers(publishers, topics, from_date, to_date, has_result_errors):

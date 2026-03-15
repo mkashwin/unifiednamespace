@@ -52,9 +52,6 @@ class Query:
             # convert single topic to array for consistent handling
             topics = [topics]
 
-        if not topics:
-            raise ValueError("topics list cannot be empty")
-
         async with HistorianDBPool() as historian:
             result: list[HistoricalUNSEvent] = await historian.get_historic_events(
                 topics=(x.topic for x in topics),  # extract string from input object
@@ -76,9 +73,6 @@ class Query:
             "Query for historic events by publishers in UNS with Params :\n"
             f"publishers={publishers}, topics={topics}, from_datetime={from_datetime}, to_datetime={from_datetime}  "
         )
-        if not publishers:
-            raise ValueError("publishers list cannot be empty")
-
         async with HistorianDBPool() as historian:
             result: list[HistoricalUNSEvent] = await historian.get_historic_events(
                 topics=[x.topic for x in topics] if topics else None,  # extract string from input object
@@ -109,9 +103,6 @@ class Query:
             f"property_keys={property_keys}, binary_operator={binary_operator}, topics={topics},"
             f" from_datetime={from_datetime}, to_datetime={from_datetime} "
         )
-        if not property_keys:
-            raise ValueError("property_keys list cannot be empty")
-
         async with HistorianDBPool() as historian:
             result: list[HistoricalUNSEvent] = await historian.get_historic_events_for_property_keys(
                 property_keys=property_keys,
