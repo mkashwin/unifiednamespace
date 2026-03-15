@@ -110,12 +110,8 @@ def convert_dict_to_payload(spb_dict: dict) -> Payload:
         if value is not None:
             if key == "metrics":
                 spb_payload.metrics.extend(
-<<<<<<< HEAD
-                    convert_dict_to_metric(metric_dict) for metric_dict in value)
-=======
                     convert_dict_to_metric(metric_dict) for metric_dict in value
                 )
->>>>>>> origin/main
             else:
                 setattr(spb_payload, key, value)
     return spb_payload
@@ -167,15 +163,10 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
 
                     dataset.rows.append(row)
             case "columns":
-<<<<<<< HEAD
-                dataset.columns.extend(value)
-=======
                 if hasattr(value, "__iter__"):
                     dataset.columns.extend(value)
                 else:
                     raise TypeError("dataset columns value must be iterable")
->>>>>>> origin/main
-
             case "types":
                 dataset.types.extend(value)
 
@@ -190,12 +181,7 @@ def convert_dict_to_template(template_dict: dict) -> Payload.Template:
     for key, value in template_dict.items():
         match key:
             case "metrics":
-<<<<<<< HEAD
-                template.metrics.extend(
-                    convert_dict_to_metric(metric_dict) for metric_dict in value)
-=======
                 template.metrics.extend(convert_dict_to_metric(metric_dict) for metric_dict in value)
->>>>>>> origin/main
             case "parameters":
 
                 def _convert_param(param_dict: dict) -> Payload.Template.Parameter:
