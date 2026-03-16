@@ -168,8 +168,10 @@ def convert_dict_to_dataset(dataset_dict: dict) -> Payload.DataSet:
 
                     dataset.rows.append(row)
             case "columns":
-                dataset.columns.extend(value)
-
+                if hasattr(value, "__iter__"):
+                    dataset.columns.extend(value)
+                else:
+                    raise TypeError("dataset columns value must be iterable")
             case "types":
                 dataset.types.extend(value)
 
@@ -647,9 +649,8 @@ class SpBMessageGenerator:
                     value=param[2], spb_object=parameter)
 
         metric.template_value.version = version
-        if metrics is not None and len(metrics) > 0:
-            for inner_metric in metrics:
-                metric.template_value.metrics.append(inner_metric)
+        if metrics:
+            metric.template_value.metrics.extend(metrics)
 
         return metric.template_value
 
