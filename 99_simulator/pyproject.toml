@@ -36,7 +36,7 @@ uns_simulator = "uns_simulator.main:run_simulator"
 
 [dependency-groups]
 test = [
-    "pytest>=8.3.4,<10",
+    "pytest>=9.0.3,<10",
     "pytest-xdist>=3.6.1,<4",
     "pytest-asyncio>=0.25,<1.4",
     "pytest-timeout>=2.3.1,<3",
