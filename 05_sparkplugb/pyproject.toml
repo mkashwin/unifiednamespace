@@ -45,7 +45,7 @@ test = [
     "pytest-xdist>=3.8.0,<4",
     "pytest-cov>=7.1.0,<8",
     "pytest-timeout>=2.4.0,<3",
-     "safety>=3.4.0,<4",
+     "safety>=3.7.0,<4",
 ]
 
 [tool.uv]
