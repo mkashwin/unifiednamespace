@@ -36,7 +36,7 @@ dependencies = [
     "uvicorn[standard]>=0.34,<0.44",
     "aiomqtt>=2.4.0,<3",
     "confluent-kafka>=2.12,<3",
-    "neo4j~=6.0",
+    "neo4j~=6.1",
     "asyncpg>=0.30,<0.32",
     "psutil>=7.2.2,<8",
 ]
