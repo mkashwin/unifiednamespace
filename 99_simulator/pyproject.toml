@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "logger~=1.4",
-    "aiomqtt>=2.4.0,<3",
+    "aiomqtt>=2.5.1,<3",
     "dynaconf~=3.2",
 
 ]
