@@ -41,11 +41,11 @@ uns_spb_mapper_healthcheck = "uns_spb_mapper.health_check:main"
 [dependency-groups]
 main = ["uns-mqtt"]
 test = [
-    "pytest>=8.3.4,<10",
+    "pytest>=9.0.3,<10",
     "pytest-xdist>=3.8.0,<4",
     "pytest-cov>=7.1.0,<8",
     "pytest-timeout>=2.4.0,<3",
-     "safety>=3.4.0,<4",
+     "safety>=3.7.0,<4",
 ]
 
 [tool.uv]
