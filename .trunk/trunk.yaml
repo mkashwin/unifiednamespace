@@ -37,13 +37,13 @@ lint:
     - gitleaks@8.30.1
     - pre-commit-hooks@4.6.0
     - pre-commit-hooks@4.6.0
-    - checkov@3.2.517
-    - trivy@0.69.3
+    - checkov@3.2.521
+    - trivy@0.70.0
     - git-diff-check
-    - prettier@3.8.2
+    - prettier@3.8.3
     - shellcheck@0.11.0
     - yamllint@1.38.0
-    - ruff@0.15.10
+    - ruff@0.15.11
   ignore:
     - linters: [ALL]
       paths:
