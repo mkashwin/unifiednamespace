@@ -20,6 +20,7 @@ Implements basic functionality of establishing connection, subscription on conne
 handle various MQTT versions
 """
 
+import functools
 import json
 import logging
 import re
@@ -346,6 +347,16 @@ class UnsMQTTClient(mqtt_client.Client):
         return resulting_message
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
+    def _get_cached_pattern(topic_with_wildcard: str) -> re.Pattern:
+        """
+        Returns a compiled regex pattern for the given topic with wildcards.
+        The results are cached to improve performance.
+        """
+        regex_exp = UnsMQTTClient.get_regex_for_topic_with_wildcard(topic_with_wildcard)
+        return re.compile(regex_exp)
+
+    @staticmethod
     def is_topic_matched(topic_with_wildcard: str, topic: str) -> bool:
         """
         Checks if the actual topic matches with a wild card expression
@@ -353,12 +364,13 @@ class UnsMQTTClient(mqtt_client.Client):
              "a/b/c" matches wit "a/#" but not with "a/+"
         """
         if topic_with_wildcard is not None:
-            regex_exp = UnsMQTTClient.get_regex_for_topic_with_wildcard(
+            pattern = UnsMQTTClient._get_cached_pattern(
                 topic_with_wildcard)
-            return bool(re.fullmatch(regex_exp, topic))
+            return bool(pattern.fullmatch(topic))
         return False
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def get_regex_for_topic_with_wildcard(topic_with_wildcard) -> str:
         regex_list = topic_with_wildcard.split("/")
         # Using Regex to do matching
