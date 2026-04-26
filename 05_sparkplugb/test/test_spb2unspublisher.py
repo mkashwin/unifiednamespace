@@ -395,7 +395,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
             1671028163,
             False,
             {  # Test Set 1 -int, no historical data
-                "Temp": (23, 1671028163, False),
+                "Temp": {"value": 23, "timestamp": 1671028163, "is_historical": False},
                 "timestamp": 1671028163,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
@@ -409,7 +409,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
             1671008100,
             False,
             {  # Test Set 2 -String, no historical data
-                "Grade": ("A", 1671008100, False),
+                "Grade": {"value": "A", "timestamp": 1671008100, "is_historical": False},
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
@@ -419,7 +419,7 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
         (
             {
                 # Test Set 3 -String, with historical data
-                "Grade": ("A", 1671008100, True),
+                "Grade": {"value": "A", "timestamp": 1671008100, "is_historical": True},
                 "timestamp": 1671008100,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",
@@ -430,7 +430,10 @@ def test_get_payload_metrics_ddata(metrics_list: list[dict]):
             1671008200,
             False,
             {
-                "Grade": [("B", 1671008200, False), ("A", 1671008100, True)],
+                "Grade": [
+                    {"value": "B", "timestamp": 1671008200, "is_historical": False},
+                    {"value": "A", "timestamp": 1671008100, "is_historical": True},
+                ],
                 "timestamp": 1671008200,
                 "spBv1.0_group_id": "grp1",
                 "spBv1.0_message_type": "DDATA",

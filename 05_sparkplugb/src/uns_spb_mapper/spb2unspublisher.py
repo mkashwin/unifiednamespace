@@ -283,8 +283,13 @@ class Spb2UNSPublisher:
         """
         # check if there were any tags  already parsed for this uns topic
         if parsed_message is None:
-            parsed_message = {tag_name: (
-                metric_value, metric_timestamp, is_historical)}
+            parsed_message = {
+                tag_name: {
+                    "value": metric_value,
+                    "timestamp": metric_timestamp,
+                    "is_historical": is_historical,
+                }
+            }
             parsed_message[Spb2UNSPublisher.SPB_TIMESTAMP] = metric_timestamp
             # enrich the message to add SpB related information
             if spb_context is not None:
@@ -306,16 +311,23 @@ class Spb2UNSPublisher:
                 # TODO currently for simplicity have not yet ordered all old values,
                 # just the newest is at 0
 
-                # TODO storing value, timestamp and isHistorical flag as a tuple.
-
-                # If needed might need to convert this into a dict to have attribute keys
-                # for identification
                 old_metric_tuple_list.append(
-                    (metric_value, metric_timestamp, is_historical))
+                    {
+                        "value": metric_value,
+                        "timestamp": metric_timestamp,
+                        "is_historical": is_historical,
+                    }
+                )
             else:
                 # if the metric in the uns_message is older than the metric received
                 old_metric_tuple_list.insert(
-                    0, (metric_value, metric_timestamp, is_historical))
+                    0,
+                    {
+                        "value": metric_value,
+                        "timestamp": metric_timestamp,
+                        "is_historical": is_historical,
+                    },
+                )
                 parsed_message[Spb2UNSPublisher.SPB_TIMESTAMP] = metric_timestamp
             parsed_message[tag_name] = old_metric_tuple_list
             # end of inner if & else
