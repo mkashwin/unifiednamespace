@@ -167,6 +167,7 @@ def kafka_setup_unique(request):
         producer.produce(topic, value=msg, callback=delivery_report)
 
     producer.flush(timeout=10)
+    producer.purge()
 
     yield unique_topics, unique_messages
 
