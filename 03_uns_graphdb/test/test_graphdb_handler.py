@@ -154,6 +154,24 @@ def test_separate_plain_composite_attributes(message: dict, plain: dict, composi
     assert result_composite == composite
 
 
+@pytest.mark.parametrize(
+    "attributes, expected",
+    [
+        (None, ""),
+        ({}, "{}"),
+        ({"key1": "val1"}, '{  key1: "val1" }'),
+        ({"key1": "val1", "key2": "val2"}, '{  key1: "val1" , key2: "val2" }'),
+        ({"a": 1, "b": "c", "d!@#": "v&*("}, '{  a: "1" , b: "c" , d: "v" }'),
+    ],
+)
+def test_get_literal_map(attributes, expected):
+    """
+    Testcase for GraphDBHandler.get_literal_map.
+    Validate that the dictionary is correctly converted to a literal map string
+    """
+    assert GraphDBHandler.get_literal_map(attributes) == expected
+
+
 @pytest.mark.integrationtest()
 @pytest.mark.parametrize(
     "topic, message",  # Test spB message persistence
