@@ -519,22 +519,17 @@ class GraphDBHandler:
         because parameters are not allowed for relationship attributes.
         Also sanitizes all keys and values to prevent CQL injection attacks
         """
-        literal_map: str = ""
-        if attributes is not None:
-            literal_map = literal_map + "{ "
-            for key, val in attributes.items():
-                literal_map = (
-                    # sanitizing the properties to reduce risk of CQL Injection  attacks
-                    literal_map
-                    + " "
-                    + re.sub(SANITIZE_PATTERN, "", key)
-                    + ': "'
-                    + re.sub(SANITIZE_PATTERN, "", str(val))
-                    + '" ,'
-                )
-            literal_map = literal_map[:-1] + "}"
+        if attributes is None:
+            return ""
 
-        return literal_map
+        if not attributes:
+            return "{}"
+
+        parts = [
+            f' {re.sub(SANITIZE_PATTERN, "", key)}: "{re.sub(SANITIZE_PATTERN, "", str(val))}" '
+            for key, val in attributes.items()
+        ]
+        return "{ " + ",".join(parts) + "}"
 
     # static Method Ends
 
