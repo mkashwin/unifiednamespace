@@ -66,7 +66,12 @@ jobs:
           else
             git config --global user.email "actions@github.com"
             git config --global user.name "Github Actions"
-            # TODO check to see that only **/pyproject.toml or ./version.txt were modified
+            for FILE in $MODIFIED_FILES; do
+              if [[ ! $FILE =~ pyproject\.toml$ ]] && [[ ! $FILE =~ uv\.lock$ ]] && [[ "$FILE" != "version.txt" ]]; then
+                echo "Error: Unexpected file modified: $FILE"
+                exit 1
+              fi
+            done
             git add .
             if [ "${{ github.ref_name }}" == "main" ]; then
               BRANCH_NAME="${{ github.ref_name }}_v${{ env.VERSION_TAG}}"
