@@ -30,7 +30,7 @@ jobs:
           echo "short_label=pr-${SHORT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Raise Pull Request
-        uses: devops-infra/action-pull-request@v1.1.1
+        uses: devops-infra/action-pull-request@v1.2.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Creating PR for branch ${{ github.ref_name }} "
