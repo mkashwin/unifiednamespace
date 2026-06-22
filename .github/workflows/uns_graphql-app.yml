@@ -149,7 +149,7 @@ jobs:
           --health-retries=5
           --health-start-period=10s
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/
@@ -217,7 +217,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Compile and Test Dockerfile
         uses: ./.github/include/test_docker_builds/

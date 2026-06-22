@@ -39,7 +39,7 @@ jobs:
     environment: dev
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup with python environment
         uses: ./.github/include/setup_python/

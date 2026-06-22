@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Trunk install
         uses: trunk-io/trunk-action/setup@v1
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: "Update packages"
         id: uv_sync_upgrade
@@ -125,7 +125,7 @@ jobs:
           check_in_msg: ${{ steps.create_branch.outputs.check_in_msg }}
           check_in_title: ${{ steps.create_branch.outputs.check_in_title }}
           TARGET_BRANCH_NAME: ${{ steps.create_branch.outputs.TARGET_BRANCH_NAME }}
-        uses: devops-infra/action-pull-request@v1.2.1
+        uses: devops-infra/action-pull-request@v1.3.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{ env.check_in_title }}"

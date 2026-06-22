@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -30,7 +30,7 @@ jobs:
           echo "short_label=pr-${SHORT_NAME}" >> $GITHUB_OUTPUT
 
       - name: Raise Pull Request
-        uses: devops-infra/action-pull-request@v1.2.1
+        uses: devops-infra/action-pull-request@v1.3.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           title: "Creating PR for branch ${{ github.ref_name }} "
