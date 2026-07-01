@@ -91,7 +91,15 @@ jobs:
           git add .
           git commit -m "Upgrade to  protocol buffer release ${{ env.latest_release }}"
           git push origin $BRANCH_NAME
-
+          
+      - name: Create Label if Not Exists
+        if: steps.check_release.outputs.new_release == 'true'
+        env:
+          latest_release: ${{ steps.check_release.outputs.latest_release }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "${{env.latest_release}}" --color "0366d6" --description "Protocol Buffer release version" || true
+          
       - name: Raise Pull Request
         if: steps.check_release.outputs.new_release == 'true'
         env:
