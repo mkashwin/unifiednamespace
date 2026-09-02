@@ -964,7 +964,7 @@ dependencies = [
 requires-dist = [
     { name = "logger", specifier = "~=1.4" },
     { name = "paho-mqtt", specifier = ">=2.1.0,<3" },
-    { name = "protobuf", specifier = "~=7.36" },
+    { name = "protobuf", specifier = ">=7.36.1,<8" },
 ]
 
 [package.metadata.requires-dev]
