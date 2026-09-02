@@ -1,8 +1,9 @@
 #!/bin/bash
+set -euo pipefail
+
 # This script is to be executed on creation of the dev container in order to create a working development environment
-if [[ -z ${WORKSPACE_DEFAULT_PATH} ]]; then
+if [[ -z ${WORKSPACE_DEFAULT_PATH:-} ]]; then
 	WORKSPACE_DEFAULT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-	exit 1
 fi
 
 # 1.0 setup the python environment
