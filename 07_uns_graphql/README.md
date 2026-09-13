@@ -123,7 +123,7 @@ Update the hostname and port appropriately
 #### Running the GraphQL API Server in development mode
 
 ````bash
-strawberry server uns_graphql.uns_graphql_app:UNSGraphql.schema
+strawberry dev uns_graphql.uns_graphql_app:UNSGraphql.schema
 ```bash
 
 ### Running tests

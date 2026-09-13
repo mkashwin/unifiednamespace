@@ -96,7 +96,6 @@ jobs:
         with:
           module: 03_uns_graphdb
           integration_tests: true
-          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
           pytest_flags: ${{ inputs.pytest_add_opts }}
 
   build_docker_image:

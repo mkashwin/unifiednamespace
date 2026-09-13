@@ -123,7 +123,6 @@ jobs:
         with:
           module: 04_uns_historian
           integration_tests: true
-          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
           pytest_flags: ${{ inputs.pytest_add_opts }}
 
   build_docker:
