@@ -207,7 +207,7 @@ class Query:
         resultNode,
         COLLECT(DISTINCT nestedChild) AS nestedChildren,
         COLLECT(DISTINCT r) + COLLECT(DISTINCT nestedRel) AS relationships
-    """  # ruff: ignore
+    """  # noqa: E501
     #
     """
         Search SparkplugB namespace to get all payloads containing the provided metric name

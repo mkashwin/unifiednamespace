@@ -55,7 +55,7 @@ class MQTTSubscription:
             typing.AsyncGenerator[UNSMessage, None]: Asynchronously generates UNS event messages
         """
         try:
-            client_id = f"graphql-{time.time()}-{random.randint(0, 1000)}"  # ruff: ignore
+            client_id = f"graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
             async with Client(
                 identifier=client_id,
                 clean_session=MQTTConfig.clean_session,
