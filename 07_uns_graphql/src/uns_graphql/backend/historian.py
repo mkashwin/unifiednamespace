@@ -182,7 +182,7 @@ class HistorianDBPool:
         # no risk of SQL injection because the input parameters have either been validated
         # or directly computed in this function, and we are using a prepared statement
 
-        base_query: str = f"SELECT time, topic, client_id, mqtt_msg FROM {HistorianConfig.table} WHERE"  # noqa: S608
+        base_query: str = f"SELECT time, topic, client_id, mqtt_msg FROM {HistorianConfig.table} WHERE"  # ruff: ignore
         conditions: list[str] = []
         query_params: list[list[str] | datetime] = []
         param_index = 1
@@ -243,7 +243,7 @@ class HistorianDBPool:
             raise ValueError("Mandatory criteria for fetching historic events by property_keys needs to be provided")
         if binary_operator is not None and binary_operator not in {"AND", "OR", "NOT"}:
             raise ValueError(f"Should be on of ['AND', 'OR', 'NOT']. Got: {binary_operator}")
-        base_query: str = f"SELECT time, topic, client_id, mqtt_msg FROM {HistorianConfig.table} WHERE"  # noqa: S608
+        base_query: str = f"SELECT time, topic, client_id, mqtt_msg FROM {HistorianConfig.table} WHERE"  # ruff: ignore
         conditions: list[str] = []
         query_params: list[list[str] | datetime] = []
         param_index: int = 1

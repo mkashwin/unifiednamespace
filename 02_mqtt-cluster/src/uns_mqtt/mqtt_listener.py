@@ -322,39 +322,28 @@ class UnsMQTTClient(mqtt_client.Client):
         """
         resulting_message = mqtt_message
         if mqtt_ignored_attributes is not None:
-
-            def _apply_ignored_attributes(ignored_attr_list):
-                # if the attribute is a single key. But this could be a nested key
-                # e.g. parent_key.child_key
-                # so split that into a list
-                if isinstance(ignored_attr_list, str):
-                    UnsMQTTClient.del_key_from_dict(
-                        resulting_message, ignored_attr_list.split("."))
-                # if the attribute is a list of keys
-                elif isinstance(ignored_attr_list, list | tuple):
-                    for ignored_attr in ignored_attr_list:
-                        UnsMQTTClient.del_key_from_dict(
-                            resulting_message, ignored_attr.split("."))
-
-            # Fast path for exact match
-            if topic in mqtt_ignored_attributes:
-                _apply_ignored_attributes(mqtt_ignored_attributes[topic])
-
             for topic_key in mqtt_ignored_attributes:
-                # Skip if already processed as exact match
-                if topic_key == topic:
-                    continue
-
-                # Skip checking keys that don't contain wildcards
-                if "+" not in topic_key and "#" not in topic_key:
-                    continue
-
                 # Match Topic in ignored list with current topic and
                 # fetch associated ignored attributes
-                if UnsMQTTClient.is_topic_matched(topic_key, topic):
-                    # This could be either a single string or a list of strings
-                    _apply_ignored_attributes(mqtt_ignored_attributes.get(topic_key, []))
 
+                ignored_topic = topic_key
+                if UnsMQTTClient.is_topic_matched(ignored_topic, topic):
+                    # This could be either a single string or a list of strings
+                    ignored_attr_list = mqtt_ignored_attributes.get(
+                        ignored_topic, [])
+
+                    ignored_attr = None
+                    # if the attribute is a single key. But this could be a nested key
+                    # e.g. parent_key.child_key
+                    # so split that into a list
+                    if isinstance(ignored_attr_list, str):
+                        UnsMQTTClient.del_key_from_dict(
+                            resulting_message, ignored_attr_list.split("."))
+                    # if the attribute is a list of keys
+                    elif isinstance(ignored_attr_list, list | tuple):
+                        for ignored_attr in ignored_attr_list:
+                            UnsMQTTClient.del_key_from_dict(
+                                resulting_message, ignored_attr.split("."))
         return resulting_message
 
     @staticmethod

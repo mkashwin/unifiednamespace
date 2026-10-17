@@ -53,7 +53,7 @@ class MQTTMessage:
     @strawberry.field(name="payload", description="the payload of the MQTT message\n -JSON for UNS \n -bytes for sparkplugB")
     def resolve_payload(
         self,
-        info: Info,  # noqa: ARG002
+        info: Info,  # ruff: ignore
     ) -> JSONPayload | BytesPayload | None:
         if UnsMQTTClient.is_topic_matched(UnsMQTTClient.SPB_STATE_MSG_TYPE, self.topic):
             # Message to sparkplug STATE message
