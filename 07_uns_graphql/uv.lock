@@ -1220,7 +1220,7 @@ test = [
 requires-dist = [
     { name = "aiohttp", specifier = "~=3.14" },
     { name = "aiomqtt", specifier = ">=2.4.0,<3" },
-    { name = "asyncpg", specifier = ">=0.30,<0.32" },
+    { name = "asyncpg", specifier = ">=0.30,<0.33" },
     { name = "confluent-kafka", specifier = ">=2.12,<3" },
     { name = "dynaconf", specifier = "~=3.2" },
     { name = "logger", specifier = "~=1.4" },

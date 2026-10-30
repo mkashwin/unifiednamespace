@@ -102,10 +102,10 @@ dynaconf_merge: true
 		-e UNS_historian__table="${UNS_historian__table}" \
 		-it uns_timescaledb \
 		bash -c "
-    echo \"CREATE DATABASE ${UNS_historian__database};\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432
-    echo \"CREATE EXTENSION IF NOT EXISTS timescaledb;\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
-    echo \"CREATE ROLE ${UNS_historian__username} LOGIN PASSWORD '${UNS_historian__password}'; \" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
-    echo \"ALTER DATABASE ${UNS_historian__database} OWNER TO ${UNS_historian__username} ;\" | PGPASSWORD=${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
+    echo \"CREATE DATABASE ${UNS_historian__database};\" | PGPASSWORD=\${PGPASSWORD} psql -U postgres -p 5432
+    echo \"CREATE EXTENSION IF NOT EXISTS timescaledb;\" | PGPASSWORD=\${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
+    echo \"CREATE ROLE ${UNS_historian__username} LOGIN PASSWORD '${UNS_historian__password}'; \" | PGPASSWORD=\${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
+    echo \"ALTER DATABASE ${UNS_historian__database} OWNER TO ${UNS_historian__username} ;\" | PGPASSWORD=\${PGPASSWORD} psql -U postgres -p 5432 -d ${UNS_historian__database}
     
     echo \"
       CREATE TABLE ${UNS_historian__table} (
