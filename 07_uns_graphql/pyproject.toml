@@ -37,7 +37,7 @@ dependencies = [
     "aiomqtt>=2.4.0,<3",
     "confluent-kafka>=2.12,<3",
     "neo4j~=6.1",
-    "asyncpg>=0.30,<0.32",
+    "asyncpg>=0.30,<0.33",
     "psutil>=7.2.2,<8",
 ]
 
