@@ -69,18 +69,17 @@ class KAFKASubscription:
         # Inner async function to poll and yield messages from Kafka
         async def kafka_listener() -> typing.AsyncGenerator[StreamingMessage]:
             try:
+                loop = asyncio.get_running_loop()
                 while True:
-                    # Poll for messages with a specified timeout
-                    msg = consumer.poll(
-                        timeout=KAFKAConfig.consumer_poll_timeout)
+                    # Poll for messages with a specified timeout in an executor to avoid blocking the event loop
+                    msg = await loop.run_in_executor(None, consumer.poll, KAFKAConfig.consumer_poll_timeout)
                     if msg is None:
                         await asyncio.sleep(KAFKAConfig.consumer_poll_timeout)
                         continue
 
                     if msg.error():
                         # Log and raise an error if there is an issue with the message
-                        LOGGER.error(
-                            f"Error Message received from Kafka Broker msg: {msg.error()!s}")
+                        LOGGER.error(f"Error Message received from Kafka Broker msg: {msg.error()!s}")
                         raise ValueError(msg.error())
 
                     # Yield the received message as a StreamingMessage
@@ -88,8 +87,7 @@ class KAFKASubscription:
             except asyncio.CancelledError:
                 LOGGER.info("Kafka listener cancelled.")
             except Exception as e:
-                LOGGER.error(
-                    f"Unexpected error in Kafka listener: {e!s}", exc_info=True)
+                LOGGER.error(f"Unexpected error in Kafka listener: {e!s}", exc_info=True)
             finally:
                 # Ensure the consumer is closed properly
                 LOGGER.info("Closing Kafka consumer.")
