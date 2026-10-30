@@ -309,3 +309,4 @@ def test_connectivity_to_kafka():
         ), f"Kafka configurations did allow connectivity to broker: {KAFKAConfig.config_map}"
     finally:
         producer.purge()
+        producer.flush(10)

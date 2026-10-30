@@ -160,10 +160,14 @@ def test_connectivity_to_kafka():
     config: dict = settings.get("kafka.config")
 
     producer = Producer(config)
-    assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {config}"
-    assert (
-        producer.list_topics(
-            timeout=10,
-        )
-        is not None
-    ), f"Kafka configurations did allow connectivity to broker: {config}"
+    try:
+        assert producer is not None, f"Kafka configurations did not create a valid kafka producer: {config}"
+        assert (
+            producer.list_topics(
+                timeout=10,
+            )
+            is not None
+        ), f"Kafka configurations did allow connectivity to broker: {config}"
+    finally:
+        producer.purge()
+        producer.flush(10)

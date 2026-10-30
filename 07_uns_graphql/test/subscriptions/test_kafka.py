@@ -160,16 +160,17 @@ def kafka_setup_unique(request):
         "message.timeout.ms": 5000,
     })
 
-    def delivery_report(err, msg):
-        pass
+    try:
+        def delivery_report(err, msg):
+            pass
 
-    for topic, msg in unique_messages:
-        producer.produce(topic, value=msg, callback=delivery_report)
+        for topic, msg in unique_messages:
+            producer.produce(topic, value=msg, callback=delivery_report)
 
-    producer.flush(timeout=10)
-    producer.purge()
-
-    yield unique_topics, unique_messages
+        producer.flush(timeout=10)
+        yield unique_topics, unique_messages
+    finally:
+        producer.purge()
 
     # Cleanup: Delete topics
     # Skipping cleanup to save time and prevent timeouts in CI
