@@ -67,18 +67,18 @@ async def historian_pool():
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session")
-async def prepare_database(historian_pool):  # noqa: ARG001
+async def prepare_database(historian_pool):  # noqa
     """
     Prepare the database with test data based on the pytest marker integrationtest
     """
     # time: datetime, topic: str, client_id: str, mqtt_msg: dict
     insert_sql_cmd = f"""INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg )
                         VALUES ($1,$2,$3,$4)
-                        RETURNING *;"""  # noqa: S608
+                        RETURNING *;"""  # noqa
     delete_sql_cmd = f""" DELETE FROM {HistorianConfig.table} WHERE
                                time =  $1  AND
                                topic = $2 AND
-                               client_id = $3;"""  # noqa: S608
+                               client_id = $3;"""  # noqa
 
     # clean up database before inserting to avoid UniqueViolationError if previous run crashed
     for row in test_data_set:
@@ -129,7 +129,7 @@ async def prepare_database(historian_pool):  # noqa: ARG001
     ],
 )
 async def test_get_historic_events(
-    prepare_database,  # noqa: ARG001
+    prepare_database,  # noqa
     topic_list: list[str],
     publisher_list: list[str],
     from_date: datetime,
@@ -170,13 +170,13 @@ async def test_get_historic_events(
         (["k1", "key1"], "AND", None, None, None, 0),
         (["key1", "key2"], "NOT", None, None, None, 6),  # NOT
         (["key1"], None, [
-         f"; SELECT * FROM {HistorianConfig.table}"], None, None, 0),  # noqa: S608 for SQL Injection on topics
-        ([f"; SELECT * FROM {HistorianConfig.table}"],  # noqa: S608 for SQL Injection on topics
+         f"; SELECT * FROM {HistorianConfig.table}"], None, None, 0),  # noqa for SQL Injection on topics
+        ([f"; SELECT * FROM {HistorianConfig.table}"],  # noqa for SQL Injection on topics
          None, None, None, None, 0),
     ],
 )
 async def test_get_historic_events_for_property_keys(
-    prepare_database,  # noqa: ARG001
+    prepare_database,  # noqa
     property_keys: list[str],
     binary_operator: Literal["AND", "OR", "NOT"],
     topics: list[str],
