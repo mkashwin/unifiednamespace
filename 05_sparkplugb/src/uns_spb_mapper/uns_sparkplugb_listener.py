@@ -43,7 +43,7 @@ class UNSSparkPlugBMapper:
         """
         self.uns_client: UnsMQTTClient = None
 
-        self.client_id = f"uns_sparkplugb_listener-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
+        self.client_id = f"uns_sparkplugb_listener-{time.time()}-{random.randint(0, 1000)}"  # ruff: ignore[suspicious-non-cryptographic-random-usage]
 
         self.uns_client: UnsMQTTClient = UnsMQTTClient(
             client_id=self.client_id,
@@ -113,11 +113,11 @@ class UNSSparkPlugBMapper:
 
     def on_disconnect(
         self,
-        client,  # noqa: ARG002
-        userdata,  # noqa: ARG002
-        flags,  # noqa: ARG002
+        client,  # ruff: ignore[unused-method-argument]
+        userdata,  # ruff: ignore[unused-method-argument]
+        flags,  # ruff: ignore[unused-method-argument]
         reason_codes,
-        properties=None,  # noqa: ARG002
+        properties=None,  # ruff: ignore[unused-method-argument]
     ):
         """
         Callback function executed every time the client is disconnected from the MQTT broker

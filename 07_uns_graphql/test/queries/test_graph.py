@@ -624,23 +624,24 @@ async def setup_graphdb_data():
     # Filter out lines that are not valid Cypher queries
     valid_queries = cypher_script.replace(
         ":begin\n", "").replace(":commit\n", "").split(";")
-    # Execute each query separately
     driver = await GraphDB.get_graphdb_driver()
-    async with driver.session() as session:
-        for query in valid_queries:
-            if query.strip():  # Make sure the query is not empty
-                await session.run(query=query)
-
-    # Yield control to the test
-    yield current_loop
-
-    # Teardown code i.e. clearing the database)
     try:
         async with driver.session() as session:
-            await session.run("MATCH (n) DETACH DELETE n;")
+            result = await session.run("MATCH (n) DETACH DELETE n")
+            await result.consume()
+            for query in valid_queries:
+                if query.strip():
+                    result = await session.run(query=query)
+                    await result.consume()
+
+        yield current_loop
     finally:
-        # Release the driver
-        await asyncio.wait_for(GraphDB.release_graphdb_driver(), timeout=5.0)
+        try:
+            async with driver.session() as session:
+                result = await session.run("MATCH (n) DETACH DELETE n")
+                await result.consume()
+        finally:
+            await asyncio.wait_for(GraphDB.release_graphdb_driver(), timeout=5.0)
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -727,7 +728,7 @@ async def setup_graphdb_data():
     ],
 )
 async def test_get_uns_nodes_integration(
-    setup_graphdb_data,  # noqa: ARG001
+    setup_graphdb_data,  # ruff: ignore[unused-function-argument]
     topics: list[str],
     expected_result: list[UNSNode],
 ):
@@ -830,7 +831,7 @@ async def test_get_uns_nodes_integration(
     ],
 )
 async def test_get_uns_nodes_by_property_integration(
-    setup_graphdb_data,  # noqa: ARG001
+    setup_graphdb_data,  # ruff: ignore[unused-function-argument]
     property_keys,
     topics: list[str],
     exclude_topics: bool,
@@ -921,7 +922,7 @@ eon1_payload = {
     ],
 )
 async def test_get_spb_nodes_integration(
-    setup_graphdb_data,  # noqa: ARG001
+    setup_graphdb_data,  # ruff: ignore[unused-function-argument]
     metric_names: list[str],
     expected_result: list[SPBNode],
 ):

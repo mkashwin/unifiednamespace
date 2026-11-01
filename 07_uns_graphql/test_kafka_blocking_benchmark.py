@@ -1,11 +1,11 @@
 import asyncio
 import time
-import threading
 from unittest.mock import MagicMock, patch
 
-from uns_graphql.subscriptions.kafka import KAFKASubscription
-from uns_graphql.input.kafka import KAFKATopicInput
 from uns_graphql.graphql_config import KAFKAConfig
+from uns_graphql.input.kafka import KAFKATopicInput
+from uns_graphql.subscriptions.kafka import KAFKASubscription
+
 
 async def other_async_task():
     """Simulate another async task on the event loop, e.g. handling another GraphQL request."""
@@ -15,6 +15,7 @@ async def other_async_task():
         await asyncio.sleep(0.01)
         iterations += 1
     return iterations
+
 
 async def main():
     topics = [KAFKATopicInput(topic="test_topic")]
@@ -56,6 +57,7 @@ async def main():
 
         iterations = t2.result()
         print(f"Iterations of other async task (should be ~100 in 1 second if non-blocking): {iterations}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

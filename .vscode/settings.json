@@ -6,7 +6,7 @@
       "source.fixAll": "explicit",
       "source.organizeImports": "explicit"
     },
-    "editor.defaultFormatter": "ms-python.autopep8"
+    "editor.defaultFormatter": "trunk.io"
   },
   "python.testing.pytestEnabled": true,
   "python.analysis.extraPaths": [
