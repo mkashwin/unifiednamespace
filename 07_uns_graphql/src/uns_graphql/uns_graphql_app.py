@@ -64,7 +64,7 @@ class UNSGraphql:
     """
 
     @asynccontextmanager
-    async def lifespan(self, app: FastAPI):  # noqa: ARG002
+    async def lifespan(self, app: FastAPI):  # ruff: ignore[unused-method-argument]
         """
         lifespan manager to ensure cleanup
         """

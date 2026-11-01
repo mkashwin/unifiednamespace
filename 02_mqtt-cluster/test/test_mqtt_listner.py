@@ -79,7 +79,7 @@ def test_01_unauthenticated_connections(clean_session, protocol,
     Test all the parameters ( except username password against EMQX's hosted broker instance)
     """
     uns_client = UnsMQTTClient(
-        client_id=f"test_01_{protocol}-{time.time()}-{random.randint(0, 1000)}",  # noqa: S311
+        client_id=f"test_01_{protocol}-{time.time()}-{random.randint(0, 1000)}",  # ruff: ignore[suspicious-non-cryptographic-random-usage]
         clean_session=clean_session,
         protocol=protocol,
         transport=transport,
@@ -162,7 +162,7 @@ def test_02_authenticated_connections(
     Test all the parameters ( including username password against Mosquitto's hosted broker)
     """
     uns_client = UnsMQTTClient(
-        client_id=f"test_01_{protocol}-{time.time()}-{random.randint(0, 1000)}",  # noqa: S311
+        client_id=f"test_01_{protocol}-{time.time()}-{random.randint(0, 1000)}",  # ruff: ignore[suspicious-non-cryptographic-random-usage]
         clean_session=clean_session,
         protocol=protocol,
         transport=transport,
@@ -531,7 +531,7 @@ def test_get_payload_as_dict(topic: str, payload_msg, expected_result):
     # create a UnsMQTTClient but dont connect to the broker
     # object is needed to test the functions
     uns_client = UnsMQTTClient(
-        client_id=f"test_01_{time.time()}-{random.randint(0, 1000)}",  # noqa: S311
+        client_id=f"test_01_{time.time()}-{random.randint(0, 1000)}",  # ruff: ignore[suspicious-non-cryptographic-random-usage]
         clean_session=True,
         protocol=MQTTVersion.MQTTv5,
         transport="tcp",

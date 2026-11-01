@@ -176,7 +176,7 @@ def test_publish(mqtt_topic: str, message):
                 if attempts > 15:
                     pytest.fail("Timeout waiting for message")
                 # wait
-                print("Waiting...")  # noqa: T201
+                print("Waiting...")  # ruff: ignore[print]
             elif msg.error():
                 pytest.fail(f"Consumer error: {msg.error()}")
             else:

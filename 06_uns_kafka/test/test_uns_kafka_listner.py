@@ -213,7 +213,7 @@ def check_kafka_topics(mqtt_client, kafka_listener, expected_kafka_msg):
             msg = kafka_listener.poll(1.0)
             if msg is None:
                 # wait
-                print("Waiting...")  # noqa: T201
+                print("Waiting...")  # ruff: ignore[print]
 
             elif msg.error():
                 assert pytest.fail(), msg.error()

@@ -535,7 +535,7 @@ def test_publish_to_uns_connected(
 
     spb_to_uns_pub = Spb2UNSPublisher(uns_client)
 
-    def on_publish(client, userdata, mid, reason_codes, properties):  # noqa: ARG001
+    def on_publish(client, userdata, mid, reason_codes, properties):  # ruff: ignore[unused-function-argument]
         """
         Call back for publish to MQTT
         """
@@ -546,11 +546,11 @@ def test_publish_to_uns_connected(
     published = False
 
     def on_connect(
-        client,  # noqa: ARG001
-        userdata,  # noqa: ARG001
-        flags,  # noqa: ARG001
+        client,  # ruff: ignore[unused-function-argument]
+        userdata,  # ruff: ignore[unused-function-argument]
+        flags,  # ruff: ignore[unused-function-argument]
         reason_code,
-        properties=None,  # noqa: ARG001
+        properties=None,  # ruff: ignore[unused-function-argument]
     ):
         """
         Call back for connection to MQTT

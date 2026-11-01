@@ -9,7 +9,7 @@ from uns_simulator import devices
 
 # Dummy replacements to avoid external dependencies and network I/O
 class DummyClient:
-    def __init__(self, *args, **kwargs):  # noqa: ARG002
+    def __init__(self, *args, **kwargs):  # ruff: ignore[unused-method-argument]
         self.published = []
 
     async def __aenter__(self):
@@ -18,7 +18,7 @@ class DummyClient:
     async def __aexit__(self, exc_type, exc, tb):
         return False
 
-    async def publish(self, topic, payload, *args, **kwargs):  # noqa: ARG002
+    async def publish(self, topic, payload, *args, **kwargs):  # ruff: ignore[unused-method-argument]
         # store topic and parsed payload for assertions
         try:
             parsed = json.loads(payload)

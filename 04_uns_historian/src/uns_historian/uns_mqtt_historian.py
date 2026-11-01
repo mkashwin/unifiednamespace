@@ -38,7 +38,7 @@ class UnsMqttHistorian:
     """
 
     def __init__(self, loop=None):
-        self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
+        self.client_id = f"historian-{time.time()}-{random.randint(0, 1000)}"  # ruff: ignore[suspicious-non-cryptographic-random-usage]
         self.uns_client: UnsMQTTClient = UnsMQTTClient(
             client_id=self.client_id,
             clean_session=MQTTConfig.clean_session,
@@ -108,11 +108,11 @@ class UnsMqttHistorian:
 
     def on_disconnect(
         self,
-        client,  # noqa: ARG002
-        userdata,  # noqa: ARG002
-        flags,  # noqa: ARG002
+        client,  # ruff: ignore[unused-method-argument]
+        userdata,  # ruff: ignore[unused-method-argument]
+        flags,  # ruff: ignore[unused-method-argument]
         reason_codes,
-        properties=None,  # noqa: ARG002
+        properties=None,  # ruff: ignore[unused-method-argument]
     ) -> None:
         """
         Callback function executed every time the client is disconnected from the MQTT broker

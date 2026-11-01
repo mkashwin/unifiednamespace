@@ -2,9 +2,10 @@ import asyncio
 import time
 from unittest.mock import MagicMock, patch
 
-from uns_graphql.subscriptions.kafka import KAFKASubscription
-from uns_graphql.input.kafka import KAFKATopicInput
 from uns_graphql.graphql_config import KAFKAConfig
+from uns_graphql.input.kafka import KAFKATopicInput
+from uns_graphql.subscriptions.kafka import KAFKASubscription
+
 
 async def main():
     topics = [KAFKATopicInput(topic="test_topic")]
@@ -22,11 +23,12 @@ async def main():
     class MockPoll:
         def __init__(self):
             self.count = 0
+
         def __call__(self, timeout=None):
             if self.count < NUM_MESSAGES:
                 self.count += 1
                 return mock_msg
-            return None # Simulate timeout when done
+            return None  # Simulate timeout when done
 
     mock_consumer.poll.side_effect = MockPoll()
 
@@ -56,6 +58,7 @@ async def main():
 
         print(f"Time taken to process {NUM_MESSAGES} messages: {end - start:.4f} seconds")
         print(f"Messages per second: {NUM_MESSAGES / (end - start):.2f}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
