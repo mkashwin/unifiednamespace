@@ -45,11 +45,21 @@ def mock_uns_client():
 
 @pytest.fixture(scope="function")
 def mock_historian_handler():
+    try:
+        previous_loop = asyncio.get_event_loop()
+    except RuntimeError:
+        previous_loop = None
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    with patch("uns_historian.uns_mqtt_historian.HistorianHandler", autospec=True) as mock_handler:
-        yield mock_handler
-    loop.close()
+    try:
+        with patch("uns_historian.uns_mqtt_historian.HistorianHandler", autospec=True) as mock_handler:
+            yield mock_handler
+    finally:
+        if previous_loop is not None and not previous_loop.is_closed():
+            asyncio.set_event_loop(previous_loop)
+        else:
+            asyncio.set_event_loop(None)
+        loop.close()
 
 
 def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historian_handler):  # noqa: ARG001
@@ -255,4 +265,5 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
         if uns_publisher is not None:
             uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
             uns_publisher.disconnect()
-        uns_mqtt_historian.uns_client.disconnect()
+        if uns_mqtt_historian is not None:
+            uns_mqtt_historian.uns_client.disconnect()
