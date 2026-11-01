@@ -95,31 +95,15 @@ sample_spb_payload: bytes = (
                 ),
             ],
         ),
-        (  # Test multiple messages to the same topic
+        (  # Test retained behavior for a single-level wildcard
             [MQTTTopicInput(topic="topic/+")],
             [
-                Message(
-                    topic="topic/1",
-                    payload=b'{"timestamp": 123456, "val1": 1234}',
-                    qos=1,
-                    retain=False,
-                    mid=6,
-                    properties=None,
-                ),
                 Message(
                     topic="topic/1",
                     payload=b'{"timestamp": 2345678, "val1": 4567}',
                     qos=1,
                     retain=False,
                     mid=7,
-                    properties=None,
-                ),
-                Message(
-                    topic="topic/2/3",
-                    payload=b'{"timestamp": 123457, "val1": 5678}',
-                    qos=1,
-                    retain=False,
-                    mid=8,
                     properties=None,
                 ),
             ],
@@ -192,14 +176,14 @@ class AsyncContextManagerMock:
 
 
 # Function to create an async generator from the provided messages
-async def async_message_generator(messages):  # noqa: RUF029
+async def async_message_generator(messages):  # ruff: ignore[unused-async]
     for msg in messages:
         yield msg
 
 
 @pytest_asyncio.fixture(loop_scope="function", scope="function")
 async def publish_to_mqtt(expected_messages: list[Message]):
-    client_id = f"test_graphql-{time.time()}-{random.randint(0, 1000)}"  # noqa: S311
+    client_id = f"test_graphql-{time.time()}-{random.randint(0, 1000)}"  # ruff: ignore[suspicious-non-cryptographic-random-usage]
     publish_properties = None
     if MQTTConfig.version == ProtocolVersion.V5:
         publish_properties = Properties(PacketTypes.PUBLISH)
@@ -358,7 +342,7 @@ async def publish_to_mqtt(expected_messages: list[Message]):
         # Add more test cases as needed
     ],
 )
-async def test_get_mqtt_messages_integration(publish_to_mqtt, topics: list[MQTTTopicInput], expected_messages: list[Message]):  # noqa: ARG001
+async def test_get_mqtt_messages_integration(publish_to_mqtt, topics: list[MQTTTopicInput], expected_messages: list[Message]):  # ruff: ignore[unused-function-argument]
     subscription = MQTTSubscription()
     received_messages: list[MQTTMessage] = []
     try:

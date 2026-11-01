@@ -728,7 +728,7 @@ async def setup_graphdb_data():
     ],
 )
 async def test_get_uns_nodes_integration(
-    setup_graphdb_data,  # noqa: ARG001
+    setup_graphdb_data,  # ruff: ignore[unused-function-argument]
     topics: list[str],
     expected_result: list[UNSNode],
 ):
@@ -831,7 +831,7 @@ async def test_get_uns_nodes_integration(
     ],
 )
 async def test_get_uns_nodes_by_property_integration(
-    setup_graphdb_data,  # noqa: ARG001
+    setup_graphdb_data,  # ruff: ignore[unused-function-argument]
     property_keys,
     topics: list[str],
     exclude_topics: bool,
@@ -922,7 +922,7 @@ eon1_payload = {
     ],
 )
 async def test_get_spb_nodes_integration(
-    setup_graphdb_data,  # noqa: ARG001
+    setup_graphdb_data,  # ruff: ignore[unused-function-argument]
     metric_names: list[str],
     expected_result: list[SPBNode],
 ):
