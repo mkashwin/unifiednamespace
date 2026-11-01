@@ -21,6 +21,7 @@ Test historian queries
 import json
 from datetime import UTC, datetime
 from typing import Literal
+from uuid import uuid4
 
 import pytest
 import pytest_asyncio
@@ -66,38 +67,33 @@ async def historian_pool():
     await HistorianDBPool.close_pool()
 
 
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
+@pytest_asyncio.fixture(scope="module", loop_scope="session")
 async def prepare_database(historian_pool):  # noqa: ARG001
     """
-    Prepare the database with test data based on the pytest marker integrationtest
+    Create an isolated table for the historian integration tests.
     """
-    # time: datetime, topic: str, client_id: str, mqtt_msg: dict
+    original_table = HistorianConfig.table
+    test_table = f"graphql_historian_test_{uuid4().hex}"
+    pool = await HistorianDBPool.get_shared_pool()
+    async with pool.acquire() as connection:
+        await connection.execute(
+            f"CREATE TABLE {test_table} (LIKE {original_table} INCLUDING ALL)"
+        )
+
+    HistorianConfig.table = test_table
     insert_sql_cmd = f"""INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg )
                         VALUES ($1,$2,$3,$4)
                         RETURNING *;"""  # noqa: S608
-    delete_sql_cmd = f""" DELETE FROM {HistorianConfig.table} WHERE
-                               time =  $1  AND
-                               topic = $2 AND
-                               client_id = $3;"""  # noqa: S608
 
-    # clean up database before inserting to avoid UniqueViolationError if previous run crashed
-    for row in test_data_set:
-        # row is (time, topic, client_id, mqtt_msg)
-        # we only need the first 3 for delete
-        delete_params = list(row)[:3]
-        async with HistorianDBPool() as historian:
-            await historian.execute_prepared(delete_sql_cmd, *delete_params)
-
-    # insert testdata into database
-    for row in test_data_set:
-        async with HistorianDBPool() as historian:
-            await historian.execute_prepared(insert_sql_cmd, *list(row))
-    yield
-    # clean up database
-    for row in test_data_set:
-        delete_params = list(row)[:3]
-        async with HistorianDBPool() as historian:
-            await historian.execute_prepared(delete_sql_cmd, *delete_params)
+    try:
+        for row in test_data_set:
+            async with HistorianDBPool() as historian:
+                await historian.execute_prepared(insert_sql_cmd, *list(row))
+        yield
+    finally:
+        HistorianConfig.table = original_table
+        async with pool.acquire() as connection:
+            await connection.execute(f"DROP TABLE {test_table}")
 
 
 @pytest.mark.asyncio(loop_scope="session")
