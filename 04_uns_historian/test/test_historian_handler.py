@@ -22,12 +22,15 @@ import asyncio
 import json
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
+from uuid import uuid4
 
 import asyncpg
 import pytest
 
 from uns_historian.historian_config import HistorianConfig
 from uns_historian.historian_handler import HistorianHandler
+
+HISTORIAN_TEST_CLIENT_ID = f"historian_test_client1_{uuid4()}"
 
 
 @pytest.fixture(scope="function")
@@ -131,7 +134,7 @@ async def test_persist_mqtt_msg(
                                         topic = $1 AND
                                         client_id = $2 AND
                                         mqtt_msg = $3
-                                        RETURNING *;"""  # ruff: ignore[S608]
+                                        RETURNING *;"""  # ruff: ignore[hardcoded-sql-expression]
                 # dont compare timestamps as when the timestamp is None, current time is inserted.
                 await uns_historian_handler_cleaner.execute_prepared(delete_sql_cmd, *[topic, publisher, json.dumps(message)])
 
@@ -142,43 +145,43 @@ async def test_persist_mqtt_msg(
 @pytest.mark.parametrize(
     "query, params, is_error",
     [
-        (f"SELECT * from {HistorianConfig.table};", [], False),  # ruff: ignore[S608]
+        (f"SELECT * from {HistorianConfig.table};", [], False),  # ruff: ignore[hardcoded-sql-expression]
         (
-            f"INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg ) VALUES ($1,$2,$3,$4) RETURNING *;",  # ruff: ignore[S608]
-            [datetime.fromtimestamp(1701232000, UTC), "a/b/c", "historian_test_client1", '{"key1": "value1"}'],
+            f"INSERT INTO {HistorianConfig.table} ( time, topic, client_id, mqtt_msg ) VALUES ($1,$2,$3,$4) RETURNING *;",  # ruff: ignore[hardcoded-sql-expression]
+            [datetime.fromtimestamp(1701232000, UTC), "a/b/c", HISTORIAN_TEST_CLIENT_ID, '{"key1": "value1"}'],
             False,
         ),
         (
-            f"DELETE FROM {HistorianConfig.table} WHERE client_id=$1 RETURNING *;",  # ruff: ignore[S608]
-            ["historian_test_client1"],
+            f"DELETE FROM {HistorianConfig.table} WHERE client_id=$1 RETURNING *;",  # ruff: ignore[hardcoded-sql-expression]
+            [HISTORIAN_TEST_CLIENT_ID],
             False,
         ),
         (
-            f"SELECT * from {HistorianConfig.table} WHERE time <= $1;",  # ruff: ignore[S608]
+            f"SELECT * from {HistorianConfig.table} WHERE time <= $1;",  # ruff: ignore[hardcoded-sql-expression]
             [datetime.fromtimestamp(1701232000, UTC)],
             False,
         ),
         (
-            f"SELECT * from {HistorianConfig.table} WHERE client_id = $1;",  # ruff: ignore[S608]
+            f"SELECT * from {HistorianConfig.table} WHERE client_id = $1;",  # ruff: ignore[hardcoded-sql-expression]
             ["client_1"],
             False,
         ),
         (
-            f"SELECT * from {HistorianConfig.table} WHERE client_id = $1;",  # ruff: ignore[S608]
+            f"SELECT * from {HistorianConfig.table} WHERE client_id = $1;",  # ruff: ignore[hardcoded-sql-expression]
             [
                 ";SELECT * from NONE_EXISTENT_TABLE;"
             ],  # attempt SQL insertion should not result in that being executed. i,e error cause pg_stat doesn't exist
             False,
         ),
         (
-            f"SELECT * from {HistorianConfig.table} WHERE time <= $1;",  # ruff: ignore[S608]
+            f"SELECT * from {HistorianConfig.table} WHERE time <= $1;",  # ruff: ignore[hardcoded-sql-expression]
             ["I am not a Timestamp"],
             True,
         ),
     ],
 )
 async def test_execute_prepared(
-    historian_pool,  # ruff: ignore[ARG001] fixture defined in ./conftest.py
+    historian_pool,  # ruff: ignore[unused-function-argument] fixture defined in ./conftest.py
     query: str,
     params: list,
     is_error: bool,

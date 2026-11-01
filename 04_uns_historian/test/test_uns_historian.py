@@ -62,7 +62,7 @@ def mock_historian_handler():
         loop.close()
 
 
-def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historian_handler):  # noqa: ARG001
+def test_uns_mqtt_disconnect_historian_close_pool(mock_uns_client, mock_historian_handler):  # ruff: ignore[unused-function-argument]
     uns_mqtt_historian = UnsMqttHistorian()
     # simulate the disconnection by calling the callback directly
     uns_mqtt_historian.uns_client.on_disconnect(
@@ -140,7 +140,7 @@ def create_publisher() -> UnsMQTTClient:
     utility method to create publisher
     """
     uns_publisher = UnsMQTTClient(
-        client_id=f"publisher-{time.time()}-{random.randint(0, 1000)}",  # noqa: S311
+        client_id=f"publisher-{time.time()}-{random.randint(0, 1000)}",  # ruff: ignore[suspicious-non-cryptographic-random-usage]
         clean_session=MQTTConfig.clean_session,
         userdata=None,
         protocol=MQTTConfig.version,
@@ -160,22 +160,18 @@ def create_publisher() -> UnsMQTTClient:
     return uns_publisher
 
 
-@pytest_asyncio.fixture(loop_scope="session", scope="session")
+@pytest_asyncio.fixture(loop_scope="session", scope="function")
 async def clean_up_database():
     """
-    Clean database from test data from the historian after execution of the tests
+    Clean database rows written by this test's historian after execution.
     """
-    yield
+    client_ids = []
+    yield client_ids
     delete_sql_cmd = f""" DELETE FROM {HistorianConfig.table} WHERE
-                               topic = $1 AND
-                               mqtt_msg = $2;"""  # noqa: S608
-    for test_data in test_data_list:
-        for topic, messages in test_data.items():
-            for message in messages:
-                if type(message) is bytes:
-                    message = convert_spb_bytes_payload_to_dict(message)
-                async with HistorianHandler() as historian:
-                    await historian.execute_prepared(delete_sql_cmd, *[topic, json.dumps(message)])
+                               client_id = $1;"""  # ruff: ignore[hardcoded-sql-expression]
+    for client_id in client_ids:
+        async with HistorianHandler() as historian:
+            await historian.execute_prepared(delete_sql_cmd, client_id)
 
 
 @pytest.mark.integrationtest
@@ -184,25 +180,14 @@ async def clean_up_database():
 @pytest.mark.parametrize(  # convert test data dict into tuples for pytest parameterize
     "topic, messages", [(topic, messages) for dictionary in test_data_list for topic, messages in dictionary.items()]
 )
-def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # noqa: ARG001
+def test_uns_mqtt_historian(clean_up_database: list[str], topic: str, messages: list):
     uns_mqtt_historian = None
     uns_publisher = None
     try:
         # 1. Start the historian listener in a new thread
         loop = asyncio.get_event_loop()
         uns_mqtt_historian = UnsMqttHistorian(loop=loop)
-        mgs_received: list = []
-        old_on_message = uns_mqtt_historian.uns_client.on_message
-
-        def on_message_decorator(client, userdata, msg):
-            """
-            Override / wrap the existing on_message callback so that
-            we can track the messages were processed
-            """
-            old_on_message(client, userdata, msg)
-            mgs_received.append(msg)
-
-        uns_mqtt_historian.uns_client.on_message = on_message_decorator
+        clean_up_database.append(uns_mqtt_historian.client_id)
 
         uns_mqtt_historian.uns_client.loop_start()
 
@@ -213,6 +198,7 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
         uns_publisher: UnsMQTTClient = create_publisher()
         uns_publisher.loop_start()
 
+        publish_properties = None
         if MQTTConfig.version == MQTTVersion.MQTTv5:
             publish_properties = Properties(PacketTypes.PUBLISH)
         for message in messages:
@@ -220,50 +206,57 @@ def test_uns_mqtt_historian(clean_up_database, topic: str, messages: list):  # n
                 message = json.dumps(message)
             # publish multiple message as non-persistent
             # to allow the tests to be idempotent across multiple runs
-            uns_publisher.publish(topic=topic, payload=message, qos=2, retain=True, properties=publish_properties)
-            # allow for the message to be received
-            # We must use the loop to sleep so pending async tasks (DB writes) can run
-            loop.run_until_complete(asyncio.sleep(0.1))
+            publish_info = uns_publisher.publish(
+                topic=topic, payload=message, qos=2, retain=True, properties=publish_properties
+            )
+            publish_info.wait_for_publish(timeout=10)
+            assert publish_info.is_published(), f"Message was not published to {topic}"
 
-        # wait for uns_mqtt_historian to have persisted to the database
-        # instead of waiting on messages received, we wait until the DB has the records
-        # this handles the async nature better as persistence happens after receipt
-        max_retries = 50
-        for _ in range(max_retries):
-            # We must use the loop to sleep so pending async tasks (DB writes) can run
-            loop.run_until_complete(asyncio.sleep(0.1))
-            if len(mgs_received) >= len(messages):
-                break
-
-        # disconnect the historian listener to free the asyncio loop
-        uns_mqtt_historian.uns_client.disconnect()
-        uns_mqtt_historian.uns_client.loop_stop()
-        # connect to the database and validate
         select_query = f""" SELECT * FROM {HistorianConfig.table} WHERE
                                topic = $1 AND
                                mqtt_msg = $2 AND
-                               client_id = $3;"""  # noqa: S608
+                               client_id = $3;"""  # ruff: ignore[hardcoded-sql-expression]
 
         # Inline the async function
         async def execute_prepared_async(select_query, topic, message, client_id):
             async with HistorianHandler() as historian:
                 return await historian.execute_prepared(select_query, *[topic, json.dumps(message), client_id])
 
+        expected_messages = []
         for message in messages:
             if type(message) is bytes:
                 message = convert_spb_bytes_payload_to_dict(message)
+            expected_messages.append(message)
 
-            result = loop.run_until_complete(
-                execute_prepared_async(select_query, topic, message, uns_mqtt_historian.client_id)
-            )
+        # Wait for these messages specifically; unrelated MQTT traffic can also
+        # reach the historian because it subscribes to wildcard topics.
+        results = [[] for _ in expected_messages]
+        for _ in range(50):
+            loop.run_until_complete(asyncio.sleep(0.1))
+            results = [
+                loop.run_until_complete(
+                    execute_prepared_async(select_query, topic, message, uns_mqtt_historian.client_id)
+                )
+                for message in expected_messages
+            ]
+            if all(result is not None and len(result) == 1 for result in results):
+                break
 
+        # disconnect the historian listener to free the asyncio loop
+        uns_mqtt_historian.uns_client.disconnect()
+        uns_mqtt_historian.uns_client.loop_stop()
+        for result in results:
             assert result is not None, "Should have gotten a result"
             assert len(result) == 1, "Should have gotten only one record because we inserted only one record"
 
     finally:
         # clean up the topic and disconnect the publisher
         if uns_publisher is not None:
-            uns_publisher.publish(topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties)
+            publish_info = uns_publisher.publish(
+                topic=topic, payload=b"", qos=2, retain=True, properties=publish_properties
+            )
+            publish_info.wait_for_publish(timeout=10)
             uns_publisher.disconnect()
+            uns_publisher.loop_stop()
         if uns_mqtt_historian is not None:
             uns_mqtt_historian.uns_client.disconnect()
