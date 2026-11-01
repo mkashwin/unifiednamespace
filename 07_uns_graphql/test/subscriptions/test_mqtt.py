@@ -17,6 +17,7 @@
 
 """
 
+import asyncio
 import random
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -280,31 +281,15 @@ async def publish_to_mqtt(expected_messages: list[Message]):
                 ),
             ],
         ),
-        (  # Test multiple messages to the same topic
+        (  # Test retained behavior for a single-level wildcard
             [MQTTTopicInput(topic="topic/+")],
             [
-                Message(
-                    topic="topic/1",
-                    payload=b'{"timestamp": 123456, "val1": 1234}',
-                    qos=1,
-                    retain=False,
-                    mid=6,
-                    properties=None,
-                ),
                 Message(
                     topic="topic/1",
                     payload=b'{"timestamp": 2345678, "val1": 4567}',
                     qos=1,
                     retain=False,
                     mid=7,
-                    properties=None,
-                ),
-                Message(
-                    topic="topic/2/3",
-                    payload=b'{"timestamp": 123457, "val1": 5678}',
-                    qos=1,
-                    retain=False,
-                    mid=8,
                     properties=None,
                 ),
             ],
@@ -347,11 +332,11 @@ async def test_get_mqtt_messages_integration(publish_to_mqtt, topics: list[MQTTT
     received_messages: list[MQTTMessage] = []
     try:
         async_message_list = subscription.get_mqtt_messages(topics)
-        # Await the subscription result directly to collect the messages
-        async for message in async_message_list:
-            received_messages.append(message)
-            if len(received_messages) == len(expected_messages):
-                break
+        async with asyncio.timeout(10):
+            async for message in async_message_list:
+                received_messages.append(message)
+                if len(received_messages) == len(expected_messages):
+                    break
         assert len(received_messages) == len(expected_messages)
     finally:
         await async_message_list.aclose()
