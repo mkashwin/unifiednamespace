@@ -88,7 +88,7 @@ class SPBPropertySet:
     """
 
     keys: list[str]
-    values: list[typing.Annotated[SPBPropertyValue,   # noqa:UP037.  This needs to be a string hence quotes
+    values: list[typing.Annotated["SPBPropertyValue",  # noqa:UP037.  This needs to be a string hence quotes
                                   strawberry.lazy(".sparkplugb_node")]]
 
     def __init__(self, propertyset: Payload.PropertySet) -> None:
